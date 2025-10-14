@@ -75,11 +75,17 @@ export const TAB_LABELS: Record<TabKey, string> = {
 };
 
 export function formatDate(value: string, options?: Intl.DateTimeFormatOptions) {
-  return new Intl.DateTimeFormat("es-MX", {
+  const resolvedOptions: Intl.DateTimeFormatOptions = {
     dateStyle: "medium",
     timeStyle: "short",
     ...options,
-  }).format(new Date(value));
+  };
+
+  if (!resolvedOptions.timeZone) {
+    resolvedOptions.timeZone = "America/Mexico_City";
+  }
+
+  return new Intl.DateTimeFormat("es-MX", resolvedOptions).format(new Date(value));
 }
 
 export function toDayKey(input: string | Date, timeZone: string) {

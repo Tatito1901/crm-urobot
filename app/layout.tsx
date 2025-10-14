@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav, Sidebar } from "./components/common/Sidebar";
+import '@js-temporal/polyfill'; // <-- AÑADE ESTA LÍNEA AQUÍ
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

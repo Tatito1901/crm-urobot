@@ -9,14 +9,18 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@fullcalendar/daygrid": "^6.1.19",
-    "@fullcalendar/interaction": "^6.1.19",
-    "@fullcalendar/list": "^6.1.19",
-    "@fullcalendar/react": "^6.1.19",
-    "@fullcalendar/timegrid": "^6.1.19",
+    "@js-temporal/polyfill": "^0.5.1",
+    "@preact/signals": "^2.3.2",
+    "@schedule-x/calendar": "^3.3.0",
+    "@schedule-x/events-service": "^3.3.0",
+    "@schedule-x/react": "^3.3.0",
+    "@schedule-x/theme-default": "^3.3.0",
+    "date-fns": "^4.1.0",
     "next": "15.5.5",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-day-picker": "^9.11.1",
+    "react-dom": "19.1.0",
+    "temporal-polyfill": "^0.3.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
