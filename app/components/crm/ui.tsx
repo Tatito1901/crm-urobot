@@ -49,7 +49,7 @@ export function StatCard({ title, value, hint }: { title: string; value: string;
         <CardDescription className="text-[0.68rem] uppercase tracking-[0.28em] text-white/50">
           {title}
         </CardDescription>
-        <CardTitle className="text-3xl font-semibold text-white">{value}</CardTitle>
+        <CardTitle className="text-2xl font-semibold text-white sm:text-3xl">{value}</CardTitle>
       </CardHeader>
       {hint && (
         <CardContent className="pt-0">
@@ -74,50 +74,58 @@ export function DataTable({
   onRowClick?: (rowId: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] shadow-lg shadow-black/30">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {headers.map((header) => (
-              <TableHead
-                key={header.key}
-                className={cn(header.align === "right" ? "text-right" : "text-left")}
-              >
-                {header.label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 ? (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.02] shadow-lg shadow-black/30">
+      <div className="w-full overflow-x-auto">
+        <Table className="min-w-[560px]">
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={headers.length} className="px-4 py-10 text-center text-white/40">
-                {empty}
-              </TableCell>
+              {headers.map((header) => (
+                <TableHead
+                  key={header.key}
+                  className={cn(
+                    "text-[0.65rem] uppercase tracking-[0.24em] text-white/50",
+                    header.align === "right" ? "text-right" : "text-left"
+                  )}
+                >
+                  {header.label}
+                </TableHead>
+              ))}
             </TableRow>
-          ) : (
-            rows.map((row, index) => (
-              <TableRow
-                key={row.id}
-                onClick={() => onRowClick?.(row.id)}
-                className={cn(
-                  onRowClick ? "cursor-pointer hover:bg-white/[0.05]" : "",
-                  index % 2 === 0 ? "bg-white/[0.02]" : "bg-transparent"
-                )}
-              >
-                {headers.map((header) => (
-                  <TableCell
-                    key={header.key}
-                    className={cn("text-white/80", header.align === "right" ? "text-right" : "text-left")}
-                  >
-                    {row[header.key]}
-                  </TableCell>
-                ))}
+          </TableHeader>
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={headers.length} className="px-4 py-10 text-center text-white/40">
+                  {empty}
+                </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              rows.map((row, index) => (
+                <TableRow
+                  key={row.id}
+                  onClick={() => onRowClick?.(row.id)}
+                  className={cn(
+                    onRowClick ? "cursor-pointer transition hover:bg-white/[0.05]" : "",
+                    index % 2 === 0 ? "bg-white/[0.02]" : "bg-transparent"
+                  )}
+                >
+                  {headers.map((header) => (
+                    <TableCell
+                      key={header.key}
+                      className={cn(
+                        "whitespace-nowrap py-4 text-sm text-white/80",
+                        header.align === "right" ? "text-right" : "text-left"
+                      )}
+                    >
+                      {row[header.key]}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

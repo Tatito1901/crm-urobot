@@ -1,3 +1,5 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+
 type GrowthChartProps = {
   title: string;
   data: { label: string; value: number }[];
@@ -23,12 +25,15 @@ export function GrowthChart({ title, data, maxValue }: GrowthChartProps) {
   const gradientId = `gradient-${title.replace(/\s+/g, "-").toLowerCase()}`;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-inner shadow-black/30">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/80">{title}</h3>
-        <span className="text-xs text-white/40">Últimos períodos</span>
-      </div>
-      <div className="mt-4">
+    <Card className="bg-white/[0.03]">
+      <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <div>
+          <CardTitle className="text-sm text-white">{title}</CardTitle>
+          <CardDescription>Últimos períodos</CardDescription>
+        </div>
+        <span className="text-xs text-white/40">(+{max.toLocaleString("es-MX")})</span>
+      </CardHeader>
+      <CardContent className="pt-0">
         <svg
           viewBox={`0 0 100 ${HEIGHT}`}
           className="h-40 w-full text-blue-400"
@@ -60,12 +65,12 @@ export function GrowthChart({ title, data, maxValue }: GrowthChartProps) {
             </circle>
           ))}
         </svg>
-      </div>
-      <div className="mt-3 flex justify-between text-xs text-white/50">
-        {data.map((item) => (
-          <span key={item.label}>{item.label}</span>
-        ))}
-      </div>
-    </div>
+        <div className="mt-3 flex justify-between text-xs text-white/50">
+          {data.map((item) => (
+            <span key={item.label}>{item.label}</span>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,3 +1,5 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+
 type ComparisonBarsProps = {
   title: string;
   items: { label: string; value: number; hint?: string }[];
@@ -10,12 +12,15 @@ export function ComparisonBars({ title, items, maxValue }: ComparisonBarsProps) 
   const max = maxValue ?? Math.max(...items.map((item) => item.value));
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-inner shadow-black/30">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/80">{title}</h3>
-        <span className="text-xs text-white/40">Distribución</span>
-      </div>
-      <div className="mt-4 space-y-3">
+    <Card className="bg-white/[0.03]">
+      <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <div>
+          <CardTitle className="text-sm text-white">{title}</CardTitle>
+          <CardDescription>Distribución</CardDescription>
+        </div>
+        <span className="text-xs text-white/40">{max.toLocaleString("es-MX")}</span>
+      </CardHeader>
+      <CardContent className="space-y-3 pt-0">
         {items.map((item) => {
           const percentage = max === 0 ? 0 : Math.round((item.value / max) * 100);
           return (
@@ -34,7 +39,7 @@ export function ComparisonBars({ title, items, maxValue }: ComparisonBarsProps) 
             </div>
           );
         })}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

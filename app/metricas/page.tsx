@@ -1,9 +1,11 @@
 'use client';
 
 import { mockData } from '@/app/lib/crm-data';
+import { PageShell } from '@/app/components/crm/page-shell';
 import { StatCard } from '@/app/components/crm/ui';
 import { GrowthChart } from '@/app/components/analytics/GrowthChart';
 import { ComparisonBars } from '@/app/components/analytics/ComparisonBars';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 
 const metrics = (() => {
   const dm = mockData.dashboardMetricas;
@@ -87,34 +89,34 @@ const confirmStatus = [
 
 export default function MetricasPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#101c3b,_#02040a_70%)] text-white">
-      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 pb-20 pt-10">
-        <header className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.3em] text-blue-200/60">Inteligencia Operativa</p>
-          <h1 className="text-3xl font-semibold text-white">Métricas clave</h1>
-          <p className="text-sm text-white/60">
-            Indicadores de performance y distribución operativa listos para conectar con Supabase y n8n.
-          </p>
-        </header>
+    <PageShell
+      accent
+      eyebrow="Inteligencia Operativa"
+      title="Métricas clave"
+      description="Indicadores de performance y distribución operativa listos para conectar con Supabase y n8n."
+    >
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {metrics.map((metric) => (
+          <StatCard key={metric.title} title={metric.title} value={metric.value} hint={metric.hint} />
+        ))}
+      </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {metrics.map((metric) => (
-            <StatCard key={metric.title} title={metric.title} value={metric.value} hint={metric.hint} />
-          ))}
-        </section>
+      <section className="grid gap-6 lg:grid-cols-2">
+        <GrowthChart title="Crecimiento de leads" data={leadTrend} />
+        <ComparisonBars title="Consultas por sede" items={sedeDistribution} />
+      </section>
 
-        <section className="grid gap-6 lg:grid-cols-2">
-          <GrowthChart title="Crecimiento de leads" data={leadTrend} />
-          <ComparisonBars title="Consultas por sede" items={sedeDistribution} />
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-2">
-          <ComparisonBars title="Estatus de confirmaciones" items={confirmStatus} />
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-inner shadow-black/30">
-            <h2 className="text-sm font-medium text-white/80">Próximos pasos sugeridos</h2>
-            <ul className="mt-4 space-y-3 text-sm text-white/70">
+      <section className="grid gap-6 lg:grid-cols-2">
+        <ComparisonBars title="Estatus de confirmaciones" items={confirmStatus} />
+        <Card className="bg-white/[0.03]">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-white">Próximos pasos sugeridos</CardTitle>
+            <CardDescription>Ideas para la siguiente iteración</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <ul className="space-y-3 text-sm text-white/70">
               <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                Integrar dashboard_metricas desde Supabase con revalidación cada hora.
+                Integrar `dashboard_metricas` desde Supabase con revalidación cada hora.
               </li>
               <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                 Activar alertas en n8n cuando los pendientes superen la meta semanal.
@@ -123,9 +125,9 @@ export default function MetricasPage() {
                 Añadir métricas de satisfacción post-consulta para un ciclo completo.
               </li>
             </ul>
-          </div>
-        </section>
-      </div>
-    </div>
+          </CardContent>
+        </Card>
+      </section>
+    </PageShell>
   );
 }
