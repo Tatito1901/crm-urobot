@@ -33,7 +33,7 @@ export default function RootLayout({
         <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,_#101c3b,_#02040a_70%)]">
           <Sidebar />
           <div className="flex min-h-screen flex-1 flex-col lg:pl-0">
-            <main className="flex-1 overflow-y-auto">{children}</main>
+            <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
             <BottomNav />
           </div>
         </div>

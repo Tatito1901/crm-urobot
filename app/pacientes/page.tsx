@@ -4,20 +4,24 @@ import { useMemo, useState } from 'react';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { mockData, STATE_COLORS, formatDate, Paciente } from '@/app/lib/crm-data';
+import { STATE_COLORS, formatDate, Paciente } from '@/app/lib/crm-data';
+import { usePacientes } from '@/hooks/usePacientes';
 
 export default function PacientesPage() {
   const [search, setSearch] = useState('');
 
+  // ✅ Datos reales de Supabase con real-time
+  const { pacientes, loading, error } = usePacientes();
+
   const filteredPacientes = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return mockData.pacientes;
-    return mockData.pacientes.filter((paciente) =>
+    if (!term) return pacientes;
+    return pacientes.filter((paciente) =>
       [paciente.nombre, paciente.telefono, paciente.email ?? ''].some((field) =>
         field.toLowerCase().includes(term),
       ),
     );
-  }, [search]);
+  }, [search, pacientes]);
 
   const totalPacientes = filteredPacientes.length;
   const activos = filteredPacientes.filter((paciente) => paciente.estado === 'Activo').length;
@@ -49,7 +53,7 @@ export default function PacientesPage() {
         </Card>
       }
     >
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-3 grid-cols-1 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="bg-white/[0.03]">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-white">Pacientes filtrados</CardTitle>
@@ -84,8 +88,15 @@ export default function PacientesPage() {
 
       <Card className="bg-white/[0.03]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base text-white">Listado de pacientes</CardTitle>
-          <CardDescription>Información de contacto y estado clínico</CardDescription>
+          <CardTitle className="text-base text-white">
+            Listado de pacientes {loading && '(cargando...)'}
+          </CardTitle>
+          <CardDescription>
+            {error 
+              ? `Error: ${error.message}` 
+              : 'Información de contacto y estado clínico · Datos en tiempo real'
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent className="overflow-hidden pt-0">
           <DataTable

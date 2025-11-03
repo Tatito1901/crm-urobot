@@ -1,0 +1,1351 @@
+{
+  "name": "ENVIAR_CONFIRMACIONES",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"id\": \"3086bc54-abcd-1234-5678-9abcdef01234\",\n  \"Consulta_ID\": \"Sctzvca\",\n  \"Paciente_ID\": \"3086bc54\",\n  \"Paciente_Telefono\": \"6673184624\",\n  \"Paciente_Nombre\": \"Fausto Medina\",\n  \"Sede\": \"Polanco\",\n  \"Fecha_Hora_UTC\": \"2025-10-13T16:00:00.000Z\",  \n  \"startISO\": \"2025-10-13T10:00:00-06:00\",\n  \"timezone\": \"America/Mexico_City\",\n  \"Calendar_Event_ID\": \"fu62qg4culs7hmpsrdf9mrgbe8\",\n  \"Plantilla_Usada\": \"CONFIRMACION_INICIAL_V1\",\n  \"Canal\": \"WhatsApp\",\n  \"delay_seconds\": 0\n}\n"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -960,
+        16
+      ],
+      "id": "101a6edd-3715-4688-a9ff-e8d5fb9e156a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 14,20 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        -368
+      ],
+      "id": "31c8dea3-79d0-48c2-b1bf-83d9ddd41b8d",
+      "name": "Schedule Trigger (8AM & 2PM Mexico City)"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * MERGE TRIGGERS v4.0 - Production Ready\n * - Detección determinista por scoring\n * - Logging controlado\n * - Timestamp unificado\n * - Validación no bloqueante\n */\n\nconst TRIGGER_CONFIG = Object.freeze({\n  nodeNames: {\n    execute: 'When Executed by Another Workflow',\n    schedule: 'Schedule Trigger (8AM & 2PM)',\n    webhook: 'Webhook (Usuario Responde)',\n  },\n  priority: { webhook: 1, execute: 2, schedule: 3 },\n  debugKey: '__DEBUG',\n  slimOutputKey: '__SLIM_OUTPUT'\n});\n\nconst inItem = $input?.first?.();\nconst rootJson = (inItem?.json && typeof inItem.json === 'object') ? inItem.json : {};\nconst DEBUG = !!rootJson?.[TRIGGER_CONFIG.debugKey];\nconst SLIM = !!rootJson?.[TRIGGER_CONFIG.slimOutputKey];\n\nconst nowISO = new Date().toISOString();\nconst TZ = 'America/Mexico_City';\n\nconst LOG_MAX = 260;\nconst log = DEBUG ? (...a) => console.log(...a) : () => {};\nconst warn = DEBUG ? (...a) => console.warn(...a) : () => {};\n\nconst keysOf = obj => (obj && typeof obj === 'object') ? Object.keys(obj) : [];\n\nfunction safeGetNodeData(nodeName) {\n  try {\n    const node = $(nodeName);\n    if (!node) return null;\n    const first = node.first();\n    const json = first?.json;\n    return (json && typeof json === 'object') ? json : null;\n  } catch (e) {\n    warn(`⚠️ No se pudo acceder al nodo: ${nodeName}`);\n    return null;\n  }\n}\n\nconst triggers = {\n  execute: safeGetNodeData(TRIGGER_CONFIG.nodeNames.execute),\n  schedule: safeGetNodeData(TRIGGER_CONFIG.nodeNames.schedule),\n  webhook: safeGetNodeData(TRIGGER_CONFIG.nodeNames.webhook),\n};\n\nconst W = Object.freeze({\n  wh_headers: 3,\n  wh_full: 4,\n  wh_body: 1,\n  ex_id: 3,\n  ex_date: 2,\n  ex_pac: 1,\n  sch_marker: 2,\n  sch_min: 1,\n  sch_neg: -2,\n});\n\nfunction scoreWebhook(d) {\n  if (!d) return -Infinity;\n  let s = 0;\n  if (d?.headers) s += W.wh_headers;\n  if (d?.body?.data?.messages) s += W.wh_full;\n  if (d?.body && !d?.Consulta_ID) s += W.wh_body;\n  if (d?.Consulta_ID) s += W.sch_neg;\n  return s;\n}\n\nfunction scoreExecute(d) {\n  if (!d) return -Infinity;\n  let s = 0;\n  if (d?.Consulta_ID) s += W.ex_id;\n  if (d?.startISO || d?.Fecha_Hora_UTC) s += W.ex_date;\n  if (d?.Paciente_Nombre || d?.Paciente_Telefono) s += W.ex_pac;\n  if (d?.headers || d?.body?.data?.messages) s += W.sch_neg;\n  return s;\n}\n\nfunction scoreSchedule(d) {\n  if (!d) return -Infinity;\n  let s = 0;\n  const k = keysOf(d).length;\n  if (d?.timestamp || d?.scheduled || d?.cron) s += W.sch_marker;\n  if (k > 0 && k <= 5) s += W.sch_min;\n  if (d?.Consulta_ID || d?.Paciente_Telefono || d?.headers || d?.body) s += W.sch_neg;\n  return s;\n}\n\nlog('🔍 MERGE TRIGGERS v4.0 — start');\nlog(`🔥 input keys: ${keysOf(rootJson).slice(0, 30).join(', ')}`);\nlog(`📊 nodes: exec=${!!triggers.execute} | sched=${!!triggers.schedule} | webh=${!!triggers.webhook}`);\n\nconst sWebhook = scoreWebhook(rootJson);\nconst sExecute = scoreExecute(rootJson);\nconst sSchedule = scoreSchedule(rootJson);\n\nconst scores = [\n  { type: 'webhook', mode: 'reply', score: sWebhook, prio: TRIGGER_CONFIG.priority.webhook, data: rootJson },\n  { type: 'execute', mode: 'immediate', score: sExecute, prio: TRIGGER_CONFIG.priority.execute, data: rootJson },\n  { type: 'schedule', mode: 'batch', score: sSchedule, prio: TRIGGER_CONFIG.priority.schedule, data: rootJson },\n];\n\nconst MIN_INPUT_SCORE = 1;\nlet selected = null;\n\nconst bestByInput = scores.slice().sort((a, b) => (b.score - a.score) || (a.prio - b.prio))[0];\nif (bestByInput.score >= MIN_INPUT_SCORE) {\n  selected = bestByInput;\n} else {\n  const sec = [];\n  if (triggers.webhook) sec.push({ type: 'webhook', mode: 'reply', score: scoreWebhook(triggers.webhook), prio: TRIGGER_CONFIG.priority.webhook, data: triggers.webhook });\n  if (triggers.execute) sec.push({ type: 'execute', mode: 'immediate', score: scoreExecute(triggers.execute), prio: TRIGGER_CONFIG.priority.execute, data: triggers.execute });\n  if (triggers.schedule) sec.push({ type: 'schedule', mode: 'batch', score: scoreSchedule(triggers.schedule), prio: TRIGGER_CONFIG.priority.schedule, data: triggers.schedule });\n\n  if (sec.length) {\n    selected = sec.sort((a, b) => (b.score - a.score) || (a.prio - b.prio))[0];\n  }\n}\n\nif (!selected) {\n  if (rootJson?.headers) selected = { type: 'webhook', mode: 'reply', score: 1, prio: 1, data: rootJson };\n  else if (rootJson?.Consulta_ID || triggers.execute) selected = { type: 'execute', mode: 'immediate', score: 1, prio: 2, data: rootJson?.Consulta_ID ? rootJson : (triggers.execute || {}) };\n  else if (triggers.schedule) selected = { type: 'schedule', mode: 'batch', score: 1, prio: 3, data: triggers.schedule };\n  else if (keysOf(rootJson).length) selected = { type: 'webhook', mode: 'reply', score: 1, prio: 1, data: rootJson };\n  else selected = { type: 'schedule', mode: 'batch', score: 0, prio: 3, data: { _fallback: true } };\n}\n\nlog(`🎯 selected: ${selected.type} | mode=${selected.mode} | score=${selected.score}`);\n\nfunction validate(mode, data) {\n  const warnings = [];\n  if (mode === 'immediate') {\n    if (!data?.Consulta_ID) warnings.push('Falta Consulta_ID');\n    if (!(data?.startISO || data?.Fecha_Hora_UTC)) warnings.push('Falta fecha');\n    if (!data?.Paciente_Telefono) warnings.push('Falta teléfono');\n  }\n  return { valid: warnings.length === 0, warnings };\n}\n\nconst validation = validate(selected.mode, selected.data);\nif (!validation.valid) warn('⚠️ validation warnings:', validation.warnings.join(' | '));\n\nconst base = {\n  mode: selected.mode,\n  _trigger: selected.type,\n  _ts: nowISO,\n  timezone: selected.mode === 'batch' ? TZ : undefined,\n};\n\nconst dataTop = { ...(selected.data || {}) };\n\nif (SLIM && selected.mode === 'reply') {\n  delete dataTop.headers;\n}\n\nconst output = {\n  ...base,\n  ...dataTop,\n  _meta: {\n    debug: DEBUG,\n    slim: SLIM,\n    scores: { webhook: sWebhook, execute: sExecute, schedule: sSchedule },\n    chosen: { type: selected.type, mode: selected.mode, score: selected.score, prio: selected.prio },\n    warnings: validation.warnings,\n    version: '4.0'\n  },\n};\n\nif (DEBUG) {\n  log('📤 output:', {\n    mode: output.mode,\n    _trigger: output._trigger,\n    _ts: output._ts,\n    keys: keysOf(output).slice(0, 40),\n  });\n}\n\nreturn [{ json: output }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -272
+      ],
+      "id": "e0c1fe94-4820-4ae4-90b4-340e62b3342c",
+      "name": "Merge Triggers",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "immediate-condition",
+                    "leftValue": "={{ $json.mode }}",
+                    "rightValue": "immediate",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "IMMEDIATE"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "batch-condition",
+                    "leftValue": "={{ $json.mode }}",
+                    "rightValue": "batch",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "BATCH"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "reply-condition",
+                    "leftValue": "={{ $json.mode }}",
+                    "rightValue": "reply",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "REPLY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -512,
+        -288
+      ],
+      "id": "4db13b75-21a2-4578-b608-68f8ae711a96",
+      "name": "Detect Mode"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * VALIDATE SINGLE INPUT v2.0 - PRODUCTION\n * Valida y normaliza datos de UNA cita (modo IMMEDIATE)\n * - Normaliza SIEMPRE a UTC (Fecha_Hora_UTC)\n * - Valida campos requeridos\n * - Formato de teléfono\n * - Fecha válida\n */\n\nconst it = $input.first().json;\nconst TZ = it.timezone || 'America/Mexico_City';\n\n// ===========================\n// VALIDACIÓN DE CAMPOS REQUERIDOS\n// ===========================\nconst required = {\n  Consulta_ID: it.Consulta_ID,\n  Paciente_Telefono: it.Paciente_Telefono,\n  Paciente_Nombre: it.Paciente_Nombre,\n  Sede: it.Sede,\n  startISO: it.startISO || it.Fecha_Hora_UTC\n};\n\nconst missing = Object.entries(required)\n  .filter(([key, val]) => !val || val === '')\n  .map(([key]) => key);\n\nif (missing.length > 0) {\n  throw new Error(`❌ MISSING_FIELDS: ${missing.join(', ')}`);\n}\n\n// ===========================\n// VALIDACIÓN DE TELÉFONO\n// ===========================\nconst telDigits = required.Paciente_Telefono.replace(/\\D/g, '');\nif (telDigits.length < 10) {\n  throw new Error(`❌ INVALID_PHONE: ${required.Paciente_Telefono}`);\n}\n\n// ===========================\n// NORMALIZACIÓN DE FECHA A UTC\n// ===========================\nfunction parseToUTC(isoString, timezone) {\n  // Si ya tiene zona horaria (Z o +/-offset), usar directamente\n  if (/([+-]\\d{2}:\\d{2}|Z)$/i.test(isoString)) {\n    const date = new Date(isoString);\n    if (isNaN(date.getTime())) {\n      throw new Error(`❌ INVALID_DATE: ${isoString}`);\n    }\n    return date.toISOString();\n  }\n  \n  // Si es fecha naive (sin zona), parsear como hora local en la timezone especificada\n  const match = String(isoString).match(\n    /^(\\d{4})-(\\d{2})-(\\d{2})[T\\s](\\d{2}):(\\d{2})(?::(\\d{2})(?:\\.(\\d{1,3}))?)?$/\n  );\n  \n  if (!match) {\n    throw new Error(`❌ INVALID_DATE_FORMAT: ${isoString}`);\n  }\n  \n  const [, Y, M, D, h, mi, s = '0', ms = '0'] = match;\n  \n  // Crear fecha en UTC asumiendo que es hora local\n  const baseUTC = Date.UTC(+Y, +M - 1, +D, +h, +mi, +s, +ms);\n  \n  // Calcular offset de la timezone\n  const tempDate = new Date(baseUTC);\n  const dtf = new Intl.DateTimeFormat('en-US', {\n    timeZone: timezone,\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit',\n    hour12: false,\n  });\n  \n  const parts = dtf.formatToParts(tempDate).reduce((acc, p) => {\n    acc[p.type] = p.value;\n    return acc;\n  }, {});\n  \n  const localAsUTC = Date.UTC(\n    +parts.year,\n    +parts.month - 1,\n    +parts.day,\n    +parts.hour,\n    +parts.minute,\n    +parts.second\n  );\n  \n  const offset = localAsUTC - baseUTC;\n  const correctedUTC = baseUTC - offset;\n  \n  return new Date(correctedUTC).toISOString();\n}\n\nconst Fecha_Hora_UTC = parseToUTC(required.startISO, TZ);\n\nconsole.log('✅ [IMMEDIATE] Validación OK:', required.Consulta_ID);\nconsole.log('📅 Fecha normalizada:', {\n  input: required.startISO,\n  timezone: TZ,\n  output_UTC: Fecha_Hora_UTC\n});\n\n// ===========================\n// OUTPUT NORMALIZADO\n// ===========================\nreturn [{\n  json: {\n    ...it,\n    Fecha_Hora_UTC,  // ← Siempre en UTC\n    startISO: required.startISO,  // Mantener original para referencia\n    Timezone: TZ,\n    reminderType: 'initial',\n    updateColumn: 'Rem_ConfirmacionInicial_Enviado',\n    updateDateColumn: 'Rem_ConfirmacionInicial_FechaEnvio',\n    _source: 'immediate',\n    _normalized: true,\n    _validation_timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -368
+      ],
+      "id": "d1d56e7b-7919-4e02-8c43-86ed25641d33",
+      "name": "Validate Single Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * CALCULATE TIME WINDOWS v3.0 - PRODUCTION\n * Calcula ventanas para recordatorios con horarios de negocio\n */\n\nconst now = new Date();\nconst timezone = 'America/Mexico_City';\n\n// Validar horarios de envío (8AM - 8PM)\nconst currentHour = new Date().toLocaleString('en-US', {\n  timeZone: timezone,\n  hour12: false,\n  hour: 'numeric'\n});\n\nconst isBusinessHour = parseInt(currentHour) >= 8 && parseInt(currentHour) <= 20;\n\nconst next48h = new Date(now.getTime() + 48 * 3600 * 1000).toISOString();\nconst next24h = new Date(now.getTime() + 24 * 3600 * 1000).toISOString();\nconst next3h = new Date(now.getTime() + 3 * 3600 * 1000).toISOString();\nconst searchUntil = new Date(now.getTime() + 72 * 3600 * 1000).toISOString();\n\nconsole.log('🕐 VENTANAS v3.0:', JSON.stringify({\n  now: now.toISOString(),\n  currentHour: parseInt(currentHour),\n  isBusinessHour,\n  searchUntil,\n  targets: { next48h, next24h, next3h }\n}));\n\nreturn [{\n  json: {\n    now: now.toISOString(),\n    searchUntil,\n    next48h,\n    next24h,\n    next3h,\n    timezone,\n    isBusinessHour,\n    currentHour: parseInt(currentHour)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -176
+      ],
+      "id": "8d7128f5-a03c-4819-a797-cf0c556173c8",
+      "name": "Calculate Time Windows"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * CRM SYNC VALIDATOR v1.0 - PRODUCTION\n * Valida consistencia de datos del CRM\n * - Campos requeridos\n * - Consistencia de estados\n * - Fechas válidas\n * - Calendar_Event_ID en citas activas\n */\n\nconst items = $input.all();\nconst validated = [];\nconst errors = [];\nconst warnings = [];\n\nfor (const item of items) {\n  const cita = item.json;\n  const citaWarnings = [];\n  const citaErrors = [];\n  \n  // 1. Validar campos requeridos\n  const required = ['Consulta_ID', 'Paciente_Telefono', 'Fecha_Hora_UTC', 'EstadoCita'];\n  required.forEach(field => {\n    if (!cita[field] || cita[field] === '') {\n      citaErrors.push(`Missing ${field}`);\n    }\n  });\n  \n  // 2. Validar fechas\n  if (cita.Fecha_Hora_UTC) {\n    const fechaCita = new Date(cita.Fecha_Hora_UTC);\n    if (isNaN(fechaCita.getTime())) {\n      citaErrors.push('Fecha_Hora_UTC inválida');\n    }\n  }\n  \n  // 3. Validar consistencia de estados (Deprecated: Estado vs EstadoCita)\n  if (cita.Estado && cita.EstadoCita && cita.Estado !== cita.EstadoCita) {\n    citaWarnings.push(`Inconsistencia: Estado='${cita.Estado}' vs EstadoCita='${cita.EstadoCita}'. Usar EstadoCita como fuente de verdad.`);\n  }\n  \n  // 4. Validar Calendar_Event_ID si la cita está activa\n  const activeStates = ['Programada', 'Confirmada', 'Reagendada'];\n  if (activeStates.includes(cita.EstadoCita) && !cita.Calendar_Event_ID) {\n    citaWarnings.push('Cita activa sin Calendar_Event_ID - podría causar problemas de sincronización');\n  }\n  \n  // 5. Validar lógica de confirmación\n  if (cita.EstadoCita === 'Cancelada' && cita.Confirmado_Paciente === 'SI') {\n    citaWarnings.push('Inconsistencia: Cita cancelada pero marcada como confirmada');\n  }\n  \n  // Si hay errores críticos, no incluir esta cita\n  if (citaErrors.length > 0) {\n    errors.push({\n      Consulta_ID: cita.Consulta_ID || 'UNKNOWN',\n      errors: citaErrors\n    });\n    console.error(`❌ CRM Validation Failed: ${cita.Consulta_ID}`, citaErrors);\n    continue;\n  }\n  \n  // Si solo hay warnings, incluir pero loggear\n  if (citaWarnings.length > 0) {\n    warnings.push({\n      Consulta_ID: cita.Consulta_ID,\n      warnings: citaWarnings\n    });\n    console.warn(`⚠️ CRM Validation Warnings: ${cita.Consulta_ID}`, citaWarnings);\n  }\n  \n  validated.push({\n    json: {\n      ...cita,\n      _crm_validated: true,\n      _validation_warnings: citaWarnings,\n      _validation_timestamp: new Date().toISOString()\n    }\n  });\n}\n\nconsole.log(`✅ CRM Validation: ${validated.length} válidas, ${errors.length} errores, ${warnings.length} con warnings`);\n\nif (errors.length > 0) {\n  console.error('❌ Citas con errores críticos:', JSON.stringify(errors, null, 2));\n}\n\nif (validated.length === 0) {\n  throw new Error(`❌ CRM_VALIDATION_FAILED: Ninguna cita pasó la validación. Errores: ${JSON.stringify(errors)}`);\n}\n\nreturn validated;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        272
+      ],
+      "id": "b7f42912-0eeb-4083-b6ba-853b054b71c4",
+      "name": "CRM Sync Validator (Batch)"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * EXTRACT USER MESSAGE v3.1 - PRODUCTION\n * - Cubre WhatsApp Cloud API, Baileys y gateways\n * - Normaliza teléfono a E.164 (MX por defecto)\n * - No lanza errores: warnings + _parseError\n */\n\nconst inItem = $input?.first?.();\nconst input = (inItem?.json && typeof inItem.json === 'object') ? inItem.json : {};\nconst body = input?.body || input;\nconst DEBUG = !!input?.__DEBUG;\n\nconst nowISO = new Date().toISOString();\nconst TZ = 'America/Mexico_City';\n\nconst LOG_MAX = 260;\nconst log = DEBUG ? (...a) => console.log(...a) : () => {};\nconst warn = DEBUG ? (...a) => console.warn(...a) : () => {};\n\nconst keys = obj => (obj && typeof obj === 'object') ? Object.keys(obj) : [];\n\nlog('🔥 EXTRACT v3.1 start');\nDEBUG && log('input keys:', keys(input).slice(0, 30));\n\nconst firstDefined = (...arr) => arr.find(v => v !== undefined && v !== null && v !== '');\n\nfunction normalizePhoneE164MX(raw) {\n  if (!raw) return { e164: null, clean10: null, raw };\n  let p = String(raw).split('@')[0].replace(/\\D/g, '');\n  if (!p) return { e164: null, clean10: null, raw };\n\n  if ((p.startsWith('521') && p.length >= 13) || (p.startsWith('52') && p.length >= 12)) {\n    const last10 = p.slice(-10);\n    return { e164: `+52${last10}`, clean10: last10, raw };\n  }\n  if (p.length === 10) {\n    return { e164: `+52${p}`, clean10: p, raw };\n  }\n  return { e164: `+${p}`, clean10: p.slice(-10), raw };\n}\n\nfunction extractCloudAPI(b) {\n  const value = b?.entry?.[0]?.changes?.[0]?.value;\n  const msg = value?.messages?.[0];\n  if (!msg) return null;\n\n  const type = msg?.type || 'unknown';\n  let text = null, actionId = null;\n\n  switch (type) {\n    case 'text':\n      text = msg?.text?.body || null;\n      break;\n    case 'interactive': {\n      const ir = msg?.interactive;\n      if (ir?.type === 'button_reply') {\n        text = ir?.button_reply?.title || ir?.button_reply?.id || null;\n        actionId = ir?.button_reply?.id || null;\n      } else if (ir?.type === 'list_reply') {\n        text = ir?.list_reply?.title || ir?.list_reply?.id || null;\n        actionId = ir?.list_reply?.id || null;\n      }\n      break;\n    }\n    case 'button':\n      text = firstDefined(msg?.button?.text, msg?.button?.payload, msg?.button?.title);\n      actionId = firstDefined(msg?.button?.payload, msg?.button?.text) || null;\n      break;\n    case 'image':\n      text = msg?.image?.caption || null;\n      break;\n    case 'document':\n      text = firstDefined(msg?.document?.caption, msg?.document?.filename);\n      break;\n    default:\n      text = msg?.caption || null;\n  }\n\n  const from = firstDefined(msg?.from, value?.contacts?.[0]?.wa_id);\n  const name = firstDefined(value?.contacts?.[0]?.profile?.name, msg?.profile?.name);\n  const waId = msg?.id || null;\n  const ts = msg?.timestamp ? new Date(Number(msg.timestamp) * 1000).toISOString() : nowISO;\n\n  return { text, type, from, name, waId, ts, actionId, _source: 'cloud' };\n}\n\nfunction extractBaileys(b) {\n  const d = b?.data || b;\n  const M = d?.messages || d?.message || d?.Messages || null;\n  const m = Array.isArray(M) ? M[0] : M;\n  const msg = m?.message || d?.message || null;\n  const key = m?.key || d?.key || null;\n\n  if (!(msg || key || d?.remoteJid || d?.from)) return null;\n\n  let text = firstDefined(\n    msg?.conversation,\n    msg?.extendedTextMessage?.text,\n    msg?.imageMessage?.caption,\n    msg?.videoMessage?.caption,\n    msg?.buttonsResponseMessage?.selectedDisplayText,\n    msg?.buttonsResponseMessage?.selectedButtonId,\n    msg?.listResponseMessage?.singleSelectReply?.title,\n    msg?.listResponseMessage?.singleSelectReply?.selectedRowId\n  );\n\n  const type = (msg && Object.keys(msg)[0]) || (text ? 'text' : 'unknown');\n  const actionId = firstDefined(\n    msg?.buttonsResponseMessage?.selectedButtonId,\n    msg?.listResponseMessage?.singleSelectReply?.selectedRowId\n  ) || null;\n\n  const from = firstDefined(key?.remoteJid, d?.remoteJid, d?.from, b?.from);\n  const name = firstDefined(m?.pushName, d?.pushName, b?.pushName);\n  const waId = firstDefined(key?.id, d?.id, b?.id) || null;\n  const ts = firstDefined(d?.messageTimestamp, m?.messageTimestamp, b?.timestamp);\n  const tsISO = ts ? new Date(Number(ts) * 1000).toISOString() : nowISO;\n\n  return { text, type, from, name, waId, ts: tsISO, actionId, _source: 'baileys' };\n}\n\nfunction extractGeneric(b) {\n  const text = firstDefined(\n    b?.text, b?.message, b?.body?.text, b?.body?.message,\n    b?.Body, b?.Message\n  );\n  const from = firstDefined(b?.from, b?.From, b?.sender);\n  const name = firstDefined(b?.name, b?.userName, b?.pushName);\n  if (!(text || from || name)) return null;\n  return { text: text || null, type: 'text', from: from || null, name: name || null, waId: b?.id || null, ts: nowISO, _source: 'generic' };\n}\n\nlet extracted =\n  extractCloudAPI(body) ||\n  extractBaileys(body) ||\n  extractGeneric(body);\n\nconst warnings = [];\nif (!extracted) {\n  warnings.push('No se reconoció estructura Cloud/Baileys/Genérica');\n  extracted = { text: null, type: 'unknown', from: null, name: null, waId: null, ts: nowISO, _source: 'unknown' };\n}\n\nconst userMessage = (extracted.text || '').toString().trim();\nconst userMessageType = extracted.type || 'text';\nconst userName = extracted.name || null;\nconst phone = normalizePhoneE164MX(extracted.from);\n\nif (!userMessage) warnings.push('Mensaje vacío o no reconocido');\nif (!phone.e164) warnings.push('No se pudo normalizar teléfono');\n\nconst userWaMsgId = extracted.waId || null;\nconst userWaTimestamp = extracted.ts || nowISO;\n\nconst out = {\n  userMessage,\n  userMessageType,\n  userActionId: extracted.actionId || null,\n  userPhone: phone.e164,\n  userPhoneClean: phone.clean10,\n  userPhoneRaw: phone.raw,\n  userName,\n  userWaMsgId,\n  userWaTimestamp,\n  channel: 'whatsapp',\n  receivedAt: nowISO,\n  timezone: TZ,\n  _parseError: (!userMessage || !phone.e164) ? true : false,\n  _meta: {\n    source: extracted._source,\n    warnings,\n    debug: DEBUG,\n  },\n};\n\nif (DEBUG) {\n  log('✅ extract result:', {\n    msgPreview: userMessage.slice(0, 50),\n    type: userMessageType,\n    phone: out.userPhone,\n    name: userName || 'N/A',\n    warnings\n  });\n}\n\nreturn [{ json: out }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        80
+      ],
+      "id": "99c2bf45-7cbb-4c57-92ae-5d4a0f1c3a50",
+      "name": "Extract User Message"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * CRM SYNC VALIDATOR v1.0 - PRODUCTION (Reply Mode)\n * Valida consistencia de citas encontradas para el usuario\n */\n\nconst items = $input.all();\nconst validated = [];\nconst warnings = [];\n\nfor (const item of items) {\n  const cita = item.json;\n  const citaWarnings = [];\n  \n  // Validaciones básicas\n  if (!cita.Consulta_ID) citaWarnings.push('Missing Consulta_ID');\n  if (!cita.EstadoCita) citaWarnings.push('Missing EstadoCita');\n  if (!cita.Fecha_Hora_UTC) citaWarnings.push('Missing Fecha_Hora_UTC');\n  \n  // Validar fecha\n  if (cita.Fecha_Hora_UTC) {\n    const fecha = new Date(cita.Fecha_Hora_UTC);\n    if (isNaN(fecha.getTime())) {\n      citaWarnings.push('Fecha_Hora_UTC inválida');\n    }\n  }\n  \n  if (citaWarnings.length > 0) {\n    warnings.push({\n      Consulta_ID: cita.Consulta_ID || 'UNKNOWN',\n      warnings: citaWarnings\n    });\n    console.warn(`⚠️ CRM Validation (Reply): ${cita.Consulta_ID}`, citaWarnings);\n  }\n  \n  validated.push({\n    json: {\n      ...cita,\n      _crm_validated: true,\n      _validation_warnings: citaWarnings,\n      _validation_timestamp: new Date().toISOString()\n    }\n  });\n}\n\nconsole.log(`✅ CRM Validation (Reply): ${validated.length} citas validadas`);\n\nreturn validated.length > 0 ? validated : [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        112
+      ],
+      "id": "d29b565c-57e4-4a98-be31-51deef644685",
+      "name": "CRM Sync Validator (Reply)"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * FILTER & PREPARE v6.0 - PRODUCTION\n * MEJORAS:\n * ✅ UUID flow - consulta_uuid preservado\n * ✅ Validación de estado actual antes de enviar\n * ✅ Verificar que no esté cancelada\n * ✅ Normalización de estructura de datos\n * ✅ Uso exclusivo de Fecha_Hora_UTC\n * ✅ Logging mejorado\n */\n\nconst mode = $('Merge Triggers').first().json.mode;\nlet itemsToSend = [];\nconst processedIds = new Set();\n\nconst REMINDER_WINDOWS = {\n  rem48h: {\n    minHours: 44,\n    maxHours: 56,\n    flagField: 'rem_48h_enviado',\n    reminderType: '48h',\n    priority: 1\n  },\n  rem24h: {\n    minHours: 20,\n    maxHours: 30,\n    flagField: 'rem_24h_enviado',\n    reminderType: '24h',\n    priority: 2\n  },\n  rem3h: {\n    minHours: 2,\n    maxHours: 5,\n    flagField: 'rem_3h_enviado',\n    reminderType: '3h',\n    priority: 3\n  }\n};\n\nconst VALID_STATES = ['Programada', 'Confirmada', 'Reagendada'];\n\nfunction wasSent(cita, field) {\n  const val = cita[field];\n  return val === 'SI' || val === 'TRUE' || val === true || val === 'true' || val === 1;\n}\n\nfunction isEligibleBatch(cita) {\n  if (cita.cancelado_por) {\n    return { valid: false, reason: `Cita cancelada por: ${cita.cancelado_por}` };\n  }\n  \n  if (!VALID_STATES.includes(cita.estado_cita)) {\n    return { valid: false, reason: `Estado no válido: ${cita.estado_cita}` };\n  }\n  \n  if (!cita.fecha_hora_utc) {\n    return { valid: false, reason: 'fecha_hora_utc faltante' };\n  }\n  \n  const phone = String(cita.paciente_telefono || '').replace(/\\D/g, '');\n  if (phone.length < 10) {\n    return { valid: false, reason: `Teléfono inválido: ${phone}` };\n  }\n  \n  return { valid: true };\n}\n\nfunction isEligibleImmediate(item) {\n  if (item.Cancelado_Por || item.cancelado_por) {\n    return { valid: false, reason: 'Cita cancelada' };\n  }\n  \n  if (!item.Fecha_Hora_UTC && !item.fecha_hora_utc) {\n    return { valid: false, reason: 'Fecha UTC faltante' };\n  }\n  \n  const phone = String(item.Paciente_Telefono || item.paciente_telefono || '').replace(/\\D/g, '');\n  if (phone.length < 10) {\n    return { valid: false, reason: `Teléfono inválido: ${phone}` };\n  }\n  \n  if (!item.Consulta_ID && !item.consulta_id) {\n    return { valid: false, reason: 'Consulta_ID faltante' };\n  }\n  \n  return { valid: true };\n}\n\nfunction parseDate(dateStr) {\n  try {\n    const date = new Date(dateStr);\n    if (isNaN(date.getTime())) throw new Error('Invalid date');\n    return date;\n  } catch (e) {\n    return null;\n  }\n}\n\n// ==========================================\n// MODO IMMEDIATE: confirmación inicial\n// ==========================================\nif (mode === 'immediate') {\n  const item = $input.first().json;\n  \n  console.log('🎯 [IMMEDIATE] Procesando confirmación inicial');\n  console.log(`   Consulta_ID: ${item.Consulta_ID}`);\n  console.log(`   UUID: ${item.id || 'N/A'}`);\n  \n  const eligibility = isEligibleImmediate(item);\n  if (!eligibility.valid) {\n    console.error(`❌ [IMMEDIATE] Validación falló: ${eligibility.reason}`);\n    return [];\n  }\n  \n  const normalizedItem = {\n    ...item,\n    consulta_uuid: item.id || item.consulta_uuid,\n    Consulta_ID: item.Consulta_ID || item.consulta_id,\n    reminderType: 'initial',\n    updateColumn: 'rem_confirmacion_inicial_enviado',\n    _validated: true,\n    _mode: 'immediate',\n    _timestamp: new Date().toISOString()\n  };\n  \n  itemsToSend = [normalizedItem];\n  console.log(`✅ [IMMEDIATE] UUID preservado: ${normalizedItem.consulta_uuid}`);\n}\n\n// ==========================================\n// MODO BATCH: recordatorios programados\n// ==========================================\nelse if (mode === 'batch') {\n  const allCitas = $input.all().map(i => i.json);\n  const windows = $('Calculate Time Windows').first().json;\n  \n  const now = parseDate(windows.now);\n  if (!now) {\n    throw new Error('❌ FATAL: windows.now es inválido');\n  }\n  \n  const nowMs = now.getTime();\n  \n  console.log(`📊 [BATCH] Procesando ${allCitas.length} citas`);\n  console.log(`🕐 Timestamp actual: ${now.toISOString()}`);\n  \n  const stats = {\n    processed: 0,\n    skipped: { invalid: 0, past: 0, alreadySent: 0, cancelled: 0 },\n    queued: { rem48h: 0, rem24h: 0, rem3h: 0 }\n  };\n  \n  for (const cita of allCitas) {\n    stats.processed++;\n    \n    const eligibility = isEligibleBatch(cita);\n    if (!eligibility.valid) {\n      if (eligibility.reason.includes('cancelada')) {\n        stats.skipped.cancelled++;\n      } else {\n        stats.skipped.invalid++;\n      }\n      console.log(`⏭️ Skip: ${cita.consulta_id} - ${eligibility.reason}`);\n      continue;\n    }\n    \n    const startDate = parseDate(cita.fecha_hora_utc);\n    if (!startDate) {\n      stats.skipped.invalid++;\n      console.error(`❌ Fecha inválida: ${cita.consulta_id}`);\n      continue;\n    }\n    \n    const startMs = startDate.getTime();\n    \n    if (startMs <= nowMs) {\n      stats.skipped.past++;\n      continue;\n    }\n    \n    const hoursUntil = (startMs - nowMs) / 3600000;\n    \n    if (processedIds.has(cita.consulta_id)) {\n      continue;\n    }\n    \n    for (const [key, config] of Object.entries(REMINDER_WINDOWS)) {\n      const inWindow = hoursUntil >= config.minHours && hoursUntil <= config.maxHours;\n      const alreadySent = wasSent(cita, config.flagField);\n      \n      if (inWindow && !alreadySent) {\n        itemsToSend.push({\n          ...cita,\n          consulta_uuid: cita.id,\n          Consulta_ID: cita.consulta_id,\n          Paciente_Nombre: cita.paciente_nombre,\n          Paciente_Telefono: cita.paciente_telefono,\n          Fecha_Hora_UTC: cita.fecha_hora_utc,\n          Sede: cita.sede,\n          Tipo_Cita: cita.tipo_cita,\n          Motivo_Consulta: cita.motivo_consulta,\n          reminderType: config.reminderType,\n          updateColumn: config.flagField,\n          hoursUntil: Math.round(hoursUntil * 10) / 10,\n          _priority: config.priority,\n          _validated: true,\n          _mode: 'batch',\n          _timestamp: new Date().toISOString()\n        });\n        \n        processedIds.add(cita.consulta_id);\n        stats.queued[key]++;\n        \n        console.log(`✅ ${key}: ${cita.consulta_id} (UUID: ${cita.id}) - ${hoursUntil.toFixed(1)}h`);\n        break;\n      } else if (inWindow && alreadySent) {\n        stats.skipped.alreadySent++;\n      }\n    }\n  }\n  \n  console.log('\\n📊 RESUMEN:');\n  console.log(`   Total: ${stats.processed}`);\n  console.log(`   Canceladas: ${stats.skipped.cancelled}`);\n  console.log(`   Ya enviadas: ${stats.skipped.alreadySent}`);\n  console.log(`   Encoladas: ${itemsToSend.length}`);\n}\n\nelse if (mode === 'reply') {\n  console.log('⏭️ [REPLY] Este nodo no procesa respuestas');\n  return [];\n}\n\nif (itemsToSend.length === 0) {\n  console.log('⚠️ No hay recordatorios pendientes');\n  return [];\n}\n\nitemsToSend.sort((a, b) => (a._priority || 99) - (b._priority || 99));\n\nconsole.log(`🚀 Preparados ${itemsToSend.length} recordatorios`);\nconsole.log(`   UUIDs preservados: ${itemsToSend.map(i => i.consulta_uuid).join(', ')}`);\n\nreturn itemsToSend.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -272
+      ],
+      "id": "cba0eddc-79a2-42b2-ae9c-1cc097a69c3c",
+      "name": "Filter & Prepare",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * BUILD MESSAGE v6.0 - PRODUCTION\n * - Usa EXCLUSIVAMENTE Fecha_Hora_UTC del CRM\n * - TZ/DST correcto\n * - Separador configurable\n * - Validación robusta\n */\n\nconst it = $json;\n\nconst SEDES = {\n  POLANCO: {\n    nombre: 'Hospital Ángeles Santa Mónica',\n    ubicacion: 'Temístocles 210, Polanco IV Secc, Miguel Hidalgo, 11560 CDMX',\n    telefono: '+52 55 5262 5555',\n    whatsapp: '+52 55 5262 5555',\n    maps: 'https://maps.app.goo.gl/2JPkgCLA5nKvHnwH7'\n  },\n  SATELITE: {\n    nombre: 'Hospital San Ángel Inn Satélite',\n    ubicacion: 'Cto Centro Comercial 20, Cd. Satélite, 53100 Naucalpan, Méx.',\n    telefono: '+52 55 5247 1300',\n    whatsapp: '+52 55 5247 1300',\n    maps: 'https://maps.app.goo.gl/TdaJHD6sLgrhX4bNA'\n  }\n};\n\nconst DOCTOR = {\n  nombre: 'Dr. Mario Martínez Thomas',\n  especialidad: 'Urólogo',\n  cedula: 'Cédula Profesional: 4428943',\n  subespecialidad: 'Urología Oncológica y Laparoscópica',\n};\n\nconst PRECIOS = {\n  primera_vez: { descripcion: 'Consulta de Primera Vez', precio: '$1,200.00' },\n  subsecuente: { descripcion: 'Consulta Subsecuente', precio: '$900.00' },\n};\n\nconst METODOS_PAGO = 'Efectivo, Tarjeta, Transferencia';\n\nfunction safeJoin(lines) {\n  return lines.filter(Boolean).join('\\n');\n}\n\nfunction toMX10(s) {\n  const r = String(s || '').replace(/\\D/g, '');\n  return r.replace(/^(?:\\+?52|521|01|044|045|0)/, '').slice(-10);\n}\n\nfunction formatPhone(phone) {\n  const clean = String(phone || '').replace(/\\D/g, '');\n  if (clean.length === 10) return clean.replace(/(\\d{3})(\\d{3})(\\d{4})/, '($1) $2-$3');\n  return phone || '';\n}\n\nfunction makeSep(n = 18, ch = '─') {\n  const width = Math.max(8, Math.min(40, Number(n) || 18));\n  return String(ch).repeat(width);\n}\n\nconst SEP = makeSep(it.sepWidth, it.sepChar);\n\nconst TZ = it.Timezone || it.timezone || 'America/Mexico_City';\nconst RAW_ISO = it.Fecha_Hora_UTC;  // ← SIEMPRE usar este campo\n\nif (!RAW_ISO) {\n  throw new Error(`MISSING_FECHA_HORA_UTC for ${it.Consulta_ID || 'SIN-FOLIO'}`);\n}\n\nfunction fmtFechaLarga(date, tz) {\n  if (!date || isNaN(date.getTime())) return 'Fecha inválida';\n  const opciones = { timeZone: tz, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };\n  let fecha = date.toLocaleDateString('es-MX', opciones);\n  return fecha.charAt(0).toUpperCase() + fecha.slice(1);\n}\n\nfunction fmtHora12h(date, tz) {\n  if (!date || isNaN(date.getTime())) return 'Hora inválida';\n  const opciones = { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true };\n  return date\n    .toLocaleTimeString('es-MX', opciones)\n    .replace(/\\s+/g, ' ')\n    .replace(/a\\.\\s*m\\./gi, 'AM')\n    .replace(/p\\.\\s*m\\./gi, 'PM')\n    .replace(/^0/, '')\n    .trim();\n}\n\n// Fecha_Hora_UTC ya está en formato ISO UTC\nconst startDate = new Date(RAW_ISO);\nif (isNaN(startDate.getTime())) {\n  throw new Error(`INVALID_FECHA_HORA_UTC: ${RAW_ISO} for ${it.Consulta_ID}`);\n}\n\nconst fechaLarga = fmtFechaLarga(startDate, TZ);\nconst hora = fmtHora12h(startDate, TZ);\n\nconst nombreCompleto = it.Paciente_Nombre || 'Paciente';\nconst nombrePila = (nombreCompleto.split(' ')[0] || 'Paciente').trim();\nconst telefonoFmt = formatPhone(toMX10(it.Paciente_Telefono));\nconst email = it.Paciente_Email || '';\n\nconst sedeKey = String(it.Sede || '').toUpperCase();\nconst sede = SEDES[sedeKey] || SEDES.POLANCO;\n\nconst tipoCita = it.Tipo_Cita || 'primera_vez';\nconst servicio = PRECIOS[tipoCita] || PRECIOS.primera_vez;\n\nconst motivoConsulta = it.Motivo_Consulta || '';\nconst folio = it.Consulta_ID || 'SIN-FOLIO';\nconst toRaw = toMX10(it.Paciente_Telefono);\nconst to = toRaw ? `+52${toRaw}` : '';\nconst reminderType = it.reminderType || 'initial';\nconst quickReplies = it.permiteRespuestasRapidas === true;\n\nfunction blockCTA() {\n  if (!quickReplies) return '';\n  return safeJoin([\n    '',\n    '*Responda con:*',\n    '1) Confirmo',\n    '2) Reagendar',\n    '3) Cancelar',\n  ]);\n}\n\nconst messages = {\n  initial: safeJoin([\n    '🎉 *¡Cita agendada!*',\n    '',\n    'Si desea cancelar o reagendar, avísenos a la brevedad para poder ayudar a otro paciente.',\n    '',\n    SEP,\n    '📅 *Detalles*',\n    `• *Fecha:* ${fechaLarga}`,\n    `• *Hora:* ${hora}`,\n    `• *Especialista:* ${DOCTOR.nombre}`,\n    `• *Servicio:* ${servicio.descripcion}`,\n    motivoConsulta ? `• *Motivo:* ${motivoConsulta}` : null,\n    `• *Precio:* ${servicio.precio}`,\n    `• *Métodos de pago:* ${METODOS_PAGO}`,\n    '',\n    SEP,\n    '🏥 *Sede*',\n    `• *Nombre:* ${sede.nombre}`,\n    `• *Ubicación:* ${sede.ubicacion}`,\n    `• *Mapa:* ${sede.maps}`,\n    `• *WhatsApp:* ${sede.whatsapp}`,\n    `• *Teléfono:* ${sede.telefono}`,\n    '',\n    SEP,\n    '👤 *Paciente*',\n    `• *Nombre:* ${nombreCompleto}`,\n    `• *Teléfono:* ${telefonoFmt}`,\n    email ? `• *E-mail:* ${email}` : null,\n    '',\n    SEP,\n    '*Indicaciones*',\n    '• Llegar 10 minutos antes',\n    '• Llevar estudios médicos previos',\n    '',\n    `_Folio: ${folio}_`,\n    blockCTA(),\n  ]),\n\n  rem48h: safeJoin([\n    '⏰ *Recordatorio de cita*',\n    '_(Faltan 2 días)_',\n    '',\n    `Hola *${nombrePila}*, le recordamos su cita:`,\n    '',\n    SEP,\n    '📅 *Detalles*',\n    `• *Fecha:* ${fechaLarga}`,\n    `• *Hora:* ${hora}`,\n    `• *Especialista:* ${DOCTOR.nombre}`,\n    `• *Servicio:* ${servicio.descripcion}`,\n    `• *Precio:* ${servicio.precio}`,\n    '',\n    SEP,\n    '🏥 *Sede*',\n    `• *Nombre:* ${sede.nombre}`,\n    `• *Ubicación:* ${sede.ubicacion}`,\n    `• *Mapa:* ${sede.maps}`,\n    '',\n    SEP,\n    '💬 *¿Necesita hacer un cambio?*',\n    'Responda este mensaje para:',\n    '• Confirmar su asistencia',\n    '• Reagendar su cita',\n    '• Cancelar',\n    '',\n    `_Folio: ${folio}_`,\n    blockCTA(),\n  ]),\n\n  rem24h: safeJoin([\n    '⏰ *Recordatorio de cita*',\n    '_(Su cita es mañana)_',\n    '',\n    `Hola *${nombrePila}*, su cita es mañana:`,\n    '',\n    SEP,\n    '📅 *Detalles*',\n    `• *Fecha:* ${fechaLarga}`,\n    `• *Hora:* ${hora}`,\n    `• *Especialista:* ${DOCTOR.nombre}`,\n    `• *Servicio:* ${servicio.descripcion}`,\n    '',\n    SEP,\n    '🏥 *Sede*',\n    `• *Nombre:* ${sede.nombre}`,\n    `• *Ubicación:* ${sede.ubicacion}`,\n    `• *Mapa:* ${sede.maps}`,\n    '',\n    SEP,\n    '*Recordatorios*',\n    '• Llegar 10 minutos antes',\n    '• Traer identificación oficial vigente',\n    '• Llevar estudios médicos previos',\n    `• *Métodos de pago:* ${METODOS_PAGO}`,\n    '',\n    '💬 Si necesita reagendar o cancelar, responda este mensaje.',\n    '',\n    `_Folio: ${folio}_`,\n    blockCTA(),\n  ]),\n\n  rem3h: safeJoin([\n    '🔔 *Recordatorio*',\n    '_(Su cita es hoy)_',\n    '',\n    `Hola *${nombrePila}*, su cita es en ~3 horas:`,\n    '',\n    SEP,\n    '📅 *Detalles*',\n    `• *Hoy a las:* ${hora}`,\n    `• *Especialista:* ${DOCTOR.nombre}`,\n    `• *Servicio:* ${servicio.descripcion}`,\n    '',\n    SEP,\n    '🏥 *Sede*',\n    `• *Nombre:* ${sede.nombre}`,\n    `• *Ubicación:* ${sede.ubicacion}`,\n    `• *Mapa:* ${sede.maps}`,\n    '',\n    SEP,\n    '*Últimos recordatorios*',\n    '• Considere el tráfico y salga con tiempo',\n    '• Llegue 10 minutos antes',\n    '• Traiga su identificación oficial',\n    '• Lleve sus estudios médicos (si los tiene)',\n    '',\n    '¡Nos vemos pronto!',\n    '',\n    `_Folio: ${folio}_`,\n    blockCTA(),\n  ]),\n};\n\nconst body = messages[reminderType] || messages.initial;\n\nconsole.log('📤 Mensaje preparado:', {\n  Tipo: reminderType,\n  Para: `${nombreCompleto} (${to || 'SIN-DESTINO'})`,\n  Folio: folio,\n  Fecha: fechaLarga,\n  Hora: hora,\n  Sede: sede.nombre,\n  Fecha_Hora_UTC: RAW_ISO,\n  ParsedUTC: startDate.toISOString(),\n  TZ: TZ\n});\n\nreturn [{\n  json: {\n    to,\n    body,\n    reminderType,\n    folio,\n    fechaLarga,\n    hora,\n    sede: sedeKey || 'POLANCO',\n    Fecha_Hora_UTC: RAW_ISO,\n    Consulta_ID: folio,\n    consulta_uuid: it.consulta_uuid || it.id,\n    id: it.id || it.consulta_uuid,\n    updateColumn: it.updateColumn,\n    updateDateColumn: it.updateDateColumn,\n    _build_timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -272
+      ],
+      "id": "983d6d6d-ed8d-4bc6-aab8-cc1c91e40b6d",
+      "name": "Build Message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": {{ JSON.stringify($json.to) }},\n  \"text\": {{ JSON.stringify($json.body) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        -272
+      ],
+      "id": "1f8fde0c-97dd-494d-82ec-4a2bc8e424cf",
+      "name": "Send WhatsApp",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "J0Kap8PdAddWNu3l",
+          "name": "Header Auth account 2"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * VALIDATE SEND STATUS v1.0 - PRODUCTION\n * Verifica si el envío fue exitoso antes de actualizar CRM\n * Implementa retry queue si falla\n */\n\nconst sendResult = $input.first().json;\nconst buildData = $('Build Message').first().json;\n\nconst now = new Date();\n\n// Verificar si el envío fue exitoso\nconst sendSuccess = !sendResult.error && (sendResult.success || sendResult.status === 'success' || sendResult.statusCode === 200);\n\nif (!sendSuccess) {\n  console.error('❌ Envío de WhatsApp falló:', {\n    error: sendResult.error || 'Sin respuesta exitosa',\n    statusCode: sendResult.statusCode,\n    response: sendResult\n  });\n  \n  // NO actualizar CRM, en vez programar retry\n  return [{\n    json: {\n      _action: 'retry_scheduled',\n      _send_failed: true,\n      retry_at: new Date(now.getTime() + 5*60*1000).toISOString(),  // Retry en 5 minutos\n      retry_count: (buildData.retry_count || 0) + 1,\n      max_retries: 3,\n      Consulta_ID: buildData.Consulta_ID,\n      folio: buildData.folio,\n      to: buildData.to,\n      reminderType: buildData.reminderType,\n      error_detail: sendResult.error || 'Send failed',\n      _timestamp: now.toISOString()\n    }\n  }];\n}\n\n// Envío exitoso, proceder a actualizar CRM\nconsole.log('✅ Envío de WhatsApp exitoso:', {\n  Consulta_ID: buildData.Consulta_ID,\n  to: buildData.to,\n  reminderType: buildData.reminderType\n});\n\nreturn [{\n  json: {\n    _action: 'update_crm',\n    _send_success: true,\n    Consulta_ID: buildData.Consulta_ID,\n    consulta_uuid: buildData.consulta_uuid || buildData.id,\n    folio: buildData.folio,\n    updateColumn: buildData.updateColumn,\n    updateDateColumn: buildData.updateDateColumn,\n    reminderType: buildData.reminderType,\n    sent_at: now.toISOString(),\n    mensaje: buildData.body,\n    _timestamp: now.toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -272
+      ],
+      "id": "6c289e07-080e-4797-94e1-b93f59522636",
+      "name": "Validate Send Status"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * APPOINTMENT RESOLVER v2.0 - PRODUCTION\n * Resuelve UNA cita válida o falla con invariant_violation\n * - Assert de entrada por modo\n * - Estrategias por modo (immediate/reply)\n * - Control de ambigüedad\n */\n\nconst TZ = 'America/Mexico_City';\nconst FUTURE_WINDOW_DAYS = 14;\nconst PAST_GRACE_HOURS = 12;\nconst ACTIVE_STATES = new Set(['Programada', 'Confirmada', 'Reagendada']);\n\nconst user = $('Extract User Message')?.first?.()?.json ?? {};\nconst apps = $('CRM Sync Validator (Reply)')?.all?.()?.map(i => i.json) ?? [];\nconst mode = $('Detect Mode')?.first?.()?.json?.mode ?? 'reply';\n\nconst now = new Date();\nconst futureLimit = new Date(now.getTime() + FUTURE_WINDOW_DAYS * 24 * 3600 * 1000);\nconst pastLimit = new Date(now.getTime() - PAST_GRACE_HOURS * 3600 * 1000);\n\nconst normalizeMX10 = (raw) => {\n  if (!raw) return null;\n  let p = String(raw).replace(/\\D/g, '');\n  if (!p) return null;\n  return p.slice(-10).padStart(10, '0');\n};\n\nconst toISO = (v) => {\n  if (!v) return null;\n  const d = new Date(v);\n  return isNaN(d.getTime()) ? null : d.toISOString();\n};\n\nconst inWindow = (iso) => {\n  if (!iso) return false;\n  const d = new Date(iso);\n  return d >= pastLimit && d <= futureLimit;\n};\n\nconst reasons = [];\nconst phone10 = normalizeMX10(user?.userPhone || user?.userPhoneRaw);\nconst inputConsultaId = ($json?.Consulta_ID || user?.Consulta_ID || null);\n\n// Assert para modo immediate\nif (mode === 'immediate') {\n  if (!inputConsultaId) {\n    return [{\n      json: {\n        action: 'invariant_violation',\n        _severity: 'critical',\n        _meta: {\n          reason: 'missing_consulta_id_for_immediate',\n          mode,\n          phone10,\n          invariant: true\n        }\n      }\n    }];\n  }\n}\n\n// Assert para modo reply\nif (mode === 'reply') {\n  if (!phone10) {\n    return [{\n      json: {\n        action: 'invariant_violation',\n        _severity: 'critical',\n        _meta: {\n          reason: 'missing_phone_for_reply',\n          mode,\n          waMsgId: user?.userWaMsgId,\n          invariant: true\n        }\n      }\n    }];\n  }\n}\n\n// Normalizar appointments\nconst PHONE_FIELDS = ['Paciente_Telefono', 'Telefono', 'Celular', 'Phone'];\nconst norm = (apt) => {\n  const phoneField = PHONE_FIELDS.find(f => apt?.[f] != null);\n  const aptPhone10 = normalizeMX10(apt?.[phoneField]);\n  const startISO = toISO(apt?.Fecha_Hora_UTC);\n  const estado = apt?.EstadoCita || 'Desconocido';\n  return { apt, aptPhone10, startISO, estado };\n};\n\nconst mapped = apps.map(norm);\n\n// Filtrar solo activas y NO canceladas\nconst actives = mapped.filter(m => {\n  if (!ACTIVE_STATES.has(m.estado)) return false;\n  if (m.apt?.Cancelado_Por) return false;  // ← IMPORTANTE: excluir canceladas\n  return true;\n});\n\nlet candidates = [];\n\n// Estrategia por modo\nif (mode === 'immediate' && inputConsultaId) {\n  candidates = actives.filter(m => m.apt?.Consulta_ID === inputConsultaId);\n  if (!candidates.length) reasons.push('no_active_match_by_id');\n}\n\nif (mode === 'reply') {\n  const byPhone = actives.filter(m => m.aptPhone10 && m.aptPhone10 === phone10);\n  const byPhoneWindow = byPhone.filter(m => inWindow(m.startISO));\n  candidates = byPhoneWindow.length ? byPhoneWindow : byPhone;\n\n  if (!candidates.length) reasons.push('no_active_match_by_phone');\n}\n\n// Fallback: ventana sin phone (último recurso)\nif (!candidates.length) {\n  const byWindow = actives.filter(m => inWindow(m.startISO));\n  if (byWindow.length) {\n    candidates = byWindow;\n    reasons.push('fallback_window_without_phone');\n  }\n}\n\n// Resolver\nif (!candidates.length) {\n  return [{\n    json: {\n      action: 'invariant_violation',\n      _severity: 'critical',\n      _meta: {\n        reason: 'no_appointment_found',\n        reasons,\n        mode,\n        phone10,\n        inputConsultaId,\n        invariant: true\n      }\n    }\n  }];\n}\n\n// Ordenar por fecha más próxima\ncandidates.sort((a, b) => new Date(a.startISO) - new Date(b.startISO));\n\n// Ambigüedad: >1 candidato\nif (candidates.length > 1) {\n  return [{\n    json: {\n      action: 'invariant_violation',\n      _severity: 'critical',\n      _meta: {\n        reason: 'ambiguous_appointments',\n        count: candidates.length,\n        sample: candidates.slice(0, 3).map(c => ({\n          Consulta_ID: c.apt?.Consulta_ID,\n          startISO: c.startISO,\n          estado: c.estado\n        })),\n        mode,\n        phone10,\n        inputConsultaId,\n        invariant: true\n      }\n    }\n  }];\n}\n\n// Éxito: 1 cita\nconst selected = candidates[0].apt;\n\nconsole.log('✅ Cita resuelta:', {\n  Consulta_ID: selected.Consulta_ID,\n  estado: selected.EstadoCita,\n  fecha: selected.Fecha_Hora_UTC,\n  mode\n});\n\nreturn [{\n  json: {\n    action: 'appointment_resolved',\n    appointment: selected,\n    _meta: { reasons, mode, invariant: true, timestamp: new Date().toISOString() }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        112
+      ],
+      "id": "48834b63-ec75-4545-ac29-0a018f3ab6df",
+      "name": "Appointment Resolver"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Extract User Message').first().json.userMessage }}",
+        "options": {
+          "systemMessage": "Tu única tarea es clasificar mensajes de pacientes que responden a recordatorios de citas médicas.\n\nREGLAS ABSOLUTAS:\n1. Tu respuesta debe ser EXACTAMENTE una de estas 4 palabras: CONFIRMAR, REAGENDAR, CANCELAR, HUMANO\n2. NO escribas nada más. Solo la palabra de clasificación.\n3. NO uses puntuación, espacios, o explicaciones adicionales.\n4. Si tienes duda entre dos categorías, elige HUMANO.\n\nFECHA_ACTUAL: {{ $now.setZone('America/Mexico_City').toISO() }}\nDIA_HOY: {{ $today.setZone('America/Mexico_City').toFormat('dd/MM/yyyy') }}\nHORA_ACTUAL: {{ $now.setZone('America/Mexico_City').toFormat('HH:mm') }}\n\nCLASIFICACIONES:\n\nCONFIRMAR = El paciente confirma que SÍ va a asistir\nPalabras clave: sí, ok, perfecto, confirmado, ahí estaré, de acuerdo, vale, listo, claro\nEmojis: ✅ ✓ 👍 👌\n\nREAGENDAR = El paciente quiere cambiar fecha u hora\nPalabras clave: cambiar, mover, reagendar, otro día, otra hora, no puedo, ese día no\nFrases: \"¿puedo cambiarla?\", \"¿tienen otro horario?\", \"mejor el...\"\n\nCANCELAR = El paciente quiere cancelar definitivamente\nPalabras clave: cancelar, ya no, no voy, deseo cancelar, anular cita\nFrases: \"ya no puedo ir\", \"cancela por favor\", \"no asistiré\"\n\nHUMANO = Todo lo demás (preguntas, dudas, saludos, mensajes confusos)\nIncluye: preguntas sobre precio, ubicación, requisitos, documentos, o cualquier cosa que necesite atención humana\n\nRECORDATORIO FINAL:\nResponde ÚNICAMENTE con una palabra: CONFIRMAR, REAGENDAR, CANCELAR, o HUMANO"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        112
+      ],
+      "id": "0ce34238-81b7-4e67-961e-36060e22a4d7",
+      "name": "Classify Intent (Agent)"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        336
+      ],
+      "id": "1bbb24bd-4c78-4e9f-9ea8-2db52c080f3f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xlzbIxHOowfqL2yj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * PARSE INTENT v3.0 - PRODUCTION\n * - Acepta salida del agente (string o JSON)\n * - Mapea HUMANO\n * - Selección robusta de cita\n * - Idempotencia: evita reconfirmar/recancelar\n * - Control de versión para evitar race conditions\n */\n\nconst TZ = 'America/Mexico_City';\nconst INTENT_FALLBACK = 'HUMANO';\nconst CONF_THRESHOLD = 0.6;\n\nconst firstDefined = (...arr) => arr.find(v => v !== undefined && v !== null && v !== '');\n\nfunction parseAgentIntent(rawOut) {\n  let label = '';\n  let confidence = null;\n  if (!rawOut) return { label: INTENT_FALLBACK, confidence: null, reason: 'no_output' };\n\n  if (typeof rawOut === 'string') {\n    label = rawOut.trim().toUpperCase();\n  } else if (typeof rawOut === 'object') {\n    label = String(rawOut.label || rawOut.output || '').trim().toUpperCase();\n    confidence = Number(rawOut.confidence ?? rawOut.score ?? NaN);\n    if (Number.isNaN(confidence)) confidence = null;\n  }\n\n  const allowed = new Set(['CONFIRMAR', 'REAGENDAR', 'CANCELAR', 'HUMANO']);\n  if (!allowed.has(label)) label = INTENT_FALLBACK;\n\n  if (confidence !== null && confidence < CONF_THRESHOLD) {\n    return { label: INTENT_FALLBACK, confidence, reason: 'low_confidence' };\n  }\n\n  return { label, confidence, reason: 'ok' };\n}\n\nfunction idempotencyAction(intent, apt) {\n  const estado = apt?.EstadoCita || '';\n  \n  // Control de versión: verificar última actualización\n  if (apt?.Updated_At) {\n    const lastUpdate = new Date(apt.Updated_At);\n    const now = new Date();\n    if ((now - lastUpdate) < 5000) {  // Menos de 5 segundos\n      return 'rate_limited';\n    }\n  }\n  \n  if (intent === 'CONFIRMAR') {\n    if (estado === 'Confirmada') return 'already_confirmed_reply';\n    if (apt?.Cancelado_Por) return 'cannot_confirm_cancelled';\n    return 'confirm_appointment';\n  }\n  \n  if (intent === 'CANCELAR') {\n    if (estado === 'Cancelada' || apt?.Cancelado_Por) return 'already_cancelled_reply';\n    return 'cancel_appointment';\n  }\n  \n  if (intent === 'REAGENDAR') {\n    if (estado === 'Cancelada' || apt?.Cancelado_Por) return 'cannot_reschedule_cancelled';\n    return 'reschedule_appointment';\n  }\n  \n  return 'forward_to_human';\n}\n\nconst selfInput = $input?.first?.()?.json ?? {};\nconst agentRaw = selfInput?.output ?? selfInput?.label ?? selfInput;\nconst userData = $('Extract User Message')?.first?.()?.json ?? {};\nconst resolverData = $('Appointment Resolver')?.first?.()?.json ?? {};\n\nconst parsed = parseAgentIntent(agentRaw);\nconst intent = parsed.label;\n\nconst userMessage = (userData?.userMessage || '').toString();\nconst userName = userData?.userName || null;\nconst userPhone = userData?.userPhone || null;\nconst userPhoneClean = userData?.userPhoneClean || null;\n\nlet reasons = [parsed.reason];\nlet selectedApt = null;\n\n// Obtener cita del Resolver\nif (resolverData.action === 'appointment_resolved') {\n  selectedApt = resolverData.appointment;\n  reasons = reasons.concat(resolverData._meta?.reasons || []);\n} else if (resolverData.action === 'invariant_violation') {\n  // No hay cita válida\n  const outNo = {\n    intent,\n    action: 'reply_no_appointment',\n    userMessage,\n    userPhone,\n    userName,\n    appointment: null,\n    _meta: {\n      confidence: parsed.confidence,\n      reasons: reasons.concat(['invariant_violation', resolverData._meta?.reason || 'unknown']),\n      timezone: TZ,\n      timestamp: new Date().toISOString()\n    }\n  };\n  return [{ json: outNo }];\n}\n\nif (!selectedApt && intent !== 'HUMANO') {\n  const outNo = {\n    intent,\n    action: 'reply_no_appointment',\n    userMessage,\n    userPhone,\n    userName,\n    appointment: null,\n    _meta: {\n      confidence: parsed.confidence,\n      reasons: reasons.concat(['no_appointment_for_action']),\n      timezone: TZ,\n      timestamp: new Date().toISOString()\n    }\n  };\n  return [{ json: outNo }];\n}\n\nlet action = 'forward_to_human';\nlet updateData = undefined;\nlet rescheduleData = undefined;\n\nif (intent === 'HUMANO') {\n  action = 'forward_to_human';\n} else {\n  action = idempotencyAction(intent, selectedApt);\n\n  if (action === 'confirm_appointment') {\n    updateData = {\n      Consulta_ID: selectedApt?.Consulta_ID,\n      EstadoCita: 'Confirmada',\n      Confirmado_Paciente: 'SI',\n      Fecha_Confirmacion: new Date().toISOString(),\n      Updated_At: new Date().toISOString(),\n      Updated_By: 'Sistema_WhatsApp'\n    };\n  } else if (action === 'cancel_appointment') {\n    updateData = {\n      Consulta_ID: selectedApt?.Consulta_ID,\n      EstadoCita: 'Cancelada',\n      Cancelado_Por: 'Paciente',\n      Motivo_Cancelacion: 'Solicitud vía WhatsApp',\n      Updated_At: new Date().toISOString(),\n      Updated_By: 'Sistema_WhatsApp'\n    };\n  } else if (action === 'reschedule_appointment') {\n    rescheduleData = {\n      telefono: (userPhoneClean || '').slice(-10),\n      consultaId: selectedApt?.Consulta_ID,\n      reason: 'Solicitud de paciente vía WhatsApp'\n    };\n  }\n}\n\nconst output = {\n  intent,\n  action,\n  userMessage,\n  userPhone,\n  userPhoneClean,\n  userName,\n  appointment: selectedApt || null,\n  updateData,\n  rescheduleData,\n  _meta: {\n    confidence: parsed.confidence,\n    reasons,\n    timezone: TZ,\n    timestamp: new Date().toISOString()\n  }\n};\n\nconsole.log('🎯 ACCIÓN DETERMINADA:', {\n  intent,\n  action,\n  Consulta_ID: selectedApt?.Consulta_ID || 'N/A'\n});\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        112
+      ],
+      "id": "96943c72-6f36-4d4b-bb83-3c3cecb08359",
+      "name": "Parse Intent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "confirm_appointment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "CONFIRMAR"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "reschedule_appointment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "REAGENDAR"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "cancel_appointment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "CANCELAR"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1632,
+        80
+      ],
+      "id": "782c68ed-6ad7-4af0-bfde-c2de428dbb7f",
+      "name": "Route by Action"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * PREPARE CRM UPDATE v2.0 - PRODUCTION\n * Prepara datos para actualización con control de versión\n */\n\nconst parseData = $('Parse Intent').first().json;\n\nif (!parseData.updateData) {\n  throw new Error('NO_UPDATE_DATA');\n}\n\nconst updateData = parseData.updateData;\nconst appointment = parseData.appointment;\n\nconsole.log('📋 Preparando actualización CRM:');\nconsole.log(`   Consulta_ID: ${updateData.Consulta_ID}`);\nconsole.log(`   EstadoCita: ${updateData.EstadoCita}`);\nconsole.log(`   Updated_By: ${updateData.Updated_By}`);\n\nreturn [{\n  json: {\n    ...appointment,\n    ...updateData,\n    _update_type: 'confirmation',\n    _timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -224
+      ],
+      "id": "09fcca21-baa2-4593-9b00-45cb5048957c",
+      "name": "Prepare CRM Update (Confirm)"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "PVMah1xv97jaXawm",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/PVMah1xv97jaXawm",
+          "cachedResultName": "REAGENDAR_CONSULTA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $json.rescheduleData.telefono }}",
+            "consultaId": "={{ $json.rescheduleData.consultaId }}",
+            "reason": "={{ $json.rescheduleData.reason }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2080,
+        -32
+      ],
+      "id": "858f6b2c-0ce8-478f-9694-be1cd57a7d55",
+      "name": "Call REAGENDAR_CONSULTA"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * PREPARE CRM UPDATE v2.0 - PRODUCTION (Cancelación)\n * Prepara datos para cancelación con sincronización a Calendar\n */\n\nconst parseData = $('Parse Intent').first().json;\n\nif (!parseData.updateData) {\n  throw new Error('NO_UPDATE_DATA');\n}\n\nconst updateData = parseData.updateData;\nconst appointment = parseData.appointment;\n\nconsole.log('📋 Preparando cancelación en CRM:');\nconsole.log(`   Consulta_ID: ${updateData.Consulta_ID}`);\nconsole.log(`   Cancelado_Por: ${updateData.Cancelado_Por}`);\nconsole.log(`   Calendar_Event_ID: ${appointment?.Calendar_Event_ID || 'N/A'}`);\n\nreturn [{\n  json: {\n    ...appointment,\n    ...updateData,\n    _update_type: 'cancellation',\n    _needs_calendar_sync: !!appointment?.Calendar_Event_ID,\n    _timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        176
+      ],
+      "id": "285a57f3-7d90-48e4-83f1-942a20cca460",
+      "name": "Prepare CRM Update (Cancel)"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YRms68urnyKHe3Y7",
+          "mode": "list",
+          "cachedResultName": "ESCALAR_A_HUMANO"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $json.userPhone.replace(/\\D/g, '').slice(-10) }}",
+            "nombrePaciente": "={{ $json.userName }}",
+            "motivo": "consulta_sobre_cita",
+            "contexto": "=El paciente respondió al recordatorio con: {{ $json.userMessage }}",
+            "prioridad": "normal"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2080,
+        368
+      ],
+      "id": "9d306853-eb19-4c62-907a-ab1b5d17395b",
+      "name": "Escalar a Humano"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * BUILD REPLY MESSAGE v2.0 - PRODUCTION\n * Construye respuesta contextual según acción\n */\n\nconst intent = $('Parse Intent').first().json;\nconst action = intent.action;\nconst userName = (intent.userName || '').split(' ')[0] || 'Paciente';\n\nconst messages = {\n  confirm_appointment: `¡Gracias ${userName}! ✅\\n\\nTu asistencia ha sido confirmada. Te esperamos en tu cita.\\n\\nSi surge algo, no dudes en contactarnos.`,\n  \n  cancel_appointment: `${userName}, tu cita ha sido cancelada. 😔\\n\\nSi cambias de opinión o necesitas reagendar, estamos disponibles para ayudarte.`,\n  \n  reschedule_appointment: `Entiendo ${userName}, te ayudaré a reagendar. 📅\\n\\nMónica de nuestro equipo se pondrá en contacto contigo pronto para coordinar una nueva fecha.`,\n  \n  forward_to_human: `Gracias por tu mensaje ${userName}. 💬\\n\\nMónica de nuestro equipo se comunicará contigo para atenderte personalmente.`,\n  \n  reply_no_appointment: `Hola ${userName}. 👋\\n\\nNo encontramos una cita activa a tu nombre. Si deseas agendar una consulta, responde este mensaje y te ayudamos.`,\n  \n  already_confirmed_reply: `Hola ${userName}, tu cita ya está confirmada. ✅\\n\\nNos vemos pronto.`,\n  \n  already_cancelled_reply: `Hola ${userName}, esta cita ya fue cancelada anteriormente.\\n\\nSi deseas agendar una nueva, contáctanos.`,\n  \n  cannot_confirm_cancelled: `Hola ${userName}, no podemos confirmar una cita cancelada.\\n\\nSi deseas agendar una nueva, contáctanos.`,\n  \n  cannot_reschedule_cancelled: `Hola ${userName}, esta cita fue cancelada.\\n\\nPara agendar una nueva, responde este mensaje.`,\n  \n  rate_limited: `Hola ${userName}, estamos procesando tu solicitud anterior.\\n\\nPor favor espera un momento.`\n};\n\nconst text = messages[action] || messages.forward_to_human;\nconst userPhone = intent.userPhone;\n\nreturn [{\n  json: {\n    to: userPhone,\n    text,\n    action,\n    Consulta_ID: intent.appointment?.Consulta_ID || null,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        80
+      ],
+      "id": "ebdc639a-f271-40d4-99bc-562b6ddbeaf4",
+      "name": "Build Reply Message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": {{ JSON.stringify($json.to) }},\n  \"text\": {{ JSON.stringify($json.text) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2528,
+        80
+      ],
+      "id": "4a2be4cd-1d10-49f4-8aff-0bef92f2fb8b",
+      "name": "Send Reply",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "J0Kap8PdAddWNu3l",
+          "name": "Header Auth account 2"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1mtWYTn7URXD2RTSe9Zgesv-bl8QBxW2u4wvCjczKnkI",
+          "mode": "list",
+          "cachedResultName": "CRM_UROBOT"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=1",
+          "mode": "list",
+          "cachedResultName": "SYNC_LOG"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "consulta_id": "={{ $json.Consulta_ID }}",
+            "mode": "reply",
+            "action": "={{ $json.action }}",
+            "intent": "={{ $('Parse Intent').first().json.intent }}",
+            "crm_updated": "={{ $json.action.includes('confirm') || $json.action.includes('cancel') ? 'true' : 'false' }}",
+            "whatsapp_sent": "true",
+            "calendar_synced": "={{ $json.action === 'cancel_appointment' ? 'true' : 'false' }}",
+            "status": "success"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        2752,
+        80
+      ],
+      "id": "ba34e0fa-6fba-4e87-855c-e98bff828a90",
+      "name": "Log Reply Sync Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fxF1uvgAz2e5iwH2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "consultas",
+        "filterType": "string",
+        "filterString": "=id.eq.{{ $json.consulta_uuid || $json.id }}&consulta_id.eq.{{ $json.Consulta_ID }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        176
+      ],
+      "id": "3cfd234c-e5d7-4ebd-82ce-c23393718536",
+      "name": "Update CRM (Cancelado)1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Uq22EkraEAEoR2CQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "consultas",
+        "filterType": "string",
+        "filterString": "=id.eq.{{ $json.consulta_uuid || $json.id }}&consulta_id.eq.{{ $json.Consulta_ID }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -272
+      ],
+      "id": "b245c23e-eed2-42de-95a1-785e7c3b5139",
+      "name": "Update CRM (Enviado)1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Uq22EkraEAEoR2CQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "consultas",
+        "returnAll": true,
+        "filterType": "=string",
+        "filterString": "=fecha_hora_utc.gte.{{$json.now}}&fecha_hora_utc.lte.{{$json.searchUntil}}&estado_cita.in.(Programada,Confirmada,Reagendada)&cancelado_por.is.null"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -80
+      ],
+      "id": "249b3e84-de53-4cd9-ba6c-bd1548123a07",
+      "name": "Buscar Consultas Pendientes de Recordatorio",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Uq22EkraEAEoR2CQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "consultas",
+        "filterType": "string",
+        "filterString": "=id.eq.{{ $json.consulta_uuid || $json.id }}&consulta_id.eq.{{ $json.Consulta_ID }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        -224
+      ],
+      "id": "d5a63203-082d-489d-a807-3bc4c69e669b",
+      "name": "Marcar Cita como Confirmada en Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Uq22EkraEAEoR2CQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "pacientes",
+        "returnAll": true,
+        "filterType": "=string",
+        "filterString": "=telefono.eq.{{$node[\"Extract User Message\"].json.userPhone}}&estado.eq.Activo"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        112
+      ],
+      "id": "e429f5ed-ff94-46ba-88f9-1d333c4ce5fe",
+      "name": "PACIENTES — Buscar por Teléfono",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Uq22EkraEAEoR2CQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "consultas",
+        "returnAll": true,
+        "filterType": "=string",
+        "filterString": "=paciente_id.eq.{{$json.id}}&fecha_hora_utc.gte.{{$now.toISO()}}&estado_cita.in.(Programada,Confirmada,Reagendada)&cancelado_por.is.null"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        160,
+        112
+      ],
+      "id": "2e857f73-f3f7-4722-a824-67c74c3241f1",
+      "name": "CONSULTAS — Activas por Paciente",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Uq22EkraEAEoR2CQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "Consulta_ID",
+              "value": "={{$json.consulta_id}}"
+            },
+            {
+              "name": "EstadoCita",
+              "value": "={{$json.estado_cita}}"
+            },
+            {
+              "name": "Fecha_Hora_UTC",
+              "value": "={{$json.fecha_hora_utc}}"
+            },
+            {
+              "name": "Paciente_Telefono",
+              "value": "={{$node['Extract User Message'].json.userPhone}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        384,
+        112
+      ],
+      "id": "580910bc-3264-4fce-853c-180efa0ee28f",
+      "name": "Map Campos (consultas → CamelCase)"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e257a96a-f46a-4a68-b7b7-79f3dadfbe2b",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -960,
+        -176
+      ],
+      "id": "44a11741-c724-4691-b441-e8c5fd081d13",
+      "name": "Webhook respuesta usuario",
+      "webhookId": "e257a96a-f46a-4a68-b7b7-79f3dadfbe2b",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "J0Kap8PdAddWNu3l",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "recordatorios",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "recordatorio_id",
+              "fieldValue": "={{ $json.Consulta_ID || 'UNKNOWN' }}_{{ $json.reminderType || 'initial' }}_{{ $now.toUnixInteger() }}"
+            },
+            {
+              "fieldId": "consulta_id",
+              "fieldValue": "={{$json.Consulta_ID || $json.id }}\n"
+            },
+            {
+              "fieldId": "tipo",
+              "fieldValue": "={{ $json.reminderType === 'initial' ? 'confirmacion_inicial' : ($json.reminderType === '48h' ? 'recordatorio_48h' : ($json.reminderType === '24h' ? 'recordatorio_24h' : ($json.reminderType === '3h' ? 'recordatorio_3h' : 'confirmacion_inicial'))) }}\n"
+            },
+            {
+              "fieldId": "programado_para",
+              "fieldValue": "={{ $json.sent_at || $now.toISO() }}\n"
+            },
+            {
+              "fieldId": "enviado_en",
+              "fieldValue": "={{ $now.toISO() }}"
+            },
+            {
+              "fieldId": "estado",
+              "fieldValue": "enviado"
+            },
+            {
+              "fieldId": "mensaje_enviado",
+              "fieldValue": "={{ $json.mensaje || $('Build Message').first()?.json?.body || 'No message' }}\n"
+            },
+            {
+              "fieldId": "plantilla_usada",
+              "fieldValue": "CONFIRMACION_V3"
+            },
+            {
+              "fieldId": "canal",
+              "fieldValue": "whatsapp"
+            },
+            {
+              "fieldId": "entregado",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "leido",
+              "fieldValue": "false"
+            },
+            {
+              "fieldId": "respondido",
+              "fieldValue": "false"
+            },
+            {
+              "fieldId": "intentos",
+              "fieldValue": "1"
+            },
+            {
+              "fieldId": "error_mensaje",
+              "fieldValue": "null"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            },
+            {
+              "fieldId": "updated_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -464
+      ],
+      "id": "9357748b-f563-4b7d-9ae4-f2f206f3826c",
+      "name": "Registrar en Tabla Recordatorios",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Uq22EkraEAEoR2CQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * BUSINESS HOURS VALIDATOR v1.0 - PRODUCTION\n * Valida horarios de negocio y programa reintentos\n */\n\nconst timeWindows = $('Calculate Time Windows').first().json;\nconst now = new Date();\nconst timezone = 'America/Mexico_City';\n\n// Si no estamos en horario de negocio, programar para próximo horario\nif (!timeWindows.isBusinessHour) {\n  let nextBusinessHour;\n  \n  if (timeWindows.currentHour < 8) {\n    // Antes de las 8AM, programar para las 8AM\n    nextBusinessHour = new Date();\n    nextBusinessHour.setHours(8, 0, 0, 0);\n  } else {\n    // Después de las 8PM, programar para las 8AM del siguiente día\n    nextBusinessHour = new Date();\n    nextBusinessHour.setDate(nextBusinessHour.getDate() + 1);\n    nextBusinessHour.setHours(8, 0, 0, 0);\n  }\n  \n  console.log('⏰ Enviando fuera de horario de negocio:', {\n    currentHour: timeWindows.currentHour,\n    scheduledFor: nextBusinessHour.toISOString(),\n    message: 'Recordatorio programado para próximo horario de negocio'\n  });\n  \n  return [{\n    json: {\n      action: 'schedule_for_business_hours',\n      scheduled_for: nextBusinessHour.toISOString(),\n      current_hour: timeWindows.currentHour,\n      reason: 'outside_business_hours',\n      _timestamp: now.toISOString()\n    }\n  }];\n}\n\n// Dentro de horario de negocio, continuar normalmente\nreturn [{\n  json: {\n    action: 'proceed_immediate',\n    validated_at: now.toISOString(),\n    business_hour_check: 'passed'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -80
+      ],
+      "id": "38e33be0-5268-44aa-92b1-98fd50bb0f77",
+      "name": "Business Hours Validator"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._send_success }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SUCCESS"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._send_failed }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "FAILED"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        832,
+        -272
+      ],
+      "id": "8bf6a356-587c-472a-92ef-72594e4d78d3",
+      "name": "Route by Send Status"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "Consulta_ID": "Sctzvca",
+          "Paciente_ID": "3086bc54",
+          "Paciente_Telefono": "6673184624",
+          "Paciente_Nombre": "Fausto Medina",
+          "Sede": "Polanco",
+          "startISO": "2025-10-13T10:00:00-06:00",
+          "timezone": "America/Mexico_City",
+          "Calendar_Event_ID": "fu62qg4culs7hmpsrdf9mrgbe8",
+          "Plantilla_Usada": "CONFIRMACION_INICIAL_V1",
+          "Canal": "WhatsApp",
+          "delay_seconds": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger (8AM & 2PM)": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Triggers": {
+      "main": [
+        [
+          {
+            "node": "Detect Mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Mode": {
+      "main": [
+        [
+          {
+            "node": "Validate Single Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculate Time Windows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract User Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Single Input": {
+      "main": [
+        [
+          {
+            "node": "Filter & Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Time Windows": {
+      "main": [
+        [
+          {
+            "node": "Business Hours Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Sync Validator (Batch)": {
+      "main": [
+        [
+          {
+            "node": "Filter & Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract User Message": {
+      "main": [
+        [
+          {
+            "node": "PACIENTES — Buscar por Teléfono",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Sync Validator (Reply)": {
+      "main": [
+        [
+          {
+            "node": "Appointment Resolver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Appointment Resolver": {
+      "main": [
+        [
+          {
+            "node": "Classify Intent (Agent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Intent (Agent)": {
+      "main": [
+        [
+          {
+            "node": "Parse Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Intent (Agent)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Intent": {
+      "main": [
+        [
+          {
+            "node": "Route by Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Action": {
+      "main": [
+        [
+          {
+            "node": "Prepare CRM Update (Confirm)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call REAGENDAR_CONSULTA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare CRM Update (Cancel)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escalar a Humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare CRM Update (Confirm)": {
+      "main": [
+        [
+          {
+            "node": "Marcar Cita como Confirmada en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call REAGENDAR_CONSULTA": {
+      "main": [
+        [
+          {
+            "node": "Build Reply Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare CRM Update (Cancel)": {
+      "main": [
+        [
+          {
+            "node": "Update CRM (Cancelado)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalar a Humano": {
+      "main": [
+        [
+          {
+            "node": "Build Reply Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Reply Message": {
+      "main": [
+        [
+          {
+            "node": "Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reply": {
+      "main": [
+        [
+          {
+            "node": "Log Reply Sync Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter & Prepare": {
+      "main": [
+        [
+          {
+            "node": "Build Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Message": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Validate Send Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Send Status": {
+      "main": [
+        [
+          {
+            "node": "Route by Send Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Send Status": {
+      "main": [
+        [
+          {
+            "node": "Update CRM (Enviado)1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar en Tabla Recordatorios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Cita como Confirmada en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Build Reply Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PACIENTES — Buscar por Teléfono": {
+      "main": [
+        [
+          {
+            "node": "CONSULTAS — Activas por Paciente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CONSULTAS — Activas por Paciente": {
+      "main": [
+        [
+          {
+            "node": "Map Campos (consultas → CamelCase)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Campos (consultas → CamelCase)": {
+      "main": [
+        [
+          {
+            "node": "CRM Sync Validator (Reply)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook respuesta usuario": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Business Hours Validator": {
+      "main": [
+        [
+          {
+            "node": "Buscar Consultas Pendientes de Recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "adJvsIQtBnYwjl9M"
+  },
+  "versionId": "e8068bd0-7330-4d88-94ee-88ce169be826",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab2739af75c0bf0ee034fd37e78576df139d0a4fcd48adc710d9ceec11fc12c5"
+  },
+  "id": "wb69cZp9LvWaymmh",
+  "tags": []
+}

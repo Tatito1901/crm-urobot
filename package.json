@@ -15,6 +15,8 @@
     "@schedule-x/events-service": "^3.3.0",
     "@schedule-x/react": "^3.3.0",
     "@schedule-x/theme-default": "^3.3.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.78.0",
     "date-fns": "^4.1.0",
     "next": "15.5.5",
     "react": "19.1.0",

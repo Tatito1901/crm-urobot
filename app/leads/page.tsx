@@ -4,17 +4,22 @@ import { useMemo, useState } from 'react';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/app/components/ui/card';
-import { mockData, STATE_COLORS, formatDate, Lead } from '@/app/lib/crm-data';
+import { STATE_COLORS, formatDate, Lead } from '@/app/lib/crm-data';
+import { useLeads } from '@/hooks/useLeads';
 
 export default function LeadsPage() {
   const [search, setSearch] = useState('');
+  
+  // ✅ Datos reales de Supabase con real-time
+  const { leads, loading, error } = useLeads();
+  
   const filteredLeads = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return mockData.leads;
-    return mockData.leads.filter((lead) =>
+    if (!term) return leads;
+    return leads.filter((lead) =>
       [lead.nombre, lead.telefono, lead.fuente].some((field) => field.toLowerCase().includes(term)),
     );
-  }, [search]);
+  }, [search, leads]);
 
   return (
     <PageShell
@@ -44,8 +49,15 @@ export default function LeadsPage() {
     >
       <Card className="bg-white/[0.03]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base text-white">Listado de leads</CardTitle>
-          <CardDescription>Todas las etapas del funnel en un solo lugar</CardDescription>
+          <CardTitle className="text-base text-white">
+            Listado de leads {loading && '(cargando...)'}
+          </CardTitle>
+          <CardDescription>
+            {error 
+              ? `Error: ${error.message}` 
+              : 'Todas las etapas del funnel en un solo lugar · Datos en tiempo real'
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent className="overflow-hidden pt-0">
           <DataTable

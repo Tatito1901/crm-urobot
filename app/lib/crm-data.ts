@@ -1,5 +1,3 @@
-import type { Database } from "@/types/database";
-
 export type TabKey = "leads" | "pacientes" | "consultas" | "confirmaciones" | "metricas";
 
 export type Lead = {
@@ -22,14 +20,26 @@ export type Paciente = {
 };
 
 export type Consulta = {
-  id: string;
-  paciente: string;
+  id: string; // consulta_id
+  uuid: string; // id (uuid real)
+  paciente: string; // nombre del paciente (join)
+  pacienteId: string | null; // paciente_id (FK)
   sede: "POLANCO" | "SATELITE";
-  tipo: "Primera vez" | "Seguimiento";
-  estado: "Programada" | "Confirmada" | "Reagendada" | "Cancelada";
-  fecha: string;
-  timezone: string;
-  calendarLink: string;
+  tipo: string; // tipo_cita (primera_vez | seguimiento)
+  estado: "Programada" | "Confirmada" | "Reagendada" | "Cancelada" | "Completada"; // estado_cita
+  estadoConfirmacion: string; // estado_confirmacion
+  confirmadoPaciente: boolean; // confirmado_paciente
+  fecha: string; // fecha_hora_utc (ISO timestamp)
+  fechaConsulta: string; // fecha_consulta (date)
+  horaConsulta: string; // hora_consulta (time)
+  timezone: string; // timezone
+  motivoConsulta: string | null; // motivo_consulta
+  duracionMinutos: number; // duracion_minutos
+  calendarEventId: string | null; // calendar_event_id
+  calendarLink: string | null; // calendar_link
+  canalOrigen: string | null; // canal_origen
+  createdAt: string; // created_at
+  updatedAt: string; // updated_at
 };
 
 export type Recordatorio = {
@@ -40,16 +50,6 @@ export type Recordatorio = {
   tipo: "confirmacion_inicial" | "48h" | "24h" | "3h";
   estado: "pendiente" | "enviado" | "error";
   canal: "whatsapp" | "sms" | "email";
-};
-
-export type DashboardMetricas = Database["public"]["Views"]["dashboard_metricas"]["Row"];
-
-export type CRMState = {
-  leads: Lead[];
-  pacientes: Paciente[];
-  consultas: Consulta[];
-  recordatorios: Recordatorio[];
-  dashboardMetricas: DashboardMetricas;
 };
 
 export const STATE_COLORS: Record<string, string> = {
@@ -122,154 +122,3 @@ export function formatTimeSlot(date: string, timeZone: string) {
   }).format(new Date(date));
 }
 
-const MOCK_METRICAS: DashboardMetricas = {
-  leads_mes: 42,
-  leads_convertidos: 18,
-  leads_totales: 368,
-  total_pacientes: 214,
-  pacientes_activos: 167,
-  consultas_futuras: 34,
-  consultas_hoy: 6,
-  pendientes_confirmacion: 9,
-  polanco_futuras: 18,
-  satelite_futuras: 16,
-  tasa_conversion_pct: 43,
-};
-
-export const mockData: CRMState = {
-  leads: [
-    {
-      id: "L-1001",
-      nombre: "Juan Pérez",
-      telefono: "+52 55 1111 2222",
-      estado: "Nuevo",
-      primerContacto: "2025-10-01T12:44:00Z",
-      fuente: "WhatsApp",
-    },
-    {
-      id: "L-1002",
-      nombre: "Ana López",
-      telefono: "+52 55 1234 5678",
-      estado: "Convertido",
-      primerContacto: "2025-10-05T13:00:00Z",
-      fuente: "Google Ads",
-    },
-    {
-      id: "L-1003",
-      nombre: "María Torres",
-      telefono: "+52 55 9999 8888",
-      estado: "En seguimiento",
-      primerContacto: "2025-10-09T10:15:00Z",
-      fuente: "Instagram",
-    },
-    {
-      id: "L-1004",
-      nombre: "Carlos Ruiz",
-      telefono: "+52 55 2222 4444",
-      estado: "Nuevo",
-      primerContacto: "2025-10-10T11:20:00Z",
-      fuente: "Sitio Web",
-    },
-  ],
-  pacientes: [
-    {
-      id: "P-1001",
-      nombre: "Ana López",
-      telefono: "+52 55 1234 5678",
-      email: "ana@mail.com",
-      totalConsultas: 1,
-      ultimaConsulta: "2025-10-05T13:00:00Z",
-      estado: "Activo",
-    },
-    {
-      id: "P-1002",
-      nombre: "Luis Gómez",
-      telefono: "+52 55 4444 3333",
-      email: "luis@mail.com",
-      totalConsultas: 0,
-      ultimaConsulta: null,
-      estado: "Activo",
-    },
-    {
-      id: "P-1003",
-      nombre: "María Torres",
-      telefono: "+52 55 9999 8888",
-      email: "maria@mail.com",
-      totalConsultas: 2,
-      ultimaConsulta: "2025-09-25T17:30:00Z",
-      estado: "Activo",
-    },
-  ],
-  consultas: [
-    {
-      id: "C-1001",
-      paciente: "Ana López",
-      sede: "POLANCO",
-      tipo: "Primera vez",
-      estado: "Programada",
-      fecha: "2025-10-20T11:00:00-06:00",
-      timezone: "America/Mexico_City",
-      calendarLink: "https://calendar.google.com/event?eid=abc",
-    },
-    {
-      id: "C-1002",
-      paciente: "Luis Gómez",
-      sede: "SATELITE",
-      tipo: "Seguimiento",
-      estado: "Confirmada",
-      fecha: "2025-10-20T20:30:00-06:00",
-      timezone: "America/Mexico_City",
-      calendarLink: "https://calendar.google.com/event?eid=def",
-    },
-    {
-      id: "C-1003",
-      paciente: "María Torres",
-      sede: "POLANCO",
-      tipo: "Seguimiento",
-      estado: "Reagendada",
-      fecha: "2025-10-22T09:00:00-06:00",
-      timezone: "America/Mexico_City",
-      calendarLink: "https://calendar.google.com/event?eid=ghi",
-    },
-    {
-      id: "C-1004",
-      paciente: "Carlos Ruiz",
-      sede: "SATELITE",
-      tipo: "Primera vez",
-      estado: "Cancelada",
-      fecha: "2025-10-15T15:00:00-06:00",
-      timezone: "America/Mexico_City",
-      calendarLink: "https://calendar.google.com/event?eid=jkl",
-    },
-  ],
-  recordatorios: [
-    {
-      id: "R-1001",
-      consultaId: "C-1001",
-      paciente: "Ana López",
-      programado: "2025-10-18T11:00:00-06:00",
-      tipo: "confirmacion_inicial",
-      estado: "pendiente",
-      canal: "whatsapp",
-    },
-    {
-      id: "R-1002",
-      consultaId: "C-1002",
-      paciente: "Luis Gómez",
-      programado: "2025-10-19T20:30:00-06:00",
-      tipo: "24h",
-      estado: "enviado",
-      canal: "whatsapp",
-    },
-    {
-      id: "R-1003",
-      consultaId: "C-1003",
-      paciente: "María Torres",
-      programado: "2025-10-21T09:00:00-06:00",
-      tipo: "48h",
-      estado: "pendiente",
-      canal: "sms",
-    },
-  ],
-  dashboardMetricas: MOCK_METRICAS,
-};

@@ -12,9 +12,12 @@ export function GrowthChart({ title, data, maxValue }: GrowthChartProps) {
   if (data.length === 0) return null;
 
   const max = maxValue ?? Math.max(...data.map((d) => d.value));
+  const safeMax = max > 0 ? max : 1;
+  const divisor = data.length > 1 ? data.length - 1 : 1;
+
   const points = data.map((item, index) => {
-    const x = (index / (data.length - 1)) * 100;
-    const y = HEIGHT - (item.value / max) * HEIGHT;
+    const x = (index / divisor) * 100;
+    const y = HEIGHT - (item.value / safeMax) * HEIGHT;
     return { x, y };
   });
 

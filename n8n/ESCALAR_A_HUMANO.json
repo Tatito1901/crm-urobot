@@ -1,0 +1,187 @@
+{
+  "name": "ESCALAR_A_HUMANO",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "/**\n * Process Escalation – v20.0 FINAL\n * - Mensaje detallado para Monica con contexto completo\n * - Mensaje corto y personalizado para el paciente\n * - Limpieza y formato integrados (sin nodo adicional)\n * - Detección mejorada de frustración y contexto\n * - Salida optimizada para LLM y notificación por WhatsApp\n */\n\n// ===================== CONFIG =====================\nconst CONFIG = Object.freeze({\n  ASSISTANT_MX10_LIST: ['5663859124'], // numeros MX10 sin prefijos\n  COUNTRY_CODE: '52',\n  DOCTOR_DISPLAY_NAME: 'Dr. Mario Martinez Thomas',\n  ASSISTANT_NAME: 'Monica',\n  WA_ENDPOINT: 'https://wasenderapi.com/api/send-message',\n  MAX_ASSISTANT_MSG_LEN: 1500,\n  MAX_CONTEXT_MSGS: 6\n});\n\nconst MOTIVO_LABELS = Object.freeze({\n  hablar_con_persona: 'Solicita hablar con una persona',\n  informacion_adicional: 'Pide informacion adicional',\n  facturacion: 'Solicitud de facturacion',\n  programar_cirugia: 'Programacion de cirugia',\n  dudas_costos: 'Consulta sobre costos y precios',\n  quiere_llamada: 'Solicita ser contactado por llamada',\n  otro: 'Otro motivo'\n});\n\n// ===================== UTILIDADES BASICAS =====================\nfunction cleanStr(s) {\n  return String(s ?? '').trim().replace(/^=/, '');\n}\n\nfunction sanitizeASCII(text) {\n  return String(text || '')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^\\x00-\\x7F]/g, ' ')\n    .replace(/[\\u0000-\\u001F]+/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction ensurePlainText(s) {\n  return String(s || '')\n    .replace(/^[=\\-!_*#]{3,}\\s*$/gm, '')\n    .replace(/[ \\t]+/g, ' ')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim();\n}\n\nfunction normDetectText(text) {\n  return sanitizeASCII(text).toLowerCase();\n}\n\nfunction toMX10(s) {\n  const raw = String(s || '').replace(/\\D/g, '');\n  return raw.replace(/^(?:\\+?52|521|01|044|045|0)/, '').slice(-10);\n}\n\nfunction nowCDMX() {\n  try {\n    return new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });\n  } catch {\n    return new Date().toLocaleString('es-MX');\n  }\n}\n\nfunction genId() {\n  return 'ESC-' + (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).toUpperCase();\n}\n\nfunction formatMXDisplay(tel10) {\n  const t = String(tel10 || '').replace(/\\D/g, '');\n  if (t.length !== 10) return `+${CONFIG.COUNTRY_CODE}${t}`;\n  return `+${CONFIG.COUNTRY_CODE} ${t.replace(/(\\d{3})(\\d{3})(\\d{4})/, '$1 $2 $3')}`;\n}\n\nfunction truncate(s, max) {\n  s = String(s || '');\n  return s.length > max ? s.slice(0, max - 3) + '...' : s;\n}\n\n// ===================== UTILIDADES DE LIMPIEZA (INTEGRADAS) =====================\nfunction postFormatMessage(s) {\n  return String(s)\n    .replace(/\\s*\\|\\s*/g, ' | ')\n    .replace(/\\s{2,}/g, ' ')\n    .replace(/([.!?]){2,}/g, '$1')\n    .replace(/\\s+([.,;:!?])/g, '$1')\n    .replace(/([.,;:!?])\\s{2,}/g, '$1 ')\n    .replace(/\\s+\\./g, '.')\n    .trim();\n}\n\nfunction finalCleanMessage(text) {\n  let cleaned = ensurePlainText(sanitizeASCII(text));\n  return postFormatMessage(cleaned);\n}\n\n// ===================== PALABRAS CLAVE =====================\nconst KW = Object.freeze({\n  cirugia: [\n    'cirugia','operacion','quirofano','programar cirugia','agendar cirugia',\n    'fecha de cirugia','cuando me opero','quiero operarme','necesito cirugia',\n    'preoperatorio','postoperatorio','anestesia','cirugia varicocele','cirugia de'\n  ],\n  facturacion: [\n    'factura','facturacion','cfdi','rfc','facturar','comprobante fiscal',\n    'datos fiscales','razon social','uso de cfdi','uso cfdi','necesito factura',\n    'requiero factura','comprobante','recibo fiscal'\n  ],\n  costos: [\n    'costo','precio','cuanto cuesta','cuanto vale','cuanto sale','cotizacion',\n    'presupuesto','mas barato','economico','pago','tarifa','acepta seguro',\n    'con seguro','cuotas','financiamiento'\n  ],\n  humano: [\n    'hablar con alguien','hablar con una persona','asesor','asistente',\n    'quiero hablar','necesito hablar','comuniquenme','secretaria','recepcion',\n    'persona real','humano','alguien que me atienda','no entiendo','prefiero persona'\n  ],\n  llamada: [\n    'llamar','llamen','llamenme','llamada','llamame','telefono',\n    'por telefono','me llaman','contactenme','hablar por telefono','marcar'\n  ],\n  frustracion: [\n    'frustrado','frustrada','molesto','molesta','enojado','enojada','hartado','cansado',\n    'ya no puedo','no me ayudan','no sirve','pesimo','mal servicio','quiero quejarme',\n    'queja','esto es ridiculo','no me resuelven','no entienden','siempre lo mismo',\n    'no funciona','terrible','horrible'\n  ],\n  dudas: [\n    'tengo dudas','no me queda claro','no entendi','explicame','mas informacion',\n    'detalles','no estoy seguro','necesito saber','quisiera saber','me pueden explicar',\n    'no se si','aclaracion'\n  ],\n  urgencia: [\n    'urgente','urgencia','rapido','pronto','hoy','lo antes posible','cuanto antes',\n    'ya','ahora','inmediato','emergencia','dolor fuerte','mucho dolor','grave','serio'\n  ],\n  trivial: [\n    'hola','buenos dias','buenas tardes','buenas noches','gracias','ok','sale',\n    'de acuerdo','perfecto','listo'\n  ]\n});\n\nconst NEG_WORDS = Object.freeze(['no','sin','nunca','jamas']);\n\nfunction buildPatternBundle(phrases) {\n  const seen = new Set();\n  const parts = [];\n  for (let p of phrases) {\n    p = sanitizeASCII(p.toLowerCase());\n    if (!p || seen.has(p)) continue;\n    seen.add(p);\n    const esc = p.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&').replace(/\\s+/g, '\\\\s+');\n    parts.push(esc);\n  }\n  if (!parts.length) return { alt: null, neg: null };\n  const altInner = parts.join('|');\n  const alt = new RegExp(`\\\\b(?:${altInner})\\\\b`, 'g');\n  const neg = new RegExp(`\\\\b(?:${NEG_WORDS.join('|')})\\\\s+(?:\\\\w+\\\\s+){0,3}(?:${altInner})\\\\b`, 'g');\n  return { alt, neg };\n}\n\nconst PATTERNS = {};\nconst NEG_PATTERNS = {};\nfor (const k in KW) {\n  const { alt, neg } = buildPatternBundle(KW[k]);\n  PATTERNS[k] = alt;\n  NEG_PATTERNS[k] = neg;\n}\n\n// ===================== VALIDACION DE CALIDAD =====================\nfunction validateContextQuality(json) {\n  const warnings = [];\n  \n  if (!json.contexto || json.contexto.length < 10) {\n    warnings.push('Contexto muy corto o vacio');\n  }\n  \n  if (!Array.isArray(json.conversationHistory) || json.conversationHistory.length === 0) {\n    warnings.push('Sin historial de conversacion');\n  }\n  \n  if (!json.nombrePaciente || json.nombrePaciente.length < 3) {\n    warnings.push('Nombre de paciente incompleto');\n  }\n  \n  return {\n    isValid: warnings.length === 0,\n    warnings,\n    quality: warnings.length === 0 ? 'high' : (warnings.length <= 1 ? 'medium' : 'low')\n  };\n}\n\n// ===================== DETECCION MEJORADA DE INTENCIONES =====================\nfunction detectIntentions(json) {\n  const buckets = [\n    'contexto','mensajeUsuario','ultimoMensaje','rawUserText','motivoLibre','descripcion'\n  ];\n  const pieces = [];\n  for (const b of buckets) if (json[b]) pieces.push(json[b]);\n\n  if (Array.isArray(json.conversationHistory) && json.conversationHistory.length) {\n    const last = json.conversationHistory.slice(-CONFIG.MAX_CONTEXT_MSGS);\n    for (let i = 0; i < last.length; i++) {\n      const m = last[i];\n      if (m && m.content) {\n        const weight = i >= last.length - 2 ? 2 : 1;\n        for (let w = 0; w < weight; w++) pieces.push(m.content);\n      }\n    }\n  }\n\n  const fullText = normDetectText(pieces.join(' | '));\n  const signals = {};\n  for (const k in PATTERNS) signals[k] = 0;\n\n  for (const cat in PATTERNS) {\n    const p = PATTERNS[cat];\n    if (!p) continue;\n    const total = (fullText.match(p) || []).length;\n    const neg = NEG_PATTERNS[cat] ? (fullText.match(NEG_PATTERNS[cat]) || []).length : 0;\n    const eff = total - neg;\n    if (eff > 0) signals[cat] = eff;\n  }\n\n  if (/\\b\\d{10}\\b/.test(fullText) || /\\b(hoy|manana|tarde|noche)\\b/.test(fullText)) {\n    signals.llamada = (signals.llamada || 0) + 1;\n  }\n  \n  const mensajesUsuario = (json.conversationHistory || [])\n    .filter(m => m?.role === 'user')\n    .map(m => normDetectText(m.content));\n  \n  if (mensajesUsuario.length >= 3) {\n    const ultimo = mensajesUsuario[mensajesUsuario.length - 1];\n    const penultimo = mensajesUsuario[mensajesUsuario.length - 2];\n    \n    const palabrasUltimo = ultimo.split(/\\s+/);\n    const palabrasPenultimo = penultimo.split(/\\s+/);\n    const coincidencias = palabrasUltimo.filter(p => \n      p.length > 4 && palabrasPenultimo.includes(p)\n    ).length;\n    \n    if (coincidencias >= 2) {\n      signals.frustracion = (signals.frustracion || 0) + 2;\n    }\n  }\n\n  let strongestSignal = null;\n  let maxSignal = 0;\n  for (const k in signals) {\n    if (k === 'trivial') continue;\n    const v = signals[k] | 0;\n    if (v > maxSignal) { maxSignal = v; strongestSignal = k; }\n  }\n  const confidence = maxSignal >= 3 ? 'high' : (maxSignal >= 2 ? 'medium' : 'low');\n\n  return {\n    signals,\n    metadata: {\n      textLength: fullText.length,\n      signalsDetected: Object.keys(signals).filter(k => (signals[k] | 0) > 0),\n      strongestSignal,\n      confidence,\n      conversationLength: (json.conversationHistory || []).length\n    }\n  };\n}\n\n// ===================== CLASIFICACION Y GATING =====================\nfunction classifyAndGate(signals, metadata) {\n  const s = (k) => signals[k] | 0;\n\n  const onlyTrivial =\n    s('trivial') > 0 &&\n    (s('cirugia') + s('facturacion') + s('costos') + s('humano') +\n     s('llamada') + s('frustracion') + s('dudas') + s('urgencia')) === 0;\n\n  if (s('frustracion') >= 1) return {\n    motivo: 'hablar_con_persona', prioridad: 'alta', confianza: 'high',\n    razon: 'Paciente muestra frustracion', shouldEscalate: true\n  };\n\n  if (s('urgencia') >= 1) return {\n    motivo: s('cirugia') >= 1 ? 'programar_cirugia' : 'hablar_con_persona',\n    prioridad: 'alta', confianza: 'high',\n    razon: 'Situacion urgente', shouldEscalate: true\n  };\n\n  if (s('cirugia') >= 1) return {\n    motivo: 'programar_cirugia',\n    prioridad: metadata.confidence === 'high' ? 'alta' : 'normal',\n    confianza: metadata.confidence,\n    razon: 'Solicitud de cirugia',\n    shouldEscalate: true\n  };\n\n  if (s('facturacion') >= 1) return {\n    motivo: 'facturacion', prioridad: 'normal', confianza: metadata.confidence,\n    razon: 'Solicitud de facturacion', shouldEscalate: true\n  };\n\n  if (s('llamada') >= 1) return {\n    motivo: 'quiere_llamada', prioridad: 'normal', confianza: metadata.confidence,\n    razon: 'Solicita contacto telefonico', shouldEscalate: true\n  };\n\n  if (s('humano') >= 1) return {\n    motivo: 'hablar_con_persona', prioridad: 'normal', confianza: metadata.confidence,\n    razon: 'Solicita atencion personalizada', shouldEscalate: true\n  };\n\n  if (s('costos') >= 2) return {\n    motivo: 'dudas_costos', prioridad: 'normal', confianza: metadata.confidence,\n    razon: 'Consulta sobre costos', shouldEscalate: true\n  };\n\n  if (s('dudas') >= 2) return {\n    motivo: 'informacion_adicional', prioridad: 'normal', confianza: metadata.confidence,\n    razon: 'Requiere informacion adicional', shouldEscalate: true\n  };\n\n  if (onlyTrivial) {\n    return {\n      motivo: 'otro', prioridad: 'baja', confianza: 'low',\n      razon: 'Solo saludo o confirmacion', shouldEscalate: false\n    };\n  }\n\n  return {\n    motivo: 'otro', prioridad: 'baja', confianza: 'low',\n    razon: 'Sin senales claras de escalamiento', shouldEscalate: false\n  };\n}\n\n// ===================== MENSAJES MEJORADOS =====================\nfunction buildEnhancedAssistantMessage({\n  nombre,\n  tel10,\n  classification,\n  signals,\n  contexto,\n  conversationHistory,\n  canal,\n  createdAt_CDMX,\n  id,\n  sedePreferida\n}) {\n  const { motivo, prioridad } = classification;\n  const urgente = prioridad === 'alta';\n  const tel = formatMXDisplay(tel10);\n  const clip = (s, n = 120) => sanitizeASCII(String(s || '').replace(/\\s+/g, ' ')).slice(0, n);\n\n  const tituloPorMotivo = {\n    programar_cirugia: 'cirugia',\n    facturacion: 'facturacion',\n    dudas_costos: 'costos',\n    quiere_llamada: 'llamada',\n    hablar_con_persona: 'atencion',\n    informacion_adicional: 'informacion',\n    otro: 'atencion'\n  };\n\n  const accionPorMotivo = {\n    programar_cirugia: 'confirmar tipo/fecha/sede/pago y agendar',\n    facturacion: 'pedir RFC/razon/uso CFDI/correo, validar pago y emitir CFDI',\n    dudas_costos: 'definir procedimiento e informar costos',\n    quiere_llamada: `llamar a ${tel}, si no responde enviar whatsapp y reintentar`,\n    hablar_con_persona: 'contactar de inmediato y resolver o canalizar',\n    informacion_adicional: 'precisar dudas y responder',\n    otro: 'contactar y definir siguiente paso'\n  };\n\n  let conversacionResumen = '';\n  if (Array.isArray(conversationHistory) && conversationHistory.length) {\n    const ultimos = conversationHistory.slice(-4);\n    const mensajes = ultimos\n      .map(m => {\n        if (!m || !m.content) return null;\n        const role = m.role === 'user' ? 'Pac' : 'Bot';\n        const content = clip(m.content, 70);\n        return `${role}: ${content}`;\n      })\n      .filter(Boolean);\n    \n    if (mensajes.length > 0) {\n      conversacionResumen = '\\nConversacion:\\n' + mensajes.join('\\n');\n    }\n  }\n\n  let citaMencionada = '';\n  const fullConversation = conversationHistory.map(m => m?.content || '').join(' ');\n  \n  const fechaMatch = fullConversation.match(/\\b(\\d{1,2})\\s+de\\s+(\\w+)\\s+(?:de\\s+)?(\\d{4})?/i);\n  const horaMatch = fullConversation.match(/\\b(\\d{1,2}):(\\d{2})\\s*(a\\.?m\\.?|p\\.?m\\.?|AM|PM)?/i);\n  const sedeMatch = fullConversation.match(/\\b(polanco|satelite|satélite)\\b/i);\n  \n  if (fechaMatch || horaMatch || sedeMatch) {\n    const partes = [];\n    if (fechaMatch) partes.push(`fecha: ${fechaMatch[0]}`);\n    if (horaMatch) partes.push(`hora: ${horaMatch[0]}`);\n    if (sedeMatch) partes.push(`sede: ${sedeMatch[1].toUpperCase()}`);\n    if (partes.length) {\n      citaMencionada = '\\nCita mencionada: ' + partes.join(', ');\n    }\n  }\n\n  const alertas = [];\n  if ((signals.frustracion | 0) > 0) alertas.push('FRUSTRACION');\n  if ((signals.urgencia | 0) > 0) alertas.push('URGENTE');\n  if ((signals.cirugia | 0) > 0 && motivo !== 'programar_cirugia') alertas.push('menciona cirugia');\n  \n  const alertasStr = alertas.length ? '\\nAlertas: ' + alertas.join(', ') : '';\n\n  const titulo = tituloPorMotivo[motivo] || 'atencion';\n  const accion = accionPorMotivo[motivo] || accionPorMotivo.otro;\n  \n  const header = urgente \n    ? `URGENTE - ${titulo.toUpperCase()} | Folio: ${id}`\n    : `Solicitud: ${titulo} | Folio: ${id}`;\n  \n  const datosContacto = `Paciente: ${sanitizeASCII(nombre)} | Tel: ${tel}`;\n  const sedeInfo = sedePreferida ? `Sede preferida: ${sanitizeASCII(sedePreferida)}` : '';\n  const contextoInfo = contexto ? `Situacion: ${clip(contexto, 200)}` : '';\n  const accionInfo = `Accion requerida: ${accion}`;\n  const slaInfo = `SLA: ${urgente ? 'CONTACTAR HOY' : 'Responder en 24h'}`;\n  \n  const partes = [\n    header,\n    datosContacto,\n    sedeInfo,\n    contextoInfo,\n    conversacionResumen,\n    citaMencionada,\n    alertasStr,\n    accionInfo,\n    slaInfo\n  ].filter(Boolean);\n  \n  const msg = ensurePlainText(sanitizeASCII(partes.join('\\n')));\n  return truncate(msg, CONFIG.MAX_ASSISTANT_MSG_LEN);\n}\n\nfunction buildPatientResponse(nombre, canal, classification, id) {\n  const nombreCorto = String(nombre).split(' ')[0] || nombre;\n  const { prioridad, shouldEscalate, motivo } = classification;\n\n  if (!shouldEscalate) {\n    return sanitizeASCII(`${nombreCorto}, puedo ayudarte por este medio. Folio: ${id}`);\n  }\n\n  const canalTxt = canal || 'WhatsApp';\n  \n  const mensajesPorMotivo = {\n    facturacion: `${nombreCorto}, ${CONFIG.ASSISTANT_NAME} te contactara para procesar tu factura.`,\n    programar_cirugia: `${nombreCorto}, ${CONFIG.ASSISTANT_NAME} te contactara para coordinar tu cirugia.`,\n    dudas_costos: `${nombreCorto}, ${CONFIG.ASSISTANT_NAME} te contactara con informacion sobre costos.`,\n    quiere_llamada: `${nombreCorto}, ${CONFIG.ASSISTANT_NAME} te llamara a la brevedad.`,\n    hablar_con_persona: prioridad === 'alta' \n      ? `${nombreCorto}, entiendo tu situacion. ${CONFIG.ASSISTANT_NAME} te contactara de inmediato.`\n      : `${nombreCorto}, ${CONFIG.ASSISTANT_NAME} te contactara para ayudarte mejor.`,\n    informacion_adicional: `${nombreCorto}, ${CONFIG.ASSISTANT_NAME} te contactara con la informacion que necesitas.`,\n    otro: `${nombreCorto}, ${CONFIG.ASSISTANT_NAME} te contactara para atenderte.`\n  };\n  \n  const mensajeBase = mensajesPorMotivo[motivo] || mensajesPorMotivo.otro;\n  const urgenciaTag = prioridad === 'alta' ? ' Es prioritario.' : '';\n  const folioTag = ` Folio: ${id}`;\n  \n  return sanitizeASCII(truncate(mensajeBase + urgenciaTag + folioTag, 280));\n}\n\n// ===================== PROCESO PRINCIPAL =====================\ntry {\n  const items = $input.all().map(({ json }) => {\n    const telRaw = cleanStr(json.telefono);\n    const nombre = sanitizeASCII(cleanStr(json.nombrePaciente));\n    const canal = sanitizeASCII(cleanStr(json.canalPreferido || 'whatsapp').toLowerCase());\n    const sedePreferida = sanitizeASCII(cleanStr(json.sedePreferida));\n    const contexto = sanitizeASCII(cleanStr(json.contexto).slice(0, 500));\n    const conversationHistory = Array.isArray(json.conversationHistory) ? json.conversationHistory : [];\n\n    const tel = toMX10(telRaw);\n    const errs = [];\n    if (!tel || tel.length !== 10) errs.push('Telefono invalido');\n    if (!nombre || nombre.length < 3) errs.push('Nombre invalido');\n\n    const recipientsMX10 = CONFIG.ASSISTANT_MX10_LIST.map(toMX10).filter(n => n && n.length === 10);\n    if (!recipientsMX10.length) errs.push('No hay destinatarios configurados');\n\n    if (errs.length) {\n      return {\n        json: {\n          status: 'ERROR',\n          errors: errs,\n          agent_message: 'Lo siento, necesito validar tus datos. Confirma tu nombre completo y numero de telefono.'\n        }\n      };\n    }\n\n    const { signals, metadata } = detectIntentions(json);\n    const classification = classifyAndGate(signals, metadata);\n    const contextQuality = validateContextQuality(json);\n    const id = genId();\n    const createdAt_CDMX = sanitizeASCII(nowCDMX());\n\n    const message_to_assistant = classification.shouldEscalate\n      ? buildEnhancedAssistantMessage({\n          nombre, tel10: tel, classification, signals, contexto,\n          conversationHistory, canal, createdAt_CDMX, id, sedePreferida\n        })\n      : null;\n\n    const agent_message = buildPatientResponse(nombre, canal, classification, id);\n\n    // ===================== LIMPIEZA INTEGRADA =====================\n    const message_to_assistant_clean = message_to_assistant ? finalCleanMessage(message_to_assistant) : '';\n    const message_to_assistant_singleline = message_to_assistant_clean.replace(/\\s*\\n\\s*/g, ' ');\n    const message_to_assistant_urlencoded = encodeURIComponent(message_to_assistant_clean);\n    const agent_message_clean = finalCleanMessage(agent_message);\n\n    let http_batch = [];\n    let http = null;\n    let recipientsE164 = [];\n    if (classification.shouldEscalate) {\n      recipientsE164 = recipientsMX10.map(n => `+${CONFIG.COUNTRY_CODE}${n}`);\n      http_batch = recipientsE164.map(to => ({\n        url: CONFIG.WA_ENDPOINT,\n        method: 'POST',\n        headers: { 'content-type': 'application/json' },\n        body: { to, text: message_to_assistant_clean }\n      }));\n      http = http_batch[0];\n    }\n\n    return {\n      json: {\n        status: classification.shouldEscalate ? 'ESCALADO' : 'NO_ESCALAR',\n        escalamientoId: id,\n        timestamp: createdAt_CDMX,\n        \n        paciente: {\n          nombre,\n          telefono: tel,\n          telefonoE164: `+${CONFIG.COUNTRY_CODE}${tel}`\n        },\n        \n        clasificacion: {\n          motivo: classification.motivo,\n          motivoLabel: MOTIVO_LABELS[classification.motivo] || 'Otro motivo',\n          prioridad: classification.prioridad,\n          confianza: classification.confianza,\n          razon: classification.razon,\n          shouldEscalate: classification.shouldEscalate\n        },\n        \n        senales_detectadas: signals,\n        \n        metadata_analisis: {\n          ...metadata,\n          contextQuality\n        },\n        \n        recipientsE164,\n        \n        // MENSAJES YA LIMPIOS Y FORMATEADOS\n        agent_message: agent_message_clean,\n        agent_message_len: agent_message_clean.length,\n        \n        message_to_assistant: message_to_assistant_clean,\n        message_to_assistant_raw: message_to_assistant || '',\n        message_to_assistant_clean: message_to_assistant_clean,\n        message_to_assistant_singleline: message_to_assistant_singleline,\n        message_to_assistant_urlencoded: message_to_assistant_urlencoded,\n        message_to_assistant_len: message_to_assistant_clean.length,\n        \n        conversation_length: conversationHistory.length,\n        \n        // Para compatibilidad con HTTP Request\n        cleaned: message_to_assistant_clean || agent_message_clean,\n        \n        http,\n        http_batch\n      }\n    };\n  });\n\n  return items;\n\n} catch (e) {\n  return [{\n    json: {\n      status: 'ERROR',\n      errors: ['Excepcion en runtime', String(e && e.message || e)],\n      agent_message: 'Ocurrio un error al procesar tu solicitud. Intenta de nuevo.'\n    }\n  }];\n}"
+      },
+      "id": "88f8d6e6-ce70-4a34-9e9d-ef0dae357f4f",
+      "name": "Process Escalation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "={{$node[\"Process Escalation\"].json.status}}"
+            },
+            {
+              "name": "message",
+              "value": "={{$node[\"Process Escalation\"].json.agent_message}}"
+            },
+            {
+              "name": "escalamientoId",
+              "value": "={{$node[\"Process Escalation\"].json.escalamientoId}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "48a31e02-7853-4a02-8db6-a0ce5be66c79",
+      "name": "Return Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        256,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"telefono\": \"6673184624\",\n  \"nombrePaciente\": \"Fausto Medina\",\n  \"motivo\": \"facturacion\",\n  \"contexto\": \"El paciente solicita factura de su consulta del 15 de septiembre para reembolso de seguro\",\n  \"canalPreferido\": \"whatsapp\",\n  \"prioridad\": \"normal\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -640,
+        96
+      ],
+      "id": "8f61568b-ed1b-45c3-8fdb-b10d1ffb12b4",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.paciente.telefonoE164 }}\",\n  \"text\": \"{{ $json.message_to_assistant_clean }}\"\n}",
+        "options": {}
+      },
+      "id": "56d9f9c2-f27a-4546-b489-4a898059fe45",
+      "name": "Notify Assistant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -192,
+        96
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "J0Kap8PdAddWNu3l",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        96
+      ],
+      "id": "6115dd84-2204-402c-9463-aa80aa05bbee",
+      "name": "Wait",
+      "webhookId": "9a398d75-2687-48d7-a0e9-6fc83f539621"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "telefono": "6673184624",
+          "nombrePaciente": "Fausto Mario Medina Molina\n",
+          "motivo": "facturacion",
+          "contexto": "El paciente Fausto Mario Medina Molina solicita ayuda con la facturación de un servicio.",
+          "canalPreferido": "whatsapp",
+          "prioridad": "normal\"\n"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Process Escalation": {
+      "main": [
+        [
+          {
+            "node": "Notify Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Process Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Assistant": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Payload": {
+      "main": [
+        []
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Return Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "EV0uQg6ljO1CwH6A"
+  },
+  "versionId": "de35fd10-868c-45a4-a040-e146ca6cdc22",
+  "meta": {
+    "instanceId": "ab2739af75c0bf0ee034fd37e78576df139d0a4fcd48adc710d9ceec11fc12c5"
+  },
+  "id": "YRms68urnyKHe3Y7",
+  "tags": []
+}

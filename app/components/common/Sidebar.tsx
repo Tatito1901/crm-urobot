@@ -28,7 +28,6 @@ export function Sidebar() {
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-white/40">CRM Clínico</p>
             <p className="text-base font-semibold text-white">Dr. Mario Martínez Thomas</p>
-            <p className="text-xs text-white/50">Urología avanzada · Ciudad de México</p>
           </div>
         </div>
 
@@ -48,21 +47,10 @@ export function Sidebar() {
             </Link>
           ))}
         </nav>
-
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-5 text-xs text-white/60 shadow-inner">
-          <p className="text-white/80">Asistente IA</p>
-          <p className="mt-1 text-white/50">
-            Orquestación con múltiples LLMs mediante n8n. Gestiona agenda, confirmaciones y respuestas clínicas.
-          </p>
-          <button className="mt-4 w-full rounded-xl border border-blue-500/40 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-100 transition hover:border-blue-400/70">
-            Abrir panel n8n
-          </button>
-        </div>
       </div>
 
       <div className="space-y-2 text-xs text-white/40">
         <p>Hoy · {today}</p>
-        <p className="text-white/60">soporte@urobot.mx</p>
         <p>Agenda actualizada</p>
       </div>
     </aside>
@@ -72,16 +60,16 @@ export function Sidebar() {
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="sticky bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-1 border-t border-white/10 bg-[#050b18]/95 px-4 py-3 text-xs text-white/60 backdrop-blur lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-1 border-t border-white/10 bg-[#050b18]/95 px-2 py-2 text-[10px] text-white/60 backdrop-blur safe-bottom lg:hidden">
       {navItems.map((item) => (
         <Link
           key={item.label}
           href={item.href}
-          className={`flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-1 text-center transition ${
-            pathname === item.href ? "bg-white/10 text-white" : "text-white/60 hover:text-white"
+          className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-1.5 py-2 text-center transition ${
+            pathname === item.href ? "bg-white/10 text-white font-medium" : "text-white/60 hover:text-white"
           }`}
         >
-          <span>{item.label}</span>
+          <span className="leading-tight">{item.label}</span>
         </Link>
       ))}
     </nav>

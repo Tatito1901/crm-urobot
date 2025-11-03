@@ -24,3 +24,35 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Utilidades de responsividad */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Mejoras de scroll en móviles */
+@media (max-width: 1023px) {
+  main {
+    overflow-x: hidden;
+  }
+  
+  /* Ocultar scrollbar horizontal en móviles */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Mejoras de tablas responsive */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mejoras de cards en móvil */
+@media (max-width: 640px) {
+  .card-mobile-compact {
+    padding: 0.75rem;
+  }
+}
