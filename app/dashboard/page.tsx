@@ -78,7 +78,7 @@ export default function DashboardPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-blue-200/60">Panel operativo</p>
           <h1 className="text-2xl font-semibold text-white sm:text-3xl">Resumen general</h1>
           <p className="text-sm text-white/60">
-            Visión consolidada · Datos en tiempo real desde Supabase
+            Visión consolidada ·
           </p>
         </header>
 

@@ -6,17 +6,29 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'
+import { supabase } from '@/lib/supabase'
 import type { Paciente } from '@/app/lib/crm-data'
+import type { Tables } from '@/types/database'
 
 interface UsePacientesReturn {
   pacientes: Paciente[]
   loading: boolean
   error: Error | null
-  refetch: () => Promise<void>
+  refetch: (options?: { silent?: boolean }) => Promise<void>
   totalCount: number
 }
 
-const LOCAL_PACIENTES: Paciente[] = []
+type PacienteRow = Tables<'pacientes'>
+
+const mapPaciente = (row: PacienteRow): Paciente => ({
+  id: row.id,
+  nombre: row.nombre_completo,
+  telefono: row.telefono,
+  email: row.email ?? '',
+  totalConsultas: row.total_consultas ?? 0,
+  ultimaConsulta: row.ultima_consulta,
+  estado: (row.estado as Paciente['estado']) ?? 'Activo',
+})
 
 export function usePacientes(): UsePacientesReturn {
   const [pacientes, setPacientes] = useState<Paciente[]>([])
@@ -24,23 +36,46 @@ export function usePacientes(): UsePacientesReturn {
   const [error, setError] = useState<Error | null>(null)
   const [totalCount, setTotalCount] = useState(0)
 
-  const fetchPacientes = useCallback(async () => {
+  const fetchPacientes = useCallback(async (options: { silent?: boolean } = {}) => {
+    const { silent = false } = options
     try {
-      setLoading(true)
+      if (!silent) {
+        setLoading(true)
+      }
       setError(null)
+      const { data, error: fetchError, count } = await supabase
+        .from('pacientes')
+        .select('*', { count: 'exact' })
+        .order('ultima_consulta', { ascending: false, nullsFirst: false })
 
-      setPacientes(LOCAL_PACIENTES)
-      setTotalCount(LOCAL_PACIENTES.length)
+      if (fetchError) throw fetchError
+
+      const mapped = (data ?? []).map(mapPaciente)
+      setPacientes(mapped)
+      setTotalCount(count ?? mapped.length)
     } catch (err) {
       console.error('Error fetching pacientes:', err)
       setError(err as Error)
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
     fetchPacientes()
+
+    const channel = supabase
+      .channel('public:pacientes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pacientes' }, () => {
+        fetchPacientes({ silent: true })
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [fetchPacientes])
 
   return {

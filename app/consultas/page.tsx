@@ -10,6 +10,11 @@ import { useConsultas } from '@/hooks/useConsultas';
 
 type SedeFilter = 'ALL' | 'POLANCO' | 'SATELITE';
 
+const SEDE_COLORS: Record<'POLANCO' | 'SATELITE', string> = {
+  POLANCO: 'border border-fuchsia-400/60 bg-fuchsia-500/15 text-fuchsia-100',
+  SATELITE: 'border border-cyan-400/60 bg-cyan-500/15 text-cyan-100',
+};
+
 export default function ConsultasPage() {
   const [search, setSearch] = useState('');
   const [sede, setSede] = useState<SedeFilter>('ALL');
@@ -39,53 +44,57 @@ export default function ConsultasPage() {
       description="Controla el pipeline de citas: filtra, revisa KPIs y comparte el detalle operativo."
       headerSlot={
         <div className="grid w-full gap-3 sm:grid-cols-2">
-          <Card>
+          <Card className="border-white/10 bg-white/[0.04] text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.3em]">Buscar</CardTitle>
-              <CardDescription className="text-[0.68rem]">Paciente o folio</CardDescription>
+              <CardTitle className="text-xs uppercase tracking-[0.28em] text-white/70">Buscar</CardTitle>
+              <CardDescription className="text-[0.68rem] text-white/40">Paciente o folio</CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center gap-3 pt-0">
-              <span className="text-slate-500">🔍</span>
+            <CardContent className="flex items-center gap-2 pt-0">
+              <span aria-hidden className="text-white/40">🔍</span>
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por paciente o folio"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+                className="w-full rounded-lg border border-white/10 bg-white/[0.08] px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-sky-400/50"
               />
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-white/10 bg-white/[0.04] text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.3em]">Sede</CardTitle>
-              <CardDescription className="text-[0.68rem]">Filtra por ubicación</CardDescription>
+              <CardTitle className="text-xs uppercase tracking-[0.28em] text-white/70">Sede</CardTitle>
+              <CardDescription className="text-[0.68rem] text-white/40">Filtra por ubicación</CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
-              <select
-                value={sede}
-                onChange={(e) => setSede(e.target.value as SedeFilter)}
-                className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
-              >
-                <option value="ALL">Todas las sedes</option>
-                <option value="POLANCO">Polanco</option>
-                <option value="SATELITE">Satélite</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={sede}
+                  onChange={(e) => setSede(e.target.value as SedeFilter)}
+                  className="w-full appearance-none rounded-lg border border-white/10 bg-white/[0.08] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-sky-400/50"
+                >
+                  <option className="bg-slate-900" value="ALL">Todas las sedes</option>
+                  <option className="bg-slate-900" value="POLANCO">Polanco</option>
+                  <option className="bg-slate-900" value="SATELITE">Satélite</option>
+                </select>
+                <span aria-hidden className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-white/40">
+                  ▼
+                </span>
+              </div>
             </CardContent>
           </Card>
         </div>
       }
     >
-      <Card className="border-dashed">
+      <Card className="border-white/10 bg-white/[0.02]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Agenda centralizada</CardTitle>
-          <CardDescription>Administra la disponibilidad completa desde una vista dedicada.</CardDescription>
+          <CardTitle className="text-sm text-white">Agenda centralizada</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 pt-0 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-600">
-            Accede a la agenda estilo Doctoralia para planear por semana o día con filtros avanzados.
+        <CardContent className="flex flex-col gap-3 pt-0 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-white/60">
+            Planea por semana o día con filtros avanzados y comparte el enlace con tu equipo.
           </p>
           <Link
             href="/agenda"
-            className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-500"
+            className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-500"
           >
             Abrir agenda
           </Link>
@@ -101,110 +110,83 @@ export default function ConsultasPage() {
       </section>
 
       {/* Tabla */}
-      <Card>
+      <Card className="border-white/10 bg-white/[0.02]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">
-            Listado de consultas {loading && '(cargando...)'}
+          <CardTitle className="text-base text-white">
+            Listado de consultas
           </CardTitle>
-          <CardDescription>
-            {error 
-              ? `Error: ${error.message}` 
-              : 'Detalle operativo por paciente y sede · Datos en tiempo real'
-            }
+          <CardDescription className="text-white/60">
+            {error
+              ? `Error: ${error.message}`
+              : 'Detalle operativo por paciente y sede · Datos en tiempo real'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="hidden overflow-hidden md:block">
-            <DataTable
-              headers={[
-                { key: 'paciente', label: 'Paciente' },
-                { key: 'sede', label: 'Sede' },
-                { key: 'estado', label: 'Estado' },
-                { key: 'fecha', label: 'Fecha' },
-                { key: 'acciones', label: 'Acciones' },
-              ]}
-              rows={filteredConsultas.map((c) => ({
-                id: c.id,
-                paciente: (
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-white">{c.paciente}</span>
-                    <span className="text-xs text-white/60">{c.tipo}</span>
-                  </div>
-                ),
-                sede: (
-                  <div className="flex items-center gap-2">
-                    <Badge label={c.sede} tone={c.sede === 'POLANCO' ? 'purple' : 'cyan'} />
-                    {c.confirmadoPaciente && (
-                      <span className="text-xs text-green-600" title="Confirmado por paciente">✓</span>
-                    )}
-                  </div>
-                ),
-                estado: <Badge label={c.estado} tone={STATE_COLORS[c.estado]} />,
-                fecha: (
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-white">{formatDate(c.fechaConsulta, { dateStyle: 'medium', timeStyle: undefined })}</span>
-                    <span className="text-xs text-white/60">{c.horaConsulta.slice(0, 5)}</span>
-                  </div>
-                ),
-                acciones: (
-                  <Link
-                    href="/agenda"
-                    className="inline-flex items-center gap-1 text-sm font-medium text-sky-400 hover:text-sky-300"
-                  >
-                    Ver en calendario <span aria-hidden>→</span>
-                  </Link>
-                ),
-              }))}
-              empty={
-                filteredConsultas.length === 0
-                  ? 'No hay consultas para los filtros seleccionados.'
-                  : 'Sin resultados.'
-              }
-            />
-          </div>
-
-          <div className="md:hidden">
-            {filteredConsultas.length === 0 ? (
-              <p className="rounded-xl border bg-slate-50 px-4 py-6 text-center text-slate-500">
-                No hay consultas para los filtros seleccionados.
-              </p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {filteredConsultas.map((c) => (
-                  <article key={c.id} className="space-y-3 rounded-xl border bg-white p-3 shadow-sm sm:p-4">
-                    <header className="flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Paciente</p>
-                        <p className="text-lg font-semibold">{c.paciente}</p>
-                        <p className="text-xs text-slate-400">{c.tipo} {c.confirmadoPaciente && '✓ Confirmado'}</p>
-                      </div>
-                      <Badge label={c.estado} tone={STATE_COLORS[c.estado]} className="text-[0.65rem]" />
-                    </header>
-                    <div className="space-y-2 text-sm">
-                      <p className="flex items-center gap-2">
-                        <Badge label={c.sede} tone={c.sede === 'POLANCO' ? 'purple' : 'cyan'} className="text-[0.65rem]" />
-                        <span className="text-slate-500">{c.motivoConsulta || 'Sin motivo especificado'}</span>
-                      </p>
-                      <p>
-                        <span className="text-slate-500">Fecha:</span> {formatDate(c.fechaConsulta, { dateStyle: 'medium', timeStyle: undefined })} · {c.horaConsulta.slice(0, 5)}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        Duración: {c.duracionMinutos} min · {c.canalOrigen || 'WhatsApp'}
-                      </p>
-                    </div>
-                    <footer>
-                      <Link
-                        href="/agenda"
-                        className="inline-flex items-center gap-1 text-sm font-medium text-sky-700 hover:text-sky-600"
-                      >
-                        Ver en calendario <span aria-hidden>→</span>
-                      </Link>
-                    </footer>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
+        <CardContent className="space-y-4 pt-0">
+          {loading && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[...Array(2)].map((_, idx) => (
+                <div key={idx} className="h-24 animate-pulse rounded-xl bg-white/5" />
+              ))}
+            </div>
+          )}
+          <DataTable
+            headers={[
+              { key: 'paciente', label: 'Paciente' },
+              { key: 'sede', label: 'Sede' },
+              { key: 'estado', label: 'Estado' },
+              { key: 'programacion', label: 'Programación' },
+              { key: 'detalle', label: 'Detalle' },
+              { key: 'acciones', label: 'Acciones', align: 'right' },
+            ]}
+            rows={filteredConsultas.map((c) => ({
+              id: c.id,
+              paciente: (
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-white">{c.paciente}</span>
+                  <span className="text-xs text-white/50">{c.tipo}</span>
+                </div>
+              ),
+              sede: (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge label={c.sede} tone={SEDE_COLORS[c.sede]} />
+                  {c.confirmadoPaciente ? (
+                    <span className="text-[11px] font-medium text-emerald-300">✓ Confirmado</span>
+                  ) : null}
+                </div>
+              ),
+              estado: <Badge label={c.estado} tone={STATE_COLORS[c.estado]} />, 
+              programacion: (
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-white">
+                    {formatDate(c.fecha, {
+                      timeZone: c.timezone ?? 'America/Mexico_City',
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
+                  </span>
+                </div>
+              ),
+              detalle: (
+                <div className="flex flex-col gap-1 text-sm text-white/70">
+                  <span>{c.motivoConsulta || 'Sin motivo registrado'}</span>
+                  <span className="text-xs text-white/40">Duración: {c.duracionMinutos} min · {c.canalOrigen || 'WhatsApp'}</span>
+                </div>
+              ),
+              acciones: (
+                <Link
+                  href="/agenda"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-sky-400 hover:text-sky-300"
+                >
+                  Ver en calendario <span aria-hidden>→</span>
+                </Link>
+              ),
+            }))}
+            empty={
+              filteredConsultas.length === 0
+                ? 'No hay consultas para los filtros seleccionados.'
+                : 'Sin resultados.'
+            }
+          />
         </CardContent>
       </Card>
 

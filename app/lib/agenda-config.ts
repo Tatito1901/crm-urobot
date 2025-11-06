@@ -5,10 +5,15 @@
 
 import { Temporal } from '@js-temporal/polyfill'
 
+if (typeof globalThis !== 'undefined' && !('Temporal' in globalThis)) {
+  // Schedule-X y otras dependencias esperan Temporal en el ámbito global
+  ;(globalThis as typeof globalThis & { Temporal: typeof Temporal }).Temporal = Temporal
+}
+
 // ========== CONSTANTES ==========
 export const AGENDA_CONFIG = {
   TIMEZONE: 'America/Mexico_City' as const,
-  LOCALE: 'es-MX' as const,
+  LOCALE: 'es-ES' as const,
   FIRST_DAY_OF_WEEK: 1, // Lunes
   DEFAULT_VIEW: 'week' as const,
   EVENT_DURATION_MINUTES: 45,
@@ -123,6 +128,19 @@ export const createScheduleXConfig = (selectedDate: Temporal.PlainDate) => ({
   firstDayOfWeek: AGENDA_CONFIG.FIRST_DAY_OF_WEEK,
   selectedDate,
   isDark: AGENDA_CONFIG.IS_DARK_THEME,
+  isResponsive: true,
+  dayBoundaries: {
+    start: '06:00',
+    end: '22:00',
+  },
+  weekOptions: {
+    gridHeight: 1500,
+    nDays: AGENDA_CONFIG.WORK_DAYS_COUNT,
+    eventWidth: 94,
+    timeAxisFormatOptions: { 
+      hour: 'numeric' as const,
+    },
+  },
   calendars: Object.fromEntries(
     Object.entries(AGENDA_COLORS).map(([key, colors]) => [
       key,

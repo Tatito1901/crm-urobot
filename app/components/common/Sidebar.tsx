@@ -1,58 +1,92 @@
 'use client';
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
+import { cn } from "@/app/lib/utils";
+
+type NavItem = { readonly label: string; readonly href: string };
+
+const navItems: readonly NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Leads", href: "/leads" },
   { label: "Pacientes", href: "/pacientes" },
   { label: "Consultas", href: "/consultas" },
   { label: "Confirmaciones", href: "/confirmaciones" },
   { label: "Métricas", href: "/metricas" },
-] as const;
+];
+
+const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });
 
 export function Sidebar() {
-  const today = new Intl.DateTimeFormat("es-MX", {
-    dateStyle: "long",
-  }).format(new Date());
   const pathname = usePathname();
+  const today = useMemo(() => DATE_FORMATTER.format(new Date()), []);
 
   return (
-    <aside className="hidden w-72 flex-col justify-between border-r border-white/5 bg-white/[0.02] px-6 py-8 shadow-[0_0_50px_-25px_rgba(15,23,42,1)] lg:flex">
-      <div className="space-y-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/20 text-lg font-semibold text-blue-100">
+    <aside className="hidden lg:flex lg:h-screen lg:w-60 xl:w-72 2xl:w-80 lg:flex-col lg:justify-between lg:border-r lg:border-white/5 lg:bg-gradient-to-b lg:from-[#0a1429]/90 lg:via-[#060b18]/88 lg:to-[#02040a]/92 lg:px-6 lg:py-8 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur">
+      <div className="flex flex-1 flex-col gap-8 overflow-hidden">
+        <header className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5/40 px-4 py-3 shadow-inner">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-lg font-semibold text-blue-100">
             DM
           </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-white/40">CRM Clínico</p>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-white/40">CRM Clínico</p>
             <p className="text-base font-semibold text-white">Dr. Mario Martínez Thomas</p>
+            <p className="text-xs text-white/50">Operativo en tiempo real</p>
           </div>
-        </div>
+        </header>
 
-        <nav className="space-y-1 text-sm">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center justify-between rounded-xl border px-3 py-2 transition ${
-                pathname === item.href
-                  ? "border-blue-500/40 bg-blue-500/15 text-white"
-                  : "border-transparent text-white/60 hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-white"
-              }`}
-            >
-              <span>{item.label}</span>
-              <span aria-hidden>→</span>
-            </Link>
-          ))}
+        <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1">
+          <ul className="flex flex-col gap-1.5 text-sm">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+              return (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 font-medium text-white/65 transition-colors",
+                      "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+                      "hover:border-white/15 hover:bg-white/5 hover:text-white",
+                      isActive && "border-white/20 bg-white/12 text-white shadow-[0_15px_35px_-25px_rgba(56,189,248,0.7)]"
+                    )}
+                  >
+                    <span className="relative flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "h-2 w-2 rounded-full bg-blue-400/70 opacity-0 transition group-hover:opacity-70",
+                          isActive && "opacity-100"
+                        )}
+                        aria-hidden
+                      />
+                      <span>{item.label}</span>
+                    </span>
+                    <span
+                      className="ml-auto text-xs text-white/40 transition group-hover:text-white/70"
+                      aria-hidden
+                    >
+                      →
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </nav>
       </div>
 
-      <div className="space-y-2 text-xs text-white/40">
-        <p>Hoy · {today}</p>
-        <p>Agenda actualizada</p>
-      </div>
+      <footer className="space-y-3">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs text-white/70">
+          <p className="font-medium text-white">Agenda al día</p>
+          <p className="mt-1 text-white/60">Hoy · {today}</p>
+          <p className="text-white/40">Actualización automática cada 60&nbsp;min</p>
+        </div>
+        <p className="text-center text-[11px] uppercase tracking-[0.32em] text-white/30">
+          UROBOT · CRM
+        </p>
+      </footer>
     </aside>
   );
 }
@@ -60,18 +94,126 @@ export function Sidebar() {
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-1 border-t border-white/10 bg-[#050b18]/95 px-2 py-2 text-[10px] text-white/60 backdrop-blur safe-bottom lg:hidden">
-      {navItems.map((item) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-1.5 py-2 text-center transition ${
-            pathname === item.href ? "bg-white/10 text-white font-medium" : "text-white/60 hover:text-white"
-          }`}
-        >
-          <span className="leading-tight">{item.label}</span>
-        </Link>
-      ))}
+    <nav
+      aria-label="Navegación inferior"
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-1 border-t border-white/10 bg-[#050b18]/90 px-2 py-2 text-[11px] text-white/60 backdrop-blur-md safe-bottom lg:hidden"
+    >
+      {navItems.map((item) => {
+        const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+        return (
+          <Link
+            key={item.label}
+            href={item.href}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+              "flex flex-1 flex-col items-center gap-1 rounded-lg px-1.5 py-2 text-center transition-colors",
+              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+              isActive ? "bg-white/12 text-white" : "hover:text-white"
+            )}
+          >
+            <span className="leading-tight">{item.label}</span>
+          </Link>
+        );
+      })}
     </nav>
+  );
+}
+
+export function MobileSidebar() {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [open]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm font-medium text-white shadow-lg shadow-blue-900/30 backdrop-blur transition hover:border-white/20 hover:bg-white/20"
+        aria-expanded={open}
+        aria-label="Abrir menú principal"
+      >
+        <span className="sr-only">Abrir menú</span>
+        <span className="flex flex-col gap-1">
+          <span className="h-0.5 w-5 rounded-full bg-white" />
+          <span className="h-0.5 w-5 rounded-full bg-white" />
+          <span className="h-0.5 w-5 rounded-full bg-white" />
+        </span>
+      </button>
+
+      {open ? (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+            aria-label="Cerrar menú"
+          />
+          <aside className="relative h-full w-72 max-w-[85%] translate-x-0 bg-gradient-to-b from-[#0a1429]/95 via-[#060b18]/92 to-[#02040a]/96 p-6 shadow-2xl shadow-blue-900/40">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase tracking-[0.32em] text-white/40">CRM Clínico</p>
+                <p className="text-lg font-semibold text-white">Dr. Mario Martínez Thomas</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/70 hover:text-white"
+                aria-label="Cerrar menú"
+              >
+                ×
+              </button>
+            </div>
+
+            <nav className="mt-8" aria-label="Menú móvil">
+              <ul className="flex flex-col gap-2 text-base">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                  return (
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                          "flex items-center justify-between rounded-xl border border-transparent px-3 py-2.5 font-medium text-white/70 transition-colors",
+                          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+                          "hover:border-white/15 hover:bg-white/5 hover:text-white",
+                          isActive && "border-white/25 bg-white/12 text-white"
+                        )}
+                        onClick={() => setOpen(false)}
+                      >
+                        <span>{item.label}</span>
+                        <span aria-hidden>→</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </aside>
+        </div>
+      ) : null}
+    </>
   );
 }

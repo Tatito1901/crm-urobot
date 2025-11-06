@@ -76,7 +76,7 @@ export default function ConfirmacionesPage() {
       title="Confirmaciones y recordatorios"
       description="Automatización de follow-ups multicanal para reducir no-shows y asegurar la agenda del día."
       headerSlot={
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <Card className="bg-white/[0.03]">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs uppercase tracking-[0.3em] text-white/60">Buscar</CardTitle>
@@ -84,8 +84,8 @@ export default function ConfirmacionesPage() {
                 Paciente o consulta
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center gap-2 pt-0">
-              <span className="text-white/40">🔍</span>
+            <CardContent className="flex items-center gap-3 pt-0">
+              <span className="text-white/50">🔍</span>
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -159,7 +159,7 @@ export default function ConfirmacionesPage() {
         </div>
       }
     >
-      <section className="grid gap-3 grid-cols-1 sm:gap-4 sm:grid-cols-3">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <Card className="bg-white/[0.03]">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-white">Pendientes</CardTitle>
@@ -191,7 +191,7 @@ export default function ConfirmacionesPage() {
 
       <Card className="bg-white/[0.03]">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
               <CardTitle className="text-base text-white">
                 Detalle de confirmaciones {loading && '(cargando...)'}
@@ -228,16 +228,16 @@ export default function ConfirmacionesPage() {
               .map((recordatorio) => ({
                 id: recordatorio.id,
                 programado: (
-                  <div className="flex flex-col">
-                    <span className="text-white font-medium">{formatDate(recordatorio.programado_para, { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-white">{formatDate(recordatorio.programado_para, { dateStyle: 'short', timeStyle: 'short' })}</span>
                     {recordatorio.enviado_en && (
                       <span className="text-xs text-white/50">Enviado: {formatDate(recordatorio.enviado_en, { dateStyle: 'short', timeStyle: 'short' })}</span>
                     )}
                   </div>
                 ),
                 paciente: (
-                  <div className="flex flex-col">
-                    <span className="text-white/90 font-medium">{recordatorio.paciente?.nombre_completo || 'Sin paciente'}</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-white/90">{recordatorio.paciente?.nombre_completo || 'Sin paciente'}</span>
                     <span className="text-xs text-white/50">{recordatorio.consulta?.sede || ''}</span>
                   </div>
                 ),

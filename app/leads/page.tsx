@@ -35,8 +35,8 @@ export default function LeadsPage() {
               Nombre, teléfono o fuente
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2 pt-0 sm:flex-row sm:items-center">
-            <span className="text-white/40">🔍</span>
+          <CardContent className="flex flex-col gap-3 pt-0 sm:flex-row sm:items-center sm:gap-4">
+            <span className="text-white/50">🔍</span>
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -59,7 +59,7 @@ export default function LeadsPage() {
             }
           </CardDescription>
         </CardHeader>
-        <CardContent className="overflow-hidden pt-0">
+        <CardContent className="pt-0">
           <DataTable
             headers={[
               { key: 'nombre', label: 'Nombre' },
@@ -71,15 +71,15 @@ export default function LeadsPage() {
             rows={filteredLeads.map((lead: Lead) => ({
               id: lead.id,
               nombre: (
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-1">
                   <span className="font-medium text-white">{lead.nombre}</span>
-                  <span className="text-xs text-white/40">ID: {lead.id}</span>
+                  <span className="text-xs text-white/40">ID: {lead.id ?? '—'}</span>
                 </div>
               ),
               telefono: <span className="text-white/80">{lead.telefono}</span>,
-              estado: <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />,
+              estado: <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />, 
               primerContacto: <span>{formatDate(lead.primerContacto)}</span>,
-              fuente: <Badge label={lead.fuente} />,
+              fuente: <Badge label={lead.fuente || '—'} />,
             }))}
             empty={search ? 'Sin resultados para el criterio aplicado.' : 'Aún no hay leads registrados.'}
           />

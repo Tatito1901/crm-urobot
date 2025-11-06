@@ -11,14 +11,6 @@ import {
   CardTitle,
 } from "@/app/components/ui/card";
 import { Badge as ShadcnBadge, type BadgeProps as ShadcnBadgeProps } from "@/app/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/app/components/ui/table";
 
 export function Badge({
   label,
@@ -73,58 +65,79 @@ export function DataTable({
   empty: string;
   onRowClick?: (rowId: string) => void;
 }) {
+  const getAlignmentClasses = (align?: "left" | "right") => {
+    switch (align) {
+      case "right":
+        return "text-right";
+      default:
+        return "text-left";
+    }
+  };
+
+  if (rows.length === 0) {
+    return (
+      <div className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-8 text-center text-white/40">
+        {empty}
+      </div>
+    );
+  }
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] shadow-lg shadow-black/30">
-      <div className="w-full overflow-x-auto">
-        <Table className="min-w-[560px]">
-          <TableHeader>
-            <TableRow>
+    <div className="space-y-4">
+      <div className="hidden w-full overflow-x-auto rounded-xl border border-white/10 bg-white/[0.02] md:block">
+        <table className="min-w-full divide-y divide-white/10 text-left text-sm text-white/80">
+          <thead className="bg-white/5 text-xs uppercase tracking-[0.2em] text-white/40">
+            <tr>
               {headers.map((header) => (
-                <TableHead
-                  key={header.key}
-                  className={cn(
-                    "text-[0.65rem] uppercase tracking-[0.24em] text-white/50",
-                    header.align === "right" ? "text-right" : "text-left"
-                  )}
-                >
+                <th key={header.key} scope="col" className={cn("px-3 py-3", getAlignmentClasses(header.align))}>
                   {header.label}
-                </TableHead>
+                </th>
               ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={headers.length} className="px-4 py-10 text-center text-white/40">
-                  {empty}
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  onClick={() => onRowClick?.(row.id)}
-                  className={cn(
-                    onRowClick ? "cursor-pointer transition hover:bg-white/[0.05]" : "",
-                    index % 2 === 0 ? "bg-white/[0.02]" : "bg-transparent"
-                  )}
-                >
-                  {headers.map((header) => (
-                    <TableCell
-                      key={header.key}
-                      className={cn(
-                        "whitespace-nowrap py-4 text-sm text-white/80",
-                        header.align === "right" ? "text-right" : "text-left"
-                      )}
-                    >
-                      {row[header.key]}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {rows.map((row) => (
+              <tr
+                key={row.id}
+                className={cn(
+                  "transition hover:bg-white/[0.04]",
+                  onRowClick && "cursor-pointer"
+                )}
+                onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+              >
+                {headers.map((header) => (
+                  <td key={header.key} className={cn("px-3 py-3 align-top", getAlignmentClasses(header.align))}>
+                    {row[header.key] ?? "—"}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid gap-3 md:hidden">
+        {rows.map((row) => (
+          <button
+            key={row.id}
+            type="button"
+            className={cn(
+              "flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+              onRowClick ? "cursor-pointer hover:border-white/20 hover:bg-white/[0.08]" : "cursor-default"
             )}
-          </TableBody>
-        </Table>
+            onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+            disabled={!onRowClick}
+          >
+            {headers.map((header) => (
+              <div key={header.key} className="flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-white/40">
+                  {header.label}
+                </span>
+                <div className="text-sm text-white/90">{row[header.key] ?? "—"}</div>
+              </div>
+            ))}
+          </button>
+        ))}
       </div>
     </div>
   );
