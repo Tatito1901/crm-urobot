@@ -1,0 +1,29 @@
+'use client'
+
+import { forwardRef } from 'react'
+import type { InputHTMLAttributes } from 'react'
+
+import { cn } from '@/app/lib/utils'
+
+const baseStyles =
+  'w-full rounded-lg border border-white/15 bg-white/[0.08] px-3 py-2 text-sm text-white placeholder:text-white/40 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
+
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  isInvalid?: boolean
+}
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ className, isInvalid, ...props }, ref) => (
+    <input
+      ref={ref}
+      className={cn(
+        baseStyles,
+        isInvalid && 'border-rose-400/60 focus-visible:outline-rose-300',
+        className
+      )}
+      {...props}
+    />
+  )
+)
+
+Input.displayName = 'Input'
