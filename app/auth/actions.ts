@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 import { getSupabaseServerClient } from '@/lib/supabase-server'
 
-import { buildErrorState, buildSuccessState, initialAuthState, type AuthFormState } from './state'
+import { buildErrorState, buildSuccessState, buildAuthSuccessState, initialAuthState, type AuthFormState } from './state'
 
 type Credentials = {
   email: string
@@ -39,7 +39,7 @@ export async function signUpAction(_: AuthFormState, formData: FormData): Promis
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  return buildAuthSuccessState()
 }
 
 export async function signInAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -58,7 +58,7 @@ export async function signInAction(_: AuthFormState, formData: FormData): Promis
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  return buildAuthSuccessState()
 }
 
 export async function resetPasswordAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {

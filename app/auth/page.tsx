@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
@@ -12,6 +13,7 @@ const TAB_TRIGGER_CLASSES =
   'rounded-lg px-4 py-2 text-sm font-medium transition data-[state=active]:bg-white data-[state=active]:text-[#0b1120] data-[state=inactive]:text-white/60'
 
 export default function AuthPage() {
+  const router = useRouter()
   const [signInState, signInFormAction, signInPending] = useActionState<AuthFormState, FormData>(
     signInAction,
     initialAuthState,
@@ -24,6 +26,14 @@ export default function AuthPage() {
     resetPasswordAction,
     initialAuthState,
   )
+
+  // Redirigir al dashboard cuando la autenticación sea exitosa
+  useEffect(() => {
+    if (signInState.success || signUpState.success) {
+      router.push('/dashboard')
+      router.refresh()
+    }
+  }, [signInState.success, signUpState.success, router])
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_#101c3b,_#02040a_70%)] px-4 py-10 text-white">
