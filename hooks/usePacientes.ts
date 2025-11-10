@@ -20,15 +20,23 @@ interface UsePacientesReturn {
 
 type PacienteRow = Tables<'pacientes'>
 
-const mapPaciente = (row: PacienteRow): Paciente => ({
-  id: row.id,
-  nombre: row.nombre_completo,
-  telefono: row.telefono,
-  email: row.email ?? '',
-  totalConsultas: row.total_consultas ?? 0,
-  ultimaConsulta: row.ultima_consulta,
-  estado: (row.estado as Paciente['estado']) ?? 'Activo',
-})
+const mapPaciente = (row: PacienteRow): Paciente => {
+  // Validar estado del paciente
+  const estadosValidos: Paciente['estado'][] = ['Activo', 'Inactivo'];
+  const estado = estadosValidos.includes(row.estado as Paciente['estado'])
+    ? (row.estado as Paciente['estado'])
+    : 'Activo';
+
+  return {
+    id: row.id,
+    nombre: row.nombre_completo,
+    telefono: row.telefono,
+    email: row.email ?? '',
+    totalConsultas: row.total_consultas ?? 0,
+    ultimaConsulta: row.ultima_consulta,
+    estado,
+  };
+}
 
 export function usePacientes(): UsePacientesReturn {
   const [pacientes, setPacientes] = useState<Paciente[]>([])

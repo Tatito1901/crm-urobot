@@ -52,15 +52,33 @@ export function useRecordatorios(): UseRecordatoriosReturn {
       if (fetchError) throw fetchError;
 
       const mapped: RecordatorioDetalle[] = (data as RecordatorioRow[] | null)?.map((row) => {
+        // Validar tipo de recordatorio
+        const tiposValidos: Recordatorio['tipo'][] = ['confirmacion_inicial', '48h', '24h', '3h'];
+        const tipo = tiposValidos.includes(row.tipo as Recordatorio['tipo'])
+          ? (row.tipo as Recordatorio['tipo'])
+          : 'confirmacion_inicial';
+
+        // Validar estado de recordatorio
+        const estadosValidos: Recordatorio['estado'][] = ['pendiente', 'procesando', 'enviado', 'error'];
+        const estado = estadosValidos.includes(row.estado as Recordatorio['estado'])
+          ? (row.estado as Recordatorio['estado'])
+          : 'pendiente';
+
+        // Validar canal
+        const canalesValidos: ('whatsapp' | 'sms' | 'email')[] = ['whatsapp', 'sms', 'email'];
+        const canal = row.canal && canalesValidos.includes(row.canal as 'whatsapp' | 'sms' | 'email')
+          ? (row.canal as 'whatsapp' | 'sms' | 'email')
+          : 'whatsapp';
+
         const base: Recordatorio = {
           id: row.id,
           recordatorio_id: row.recordatorio_id,
           consulta_id: row.consulta_id,
-          tipo: row.tipo as Recordatorio['tipo'],
+          tipo,
           programado_para: row.programado_para,
           enviado_en: row.enviado_en,
-          estado: (row.estado as Recordatorio['estado']) ?? 'pendiente',
-          canal: (row.canal as Recordatorio['canal']) ?? 'whatsapp',
+          estado,
+          canal,
           mensaje_enviado: row.mensaje_enviado,
           plantilla_usada: row.plantilla_usada,
           intentos: row.intentos,
@@ -69,8 +87,19 @@ export function useRecordatorios(): UseRecordatoriosReturn {
           updated_at: row.updated_at,
         };
 
-        const consultaRow = row.consulta
-        const pacienteRow = consultaRow?.paciente
+        const consultaRow = row.consulta;
+        const pacienteRow = consultaRow?.paciente;
+
+        // Validar sede y estado de consulta
+        const sedesValidas: Consulta['sede'][] = ['POLANCO', 'SATELITE'];
+        const sedeConsulta = consultaRow?.sede && sedesValidas.includes(consultaRow.sede as Consulta['sede'])
+          ? (consultaRow.sede as Consulta['sede'])
+          : 'POLANCO';
+
+        const estadosCitaValidos: ConsultaEstado[] = ['Programada', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada'];
+        const estadoCita = consultaRow?.estado_cita && estadosCitaValidos.includes(consultaRow.estado_cita as ConsultaEstado)
+          ? (consultaRow.estado_cita as ConsultaEstado)
+          : 'Programada';
 
         return {
           ...base,
@@ -78,8 +107,8 @@ export function useRecordatorios(): UseRecordatoriosReturn {
             ? {
                 id: consultaRow.id,
                 consulta_id: consultaRow.consulta_id,
-                sede: (consultaRow.sede as Consulta['sede']) ?? 'POLANCO',
-                estado_cita: (consultaRow.estado_cita as ConsultaEstado) ?? 'Programada',
+                sede: sedeConsulta,
+                estado_cita: estadoCita,
               }
             : null,
           paciente: pacienteRow

@@ -13,16 +13,24 @@ interface UseLeadsReturn {
 
 type LeadRow = Tables<'leads'>
 
-const mapLead = (row: LeadRow): Lead => ({
-  id: row.id,
-  leadId: row.lead_id,
-  nombre: row.nombre_completo,
-  telefono: row.telefono_whatsapp,
-  estado: (row.estado as Lead['estado']) ?? 'Nuevo',
-  primerContacto: row.fecha_primer_contacto ?? row.created_at ?? new Date().toISOString(),
-  fuente: row.fuente_lead ?? 'WhatsApp',
-  ultimaInteraccion: row.ultima_interaccion,
-})
+const mapLead = (row: LeadRow): Lead => {
+  // Validar el estado del lead
+  const estadosValidos: Lead['estado'][] = ['Nuevo', 'En seguimiento', 'Convertido', 'Descartado'];
+  const estado = estadosValidos.includes(row.estado as Lead['estado'])
+    ? (row.estado as Lead['estado'])
+    : 'Nuevo';
+
+  return {
+    id: row.id,
+    leadId: row.lead_id,
+    nombre: row.nombre_completo,
+    telefono: row.telefono_whatsapp,
+    estado,
+    primerContacto: row.fecha_primer_contacto ?? row.created_at ?? new Date().toISOString(),
+    fuente: row.fuente_lead ?? 'WhatsApp',
+    ultimaInteraccion: row.ultima_interaccion,
+  };
+}
 
 export function useLeads(): UseLeadsReturn {
   const [leads, setLeads] = useState<Lead[]>([])

@@ -73,7 +73,7 @@ export default function LeadsPage() {
               nombre: (
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-white">{lead.nombre}</span>
-                  <span className="text-xs text-white/40">ID: {lead.id ?? '—'}</span>
+                  <span className="text-xs text-white/40">ID: {lead.id}</span>
                 </div>
               ),
               telefono: <span className="text-white/80">{lead.telefono}</span>,
