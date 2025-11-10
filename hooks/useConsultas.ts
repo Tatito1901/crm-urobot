@@ -26,23 +26,35 @@ type ConsultaRow = Tables<'consultas'> & {
 }
 
 const mapConsulta = (row: ConsultaRow): Consulta => {
-  const fallbackDate = new Date().toISOString()
-  const resolvedTimezone: Consulta['timezone'] = 'America/Mexico_City'
+  const fallbackDate = new Date().toISOString();
+  const resolvedTimezone: Consulta['timezone'] = 'America/Mexico_City';
+
+  // Validar sede
+  const sedesValidas: Consulta['sede'][] = ['POLANCO', 'SATELITE'];
+  const sede = sedesValidas.includes(row.sede as Consulta['sede'])
+    ? (row.sede as Consulta['sede'])
+    : 'POLANCO';
+
+  // Validar estado de cita
+  const estadosValidos: ConsultaEstado[] = ['Programada', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada'];
+  const estado = estadosValidos.includes(row.estado_cita as ConsultaEstado)
+    ? (row.estado_cita as ConsultaEstado)
+    : 'Programada';
 
   const fechaLocal = row.fecha_consulta && row.hora_consulta
     ? `${row.fecha_consulta}T${row.hora_consulta}`
-    : row.fecha_consulta ?? fallbackDate
+    : row.fecha_consulta ?? fallbackDate;
 
-  const horaDesdeUtc = row.fecha_hora_utc ? row.fecha_hora_utc.split('T')[1]?.slice(0, 8) : null
+  const horaDesdeUtc = row.fecha_hora_utc ? row.fecha_hora_utc.split('T')[1]?.slice(0, 8) : null;
 
   return {
     id: row.consulta_id,
     uuid: row.id,
     paciente: row.paciente?.nombre_completo ?? 'Paciente sin nombre',
     pacienteId: row.paciente_id,
-    sede: (row.sede as Consulta['sede']) ?? 'POLANCO',
+    sede,
     tipo: row.tipo_cita ?? 'primera_vez',
-    estado: (row.estado_cita as ConsultaEstado) ?? 'Programada',
+    estado,
     estadoConfirmacion: row.estado_confirmacion ?? 'Pendiente',
     confirmadoPaciente: row.confirmado_paciente ?? false,
     fecha: row.fecha_hora_utc ?? fechaLocal,
@@ -58,7 +70,7 @@ const mapConsulta = (row: ConsultaRow): Consulta => {
     motivoCancelacion: row.motivo_cancelacion,
     createdAt: row.created_at ?? fallbackDate,
     updatedAt: row.updated_at ?? row.created_at ?? fallbackDate,
-  }
+  };
 }
 
 export function useConsultas(): UseConsultasReturn {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
 import { StatCard, Badge } from '@/app/components/crm/ui';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -48,25 +49,28 @@ export default function DashboardPage() {
     },
   ] : [];
 
-  // Datos para MVP
-  const recentLeads = leads
-    .slice()
-    .sort((a, b) => new Date(b.primerContacto).getTime() - new Date(a.primerContacto).getTime())
-    .slice(0, 5);
+  // Datos para MVP - optimizado con useMemo
+  const recentLeads = useMemo(() => {
+    return [...leads]
+      .sort((a, b) => new Date(b.primerContacto).getTime() - new Date(a.primerContacto).getTime())
+      .slice(0, 5);
+  }, [leads]);
 
-  const upcomingConsultas = consultas
-    .slice()
-    .filter((c) => new Date(c.fecha) >= new Date()) // Solo futuras
-    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-    .slice(0, 5);
+  const upcomingConsultas = useMemo(() => {
+    const now = new Date();
+    return consultas
+      .filter((c) => new Date(c.fecha) >= now)
+      .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+      .slice(0, 5);
+  }, [consultas]);
 
-  // Estados de consultas
-  const consultasStats = {
+  // Estados de consultas - memoizado para evitar recálculos
+  const consultasStats = useMemo(() => ({
     confirmadas: consultas.filter((c) => c.estado === 'Confirmada').length,
     programadas: consultas.filter((c) => c.estado === 'Programada').length,
     polanco: dm?.polancoFuturas || 0,
     satelite: dm?.sateliteFuturas || 0,
-  };
+  }), [consultas, dm?.polancoFuturas, dm?.sateliteFuturas]);
   return (
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#123456,_#050b1a_60%,_#03060f)] text-white">
       <div className="pointer-events-none absolute inset-0 opacity-50" aria-hidden>
@@ -78,7 +82,7 @@ export default function DashboardPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-blue-200/60">Panel operativo</p>
           <h1 className="text-2xl font-semibold text-white sm:text-3xl">Resumen general</h1>
           <p className="text-sm text-white/60">
-            Visión consolidada ·
+            Visión consolidada de métricas y actividad reciente
           </p>
         </header>
 

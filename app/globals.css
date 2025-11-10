@@ -37,7 +37,7 @@ body {
   main {
     overflow-x: hidden;
   }
-  
+
   /* Ocultar scrollbar horizontal en móviles */
   body {
     overflow-x: hidden;
@@ -54,6 +54,37 @@ body {
 @media (max-width: 640px) {
   .card-mobile-compact {
     padding: 0.75rem;
+  }
+
+  /* Mejorar espaciado en móviles pequeños */
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  /* Optimizar inputs en móviles */
+  input, select {
+    font-size: 16px; /* Previene zoom automático en iOS */
+  }
+}
+
+/* Mejoras para pantallas muy pequeñas */
+@media (max-width: 375px) {
+  .grid {
+    gap: 0.5rem;
+  }
+
+  /* Ajustar padding en containers */
+  .px-4 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Mejoras de touch targets para móviles */
+@media (pointer: coarse) {
+  button, a, input[type="checkbox"], input[type="radio"] {
+    min-height: 44px; /* iOS Human Interface Guidelines */
+    min-width: 44px;
   }
 }
 

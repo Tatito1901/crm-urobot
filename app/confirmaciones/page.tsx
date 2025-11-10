@@ -20,32 +20,40 @@ export default function ConfirmacionesPage() {
   const { recordatorios, loading, error } = useRecordatorios();
 
   const filtered = useMemo(() => {
-    let result = recordatorios;
-
-    // Filtro por rango de fechas
     const now = new Date();
-    if (rangoFiltro === 'ultimos_7') {
-      const hace7Dias = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      result = result.filter(r => new Date(r.programado_para) >= hace7Dias);
-    } else if (rangoFiltro === 'ultimos_30') {
-      const hace30Dias = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      result = result.filter(r => new Date(r.programado_para) >= hace30Dias);
-    }
-
-    // Filtro por tipo de recordatorio
-    if (tipoFiltro !== 'ALL') {
-      result = result.filter((r) => r.tipo === tipoFiltro);
-    }
-
-    // Filtro por búsqueda
     const term = search.trim().toLowerCase();
-    if (term) {
-      result = result.filter((recordatorio) => {
-        const nombrePaciente = recordatorio.paciente?.nombre_completo || '';
-        const consultaId = recordatorio.consulta?.consulta_id || '';
-        return [nombrePaciente, consultaId].some((field) => field.toLowerCase().includes(term));
-      });
+
+    // Calcular fecha límite una sola vez
+    let fechaLimite: Date | null = null;
+    if (rangoFiltro === 'ultimos_7') {
+      fechaLimite = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (rangoFiltro === 'ultimos_30') {
+      fechaLimite = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
+
+    // Aplicar todos los filtros en una sola pasada
+    const result = recordatorios.filter((r) => {
+      // Filtro por rango de fechas
+      if (fechaLimite && new Date(r.programado_para) < fechaLimite) {
+        return false;
+      }
+
+      // Filtro por tipo de recordatorio
+      if (tipoFiltro !== 'ALL' && r.tipo !== tipoFiltro) {
+        return false;
+      }
+
+      // Filtro por búsqueda
+      if (term) {
+        const nombrePaciente = (r.paciente?.nombre_completo || '').toLowerCase();
+        const consultaId = (r.consulta?.consulta_id || '').toLowerCase();
+        if (!nombrePaciente.includes(term) && !consultaId.includes(term)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
 
     // Mostrar solo el último recordatorio por consulta
     if (soloUltimo) {
@@ -59,15 +67,21 @@ export default function ConfirmacionesPage() {
           }
         }
       });
-      result = Array.from(consultaMap.values());
+      return Array.from(consultaMap.values());
     }
 
     return result;
   }, [search, recordatorios, tipoFiltro, rangoFiltro, soloUltimo]);
 
-  const pendientes = filtered.filter((item) => item.estado === 'pendiente').length;
-  const enviados = filtered.filter((item) => item.estado === 'enviado').length;
-  const errores = filtered.filter((item) => item.estado === 'error').length;
+  // Calcular estadísticas en una sola pasada
+  const stats = useMemo(() => {
+    return filtered.reduce((acc, item) => {
+      if (item.estado === 'pendiente') acc.pendientes++;
+      else if (item.estado === 'enviado') acc.enviados++;
+      else if (item.estado === 'error') acc.errores++;
+      return acc;
+    }, { pendientes: 0, enviados: 0, errores: 0 });
+  }, [filtered]);
 
   return (
     <PageShell
@@ -166,7 +180,7 @@ export default function ConfirmacionesPage() {
             <CardDescription>Aguardando confirmación</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-3xl font-semibold text-white">{pendientes}</p>
+            <p className="text-3xl font-semibold text-white">{stats.pendientes}</p>
           </CardContent>
         </Card>
         <Card className="bg-white/[0.03]">
@@ -175,7 +189,7 @@ export default function ConfirmacionesPage() {
             <CardDescription>Recordatorios completados</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-3xl font-semibold text-white">{enviados}</p>
+            <p className="text-3xl font-semibold text-white">{stats.enviados}</p>
           </CardContent>
         </Card>
         <Card className="bg-white/[0.03]">
@@ -184,7 +198,7 @@ export default function ConfirmacionesPage() {
             <CardDescription>Requieren revisión</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-3xl font-semibold text-white">{errores}</p>
+            <p className="text-3xl font-semibold text-white">{stats.errores}</p>
           </CardContent>
         </Card>
       </section>
@@ -222,10 +236,10 @@ export default function ConfirmacionesPage() {
               { key: 'estado', label: 'Estado' },
               { key: 'canal', label: 'Canal' },
             ]}
-            rows={filtered
-              .slice()
-              .sort((a, b) => new Date(b.programado_para).getTime() - new Date(a.programado_para).getTime())
-              .map((recordatorio) => ({
+            rows={useMemo(() =>
+              [...filtered]
+                .sort((a, b) => new Date(b.programado_para).getTime() - new Date(a.programado_para).getTime())
+                .map((recordatorio) => ({
                 id: recordatorio.id,
                 programado: (
                   <div className="flex flex-col gap-1">
@@ -245,7 +259,7 @@ export default function ConfirmacionesPage() {
                 tipo: <Badge label={recordatorio.tipo.replace(/_/g, ' ')} />,
                 estado: <Badge label={recordatorio.estado || 'pendiente'} tone={STATE_COLORS[recordatorio.estado || 'pendiente']} />,
                 canal: <Badge label={recordatorio.canal || 'whatsapp'} />,
-              }))}
+              })), [filtered])}
             empty={filtered.length === 0 ? 'No hay recordatorios para mostrar.' : 'Sin resultados.'}
           />
         </CardContent>
