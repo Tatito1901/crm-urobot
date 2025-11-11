@@ -9,7 +9,7 @@
 export function CalendarSkeleton() {
   return (
     <div className="w-full overflow-hidden rounded-2xl bg-[#0d1118]">
-      <div className="animate-pulse w-full h-[520px] sm:h-[620px] lg:h-[720px] xl:h-[780px]">
+      <div className="relative animate-pulse w-full h-[520px] sm:h-[620px] lg:h-[720px] xl:h-[780px]">
         {/* Header simulado */}
         <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
           <div className="flex gap-3">
