@@ -67,10 +67,7 @@ const getEstadoLabel = (estado: string) => ESTADO_LABELS[estado] ?? estado.charA
 
 const formatHourMinute = (date: Temporal.ZonedDateTime) => date.toPlainTime().toString().slice(0, 5);
 
-const formatDayBadge = (date: Temporal.ZonedDateTime) => {
-  const monthShort = dateUtils.monthName(date.month).slice(0, 3).toUpperCase();
-  return `${dateUtils.pad(date.day)} ${monthShort}`;
-};
+// Eliminada formatDayBadge - no se usa actualmente
 
 export default function AgendaPage() {
   const [vistaActiva, setVistaActiva] = useState<keyof typeof VISTAS>('UNIFICADO');

@@ -6,9 +6,12 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import type { Paciente } from '@/app/lib/crm-data'
 import type { Tables } from '@/types/database'
+
+// Crear instancia del cliente para hooks
+const supabase = createClient()
 
 interface UsePacientesReturn {
   pacientes: Paciente[]

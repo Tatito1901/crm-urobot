@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/app/lib/utils";
+import { signOutAction } from "@/app/auth/actions";
 
 type NavItem = { readonly label: string; readonly href: string };
 
@@ -83,6 +84,33 @@ export function Sidebar() {
           <p className="mt-1 text-white/60">Hoy · {today}</p>
           <p className="text-white/40">Actualización automática cada 60&nbsp;min</p>
         </div>
+        
+        <form action={signOutAction} className="w-full">
+          <button
+            type="submit"
+            className={cn(
+              "w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition-colors",
+              "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
+              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
+            )}
+          >
+            <svg 
+              className="h-4 w-4" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+              />
+            </svg>
+            Cerrar sesión
+          </button>
+        </form>
+
         <p className="text-center text-[11px] uppercase tracking-[0.32em] text-white/30">
           UROBOT · CRM
         </p>
@@ -210,6 +238,32 @@ export function MobileSidebar() {
                   );
                 })}
               </ul>
+
+              <form action={signOutAction} className="mt-6">
+                <button
+                  type="submit"
+                  className={cn(
+                    "w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-base font-medium text-white/70 transition-colors",
+                    "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
+                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
+                  )}
+                >
+                  <svg 
+                    className="h-5 w-5" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+                    />
+                  </svg>
+                  Cerrar sesión
+                </button>
+              </form>
             </nav>
           </aside>
         </div>

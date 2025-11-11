@@ -53,38 +53,57 @@ export default function AuthPage() {
 
           <TabsContent value="login" className="space-y-4">
             <form action={signInFormAction} className="space-y-4">
-              <Input
-                name="email"
-                type="email"
-                placeholder="Correo corporativo"
-                autoComplete="email"
-                required
-              />
-              <Input
-                name="password"
-                type="password"
-                placeholder="Contraseña"
-                autoComplete="current-password"
-                required
-              />
+              <div className="space-y-2">
+                <label htmlFor="login-email" className="text-xs text-white/70">
+                  Correo electrónico
+                </label>
+                <Input
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  placeholder="doctor@clinica.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="login-password" className="text-xs text-white/70">
+                  Contraseña
+                </label>
+                <Input
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
               {signInState.error ? (
                 <p className="rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 py-2 text-sm text-rose-100">
                   {signInState.error}
                 </p>
               ) : null}
               <Button type="submit" className="w-full" disabled={signInPending}>
-                {signInPending ? 'Ingresando…' : 'Entrar'}
+                {signInPending ? 'Ingresando…' : 'Entrar al CRM'}
               </Button>
             </form>
           </TabsContent>
 
           <TabsContent value="register" className="space-y-4">
             <form action={signUpFormAction} className="space-y-4">
-              <Input name="email" type="email" placeholder="Correo institucional" required />
+              <Input 
+                name="email" 
+                type="email" 
+                placeholder="Correo institucional" 
+                autoComplete="email"
+                required 
+              />
               <Input
                 name="password"
                 type="password"
-                placeholder="Contraseña segura"
+                placeholder="Contraseña segura (mínimo 8 caracteres)"
+                autoComplete="new-password"
                 minLength={8}
                 required
               />
@@ -93,10 +112,18 @@ export default function AuthPage() {
                   {signUpState.error}
                 </p>
               ) : null}
+              {signUpState.message ? (
+                <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-100">
+                  {signUpState.message}
+                </p>
+              ) : null}
               <Button type="submit" className="w-full" variant="secondary" disabled={signUpPending}>
                 {signUpPending ? 'Creando cuenta…' : 'Registrarme'}
               </Button>
             </form>
+            <p className="text-xs text-center text-white/50">
+              Al registrarte, aceptas nuestros términos de servicio y política de privacidad
+            </p>
           </TabsContent>
         </Tabs>
 

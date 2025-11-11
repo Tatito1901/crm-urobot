@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
-import { getSupabaseServerClient } from '@/lib/supabase-server'
+import { createClient } from '@/lib/supabase/server'
 
 import { buildErrorState, buildSuccessState, initialAuthState, type AuthFormState } from './state'
 
@@ -24,7 +24,7 @@ function getCredentials(formData: FormData): Credentials | { error: string } {
 }
 
 export async function signUpAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const supabase = await getSupabaseServerClient()
+  const supabase = await createClient()
   const credentials = getCredentials(formData)
 
   if ('error' in credentials) {
@@ -38,12 +38,12 @@ export async function signUpAction(_: AuthFormState, formData: FormData): Promis
     return buildErrorState(error.message)
   }
 
-  revalidatePath('/', 'layout')
   redirect('/dashboard')
+  return initialAuthState
 }
 
 export async function signInAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const supabase = await getSupabaseServerClient()
+  const supabase = await createClient()
   const credentials = getCredentials(formData)
 
   if ('error' in credentials) {
@@ -57,12 +57,12 @@ export async function signInAction(_: AuthFormState, formData: FormData): Promis
     return buildErrorState(error.message)
   }
 
-  revalidatePath('/', 'layout')
   redirect('/dashboard')
+  return initialAuthState
 }
 
 export async function resetPasswordAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const supabase = await getSupabaseServerClient()
+  const supabase = await createClient()
   const email = String(formData.get('email') ?? '').trim()
 
   if (!email) {
@@ -81,7 +81,7 @@ export async function resetPasswordAction(_: AuthFormState, formData: FormData):
 }
 
 export async function updatePasswordAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const supabase = await getSupabaseServerClient()
+  const supabase = await createClient()
   const password = String(formData.get('password') ?? '').trim()
 
   if (password.length < 8) {
@@ -94,12 +94,12 @@ export async function updatePasswordAction(_: AuthFormState, formData: FormData)
     return buildErrorState(error.message)
   }
 
-  revalidatePath('/', 'layout')
   redirect('/dashboard')
+  return initialAuthState
 }
 
 export async function signOutAction() {
-  const supabase = await getSupabaseServerClient()
+  const supabase = await createClient()
   await supabase.auth.signOut()
 
   revalidatePath('/', 'layout')

@@ -6,7 +6,10 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
+
+// Crear instancia del cliente para hooks
+const supabase = createClient()
 
 interface DashboardMetrics {
   leadsTotal: number
