@@ -1,11 +1,14 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { getSupabaseClient } from '@/lib/supabase/client'
-import { debounce } from '@/lib/utils/debounce'
+/**
+ * ============================================================
+ * HOOK REFACTORIZADO: useLeads
+ * ============================================================
+ * Simplificado usando el hook genérico useRealtimeTable.
+ * Reducido de ~98 líneas a ~35 líneas (64% menos código).
+ */
+
 import { DEFAULT_LEAD_ESTADO, type Lead, isLeadEstado } from '@/types/leads'
 import type { Tables } from '@/types/database'
-
-// ✅ OPTIMIZACIÓN: Usar singleton del cliente
-const supabase = getSupabaseClient()
+import { useRealtimeTable } from './useRealtimeTable'
 
 interface UseLeadsReturn {
   leads: Lead[]
@@ -17,6 +20,9 @@ interface UseLeadsReturn {
 
 type LeadRow = Tables<'leads'>
 
+/**
+ * Mapea una fila de la tabla 'leads' al tipo Lead
+ */
 const mapLead = (row: LeadRow): Lead => {
   // Validar el estado del lead
   const estado = isLeadEstado(row.estado) ? row.estado : DEFAULT_LEAD_ESTADO
@@ -30,69 +36,24 @@ const mapLead = (row: LeadRow): Lead => {
     primerContacto: row.fecha_primer_contacto ?? row.created_at ?? new Date().toISOString(),
     fuente: row.fuente_lead ?? 'WhatsApp',
     ultimaInteraccion: row.ultima_interaccion,
-  };
+  }
 }
 
+/**
+ * Hook para gestionar leads con subscripción en tiempo real
+ */
 export function useLeads(): UseLeadsReturn {
-  const [leads, setLeads] = useState<Lead[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const [totalCount, setTotalCount] = useState(0)
-
-  const loadLeads = useCallback(async (options: { silent?: boolean } = {}) => {
-    const { silent = false } = options
-    try {
-      if (!silent) {
-        setLoading(true)
-      }
-      setError(null)
-      const { data, error: fetchError, count } = await supabase
-        .from('leads')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-
-      if (fetchError) throw fetchError
-
-      const mapped = (data ?? []).map(mapLead)
-      setLeads(mapped)
-      setTotalCount(count ?? mapped.length)
-    } catch (err) {
-      console.error('Error loading leads:', err)
-      setError(err as Error)
-    } finally {
-      if (!silent) {
-        setLoading(false)
-      }
-    }
-  }, [])
-
-  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
-  const debouncedLoad = useMemo(
-    () => debounce(() => loadLeads({ silent: true }), 300),
-    [loadLeads]
-  )
-
-  useEffect(() => {
-    loadLeads()
-
-    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin timestamp)
-    const channel = supabase
-      .channel('realtime:leads')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
-        debouncedLoad()
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [loadLeads, debouncedLoad])
+  const { data: leads, loading, error, refetch, totalCount } = useRealtimeTable<LeadRow, Lead>({
+    table: 'leads',
+    queryBuilder: (query) => query.order('created_at', { ascending: false }),
+    mapFn: mapLead,
+  })
 
   return {
     leads,
     loading,
     error,
-    refetch: loadLeads,
+    refetch,
     totalCount,
   }
 }

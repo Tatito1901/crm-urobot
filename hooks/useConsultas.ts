@@ -1,13 +1,11 @@
 /**
  * ============================================================
- * HOOK: useConsultas
+ * HOOK REFACTORIZADO: useConsultas
  * ============================================================
- * Hook para gestionar consultas usando datos locales (sin real-time)
+ * Simplificado usando el hook genérico useRealtimeTable.
+ * Reducido de ~145 líneas a ~90 líneas (38% menos código).
  */
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { getSupabaseClient } from '@/lib/supabase/client'
-import { debounce } from '@/lib/utils/debounce'
 import {
   DEFAULT_CONSULTA_ESTADO,
   DEFAULT_CONSULTA_SEDE,
@@ -16,9 +14,7 @@ import {
   isConsultaSede,
 } from '@/types/consultas'
 import type { Tables } from '@/types/database'
-
-// ✅ OPTIMIZACIÓN: Usar singleton del cliente
-const supabase = getSupabaseClient()
+import { useRealtimeTable } from './useRealtimeTable'
 
 interface UseConsultasReturn {
   consultas: Consulta[]
@@ -79,66 +75,24 @@ const mapConsulta = (row: ConsultaRow): Consulta => {
   };
 }
 
+/**
+ * Hook para gestionar consultas con subscripción en tiempo real
+ */
 export function useConsultas(): UseConsultasReturn {
-  const [consultas, setConsultas] = useState<Consulta[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const [totalCount, setTotalCount] = useState(0)
-
-  const fetchConsultas = useCallback(async (options: { silent?: boolean } = {}) => {
-    const { silent = false } = options
-    try {
-      if (!silent) {
-        setLoading(true)
-      }
-      setError(null)
-      const { data, error: fetchError, count } = await supabase
-        .from('consultas')
-        .select('*, paciente:pacientes ( id, nombre_completo )', { count: 'exact' })
-        .order('fecha_consulta', { ascending: false })
-
-      if (fetchError) throw fetchError
-
-      const mapped = (data as ConsultaRow[] | null)?.map(mapConsulta) ?? []
-      setConsultas(mapped)
-      setTotalCount(count ?? mapped.length)
-    } catch (err) {
-      console.error('Error fetching consultas:', err)
-      setError(err as Error)
-    } finally {
-      if (!silent) {
-        setLoading(false)
-      }
-    }
-  }, [])
-
-  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
-  const debouncedFetch = useMemo(
-    () => debounce(() => fetchConsultas({ silent: true }), 300),
-    [fetchConsultas]
-  )
-
-  useEffect(() => {
-    fetchConsultas()
-
-    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin timestamp)
-    const channel = supabase
-      .channel('realtime:consultas')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'consultas' }, () => {
-        debouncedFetch()
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [fetchConsultas, debouncedFetch])
+  const { data: consultas, loading, error, refetch, totalCount } = useRealtimeTable<ConsultaRow, Consulta>({
+    table: 'consultas',
+    queryBuilder: (query) =>
+      query
+        .select('*, paciente:pacientes ( id, nombre_completo )')
+        .order('fecha_consulta', { ascending: false }),
+    mapFn: mapConsulta,
+  })
 
   return {
     consultas,
     loading,
     error,
-    refetch: fetchConsultas,
+    refetch,
     totalCount,
   }
 }

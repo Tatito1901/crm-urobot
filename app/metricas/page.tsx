@@ -1,14 +1,37 @@
 'use client';
 
+/**
+ * ============================================================
+ * METRICAS PAGE - Vista de métricas avanzadas (OPTIMIZADA)
+ * ============================================================
+ * ✨ Gráficos lazy-loaded para mejor rendimiento inicial
+ */
+
 import { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { StatCard } from '@/app/components/crm/ui';
-import { GrowthChart } from '@/app/components/analytics/GrowthChart';
-import { ComparisonBars } from '@/app/components/analytics/ComparisonBars';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
+
+// ✅ OPTIMIZACIÓN: Lazy load de gráficos para reducir bundle inicial
+const GrowthChart = dynamic(
+  () => import('@/app/components/analytics/GrowthChart').then(mod => ({ default: mod.GrowthChart })),
+  {
+    loading: () => <div className="h-[300px] animate-pulse bg-white/5 rounded-xl" />,
+    ssr: false,
+  }
+);
+
+const ComparisonBars = dynamic(
+  () => import('@/app/components/analytics/ComparisonBars').then(mod => ({ default: mod.ComparisonBars })),
+  {
+    loading: () => <div className="h-[200px] animate-pulse bg-white/5 rounded-xl" />,
+    ssr: false,
+  }
+);
 
 export default function MetricasPage() {
   // ✅ Datos reales de Supabase con real-time
