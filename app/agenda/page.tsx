@@ -82,6 +82,12 @@ export default function AgendaPage() {
   // Estado de datos
   const { consultas, loading } = useConsultas();
 
+  // Debug: Log cuando cambien las consultas
+  React.useEffect(() => {
+    console.log('[Agenda Page] Consultas cargadas:', consultas.length);
+    console.log('[Agenda Page] Loading:', loading);
+  }, [consultas, loading]);
+
   // Estado de UI
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [vistaCalendario, setVistaCalendario] = useState<string>(viewWeek.name);
@@ -113,17 +119,25 @@ export default function AgendaPage() {
 
   // Filtrar consultas
   const filteredConsultas = useMemo(() => {
-    return filterAppointments(consultas, {
+    const filtered = filterAppointments(consultas, {
       searchQuery,
       sede: selectedSede,
       estados: selectedEstados,
       onlyToday,
       onlyPendingConfirmation,
     });
+    console.log('[Agenda] Filtrado:', {
+      total: consultas.length,
+      filtradas: filtered.length,
+      filtros: { searchQuery, selectedSede, estados: selectedEstados.length, onlyToday, onlyPendingConfirmation }
+    });
+    return filtered;
   }, [consultas, searchQuery, selectedSede, selectedEstados, onlyToday, onlyPendingConfirmation]);
 
   // Convertir consultas a eventos del calendario
   const events: CalendarEvent[] = useMemo(() => {
+    console.log('[Agenda] Total consultas filtradas:', filteredConsultas.length);
+
     return filteredConsultas.map((consulta) => {
       const timezone = consulta.timezone ?? 'America/Mexico_City';
       const fechaConsulta = consulta.fechaConsulta ?? Temporal.Now.plainDateISO(timezone).toString();
@@ -164,7 +178,10 @@ export default function AgendaPage() {
 
   // Actualizar eventos del calendario
   React.useEffect(() => {
-    eventsService.set(events);
+    // Convertir eventos a formato Schedule-X (sin campo consulta)
+    const scheduleXEvents = events.map(({ consulta: _, ...event }) => event);
+    console.log('[Agenda] Actualizando calendario con', scheduleXEvents.length, 'eventos');
+    eventsService.set(scheduleXEvents);
   }, [events, eventsService]);
 
   // Cambiar vista del calendario

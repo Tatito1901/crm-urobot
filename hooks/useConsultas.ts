@@ -99,6 +99,10 @@ export function useConsultas(): UseConsultasReturn {
       if (fetchError) throw fetchError
 
       const mapped = (data as ConsultaRow[] | null)?.map(mapConsulta) ?? []
+      console.log('[useConsultas] Consultas obtenidas:', mapped.length, 'Total count:', count)
+      if (mapped.length > 0) {
+        console.log('[useConsultas] Primera consulta:', mapped[0])
+      }
       setConsultas(mapped)
       setTotalCount(count ?? mapped.length)
     } catch (err) {
