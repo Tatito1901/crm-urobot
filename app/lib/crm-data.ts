@@ -1,95 +1,14 @@
-export type TabKey = "leads" | "pacientes" | "consultas" | "confirmaciones" | "metricas";
+import type {
+  ConsultaEstado,
+  LeadEstado,
+  RecordatorioEstado,
+  TabKey,
+} from '@/types';
 
-export type LeadEstado = "Nuevo" | "En seguimiento" | "Convertido" | "Descartado";
-
-export type Lead = {
-  id: string;
-  leadId?: string | null;
-  nombre: string;
-  telefono: string;
-  estado: LeadEstado;
-  primerContacto: string;
-  fuente: string;
-  ultimaInteraccion?: string | null;
-};
-
-export type Paciente = {
-  id: string;
-  nombre: string;
-  telefono: string;
-  email: string;
-  totalConsultas: number;
-  ultimaConsulta: string | null;
-  estado: "Activo" | "Inactivo";
-};
-
-export type ConsultaEstado =
-  | "Programada"
-  | "Confirmada"
-  | "Reagendada"
-  | "Cancelada"
-  | "Completada";
-
-export type Consulta = {
-  id: string; // consulta_id (folio público)
-  uuid: string; // id (uuid real)
-  paciente: string;
-  pacienteId: string | null;
-  sede: "POLANCO" | "SATELITE";
-  tipo: string;
-  estado: ConsultaEstado;
-  estadoConfirmacion: string;
-  confirmadoPaciente: boolean;
-  fecha: string;
-  fechaConsulta: string;
-  horaConsulta: string;
-  timezone: string;
-  motivoConsulta: string | null;
-  duracionMinutos: number;
-  calendarEventId: string | null;
-  calendarLink: string | null;
-  canalOrigen: string | null;
-  canceladoPor?: string | null;
-  motivoCancelacion?: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type RecordatorioTipo = "confirmacion_inicial" | "48h" | "24h" | "3h";
-
-export type RecordatorioEstado = "pendiente" | "procesando" | "enviado" | "error";
-
-export type Recordatorio = {
-  id: string;
-  recordatorio_id: string | null;
-  consulta_id: string | null;
-  tipo: RecordatorioTipo;
-  programado_para: string;
-  enviado_en: string | null;
-  estado: RecordatorioEstado;
-  canal: "whatsapp" | "sms" | "email" | null;
-  mensaje_enviado?: string | null;
-  plantilla_usada?: string | null;
-  intentos?: number | null;
-  error_mensaje?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-export type RecordatorioDetalle = Recordatorio & {
-  consulta?: {
-    id: string;
-    consulta_id: string | null;
-    sede: Consulta["sede"] | null;
-    estado_cita: ConsultaEstado | null;
-  } | null;
-  paciente?: {
-    id: string;
-    nombre_completo: string;
-  } | null;
-};
-
-export const STATE_COLORS: Record<string, string> = {
+export const STATE_COLORS: Record<
+  LeadEstado | ConsultaEstado | RecordatorioEstado,
+  string
+> = {
   Nuevo: "border border-blue-400/60 bg-blue-500/15 text-blue-100",
   "En seguimiento": "border border-amber-400/60 bg-amber-500/15 text-amber-100",
   Convertido: "border border-teal-400/60 bg-teal-500/15 text-teal-100",

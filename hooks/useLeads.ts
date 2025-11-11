@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Lead } from '@/app/lib/crm-data'
+import { DEFAULT_LEAD_ESTADO, type Lead, isLeadEstado } from '@/types/leads'
 import type { Tables } from '@/types/database'
 
 // Crear instancia del cliente para hooks
@@ -18,10 +18,7 @@ type LeadRow = Tables<'leads'>
 
 const mapLead = (row: LeadRow): Lead => {
   // Validar el estado del lead
-  const estadosValidos: Lead['estado'][] = ['Nuevo', 'En seguimiento', 'Convertido', 'Descartado'];
-  const estado = estadosValidos.includes(row.estado as Lead['estado'])
-    ? (row.estado as Lead['estado'])
-    : 'Nuevo';
+  const estado = isLeadEstado(row.estado) ? row.estado : DEFAULT_LEAD_ESTADO
 
   return {
     id: row.id,

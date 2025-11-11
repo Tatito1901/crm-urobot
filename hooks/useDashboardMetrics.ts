@@ -7,43 +7,19 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import {
+  DEFAULT_DASHBOARD_METRICS,
+  type DashboardMetrics,
+} from '@/types/dashboard'
 
 // Crear instancia del cliente para hooks
 const supabase = createClient()
-
-interface DashboardMetrics {
-  leadsTotal: number
-  leadsMes: number
-  leadsConvertidos: number
-  tasaConversion: number
-  pacientesActivos: number
-  totalPacientes: number
-  consultasFuturas: number
-  consultasHoy: number
-  pendientesConfirmacion: number
-  polancoFuturas: number
-  sateliteFuturas: number
-}
 
 interface UseDashboardMetricsReturn {
   metrics: DashboardMetrics | null
   loading: boolean
   error: Error | null
   refetch: () => Promise<void>
-}
-
-const defaultMetrics: DashboardMetrics = {
-  leadsTotal: 0,
-  leadsMes: 0,
-  leadsConvertidos: 0,
-  tasaConversion: 0,
-  pacientesActivos: 0,
-  totalPacientes: 0,
-  consultasFuturas: 0,
-  consultasHoy: 0,
-  pendientesConfirmacion: 0,
-  polancoFuturas: 0,
-  sateliteFuturas: 0,
 }
 
 export function useDashboardMetrics(): UseDashboardMetricsReturn {
@@ -90,7 +66,7 @@ export function useDashboardMetrics(): UseDashboardMetricsReturn {
     } catch (err) {
       console.error('Error fetching dashboard metrics:', err)
       setError(err as Error)
-      setMetrics(defaultMetrics)
+      setMetrics(DEFAULT_DASHBOARD_METRICS)
     } finally {
       setLoading(false)
     }
@@ -206,6 +182,6 @@ async function calculateMetricsManually(): Promise<DashboardMetrics> {
     }
   } catch (err) {
     console.error('Error calculating metrics manually:', err)
-    return defaultMetrics
+    return DEFAULT_DASHBOARD_METRICS
   }
 }
