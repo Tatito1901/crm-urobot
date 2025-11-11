@@ -25,7 +25,8 @@ interface UseRealtimeTableOptions<TRow, T> {
   /** Función para construir el query (select, filtros, joins, etc.) */
   queryBuilder: (
     query: PostgrestFilterBuilder<Database['public'], TRow, TRow[], string>
-  ) => PostgrestFilterBuilder<Database['public'], TRow, TRow[], string>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => any
 
   /** Función para mapear cada fila de la BD al tipo final */
   mapFn: (row: TRow) => T
