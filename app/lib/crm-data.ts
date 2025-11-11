@@ -1,7 +1,30 @@
+/**
+ * ============================================================
+ * TIPOS CRM - OPTIMIZADOS
+ * ============================================================
+ * Usa tipos de database.ts como fuente de verdad
+ * Solo define enums adicionales y transformaciones necesarias
+ */
+
+import type { Tables } from "@/types/database";
+
+// ===== ENUMS Y TIPOS LITERALES =====
 export type TabKey = "leads" | "pacientes" | "consultas" | "confirmaciones" | "metricas";
 
 export type LeadEstado = "Nuevo" | "En seguimiento" | "Convertido" | "Descartado";
+export type PacienteEstado = "Activo" | "Inactivo";
+export type ConsultaEstado = "Programada" | "Confirmada" | "Reagendada" | "Cancelada" | "Completada";
+export type RecordatorioTipo = "confirmacion_inicial" | "48h" | "24h" | "3h";
+export type RecordatorioEstado = "pendiente" | "procesando" | "enviado" | "error";
+export type SedeType = "POLANCO" | "SATELITE";
 
+// ===== TIPOS BASE (desde Supabase) =====
+export type LeadRow = Tables<"leads">;
+export type PacienteRow = Tables<"pacientes">;
+export type ConsultaRow = Tables<"consultas">;
+export type RecordatorioRow = Tables<"recordatorios">;
+
+// ===== TIPOS TRANSFORMADOS PARA UI =====
 export type Lead = {
   id: string;
   leadId?: string | null;
@@ -20,22 +43,15 @@ export type Paciente = {
   email: string;
   totalConsultas: number;
   ultimaConsulta: string | null;
-  estado: "Activo" | "Inactivo";
+  estado: PacienteEstado;
 };
-
-export type ConsultaEstado =
-  | "Programada"
-  | "Confirmada"
-  | "Reagendada"
-  | "Cancelada"
-  | "Completada";
 
 export type Consulta = {
   id: string; // consulta_id (folio público)
   uuid: string; // id (uuid real)
   paciente: string;
   pacienteId: string | null;
-  sede: "POLANCO" | "SATELITE";
+  sede: SedeType;
   tipo: string;
   estado: ConsultaEstado;
   estadoConfirmacion: string;
@@ -55,32 +71,13 @@ export type Consulta = {
   updatedAt: string;
 };
 
-export type RecordatorioTipo = "confirmacion_inicial" | "48h" | "24h" | "3h";
-
-export type RecordatorioEstado = "pendiente" | "procesando" | "enviado" | "error";
-
-export type Recordatorio = {
-  id: string;
-  recordatorio_id: string | null;
-  consulta_id: string | null;
-  tipo: RecordatorioTipo;
-  programado_para: string;
-  enviado_en: string | null;
-  estado: RecordatorioEstado;
-  canal: "whatsapp" | "sms" | "email" | null;
-  mensaje_enviado?: string | null;
-  plantilla_usada?: string | null;
-  intentos?: number | null;
-  error_mensaje?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
+export type Recordatorio = RecordatorioRow;
 
 export type RecordatorioDetalle = Recordatorio & {
   consulta?: {
     id: string;
     consulta_id: string | null;
-    sede: Consulta["sede"] | null;
+    sede: SedeType | null;
     estado_cita: ConsultaEstado | null;
   } | null;
   paciente?: {

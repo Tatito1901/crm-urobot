@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
-import { StatCard, Badge } from '@/app/components/crm/ui';
+import { Badge } from '@/app/components/crm/ui';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
@@ -13,6 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/app/components/ui/card';
+import { MetricCard } from '@/app/components/analytics/MetricCard';
+import { DonutChart } from '@/app/components/analytics/DonutChart';
+import { BarChart } from '@/app/components/analytics/BarChart';
+import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
+import { FullPageLoader, EmptyState } from '@/app/components/common/LoadingStates';
 
 export default function DashboardPage() {
   // ✅ Datos reales de Supabase con real-time
@@ -25,29 +30,70 @@ export default function DashboardPage() {
     {
       title: 'Leads totales',
       value: dm.leadsTotal.toLocaleString('es-MX'),
-      hint: `${dm.leadsConvertidos} convertidos`,
+      subtitle: `${dm.leadsConvertidos} convertidos`,
+      icon: '👥',
+      color: 'blue' as const,
+      trend: dm.leadsMes > 0 ? { value: 12, isPositive: true } : undefined,
     },
     {
       title: 'Tasa de conversión',
       value: `${dm.tasaConversion}%`,
-      hint: 'Meta: 35%',
+      subtitle: 'Meta: 35%',
+      icon: '📈',
+      color: dm.tasaConversion >= 35 ? ('green' as const) : ('orange' as const),
     },
     {
       title: 'Pacientes activos',
       value: dm.pacientesActivos.toLocaleString('es-MX'),
-      hint: `Total: ${dm.totalPacientes}`,
+      subtitle: `Total: ${dm.totalPacientes}`,
+      icon: '🏥',
+      color: 'teal' as const,
     },
     {
       title: 'Consultas futuras',
       value: dm.consultasFuturas.toLocaleString('es-MX'),
-      hint: `Hoy: ${dm.consultasHoy}`,
+      subtitle: `Hoy: ${dm.consultasHoy}`,
+      icon: '📅',
+      color: 'purple' as const,
+      trend: dm.consultasHoy > 0 ? { value: 8, isPositive: true } : undefined,
     },
     {
       title: 'Pendientes confirmación',
       value: dm.pendientesConfirmacion.toLocaleString('es-MX'),
-      hint: 'Requieren seguimiento',
+      subtitle: 'Requieren seguimiento',
+      icon: '⏰',
+      color: dm.pendientesConfirmacion > 10 ? ('red' as const) : ('orange' as const),
     },
   ] : [];
+
+  // Datos para gráfico de dona (consultas por sede)
+  const sedesChartData = useMemo(() => dm ? [
+    { label: 'Polanco', value: dm.polancoFuturas, color: '#3b82f6' },
+    { label: 'Satélite', value: dm.sateliteFuturas, color: '#8b5cf6' },
+  ] : [], [dm]);
+
+  // Datos para gráfico de barras (leads por estado)
+  const leadsChartData = useMemo(() => {
+    const estados = {
+      Nuevo: 0,
+      'En seguimiento': 0,
+      Convertido: 0,
+      Descartado: 0,
+    };
+
+    leads.forEach((lead) => {
+      if (lead.estado in estados) {
+        estados[lead.estado as keyof typeof estados]++;
+      }
+    });
+
+    return [
+      { label: 'Nuevo', value: estados.Nuevo, color: '#3b82f6' },
+      { label: 'Seguimiento', value: estados['En seguimiento'], color: '#f59e0b' },
+      { label: 'Convertido', value: estados.Convertido, color: '#10b981' },
+      { label: 'Descartado', value: estados.Descartado, color: '#ef4444' },
+    ];
+  }, [leads]);
 
   // Datos para MVP - optimizado con useMemo
   const recentLeads = useMemo(() => {
@@ -71,7 +117,14 @@ export default function DashboardPage() {
     polanco: dm?.polancoFuturas || 0,
     satelite: dm?.sateliteFuturas || 0,
   }), [consultas, dm?.polancoFuturas, dm?.sateliteFuturas]);
+
+  // Loading state
+  if (loadingMetrics && !dm) {
+    return <FullPageLoader message="Cargando dashboard..." />;
+  }
+
   return (
+    <ErrorBoundary>
     <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#123456,_#050b1a_60%,_#03060f)] text-white">
       <div className="pointer-events-none absolute inset-0 opacity-50" aria-hidden>
         <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/40 blur-[180px]" />
@@ -87,15 +140,20 @@ export default function DashboardPage() {
         </header>
 
         {/* Métricas principales */}
-        {loadingMetrics ? (
-          <div className="text-center text-white/60">Cargando métricas...</div>
-        ) : (
-          <section className="grid gap-3 grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {metrics.map((metric) => (
-              <StatCard key={metric.title} title={metric.title} value={metric.value} hint={metric.hint} />
-            ))}
-          </section>
-        )}
+        <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {metrics.map((metric) => (
+            <MetricCard
+              key={metric.title}
+              title={metric.title}
+              value={metric.value}
+              subtitle={metric.subtitle}
+              icon={metric.icon}
+              color={metric.color}
+              trend={metric.trend}
+              loading={loadingMetrics}
+            />
+          ))}
+        </section>
 
         {/* Actividad reciente */}
         <section className="grid gap-6 lg:grid-cols-2">
@@ -170,43 +228,54 @@ export default function DashboardPage() {
           </Card>
         </section>
 
-        {/* Resumen operativo */}
+        {/* Resumen operativo con gráficos mejorados */}
         <section className="grid gap-6 lg:grid-cols-2">
+          {/* Gráfico de leads por estado */}
           <Card className="bg-white/[0.03]">
             <CardHeader className="pb-4">
-              <CardTitle className="text-base text-white">Estado de consultas</CardTitle>
-              <CardDescription>Distribución por estado</CardDescription>
+              <CardTitle className="text-base text-white">Leads por estado</CardTitle>
+              <CardDescription>Distribución actual del funnel</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                <span className="text-sm text-white/70">Confirmadas</span>
-                <span className="font-semibold text-white">{consultasStats.confirmadas}</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                <span className="text-sm text-white/70">Programadas</span>
-                <span className="font-semibold text-white">{consultasStats.programadas}</span>
-              </div>
+            <CardContent>
+              {leadsChartData.every(d => d.value === 0) ? (
+                <EmptyState
+                  icon="📊"
+                  title="Sin datos"
+                  description="No hay leads registrados aún"
+                />
+              ) : (
+                <BarChart data={leadsChartData} height={250} />
+              )}
             </CardContent>
           </Card>
 
+          {/* Gráfico de consultas por sede */}
           <Card className="bg-white/[0.03]">
             <CardHeader className="pb-4">
               <CardTitle className="text-base text-white">Consultas por sede</CardTitle>
               <CardDescription>Próximas 4 semanas</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                <span className="text-sm text-white/70">Polanco</span>
-                <span className="font-semibold text-white">{consultasStats.polanco}</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                <span className="text-sm text-white/70">Satélite</span>
-                <span className="font-semibold text-white">{consultasStats.satelite}</span>
-              </div>
+            <CardContent className="flex justify-center py-4">
+              {sedesChartData.every(d => d.value === 0) ? (
+                <EmptyState
+                  icon="📅"
+                  title="Sin consultas"
+                  description="No hay consultas programadas"
+                />
+              ) : (
+                <DonutChart
+                  data={sedesChartData}
+                  size={200}
+                  thickness={35}
+                  centerText={dm ? (dm.polancoFuturas + dm.sateliteFuturas).toString() : '0'}
+                  centerSubtext="Total"
+                />
+              )}
             </CardContent>
           </Card>
         </section>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
