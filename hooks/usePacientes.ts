@@ -1,18 +1,21 @@
 /**
  * ============================================================
- * HOOK REFACTORIZADO: usePacientes
+ * HOOK: usePacientes
  * ============================================================
- * Simplificado usando el hook genérico useRealtimeTable.
- * Reducido de ~109 líneas a ~57 líneas (48% menos código).
+ * Hook optimizado con SWR para pacientes
+ * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
+import useSWR from 'swr'
+import { getSupabaseClient } from '@/lib/supabase/client'
 import {
   DEFAULT_PACIENTE_ESTADO,
   type Paciente,
   isPacienteEstado,
 } from '@/types/pacientes'
 import type { Tables } from '@/types/database'
-import { useRealtimeTable } from './useRealtimeTable'
+
+const supabase = getSupabaseClient()
 
 interface UsePacientesReturn {
   pacientes: Paciente[]
@@ -43,20 +46,41 @@ const mapPaciente = (row: PacienteRow): Paciente => {
 }
 
 /**
- * Hook para gestionar pacientes con subscripción en tiempo real
+ * Fetcher para pacientes
+ */
+const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number }> => {
+  const { data, error, count } = await supabase
+    .from('pacientes')
+    .select('*', { count: 'exact' })
+    .order('ultima_consulta', { ascending: false, nullsFirst: false })
+
+  if (error) throw error
+
+  const pacientes = (data || []).map(mapPaciente)
+  return { pacientes, count: count || pacientes.length }
+}
+
+/**
+ * Hook para gestionar pacientes
  */
 export function usePacientes(): UsePacientesReturn {
-  const { data: pacientes, loading, error, refetch, totalCount } = useRealtimeTable<PacienteRow, Paciente>({
-    table: 'pacientes',
-    queryBuilder: (query) => query.order('ultima_consulta', { ascending: false, nullsFirst: false }),
-    mapFn: mapPaciente,
-  })
+  const { data, error, isLoading, mutate } = useSWR(
+    'pacientes',
+    fetchPacientes,
+    {
+      refreshInterval: 0, // ❌ DESHABILITADO - Solo carga inicial y refresh manual
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60000,
+    }
+  )
 
   return {
-    pacientes,
-    loading,
-    error,
-    refetch,
-    totalCount,
+    pacientes: data?.pacientes || [],
+    loading: isLoading,
+    error: error || null,
+    refetch: async () => { await mutate() },
+    totalCount: data?.count || 0,
   }
 }

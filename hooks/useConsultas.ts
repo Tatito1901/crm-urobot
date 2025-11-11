@@ -1,11 +1,13 @@
 /**
  * ============================================================
- * HOOK REFACTORIZADO: useConsultas
+ * HOOK: useConsultas
  * ============================================================
- * Simplificado usando el hook genérico useRealtimeTable.
- * Reducido de ~145 líneas a ~90 líneas (38% menos código).
+ * Hook optimizado con SWR para consultas
+ * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
+import useSWR from 'swr'
+import { getSupabaseClient } from '@/lib/supabase/client'
 import {
   DEFAULT_CONSULTA_ESTADO,
   DEFAULT_CONSULTA_SEDE,
@@ -14,7 +16,8 @@ import {
   isConsultaSede,
 } from '@/types/consultas'
 import type { Tables } from '@/types/database'
-import { useRealtimeTable } from './useRealtimeTable'
+
+const supabase = getSupabaseClient()
 
 interface UseConsultasReturn {
   consultas: Consulta[]
@@ -76,23 +79,41 @@ const mapConsulta = (row: ConsultaRow): Consulta => {
 }
 
 /**
- * Hook para gestionar consultas con subscripción en tiempo real
+ * Fetcher para consultas
+ */
+const fetchConsultas = async (): Promise<{ consultas: Consulta[], count: number }> => {
+  const { data, error, count } = await supabase
+    .from('consultas')
+    .select('*, paciente:pacientes ( id, nombre_completo )', { count: 'exact' })
+    .order('fecha_consulta', { ascending: false })
+
+  if (error) throw error
+
+  const consultas = (data || []).map(mapConsulta)
+  return { consultas, count: count || consultas.length }
+}
+
+/**
+ * Hook para gestionar consultas
  */
 export function useConsultas(): UseConsultasReturn {
-  const { data: consultas, loading, error, refetch, totalCount } = useRealtimeTable<ConsultaRow, Consulta>({
-    table: 'consultas',
-    queryBuilder: (query) =>
-      query
-        .select('*, paciente:pacientes ( id, nombre_completo )')
-        .order('fecha_consulta', { ascending: false }),
-    mapFn: mapConsulta,
-  })
+  const { data, error, isLoading, mutate } = useSWR(
+    'consultas',
+    fetchConsultas,
+    {
+      refreshInterval: 0, // ❌ DESHABILITADO - Solo carga inicial y refresh manual
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60000,
+    }
+  )
 
   return {
-    consultas,
-    loading,
-    error,
-    refetch,
-    totalCount,
+    consultas: data?.consultas || [],
+    loading: isLoading,
+    error: error || null,
+    refetch: async () => { await mutate() },
+    totalCount: data?.count || 0,
   }
 }

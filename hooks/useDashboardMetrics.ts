@@ -2,14 +2,13 @@
  * ============================================================
  * HOOK: useDashboardMetrics
  * ============================================================
- * Hook para obtener métricas del dashboard usando RPC optimizado
+ * Hook para obtener métricas del dashboard usando SWR
  * ✅ OPTIMIZACIÓN: Usa función RPC (1 query vs 9 queries)
- * ✅ OPTIMIZACIÓN: Realtime en lugar de polling
+ * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import useSWR from 'swr'
 import { getSupabaseClient } from '@/lib/supabase/client'
-import { debounce } from '@/lib/utils/debounce'
 import {
   DEFAULT_DASHBOARD_METRICS,
   type DashboardMetrics,
@@ -23,60 +22,21 @@ interface UseDashboardMetricsReturn {
   loading: boolean
   error: Error | null
   refetch: () => Promise<void>
+  isValidating: boolean
 }
 
-export function useDashboardMetrics(): UseDashboardMetricsReturn {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+/**
+ * Fetcher function para SWR
+ */
+const fetchMetrics = async (): Promise<DashboardMetrics> => {
+  try {
 
-  const fetchMetrics = useCallback(async (opts: { silent?: boolean } = {}) => {
-    const { silent = false } = opts
-    try {
-      if (!silent) setLoading(true)
-      setError(null)
+    // ✅ OPTIMIZACIÓN: Intentar RPC primero
+    const { data, error: rpcError } = await supabase.rpc('get_dashboard_metrics')
 
-      // ✅ OPTIMIZACIÓN: Usar función RPC (1 query en lugar de 9)
-      const { data, error: fetchError } = await supabase.rpc('get_dashboard_metrics')
-
-      if (fetchError) {
-        // Fallback: intentar con la view
-        console.warn('RPC no disponible, intentando con view...')
-        const viewResult = await supabase
-          .from('dashboard_metricas')
-          .select('*')
-          .limit(1)
-          .single()
-
-        if (viewResult.error) {
-          // Último fallback: calcular manualmente
-          console.warn('View tampoco disponible, calculando manualmente')
-          const calculated = await calculateMetricsManually()
-          setMetrics(calculated)
-          return
-        }
-
-        // Transformar datos de la view
-        const viewData = viewResult.data
-        const transformedMetrics: DashboardMetrics = {
-          leadsTotal: viewData.leads_totales || 0,
-          leadsMes: viewData.leads_mes || 0,
-          leadsConvertidos: viewData.leads_convertidos || 0,
-          tasaConversion: viewData.tasa_conversion_pct || 0,
-          pacientesActivos: viewData.pacientes_activos || 0,
-          totalPacientes: viewData.total_pacientes || 0,
-          consultasFuturas: viewData.consultas_futuras || 0,
-          consultasHoy: viewData.consultas_hoy || 0,
-          pendientesConfirmacion: viewData.pendientes_confirmacion || 0,
-          polancoFuturas: viewData.polanco_futuras || 0,
-          sateliteFuturas: viewData.satelite_futuras || 0,
-        }
-        setMetrics(transformedMetrics)
-        return
-      }
-
+    if (!rpcError && data) {
       // Transformar datos del RPC
-      const transformedMetrics: DashboardMetrics = {
+      return {
         leadsTotal: data.leads_totales || 0,
         leadsMes: data.leads_mes || 0,
         leadsConvertidos: data.leads_convertidos || 0,
@@ -89,35 +49,60 @@ export function useDashboardMetrics(): UseDashboardMetricsReturn {
         polancoFuturas: data.polanco_futuras || 0,
         sateliteFuturas: data.satelite_futuras || 0,
       }
-
-      setMetrics(transformedMetrics)
-    } catch (err) {
-      console.error('Error fetching dashboard metrics:', err)
-      setError(err as Error)
-      setMetrics(DEFAULT_DASHBOARD_METRICS)
-    } finally {
-      if (!silent) setLoading(false)
     }
-  }, [])
 
-  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
-  const debouncedFetch = useMemo(
-    () => debounce(() => fetchMetrics({ silent: true }), 500),
-    [fetchMetrics]
+    // Fallback: intentar con la view
+    console.warn('RPC no disponible, intentando con view...')
+    const { data: viewData, error: viewError } = await supabase
+      .from('dashboard_metricas')
+      .select('*')
+      .limit(1)
+      .single()
+
+    if (!viewError && viewData) {
+      return {
+        leadsTotal: viewData.leads_totales || 0,
+        leadsMes: viewData.leads_mes || 0,
+        leadsConvertidos: viewData.leads_convertidos || 0,
+        tasaConversion: viewData.tasa_conversion_pct || 0,
+        pacientesActivos: viewData.pacientes_activos || 0,
+        totalPacientes: viewData.total_pacientes || 0,
+        consultasFuturas: viewData.consultas_futuras || 0,
+        consultasHoy: viewData.consultas_hoy || 0,
+        pendientesConfirmacion: viewData.pendientes_confirmacion || 0,
+        polancoFuturas: viewData.polanco_futuras || 0,
+        sateliteFuturas: viewData.satelite_futuras || 0,
+      }
+    }
+
+    // Último fallback: calcular manualmente
+    console.warn('View tampoco disponible, calculando manualmente')
+    return await calculateMetricsManually()
+  } catch (err) {
+    console.error('Error fetching dashboard metrics:', err)
+    return DEFAULT_DASHBOARD_METRICS
+  }
+}
+
+export function useDashboardMetrics(): UseDashboardMetricsReturn {
+  const { data, error, isLoading, isValidating, mutate } = useSWR<DashboardMetrics>(
+    'dashboard-metrics',
+    fetchMetrics,
+    {
+      refreshInterval: 0, // ❌ DESHABILITADO - Solo carga inicial y refresh manual
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60000,
+    }
   )
 
-  useEffect(() => {
-    fetchMetrics()
-
-    // ❌ REALTIME DESHABILITADO - Las métricas se actualizan con SWR
-    // Solo se revalidan cuando el usuario interactúa o cada 5 minutos
-  }, [fetchMetrics])
-
   return {
-    metrics,
-    loading,
-    error,
-    refetch: fetchMetrics,
+    metrics: data || null,
+    loading: isLoading,
+    error: error || null,
+    refetch: async () => { await mutate() },
+    isValidating,
   }
 }
 

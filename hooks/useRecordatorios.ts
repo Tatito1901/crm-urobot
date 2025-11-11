@@ -1,6 +1,5 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { debounce } from '@/lib/utils/debounce';
 import {
   DEFAULT_CONSULTA_ESTADO,
   DEFAULT_CONSULTA_SEDE,
@@ -32,35 +31,23 @@ interface UseRecordatoriosReturn {
 }
 
 /**
- * Hook para obtener recordatorios de WhatsApp en tiempo real
- * Alineado con el flujo ENVIAR_CONFIRMACIONES de n8n
+ * Fetcher para recordatorios
  */
-export function useRecordatorios(): UseRecordatoriosReturn {
-  const [recordatorios, setRecordatorios] = useState<RecordatorioDetalle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+const fetchRecordatorios = async (): Promise<RecordatorioDetalle[]> => {
+  const hace60Dias = new Date();
+  hace60Dias.setDate(hace60Dias.getDate() - 60);
 
-  const fetchRecordatorios = useCallback(async (options: { silent?: boolean } = {}) => {
-    const { silent = false } = options;
-    try {
-      if (!silent) {
-        setLoading(true);
-      }
-      setError(null);
-      const hace60Dias = new Date();
-      hace60Dias.setDate(hace60Dias.getDate() - 60);
+  const { data, error: fetchError } = await supabase
+    .from('recordatorios')
+    .select(`*, consulta:consultas (id, consulta_id, sede, estado_cita, paciente:pacientes (id, nombre_completo))`)
+    .gte('programado_para', hace60Dias.toISOString())
+    .order('programado_para', { ascending: false })
+    .limit(200);
 
-      const { data, error: fetchError } = await supabase
-        .from('recordatorios')
-        .select(`*, consulta:consultas (id, consulta_id, sede, estado_cita, paciente:pacientes (id, nombre_completo))`)
-        .gte('programado_para', hace60Dias.toISOString())
-        .order('programado_para', { ascending: false })
-        .limit(200);
+  if (fetchError) throw fetchError;
 
-      if (fetchError) throw fetchError;
-
-      const rows = parseRecordatorioRows(data);
-      const mapped: RecordatorioDetalle[] = rows.map((row) => {
+  const rows = parseRecordatorioRows(data);
+  return rows.map((row) => {
         // Validar tipo de recordatorio
         const tipo = isRecordatorioTipo(row.tipo)
           ? row.tipo
@@ -128,36 +115,30 @@ export function useRecordatorios(): UseRecordatoriosReturn {
               }
             : null,
         };
-      });
+  });
+}
 
-      setRecordatorios(mapped);
-    } catch (err) {
-      console.error('Error loading recordatorios:', err);
-      setError(err instanceof Error ? err : new Error('Error desconocido'));
-    } finally {
-      if (!silent) {
-        setLoading(false);
-      }
+/**
+ * Hook para obtener recordatorios de WhatsApp
+ * Alineado con el flujo ENVIAR_CONFIRMACIONES de n8n
+ */
+export function useRecordatorios(): UseRecordatoriosReturn {
+  const { data, error, isLoading, mutate } = useSWR(
+    'recordatorios',
+    fetchRecordatorios,
+    {
+      refreshInterval: 0, // ❌ DESHABILITADO - Solo carga inicial y refresh manual
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60000,
     }
-  }, []);
-
-  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
-  const debouncedFetch = useMemo(
-    () => debounce(() => fetchRecordatorios({ silent: true }), 300),
-    [fetchRecordatorios]
   );
 
-  useEffect(() => {
-    fetchRecordatorios();
-
-    // ❌ REALTIME DESHABILITADO - Los recordatorios se actualizan manualmente con refresh
-    // Para CRM médico no es crítico tener actualización en tiempo real
-  }, [fetchRecordatorios]);
-
   return {
-    recordatorios,
-    loading,
-    error,
-    refresh: fetchRecordatorios,
+    recordatorios: data || [],
+    loading: isLoading,
+    error: error || null,
+    refresh: async () => { await mutate() },
   };
 }
