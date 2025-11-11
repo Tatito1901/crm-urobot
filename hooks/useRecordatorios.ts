@@ -1,23 +1,27 @@
-'use client';
-
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { Consulta, ConsultaEstado, Recordatorio, RecordatorioDetalle } from '@/app/lib/crm-data';
-import type { Tables } from '@/types/database';
+import {
+  DEFAULT_CONSULTA_ESTADO,
+  DEFAULT_CONSULTA_SEDE,
+  type ConsultaEstado,
+  type ConsultaSede,
+  isConsultaEstado,
+  isConsultaSede,
+} from '@/types/consultas';
+import {
+  DEFAULT_RECORDATORIO_CANAL,
+  DEFAULT_RECORDATORIO_ESTADO,
+  DEFAULT_RECORDATORIO_TIPO,
+  type Recordatorio,
+  type RecordatorioDetalle,
+  isRecordatorioCanal,
+  isRecordatorioEstado,
+  isRecordatorioTipo,
+} from '@/types/recordatorios';
+import { parseRecordatorioRows } from '@/lib/validators/recordatorios';
 
 // Crear instancia del cliente para hooks
 const supabase = createClient();
-
-type ConsultaRow = Tables<'consultas'> & {
-  paciente: {
-    id: string;
-    nombre_completo: string;
-  } | null;
-};
-
-type RecordatorioRow = Tables<'recordatorios'> & {
-  consulta: ConsultaRow | null;
-};
 
 interface UseRecordatoriosReturn {
   recordatorios: RecordatorioDetalle[];
@@ -54,24 +58,22 @@ export function useRecordatorios(): UseRecordatoriosReturn {
 
       if (fetchError) throw fetchError;
 
-      const mapped: RecordatorioDetalle[] = (data as RecordatorioRow[] | null)?.map((row) => {
+      const rows = parseRecordatorioRows(data);
+      const mapped: RecordatorioDetalle[] = rows.map((row) => {
         // Validar tipo de recordatorio
-        const tiposValidos: Recordatorio['tipo'][] = ['confirmacion_inicial', '48h', '24h', '3h'];
-        const tipo = tiposValidos.includes(row.tipo as Recordatorio['tipo'])
-          ? (row.tipo as Recordatorio['tipo'])
-          : 'confirmacion_inicial';
+        const tipo = isRecordatorioTipo(row.tipo)
+          ? row.tipo
+          : DEFAULT_RECORDATORIO_TIPO;
 
         // Validar estado de recordatorio
-        const estadosValidos: Recordatorio['estado'][] = ['pendiente', 'procesando', 'enviado', 'error'];
-        const estado = estadosValidos.includes(row.estado as Recordatorio['estado'])
-          ? (row.estado as Recordatorio['estado'])
-          : 'pendiente';
+        const estado = isRecordatorioEstado(row.estado)
+          ? row.estado
+          : DEFAULT_RECORDATORIO_ESTADO;
 
         // Validar canal
-        const canalesValidos: ('whatsapp' | 'sms' | 'email')[] = ['whatsapp', 'sms', 'email'];
-        const canal = row.canal && canalesValidos.includes(row.canal as 'whatsapp' | 'sms' | 'email')
-          ? (row.canal as 'whatsapp' | 'sms' | 'email')
-          : 'whatsapp';
+        const canal = isRecordatorioCanal(row.canal)
+          ? row.canal
+          : DEFAULT_RECORDATORIO_CANAL;
 
         const base: Recordatorio = {
           id: row.id,
@@ -98,15 +100,15 @@ export function useRecordatorios(): UseRecordatoriosReturn {
         const pacienteRow = consultaRow?.paciente;
 
         // Validar sede y estado de consulta
-        const sedesValidas: Consulta['sede'][] = ['POLANCO', 'SATELITE'];
-        const sedeConsulta = consultaRow?.sede && sedesValidas.includes(consultaRow.sede as Consulta['sede'])
-          ? (consultaRow.sede as Consulta['sede'])
-          : 'POLANCO';
+        const sedeConsulta: ConsultaSede =
+          consultaRow?.sede && isConsultaSede(consultaRow.sede)
+            ? consultaRow.sede
+            : DEFAULT_CONSULTA_SEDE;
 
-        const estadosCitaValidos: ConsultaEstado[] = ['Programada', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada'];
-        const estadoCita = consultaRow?.estado_cita && estadosCitaValidos.includes(consultaRow.estado_cita as ConsultaEstado)
-          ? (consultaRow.estado_cita as ConsultaEstado)
-          : 'Programada';
+        const estadoCita: ConsultaEstado =
+          consultaRow?.estado_cita && isConsultaEstado(consultaRow.estado_cita)
+            ? consultaRow.estado_cita
+            : DEFAULT_CONSULTA_ESTADO;
 
         return {
           ...base,
@@ -125,7 +127,7 @@ export function useRecordatorios(): UseRecordatoriosReturn {
               }
             : null,
         };
-      }) ?? [];
+      });
 
       setRecordatorios(mapped);
     } catch (err) {

@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { STATE_COLORS, formatDate, Paciente } from '@/app/lib/crm-data';
+import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
+import type { Paciente } from '@/types/pacientes';
 import { usePacientes } from '@/hooks/usePacientes';
 
 export default function PacientesPage() {

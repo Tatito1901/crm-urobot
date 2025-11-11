@@ -7,7 +7,13 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Consulta, ConsultaEstado } from '@/app/lib/crm-data'
+import {
+  DEFAULT_CONSULTA_ESTADO,
+  DEFAULT_CONSULTA_SEDE,
+  type Consulta,
+  isConsultaEstado,
+  isConsultaSede,
+} from '@/types/consultas'
 import type { Tables } from '@/types/database'
 
 // Crear instancia del cliente para hooks
@@ -33,16 +39,12 @@ const mapConsulta = (row: ConsultaRow): Consulta => {
   const resolvedTimezone: Consulta['timezone'] = 'America/Mexico_City';
 
   // Validar sede
-  const sedesValidas: Consulta['sede'][] = ['POLANCO', 'SATELITE'];
-  const sede = sedesValidas.includes(row.sede as Consulta['sede'])
-    ? (row.sede as Consulta['sede'])
-    : 'POLANCO';
+  const sede = isConsultaSede(row.sede) ? row.sede : DEFAULT_CONSULTA_SEDE
 
   // Validar estado de cita
-  const estadosValidos: ConsultaEstado[] = ['Programada', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada'];
-  const estado = estadosValidos.includes(row.estado_cita as ConsultaEstado)
-    ? (row.estado_cita as ConsultaEstado)
-    : 'Programada';
+  const estado = isConsultaEstado(row.estado_cita)
+    ? row.estado_cita
+    : DEFAULT_CONSULTA_ESTADO
 
   const fechaLocal = row.fecha_consulta && row.hora_consulta
     ? `${row.fecha_consulta}T${row.hora_consulta}`
