@@ -1,11 +1,14 @@
 import useSWRInfinite from 'swr/infinite'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseClient } from '@/lib/supabase/client'
 import { useCallback, useEffect } from 'react'
 import type { Database } from '@/types/database'
 
 type Lead = Database['public']['Tables']['leads']['Row']
 
 const PAGE_SIZE = 20
+
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente (fuera del hook)
+const supabase = getSupabaseClient()
 
 interface UseLeadsOptions {
   estado?: string
@@ -15,7 +18,6 @@ interface UseLeadsOptions {
 }
 
 export function useLeadsOptimized(options: UseLeadsOptions = {}) {
-  const supabase = createClient()
   
   // Función para obtener la key de SWR
   const getKey = (pageIndex: number, previousPageData: Lead[] | null) => {
@@ -83,28 +85,20 @@ export function useLeadsOptimized(options: UseLeadsOptions = {}) {
     }
   }, [size, isLoadingMore, hasMore, isValidating, setSize])
   
-  // Suscripción a cambios en tiempo real (opcional)
+  // ✅ OPTIMIZACIÓN: Suscripción en tiempo real con canal consistente
   useEffect(() => {
     const channel = supabase
-      .channel('leads-changes')
+      .channel('realtime:leads')
       .on('postgres_changes', {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
         table: 'leads'
       }, () => {
-        // Revalidar solo la primera página
-        mutate()
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'leads'
-      }, () => {
-        // Revalidar todo para reflejar cambios
+        // Revalidar datos cuando hay cambios
         mutate()
       })
       .subscribe()
-    
+
     return () => {
       supabase.removeChannel(channel)
     }
