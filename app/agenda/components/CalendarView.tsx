@@ -128,8 +128,8 @@ export function CalendarView({ consultas, vistaCalendario }: CalendarViewProps) 
   }, [calendarApp, vistaCalendario]);
 
   return (
-    <div className="sx-calendar-container w-full overflow-hidden rounded-2xl">
-      <div className="w-full min-w-0 h-[520px] sm:h-[620px] lg:h-[720px] xl:h-[780px]">
+    <div className="sx-calendar-container w-full overflow-hidden">
+      <div className="w-full min-w-0 h-[600px] sm:h-[680px] lg:h-[760px] xl:h-[820px]">
         <ScheduleXCalendar calendarApp={calendarApp} />
       </div>
     </div>

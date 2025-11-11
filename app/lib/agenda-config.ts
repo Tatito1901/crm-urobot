@@ -21,27 +21,28 @@ export const AGENDA_CONFIG = {
   IS_DARK_THEME: true, // Dark theme por defecto
 } as const;
 
-// ========== COLORES DOCTORALIA DARK THEME ==========
+// ========== COLORES MINIMALISTAS ESTILO DOCTORALIA ==========
+// Paleta profesional y suave para entorno médico
 export const AGENDA_COLORS = {
   programada: {
-    main: '#60a5fa',
-    container: '#1e40af',
+    main: '#3b82f6',      // Azul médico profesional
+    container: '#1e3a8a',
     onContainer: '#ffffff',
   },
   confirmada: {
-    main: '#34d399',
-    container: '#065f46',
+    main: '#10b981',      // Verde suave confirmación
+    container: '#047857',
     onContainer: '#ffffff',
   },
   reagendada: {
-    main: '#fbbf24',
-    container: '#92400e',
+    main: '#f59e0b',      // Ámbar para advertencia suave
+    container: '#b45309',
     onContainer: '#ffffff',
   },
   cancelada: {
-    main: '#f87171',
-    container: '#991b1b',
-    onContainer: '#ffffff',
+    main: '#6b7280',      // Gris para canceladas (menos agresivo)
+    container: '#374151',
+    onContainer: '#d1d5db',
   },
 } as const;
 
@@ -134,10 +135,10 @@ export const createScheduleXConfig = (selectedDate: Temporal.PlainDate) => ({
     end: '22:00',
   },
   weekOptions: {
-    gridHeight: 1500,
+    gridHeight: 1800,
     nDays: AGENDA_CONFIG.WORK_DAYS_COUNT,
-    eventWidth: 94,
-    timeAxisFormatOptions: { 
+    eventWidth: 96,
+    timeAxisFormatOptions: {
       hour: 'numeric' as const,
     },
   },

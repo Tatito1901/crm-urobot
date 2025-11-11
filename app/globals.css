@@ -88,76 +88,84 @@ body {
   }
 }
 
-/* Schedule-X Calendar (Google Calendar inspired) */
+/* Schedule-X Calendar - Estilo Minimalista Doctoralia */
 .sx-react-calendar-wrapper {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: rgb(11 15 22);
 }
 
 .sx__week-grid-day {
-  border-right: 1px solid rgb(55 65 81);
-  background: rgb(17 24 39);
+  border-right: 1px solid rgb(30 41 59 / 0.5);
+  background: rgb(11 15 22);
 }
 
 .sx__week-grid-day-name {
   color: rgb(148 163 184);
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  padding: 0.4rem 0 0.1rem;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 0 0.25rem;
 }
 
 .sx__week-grid-day-number {
-  color: rgb(229 231 235);
-  font-size: 1.2rem;
-  font-weight: 600;
+  color: rgb(203 213 225);
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .sx__week-grid-day--today .sx__week-grid-day-number {
   background: rgb(59 130 246);
-  color: rgb(17 24 39);
-  border-radius: 9999px;
-  padding: 0.1rem 0.7rem;
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
 }
 
 .sx__time-grid-hour {
-  border-bottom: 1px solid rgb(31 41 55);
-  min-height: 42px;
+  border-bottom: 1px solid rgb(30 41 59 / 0.3);
+  min-height: 60px;
 }
 
 .sx__time-grid-hour:nth-child(even) {
-  background: rgba(17, 24, 39, 0.18);
+  background: rgba(15, 23, 42, 0.2);
 }
 
 .sx__time-axis-hour {
   color: rgb(100 116 139);
   font-size: 0.7rem;
-  font-weight: 500;
-  padding-right: 0.6rem;
+  font-weight: 400;
+  padding-right: 0.75rem;
 }
 
 .sx__week-grid-day-border {
-  border-right: 1px solid rgb(55 65 81);
+  border-right: 1px solid rgb(30 41 59 / 0.5);
 }
 
 .sx__event {
-  border: none;
-  border-radius: 0.35rem;
-  padding: 0.35rem 0.55rem 0.45rem;
-  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.45);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: none;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 }
 
 .sx__event:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 20px -12px rgb(59 130 246 / 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
   z-index: 10;
 }
 
 .sx__event-title {
-  font-size: 0.78rem;
-  font-weight: 600;
-  line-height: 1.3;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
   color: white;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -165,112 +173,120 @@ body {
 }
 
 .sx__event-time {
-  font-size: 0.68rem;
-  font-weight: 500;
-  opacity: 0.95;
-  color: white;
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .sx-event-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .sx-event-content__title {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: rgb(241 245 249);
-  letter-spacing: 0.01em;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgb(255 255 255);
+  letter-spacing: -0.01em;
 }
 
 .sx-event-content__meta {
-  font-size: 0.68rem;
-  color: rgb(226 232 240);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.85);
   opacity: 0.9;
 }
 
 .sx-event-content__extra {
-  font-size: 0.64rem;
-  color: rgb(226 232 240);
-  opacity: 0.8;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.75);
+  opacity: 0.85;
 }
 
 .sx__current-time-line {
-  border-top: 2px solid rgb(239 68 68);
+  border-top: 2px solid rgb(59 130 246);
   z-index: 5;
 }
 
 .sx__current-time-indicator {
-  background: rgb(239 68 68);
-  width: 0.75rem;
-  height: 0.75rem;
+  background: rgb(59 130 246);
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  margin-left: -0.375rem;
+  margin-left: -5px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .sx__date-picker-wrapper {
-  background: rgb(31 41 55);
-  border: 1px solid rgb(55 65 81);
-  border-radius: 0.5rem;
+  background: rgb(15 23 42);
+  border: 1px solid rgb(30 41 59);
+  border-radius: 8px;
 }
 
 .sx__date-picker-day {
-  color: rgb(229 231 235);
-  border-radius: 0.375rem;
+  color: rgb(203 213 225);
+  border-radius: 6px;
+  font-weight: 400;
 }
 
 .sx__date-picker-day:hover {
-  background: rgb(55 65 81);
+  background: rgb(30 41 59);
 }
 
 .sx__date-picker-day--selected {
   background: rgb(59 130 246);
   color: white;
+  font-weight: 500;
 }
 
 .sx__week-grid::-webkit-scrollbar {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 8px;
+  height: 8px;
 }
 
 .sx__week-grid::-webkit-scrollbar-track {
-  background: rgb(17 24 39);
-  border-radius: 0.25rem;
+  background: rgb(11 15 22);
+  border-radius: 4px;
 }
 
 .sx__week-grid::-webkit-scrollbar-thumb {
-  background: rgb(55 65 81);
-  border-radius: 0.25rem;
+  background: rgb(51 65 85);
+  border-radius: 4px;
 }
 
 .sx__week-grid::-webkit-scrollbar-thumb:hover {
-  background: rgb(75 85 99);
+  background: rgb(71 85 105);
 }
 
 .sx__week-grid {
-  background: rgb(10 12 18);
+  background: rgb(11 15 22);
 }
 
 .sx__time-grid-day {
-  border-right: 1px solid rgb(30 41 59);
+  border-right: 1px solid rgb(30 41 59 / 0.5);
+  background: rgb(11 15 22);
 }
 
 .sx__event[data-calendar-id="programada"] {
-  background: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(37 99 235) 100%);
+  background: rgba(59, 130, 246, 0.85);
+  border-left: 3px solid rgb(96 165 250);
 }
 
 .sx__event[data-calendar-id="confirmada"] {
-  background: linear-gradient(135deg, rgb(74 222 128) 0%, rgb(34 197 94) 100%);
+  background: rgba(16, 185, 129, 0.85);
+  border-left: 3px solid rgb(52 211 153);
 }
 
 .sx__event[data-calendar-id="reagendada"] {
-  background: linear-gradient(135deg, rgb(245 158 11) 0%, rgb(217 119 6) 100%);
+  background: rgba(245, 158, 11, 0.85);
+  border-left: 3px solid rgb(251 191 36);
 }
 
 .sx__event[data-calendar-id="cancelada"] {
-  background: linear-gradient(135deg, rgb(239 68 68) 0%, rgb(220 38 38) 100%);
-  opacity: 0.7;
+  background: rgba(107, 114, 128, 0.6);
+  border-left: 3px solid rgb(156 163 175);
+  opacity: 0.8;
 }
 
 @media (max-width: 768px) {

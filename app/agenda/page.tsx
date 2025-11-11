@@ -138,18 +138,18 @@ export default function AgendaPage() {
 
   return (
     <div className="min-h-screen bg-[#0b0f16] font-sans">
-      <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-6 px-4 pb-12 pt-6 sm:px-6 lg:flex-row lg:gap-8">
+      <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-5 px-4 pb-12 pt-6 sm:px-6 lg:flex-row lg:gap-6">
 
         {/* SIDEBAR IZQUIERDO - Desktop */}
         <aside className="order-last hidden w-full max-w-[280px] shrink-0 lg:order-first lg:block">
-          <div className="sticky top-6 space-y-6">
+          <div className="sticky top-6 space-y-4">
             {/* Estadísticas */}
-            <div className="rounded-2xl border border-slate-800 bg-[#0d1118] p-5 shadow-[0_25px_70px_-40px_rgba(8,13,23,0.9)]">
+            <div className="rounded-xl border border-slate-800/60 bg-slate-900/40 p-5">
               <QuickStats consultas={filteredConsultas} />
             </div>
 
             {/* Próximas citas */}
-            <div className="rounded-2xl border border-slate-800 bg-[#0d1118] p-5 shadow-[0_25px_70px_-40px_rgba(8,13,23,0.9)]">
+            <div className="rounded-xl border border-slate-800/60 bg-slate-900/40 p-5">
               <UpcomingAppointments
                 events={upcomingEvents}
                 onAppointmentClick={handleAppointmentClick}
@@ -159,23 +159,22 @@ export default function AgendaPage() {
         </aside>
 
         {/* CONTENIDO PRINCIPAL */}
-        <main className="order-first flex w-full flex-1 flex-col gap-6 lg:order-last">
+        <main className="order-first flex w-full flex-1 flex-col gap-5 lg:order-last">
 
-          {/* HEADER */}
-          <header className="rounded-2xl border border-slate-800 bg-[#0d1118] px-5 py-6 shadow-[0_25px_70px_-40px_rgba(8,13,23,0.9)]">
+          {/* HEADER - Diseño más limpio */}
+          <header className="rounded-xl border border-slate-800/60 bg-slate-900/40 px-6 py-5">
             <div className="flex flex-col gap-5">
 
               {/* Título y status */}
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">CRM · Agenda</p>
-                <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <h1 className="text-2xl font-semibold text-slate-100 sm:text-3xl">Agenda de Consultas</h1>
-                  <span className="rounded-full border border-green-500/40 bg-green-500/10 px-3 py-1 text-xs font-medium text-green-300">
-                    Sincronización activa
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-2xl font-medium text-slate-100 sm:text-3xl">Agenda de Consultas</h1>
+                  <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+                    Sincronizado
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-slate-400">
-                  {loading ? 'Sincronizando...' : `${filteredConsultas.length} ${filteredConsultas.length === 1 ? 'cita' : 'citas'} · Dr. Mario Martínez Thomas`}
+                  {loading ? 'Sincronizando...' : `${filteredConsultas.length} ${filteredConsultas.length === 1 ? 'cita' : 'citas'}`}
                 </p>
               </div>
 
@@ -194,50 +193,50 @@ export default function AgendaPage() {
                 totalResults={filteredConsultas.length}
               />
 
-              {/* Controles de vista */}
+              {/* Controles de vista - Más minimalista */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                 {/* Selector de modo (Calendario/Lista) */}
-                <div className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 p-1 text-xs font-medium text-slate-300">
+                <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 p-1 text-xs font-medium">
                   <button
                     onClick={() => setViewMode('calendar')}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 transition-all ${
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all ${
                       viewMode === 'calendar'
-                        ? 'bg-blue-500 text-white shadow-[0_10px_30px_-15px_rgba(59,130,246,0.9)]'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-blue-500 text-white'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                     }`}
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Calendario
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 transition-all ${
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-all ${
                       viewMode === 'list'
-                        ? 'bg-blue-500 text-white shadow-[0_10px_30px_-15px_rgba(59,130,246,0.9)]'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-blue-500 text-white'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                     }`}
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
                     Lista
                   </button>
                 </div>
 
-                {/* Selector de vista de calendario - Solo en modo calendario */}
+                {/* Selector de vista de calendario */}
                 {viewMode === 'calendar' && (
-                  <div className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 p-1 text-xs font-medium text-slate-300">
+                  <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/60 p-1 text-xs font-medium">
                     {VIEWS.map((view) => (
                       <button
                         key={view.key}
                         onClick={() => setVistaCalendario(view.key)}
-                        className={`rounded-full px-4 py-2 transition-all ${
+                        className={`rounded-md px-3 py-1.5 transition-all ${
                           vistaCalendario === view.key
-                            ? 'bg-blue-500 text-white shadow-[0_10px_30px_-15px_rgba(59,130,246,0.9)]'
-                            : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                            ? 'bg-blue-500 text-white'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                         }`}
                       >
                         {view.label}
@@ -250,7 +249,7 @@ export default function AgendaPage() {
           </header>
 
           {/* CONTENIDO - Calendario o Lista */}
-          <section className="rounded-2xl border border-slate-800 bg-[#0d1118] shadow-[0_25px_70px_-40px_rgba(8,13,23,0.9)]">
+          <section className="rounded-xl border border-slate-800/60 bg-slate-900/40 overflow-hidden">
             {viewMode === 'calendar' ? (
               <CalendarView
                 consultas={filteredConsultas}
@@ -272,7 +271,7 @@ export default function AgendaPage() {
           </section>
 
           {/* PRÓXIMAS CITAS - Mobile */}
-          <section className="block rounded-2xl border border-slate-800 bg-[#0d1118] p-5 shadow-[0_25px_70px_-40px_rgba(8,13,23,0.9)] lg:hidden">
+          <section className="block rounded-xl border border-slate-800/60 bg-slate-900/40 p-5 lg:hidden">
             <UpcomingAppointments
               events={upcomingEvents}
               onAppointmentClick={handleAppointmentClick}
