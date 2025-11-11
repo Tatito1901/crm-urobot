@@ -1,4 +1,10 @@
-'use client';
+/**
+ * ============================================================
+ * PAGE SHELL - Layout wrapper para páginas (SERVER COMPONENT)
+ * ============================================================
+ * Componente optimizado como Server Component.
+ * No requiere interactividad del cliente.
+ */
 
 import { ReactNode } from "react";
 

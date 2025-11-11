@@ -2,34 +2,41 @@
 
 /**
  * ============================================================
- * AGENDA PAGE - Vista principal de agenda refactorizada
+ * AGENDA PAGE - Vista principal de agenda (OPTIMIZADA)
  * ============================================================
  * Interfaz profesional para visualización de citas médicas
  * - Mobile-first con diseño responsivo
  * - Búsqueda y filtros avanzados
  * - Vista de calendario y lista
  * - Detalles completos en modal
- * - Optimizada para rendimiento
+ * - ✨ Schedule-X lazy-loaded (~150KB reducidos del bundle inicial)
  */
 
 import React, { useMemo, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Temporal } from '@js-temporal/polyfill';
-import { ScheduleXCalendar, useCalendarApp } from '@schedule-x/react';
-import { viewDay, viewMonthGrid, viewWeek } from '@schedule-x/calendar';
-import { createEventsServicePlugin } from '@schedule-x/events-service';
-import '@schedule-x/theme-default/dist/index.css';
 
-import { createScheduleXConfig, dateUtils } from '@/app/lib/agenda-config';
 import { useConsultas } from '@/hooks/useConsultas';
 import { filterAppointments, formatShortTime, getStatusConfig, getShortName } from './lib/agenda-utils';
 import type { Consulta } from '@/types/consultas';
 
-// Componentes
+// Componentes estáticos
 import { AppointmentModal } from './components/AppointmentModal';
 import { AppointmentListView } from './components/AppointmentListView';
 import { FilterBar } from './components/FilterBar';
 import { QuickStats } from './components/QuickStats';
 import { UpcomingAppointments } from './components/UpcomingAppointments';
+import { CalendarSkeleton } from './components/CalendarSkeleton';
+
+// ✅ OPTIMIZACIÓN: Lazy load del calendario Schedule-X (~150KB)
+// Solo se carga cuando el usuario selecciona la vista de calendario
+const CalendarView = dynamic(
+  () => import('./components/CalendarView').then((mod) => ({ default: mod.CalendarView })),
+  {
+    ssr: false,
+    loading: () => <CalendarSkeleton />,
+  }
+);
 
 // ========== TYPES ==========
 
@@ -45,35 +52,12 @@ type CalendarEvent = {
   };
 };
 
-type CalendarAppInternals = {
-  calendarState: {
-    setView: (view: string, selectedDate: Temporal.PlainDate) => void;
-    setRange: (date: Temporal.PlainDate) => void;
-  };
-  datePickerState: {
-    selectedDate: { value: Temporal.PlainDate };
-  };
-};
-
-type CalendarAppWithInternals = {
-  $app?: CalendarAppInternals;
-};
-
 // ========== HELPERS ==========
 
-const getCalendarInternals = (app: ReturnType<typeof useCalendarApp>): CalendarAppInternals | null => {
-  if (!app || typeof app !== 'object') return null;
-  const maybeInternals = (app as unknown as CalendarAppWithInternals).$app;
-  if (!maybeInternals?.calendarState || !maybeInternals.datePickerState) {
-    return null;
-  }
-  return maybeInternals;
-};
-
 const VIEWS = [
-  { key: viewWeek.name, label: 'Semana' },
-  { key: viewDay.name, label: 'Día' },
-  { key: viewMonthGrid.name, label: 'Mes' },
+  { key: 'week', label: 'Semana' },
+  { key: 'day', label: 'Día' },
+  { key: 'month-grid', label: 'Mes' },
 ];
 
 // ========== MAIN COMPONENT ==========
@@ -84,7 +68,7 @@ export default function AgendaPage() {
 
   // Estado de UI
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
-  const [vistaCalendario, setVistaCalendario] = useState<string>(viewWeek.name);
+  const [vistaCalendario, setVistaCalendario] = useState<string>('week');
   const [selectedAppointment, setSelectedAppointment] = useState<Consulta | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -94,22 +78,6 @@ export default function AgendaPage() {
   const [selectedEstados, setSelectedEstados] = useState<string[]>([]);
   const [onlyToday, setOnlyToday] = useState(false);
   const [onlyPendingConfirmation, setOnlyPendingConfirmation] = useState(false);
-
-  // Configuración del calendario
-  const calendarConfig = useMemo(() => {
-    const selectedDate = dateUtils.toPlainDate(new Date());
-    return createScheduleXConfig(selectedDate);
-  }, []);
-
-  const eventsService = useMemo(() => createEventsServicePlugin(), []);
-
-  const calendarApp = useCalendarApp({
-    ...calendarConfig,
-    defaultView: viewWeek.name,
-    views: [viewWeek, viewDay, viewMonthGrid],
-    plugins: [eventsService],
-    events: [],
-  });
 
   // Filtrar consultas
   const filteredConsultas = useMemo(() => {
@@ -122,7 +90,7 @@ export default function AgendaPage() {
     });
   }, [consultas, searchQuery, selectedSede, selectedEstados, onlyToday, onlyPendingConfirmation]);
 
-  // Convertir consultas a eventos del calendario
+  // Convertir consultas a eventos (solo para lista y próximas citas)
   const events: CalendarEvent[] = useMemo(() => {
     return filteredConsultas.map((consulta) => {
       const timezone = consulta.timezone ?? 'America/Mexico_City';
@@ -134,95 +102,26 @@ export default function AgendaPage() {
       const fechaFin = fechaInicio.add({ minutes: consulta.duracionMinutos ?? 45 });
 
       const nombrePaciente = getShortName(consulta.paciente);
-      const motivo = consulta.motivoConsulta ?? consulta.tipo ?? 'Consulta';
-      const estado = (consulta.estado ?? 'PROGRAMADA').toLowerCase();
-      const statusConfig = getStatusConfig(estado);
-
-      const startTime = formatShortTime(fechaInicio);
-      const endTime = formatShortTime(fechaFin);
-      const horario = `${startTime} – ${endTime}`;
 
       return {
         id: consulta.uuid,
         title: nombrePaciente,
         start: fechaInicio,
         end: fechaFin,
-        calendarId: estado,
+        calendarId: (consulta.estado ?? 'PROGRAMADA').toLowerCase(),
         consulta,
-        _customContent: {
-          timeGrid: `
-            <div class="sx-event-content">
-              <p class="sx-event-content__title" style="font-weight: 600; margin-bottom: 2px;">${nombrePaciente}</p>
-              <p class="sx-event-content__meta" style="font-size: 11px; opacity: 0.9;">${horario} · ${motivo}</p>
-              <p class="sx-event-content__extra" style="font-size: 10px; opacity: 0.8; margin-top: 2px;">${consulta.sede} · ${statusConfig.label}</p>
-            </div>
-          `,
-        },
       } satisfies CalendarEvent;
     });
   }, [filteredConsultas]);
 
-  // Actualizar eventos del calendario
-  React.useEffect(() => {
-    eventsService.set(events);
-  }, [events, eventsService]);
-
-  // Cambiar vista del calendario
-  React.useEffect(() => {
-    if (!calendarApp || !vistaCalendario) return;
-    const internals = getCalendarInternals(calendarApp);
-    if (!internals) return;
-    const { calendarState, datePickerState } = internals;
-    const selectedDate = datePickerState.selectedDate.value;
-    if (!selectedDate) return;
-    calendarState.setView(vistaCalendario, selectedDate);
-  }, [calendarApp, vistaCalendario]);
-
-  // Calcular el label del rango de fechas
-  const rangeLabel = useMemo(() => {
-    const internals = getCalendarInternals(calendarApp);
-    if (!internals) return '';
-    const selectedDate = internals.datePickerState.selectedDate.value;
-    if (!selectedDate) return '';
-    if (vistaCalendario === viewDay.name) {
-      return dateUtils.formatRange(selectedDate, 'day');
-    }
-    if (vistaCalendario === viewWeek.name) {
-      return dateUtils.formatRange(selectedDate, 'week');
-    }
-    return `${dateUtils.monthName(selectedDate.month)} ${selectedDate.year}`;
-  }, [calendarApp, vistaCalendario]);
-
-  // Navegación de fechas
-  const navigateDate = useCallback((direction: 'prev' | 'today' | 'next') => {
-    const internals = getCalendarInternals(calendarApp);
-    if (!internals) return;
-    const { datePickerState, calendarState } = internals;
-    const currentDate = datePickerState.selectedDate.value;
-
-    if (direction === 'today') {
-      const today = dateUtils.toPlainDate(new Date());
-      datePickerState.selectedDate.value = today;
-      calendarState.setRange(today);
-      return;
-    }
-
-    const delta =
-      vistaCalendario === viewDay.name ? { days: direction === 'next' ? 1 : -1 } :
-      vistaCalendario === viewWeek.name ? { days: direction === 'next' ? 7 : -7 } :
-      { months: direction === 'next' ? 1 : -1 };
-
-    datePickerState.selectedDate.value = currentDate.add(delta);
-    calendarState.setRange(datePickerState.selectedDate.value);
-  }, [calendarApp, vistaCalendario]);
-
   // Próximas citas
   const upcomingEvents = useMemo(() => {
+    const now = Temporal.Now.zonedDateTimeISO('America/Mexico_City');
     return [...events]
-      .filter((event) => Temporal.ZonedDateTime.compare(event.start, Temporal.Now.zonedDateTimeISO(calendarConfig.timezone)) >= 0)
+      .filter((event) => Temporal.ZonedDateTime.compare(event.start, now) >= 0)
       .sort((a, b) => Temporal.ZonedDateTime.compare(a.start, b.start))
       .slice(0, 5);
-  }, [events, calendarConfig.timezone]);
+  }, [events]);
 
   // Handlers
   const handleAppointmentClick = useCallback((consulta: Consulta) => {
@@ -295,35 +194,8 @@ export default function AgendaPage() {
                 totalResults={filteredConsultas.length}
               />
 
-              {/* Controles de navegación y vista */}
+              {/* Controles de vista */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                {/* Navegación de fechas - Solo en vista calendario */}
-                {viewMode === 'calendar' && (
-                  <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-300">
-                    <button
-                      onClick={() => navigateDate('prev')}
-                      className="rounded-lg p-2 text-sm hover:bg-slate-800"
-                      aria-label="Ver periodo anterior"
-                    >
-                      ←
-                    </button>
-                    <span className="px-3 text-sm font-medium text-slate-100">{rangeLabel}</span>
-                    <button
-                      onClick={() => navigateDate('next')}
-                      className="rounded-lg p-2 text-sm hover:bg-slate-800"
-                      aria-label="Ver periodo siguiente"
-                    >
-                      →
-                    </button>
-                    <button
-                      onClick={() => navigateDate('today')}
-                      className="ml-3 rounded-lg border border-blue-500/60 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-200 hover:bg-blue-500/20"
-                    >
-                      Hoy
-                    </button>
-                  </div>
-                )}
 
                 {/* Selector de modo (Calendario/Lista) */}
                 <div className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 p-1 text-xs font-medium text-slate-300">
@@ -380,11 +252,10 @@ export default function AgendaPage() {
           {/* CONTENIDO - Calendario o Lista */}
           <section className="rounded-2xl border border-slate-800 bg-[#0d1118] shadow-[0_25px_70px_-40px_rgba(8,13,23,0.9)]">
             {viewMode === 'calendar' ? (
-              <div className="sx-calendar-container w-full overflow-hidden rounded-2xl">
-                <div className="w-full min-w-0 h-[520px] sm:h-[620px] lg:h-[720px] xl:h-[780px]">
-                  <ScheduleXCalendar calendarApp={calendarApp} />
-                </div>
-              </div>
+              <CalendarView
+                consultas={filteredConsultas}
+                vistaCalendario={vistaCalendario}
+              />
             ) : (
               <div className="p-6">
                 <AppointmentListView
