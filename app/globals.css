@@ -275,22 +275,50 @@ body {
 
 @media (max-width: 768px) {
   .sx__event-title {
-    font-size: 0.7rem;
+    font-size: 0.75rem; /* 12px - mejorado de 11.2px */
   }
 
   .sx__event-time {
-    font-size: 0.64rem;
+    font-size: 0.7rem; /* 11.2px - mejorado de 10.24px */
   }
 
   .sx__time-axis-hour {
-    font-size: 0.62rem;
+    font-size: 0.7rem; /* 11.2px - mejorado de 9.92px */
   }
 
   .sx__week-grid-day-name {
-    font-size: 0.6rem;
+    font-size: 0.7rem; /* 11.2px - mejorado de 9.6px */
   }
 
   .sx__week-grid-day-number {
-    font-size: 0.95rem;
+    font-size: 1rem; /* 16px - mejorado de 15.2px */
+  }
+}
+
+/* ============================================
+   ACCESIBILIDAD: Reduced Motion (WCAG 2.1)
+   ============================================
+   Respeta las preferencias del usuario con
+   sensibilidad al movimiento o vestibular
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Deshabilitar transforms en botones */
+  button:active,
+  a:active {
+    transform: none !important;
+  }
+
+  /* Mantener outline de focus para navegación por teclado */
+  *:focus-visible {
+    transition: none !important;
   }
 }
