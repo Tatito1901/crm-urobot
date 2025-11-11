@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/app/components/ui/card';
-import { STATE_COLORS, formatDate, Lead } from '@/app/lib/crm-data';
+import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
+import type { Lead } from '@/types/leads';
 import { useLeads } from '@/hooks/useLeads';
 
 export default function LeadsPage() {

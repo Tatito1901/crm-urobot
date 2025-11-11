@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 
 import type { Database } from '@/types/database'
 
@@ -62,7 +62,7 @@ export async function middleware(req: NextRequest) {
           }))
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => req.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request: req,
           })

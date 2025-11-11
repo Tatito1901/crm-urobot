@@ -698,13 +698,11 @@ export type Database = {
       }
     }
     
-    Enums: {
-      // No hay enums definidos actualmente
-    }
-    
-    CompositeTypes: {
-      // No hay tipos compuestos definidos actualmente
-    }
+    // No hay enums definidos actualmente
+    Enums: Record<string, never>;
+
+    // No hay tipos compuestos definidos actualmente
+    CompositeTypes: Record<string, never>;
   }
 }
 

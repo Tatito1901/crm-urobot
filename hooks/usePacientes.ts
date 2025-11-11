@@ -7,7 +7,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Paciente } from '@/app/lib/crm-data'
+import {
+  DEFAULT_PACIENTE_ESTADO,
+  type Paciente,
+  isPacienteEstado,
+} from '@/types/pacientes'
 import type { Tables } from '@/types/database'
 
 // Crear instancia del cliente para hooks
@@ -25,10 +29,7 @@ type PacienteRow = Tables<'pacientes'>
 
 const mapPaciente = (row: PacienteRow): Paciente => {
   // Validar estado del paciente
-  const estadosValidos: Paciente['estado'][] = ['Activo', 'Inactivo'];
-  const estado = estadosValidos.includes(row.estado as Paciente['estado'])
-    ? (row.estado as Paciente['estado'])
-    : 'Activo';
+  const estado = isPacienteEstado(row.estado) ? row.estado : DEFAULT_PACIENTE_ESTADO
 
   return {
     id: row.id,
