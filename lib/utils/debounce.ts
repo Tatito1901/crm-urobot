@@ -3,6 +3,7 @@
  * Útil para evitar múltiples refetch cuando hay cambios realtime rápidos
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number

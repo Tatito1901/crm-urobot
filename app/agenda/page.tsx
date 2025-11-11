@@ -17,7 +17,7 @@ import dynamic from 'next/dynamic';
 import { Temporal } from '@js-temporal/polyfill';
 
 import { useConsultas } from '@/hooks/useConsultas';
-import { filterAppointments, formatShortTime, getStatusConfig, getShortName } from './lib/agenda-utils';
+import { filterAppointments, getShortName } from './lib/agenda-utils';
 import type { Consulta } from '@/types/consultas';
 
 // Componentes estáticos

@@ -39,7 +39,6 @@ export const BarChart = memo(function BarChart({
   }
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const barWidth = 100 / data.length;
 
   return (
     <div className="relative w-full" style={{ height }}>
