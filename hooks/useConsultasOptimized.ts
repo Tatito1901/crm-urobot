@@ -1,12 +1,15 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/database'
 
 type Consulta = Database['public']['Tables']['consultas']['Row'] & {
   pacientes?: Database['public']['Tables']['pacientes']['Row']
   sedes?: Database['public']['Tables']['sedes']['Row']
 }
+
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente (fuera del hook)
+const supabase = getSupabaseClient()
 
 interface UseConsultasOptions {
   startDate?: string
@@ -17,7 +20,6 @@ interface UseConsultasOptions {
 }
 
 export function useConsultasOptimized(options: UseConsultasOptions = {}) {
-  const supabase = createClient()
   
   // Calcular fechas por defecto (mes actual)
   const today = new Date()
@@ -76,27 +78,26 @@ export function useConsultasOptimized(options: UseConsultasOptions = {}) {
     }
   )
   
-  // Real-time subscriptions (opcional)
+  // ✅ OPTIMIZACIÓN: Suscripción en tiempo real con canal consistente (opcional)
   useEffect(() => {
     if (!options.realtime) return
-    
+
     const channel = supabase
-      .channel(`consultas-${defaultStartDate}-${defaultEndDate}`)
+      .channel('realtime:consultas')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'consultas',
-        filter: `fecha_consulta=gte.${defaultStartDate},fecha_consulta=lte.${defaultEndDate}`
+        table: 'consultas'
       }, () => {
         // Refrescar datos cuando hay cambios
         mutate()
       })
       .subscribe()
-    
+
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [options.realtime, defaultStartDate, defaultEndDate, mutate])
+  }, [options.realtime, mutate])
   
   // Agrupar consultas por fecha (útil para calendario)
   const consultasByDate = data?.reduce((acc, consulta) => {

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/database'
 
 type Recordatorio = Database['public']['Tables']['recordatorios']['Row'] & {
@@ -8,6 +8,9 @@ type Recordatorio = Database['public']['Tables']['recordatorios']['Row'] & {
     pacientes?: Database['public']['Tables']['pacientes']['Row']
   }
 }
+
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente (fuera del hook)
+const supabase = getSupabaseClient()
 
 interface UseRecordatoriosOptions {
   estado?: 'pendiente' | 'enviado' | 'fallido' | 'cancelado'
@@ -17,7 +20,6 @@ interface UseRecordatoriosOptions {
 }
 
 export function useRecordatoriosOptimized(options: UseRecordatoriosOptions = {}) {
-  const supabase = createClient()
   
   const fetcher = async () => {
     const now = new Date()
