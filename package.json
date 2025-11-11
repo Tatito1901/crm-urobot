@@ -19,11 +19,15 @@
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.78.0",
+    "@tanstack/react-virtual": "^3.13.12",
+    "lucide-react": "^0.553.0",
     "next": "15.5.5",
     "react": "19.1.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "19.1.0",
-    "temporal-polyfill": "^0.3.0"
+    "swr": "^2.3.6",
+    "temporal-polyfill": "^0.3.0",
+    "use-debounce": "^10.0.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

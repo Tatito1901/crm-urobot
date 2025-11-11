@@ -12,7 +12,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { getSupabaseClient } from '@/lib/supabase/client'
 import { debounce } from '@/lib/utils/debounce'
-import type { PostgrestFilterBuilder } from '@supabase/postgrest-js'
 import type { Database } from '@/types/database'
 
 // ✅ OPTIMIZACIÓN: Usar singleton del cliente
@@ -23,9 +22,7 @@ interface UseRealtimeTableOptions<TRow, T> {
   table: string
 
   /** Función para construir el query (select, filtros, joins, etc.) */
-  queryBuilder: (
-    query: PostgrestFilterBuilder<Database['public'], TRow, TRow[], string>
-  ) => PostgrestFilterBuilder<Database['public'], TRow, TRow[], string>
+  queryBuilder: (query: any) => any
 
   /** Función para mapear cada fila de la BD al tipo final */
   mapFn: (row: TRow) => T
@@ -33,7 +30,7 @@ interface UseRealtimeTableOptions<TRow, T> {
   /** Tiempo de debounce en ms (default: 300) */
   debounceMs?: number
 
-  /** Habilitar realtime subscriptions (default: true) */
+  /** Habilitar realtime subscriptions (default: false - DESHABILITADO POR LOOP INFINITO) */
   enableRealtime?: boolean
 }
 
@@ -62,7 +59,7 @@ export function useRealtimeTable<TRow = any, T = any>({
   queryBuilder,
   mapFn,
   debounceMs = 300,
-  enableRealtime = true,
+  enableRealtime = false, // ⚠️ DESHABILITADO TEMPORALMENTE - Causando loop infinito con RLS
 }: UseRealtimeTableOptions<TRow, T>): UseRealtimeTableReturn<T> {
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)

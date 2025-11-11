@@ -1,0 +1,785 @@
+{
+  "name": "AGENDAR_CONSULTA",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"slotId\": \"slot_12345\",\n  \"sede\": \"POLANCO\",\n  \"start\": \"2025-10-23T16:00:00.000Z\",\n  \"end\": \"2025-10-23T16:30:00.000Z\",\n  \"paciente\": {\n    \"nombre\": \"Fausto Medina\",\n    \"telefono\": \"6673184624\",\n    \"email\": \"fausto@example.com\"\n  },\n  \"tipoCita\": \"primera_vez\",\n  \"motivoConsulta\": \"Dolor de ingle\",\n  \"lead_telefono\": \"526673184624\"\n}\n"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -3920,
+        -848
+      ],
+      "id": "4924203d-ac41-4e7c-a99c-8a743cbc20ae",
+      "name": "When executed by another workflow",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ========================================================================\n * Parse & Prepare v10.3 - ULTRA ROBUSTO + CONSULTA_ID ÚNICO\n * ========================================================================\n * \n * NUEVO EN v10.3:\n * - ✅ Genera consulta_id ÚNICO basado en idempotency_hash\n * - ✅ Previene duplicados en base de datos\n * - ✅ Mantiene todas las mejoras de v10.2\n */\n\n// ========================================================================\n// CONSTANTES Y CONFIGURACIÓN\n// ========================================================================\n\nconst TZ = 'America/Mexico_City';\nconst MAX_DAYS_AHEAD = 90;\nconst MIN_PHONE_LENGTH = 10;\nconst VALID_SEDES = ['POLANCO', 'SATELITE'];\nconst MIN_DURATION = 15;  // minutos\nconst MAX_DURATION = 180; // 3 horas\n\n// ✅ Calendar IDs VERIFICADOS Y CONFIRMADOS\nconst CALENDAR_IDS = {\n  POLANCO: '92dbbeda09a6dfba909c43d9f05553f65309adcb629f35759153e59e3e401fc0@group.calendar.google.com',\n  SATELITE: 'ecdb381f314048b2662edd2d3169899eaab6e17bbc181151998ce7ad1ac0dabf@group.calendar.google.com'\n};\n\n// Mapeo de variaciones de sede\nconst SEDE_ALIASES = {\n  'SAN ANGEL': 'SATELITE',\n  'SANANGEL': 'SATELITE',\n  'SAN ANGEL INN': 'SATELITE',\n  'SANANGELINN': 'SATELITE',\n  'SATELITE': 'SATELITE',\n  'SATÉLITE': 'SATELITE',\n  'SATEL': 'SATELITE',\n  'SAT': 'SATELITE',\n  'POLANCO': 'POLANCO',\n  'POL': 'POLANCO',\n  'POLAN': 'POLANCO'\n};\n\n// ========================================================================\n// UTILIDADES DE NORMALIZACIÓN\n// ========================================================================\n\nfunction simpleHash(str) {\n  let hash = 0;\n  for (let i = 0; i < str.length; i++) {\n    const char = str.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash;\n  }\n  return Math.abs(hash).toString(16).padStart(8, '0').slice(0, 8);\n}\n\nfunction generateSecureOperationId(phoneHash, timestamp) {\n  const random = Math.random().toString(36).substr(2, 9);\n  return `op_${phoneHash}_${timestamp}_${random}`;\n}\n\nfunction generateIdempotencyHash(phone, startISO, sede) {\n  const key = `${phone}|${startISO}|${sede}`;\n  return simpleHash(key);\n}\n\nconst trim = s => (s ?? '').toString().trim();\nconst up = s => trim(s).toUpperCase();\nconst pick = (...vals) => vals.find(v => v !== undefined && v !== null && v !== '');\n\n/**\n * ✅ Normalización robusta de SEDE\n */\nfunction normalizarSede(sedeRaw) {\n  if (!sedeRaw) {\n    throw new Error('MISSING_SEDE: La sede es obligatoria');\n  }\n  \n  try {\n    let sede = sedeRaw.toString().toUpperCase();\n    sede = sede.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n    sede = sede.replace(/[^A-Z0-9\\s]/g, '');\n    sede = sede.replace(/\\s+/g, ' ').trim();\n    sede = sede.replace(/^SAN\\s+ANGEL\\s+INN\\s*/i, '');\n    \n    if (VALID_SEDES.includes(sede)) {\n      console.log(`✅ Sede normalizada (exacta): \"${sedeRaw}\" → \"${sede}\"`);\n      return sede;\n    }\n    \n    for (const [alias, canonical] of Object.entries(SEDE_ALIASES)) {\n      if (sede.includes(alias)) {\n        console.log(`✅ Sede normalizada (alias): \"${sedeRaw}\" → \"${canonical}\" (vía \"${alias}\")`);\n        return canonical;\n      }\n    }\n    \n    const validOptions = VALID_SEDES.join(', ');\n    throw new Error(`INVALID_SEDE: \"${sedeRaw}\" no es una sede válida. Opciones: ${validOptions}`);\n    \n  } catch (error) {\n    if (error.message.startsWith('INVALID_SEDE:')) {\n      throw error;\n    }\n    throw new Error(`SEDE_NORMALIZATION_ERROR: Error al normalizar sede \"${sedeRaw}\": ${error.message}`);\n  }\n}\n\n/**\n * ✅ Validación y normalización de EMAIL\n */\nfunction normalizarEmail(emailRaw) {\n  if (!emailRaw) return null;\n  \n  const email = trim(emailRaw).toLowerCase();\n  \n  if (email === '' || email === 'null' || email === 'undefined') {\n    return null;\n  }\n  \n  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  if (!emailRegex.test(email)) {\n    console.warn(`⚠️ Email inválido ignorado: \"${emailRaw}\"`);\n    return null;\n  }\n  \n  if (email.length > 254) {\n    console.warn(`⚠️ Email demasiado largo ignorado: \"${email.substring(0, 50)}...\"`);\n    return null;\n  }\n  \n  console.log(`✅ Email validado: ${email}`);\n  return email;\n}\n\n/**\n * ✅ Normalización de NOMBRE\n */\nfunction normalizarNombre(nombreRaw) {\n  if (!nombreRaw) {\n    throw new Error('MISSING_PATIENT_NAME: El nombre del paciente es obligatorio');\n  }\n  \n  try {\n    let nombre = trim(nombreRaw);\n    nombre = nombre.replace(/\\s+/g, ' ');\n    \n    if (nombre.length < 2) {\n      throw new Error(`NAME_TOO_SHORT: El nombre \"${nombreRaw}\" es demasiado corto`);\n    }\n    \n    if (nombre.length > 100) {\n      throw new Error(`NAME_TOO_LONG: El nombre excede 100 caracteres`);\n    }\n    \n    nombre = nombre.toLowerCase().split(' ').map(word => {\n      if (word.length === 0) return '';\n      if (['de', 'del', 'la', 'los', 'las', 'y', 'e', 'o', 'u'].includes(word)) {\n        return word;\n      }\n      return word.charAt(0).toUpperCase() + word.slice(1);\n    }).join(' ');\n    \n    console.log(`✅ Nombre normalizado: \"${nombreRaw}\" → \"${nombre}\"`);\n    return nombre;\n    \n  } catch (error) {\n    if (error.message.startsWith('NAME_')) {\n      throw error;\n    }\n    throw new Error(`NAME_NORMALIZATION_ERROR: Error al normalizar nombre \"${nombreRaw}\": ${error.message}`);\n  }\n}\n\n/**\n * ✅ Validación estricta de DURACIÓN\n */\nfunction validarDuracion(durationRaw) {\n  const duration = parseInt(durationRaw, 10);\n  \n  if (isNaN(duration) || !Number.isFinite(duration)) {\n    throw new Error(`INVALID_DURATION: \"${durationRaw}\" no es una duración válida`);\n  }\n  \n  if (duration < MIN_DURATION) {\n    throw new Error(`DURATION_TOO_SHORT: La duración mínima es ${MIN_DURATION} minutos`);\n  }\n  \n  if (duration > MAX_DURATION) {\n    throw new Error(`DURATION_TOO_LONG: La duración máxima es ${MAX_DURATION} minutos (${MAX_DURATION/60} horas)`);\n  }\n  \n  if (duration % 5 !== 0) {\n    console.warn(`⚠️ Duración ${duration} no es múltiplo de 5 minutos, se mantiene igual`);\n  }\n  \n  console.log(`✅ Duración validada: ${duration} minutos`);\n  return duration;\n}\n\n/**\n * ✅ Sanitización de string\n */\nfunction sanitizar(str) {\n  if (!str) return '';\n  \n  return trim(str)\n    .replace(/[<>]/g, '')\n    .replace(/[;]/g, '')\n    .substring(0, 500);\n}\n\n// ========================================================================\n// FUNCIÓN MEJORADA: Convertir CUALQUIER fecha a UTC desde CDMX\n// ========================================================================\n\nfunction convertToUTCFromMexicoCity(rawStart) {\n  if (!rawStart) {\n    throw new Error('MISSING_START_TIME: La fecha/hora de inicio es obligatoria');\n  }\n\n  let startISO;\n  let conversionMethod = 'unknown';\n  let inputDate;\n\n  try {\n    if (rawStart.endsWith('Z') || rawStart.match(/[+-]\\d{2}:\\d{2}$/)) {\n      inputDate = new Date(rawStart);\n      \n      if (isNaN(inputDate.getTime())) {\n        throw new Error(`INVALID_UTC_FORMAT: No se puede parsear \"${rawStart}\"`);\n      }\n      \n      startISO = inputDate.toISOString();\n      conversionMethod = 'explicit_timezone_to_utc';\n      \n      console.log(`🌍 Input con timezone explícito: ${rawStart} → ${startISO}`);\n      \n    } else {\n      inputDate = new Date(rawStart);\n      \n      if (isNaN(inputDate.getTime())) {\n        throw new Error(`INVALID_DATE_FORMAT: No se puede parsear \"${rawStart}\"`);\n      }\n      \n      const dateStr = rawStart.includes('T') ? rawStart : `${rawStart}T00:00:00`;\n      \n      const match = dateStr.match(/^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})(?::(\\d{2}))?/);\n      \n      if (!match) {\n        throw new Error(`INVALID_DATE_PATTERN: \"${rawStart}\" no coincide con formato esperado`);\n      }\n      \n      const [, year, month, day, hour, minute, second = '00'] = match;\n      \n      const localISOString = `${year}-${month}-${day}T${hour}:${minute}:${second}`;\n      \n      console.log(`🇲🇽 Interpretando como CDMX local: ${localISOString}`);\n      \n      const dummyDate = new Date(`${localISOString}Z`);\n      \n      const formatter = new Intl.DateTimeFormat('en-CA', {\n        timeZone: TZ,\n        year: 'numeric',\n        month: '2-digit',\n        day: '2-digit',\n        hour: '2-digit',\n        minute: '2-digit',\n        second: '2-digit',\n        hour12: false\n      });\n      \n      const parts = formatter.formatToParts(dummyDate);\n      const partsMap = {};\n      parts.forEach(p => { partsMap[p.type] = p.value; });\n      \n      const formattedLocal = `${partsMap.year}-${partsMap.month}-${partsMap.day}T${partsMap.hour}:${partsMap.minute}:${partsMap.second}`;\n      \n      const dummyMs = dummyDate.getTime();\n      const localMs = new Date(`${formattedLocal}Z`).getTime();\n      const offsetMs = dummyMs - localMs;\n      \n      const localDateMs = new Date(`${localISOString}Z`).getTime();\n      const utcMs = localDateMs + offsetMs;\n      \n      startISO = new Date(utcMs).toISOString();\n      \n      const offsetHours = offsetMs / 3600000;\n      conversionMethod = `cdmx_local_to_utc_offset_${offsetHours.toFixed(1)}hrs`;\n      \n      console.log(`✅ CDMX ${localISOString} → UTC ${startISO} (offset: ${offsetHours}hrs)`);\n    }\n    \n    if (!startISO || !startISO.endsWith('Z')) {\n      throw new Error(`CONVERSION_FAILED: Resultado inválido: ${startISO}`);\n    }\n    \n    const startMs = Date.parse(startISO);\n    if (!Number.isFinite(startMs)) {\n      throw new Error(`INVALID_TIMESTAMP: No se puede convertir a timestamp: ${startISO}`);\n    }\n    \n    return { startISO, conversionMethod };\n    \n  } catch (error) {\n    console.error('❌ CRITICAL: Timezone conversion failed:', error.message);\n    console.error('🔍 Input recibido:', rawStart);\n    throw new Error(`TIMEZONE_CONVERSION_FAILED: ${error.message}. Contacte soporte técnico.`);\n  }\n}\n\n// ========================================================================\n// 1. EXTRAER DATOS DEL INPUT\n// ========================================================================\n\nconst input = ($input.first().json?.query || $input.first().json || {});\nconst nowISO = new Date().toISOString();\nconst nowMs = Date.now();\n\nconst slotId = pick(input.slotId, input.slot_id, input.id);\n\nconst motivoConsultaRaw = pick(input.motivoConsulta, input.motivo, '');\nconst tipoCitaRaw = pick(input.tipoCita, input.tipo, 'primera_vez');\nconst durationRaw = pick(input.durationMin, input.duration, '30');\nconst sourceRaw = pick(input.source, input.canal, 'WhatsApp');\n\nconst pac = input.paciente || input.patient || {};\nconst nombreRaw = pick(pac.nombre, pac.name, '');\nconst telefonoRaw = pick(pac.telefono, pac.phone, '');\nconst emailRaw = pick(pac.email, '');\n\n// ========================================================================\n// 2. NORMALIZACIONES ROBUSTAS\n// ========================================================================\n\nconst sedeInput = pick(input.sede, input.location, '');\nconst sede = normalizarSede(sedeInput);\n\nconst nombre = normalizarNombre(nombreRaw);\nconst email = normalizarEmail(emailRaw);\n\nconst motivoConsulta = sanitizar(motivoConsultaRaw);\nconst tipoCita = sanitizar(tipoCitaRaw) || 'primera_vez';\nconst source = sanitizar(sourceRaw) || 'WhatsApp';\n\nconst durationMin = validarDuracion(durationRaw);\n\n// ========================================================================\n// 3. NORMALIZAR TELÉFONO (MEJORADO)\n// ========================================================================\n\nif (!telefonoRaw) {\n  throw new Error('MISSING_PATIENT_PHONE: El teléfono del paciente es obligatorio');\n}\n\nconst cleanPhone = telefonoRaw.toString().replace(/\\D/g, '');\n\nif (cleanPhone.length === 0) {\n  throw new Error(`INVALID_PHONE_NO_DIGITS: \"${telefonoRaw}\" no contiene dígitos válidos`);\n}\n\nconst phone10 = cleanPhone.slice(-MIN_PHONE_LENGTH);\n\nif (phone10.length !== MIN_PHONE_LENGTH) {\n  throw new Error(`INVALID_PHONE_LENGTH: \"${telefonoRaw}\" debe tener al menos ${MIN_PHONE_LENGTH} dígitos (se encontraron ${cleanPhone.length})`);\n}\n\nif (!/^\\d{10}$/.test(phone10)) {\n  throw new Error(`INVALID_PHONE_DIGITS: \"${phone10}\" contiene caracteres inválidos`);\n}\n\nconst phoneHash = simpleHash(phone10);\nconst phoneFormatted = `+52 ${phone10.slice(0, 3)} ${phone10.slice(3, 6)} ${phone10.slice(6)}`;\n\nconsole.log(`✅ Teléfono normalizado: \"${telefonoRaw}\" → ${phoneFormatted} (hash: ${phoneHash})`);\n\n// ========================================================================\n// 4. CONVERTIR FECHA A UTC (SIEMPRE DESDE CDMX)\n// ========================================================================\n\nconst rawStart = pick(input.start, input.startISO);\nconst { startISO, conversionMethod } = convertToUTCFromMexicoCity(rawStart);\n\nconst startMs = Date.parse(startISO);\n\n// ========================================================================\n// 5. VALIDAR RANGO DE FECHAS\n// ========================================================================\n\nconst nowMsCurrent = Date.now();\nconst oneHourAgo = nowMsCurrent - (60 * 60 * 1000);\nconst maxFutureMs = nowMsCurrent + (MAX_DAYS_AHEAD * 24 * 60 * 60 * 1000);\n\nif (startMs < oneHourAgo) {\n  const localTime = new Date(startMs).toLocaleString('es-MX', { timeZone: TZ });\n  throw new Error(`PAST_DATE_NOT_ALLOWED: No se pueden agendar citas en el pasado. Fecha solicitada: ${localTime} CDMX`);\n}\n\nif (startMs > maxFutureMs) {\n  throw new Error(`DATE_TOO_FAR: Solo se puede agendar hasta ${MAX_DAYS_AHEAD} días en el futuro`);\n}\n\nconst endISO = new Date(startMs + durationMin * 60000).toISOString();\n\n// ========================================================================\n// 6. GENERAR IDs ROBUSTOS + CONSULTA_ID ÚNICO\n// ========================================================================\n\nconst operation_id = slotId || generateSecureOperationId(phoneHash, nowMs);\nconst idempotencyHash = generateIdempotencyHash(phone10, startISO, sede);\nconst eventKey = phoneHash.slice(0, 4) + startISO.slice(8, 10) + startISO.slice(5, 7);\n\n// ✅ NUEVO: Generar consulta_id ÚNICO basado en idempotency\nconst consulta_id_unico = `cita_${idempotencyHash}_${phoneHash.slice(0, 4)}`;\n\nconsole.log('🔑 IDs generados:', {\n  operation_id,\n  consulta_id: consulta_id_unico,\n  idempotency_hash: idempotencyHash,\n  event_key: eventKey\n});\n\n// ========================================================================\n// 7. MAPEAR SEDE A CALENDAR ID\n// ========================================================================\n\nconst calendarId = CALENDAR_IDS[sede];\n\nif (!calendarId) {\n  throw new Error(`CALENDAR_ID_NOT_FOUND: No hay Calendar ID configurado para sede \"${sede}\"`);\n}\n\nconsole.log(`✅ Calendar ID asignado para ${sede}: ${calendarId.substring(0, 25)}...`);\n\n// ========================================================================\n// 8. PREPARAR DATOS PARA RPC\n// ========================================================================\n\nconst requiredFields = {\n  'paciente_id': phoneHash,\n  'nombre_completo': nombre,\n  'telefono': phone10,\n  'consulta_id': consulta_id_unico,  // ✅ NUEVO: ID único\n  'sede': sede,\n  'fecha_hora_utc': startISO\n};\n\nObject.entries(requiredFields).forEach(([field, value]) => {\n  if (value == null || value === '') {\n    throw new Error(`MISSING_REQUIRED_FIELD: ${field} no puede estar vacío`);\n  }\n});\n\nconst rpc_data = {\n  p_paciente_id: phoneHash,\n  p_nombre_completo: nombre,\n  p_telefono: phone10,\n  p_consulta_id: consulta_id_unico,  // ✅ NUEVO: ID único\n  p_sede: sede,\n  p_tipo_cita: tipoCita,\n  p_motivo_consulta: motivoConsulta,\n  p_duracion_minutos: durationMin,\n  p_fecha_hora_utc: startISO,\n  p_fecha_consulta: startISO.slice(0, 10),\n  p_hora_consulta: startISO.slice(11, 19),\n  p_calendar_event_id: null,\n  p_calendar_link: null,\n  p_operation_id: operation_id,\n  p_email: email,\n  p_fuente_original: source,\n  p_timezone: TZ,\n  p_canal_origen: source,\n  p_lead_telefono_whatsapp: `521${phone10}@s.whatsapp.net`,\n  p_event_key: eventKey,\n  p_idempotency_hash: idempotencyHash\n};\n\n// ========================================================================\n// 9. CONSTRUIR OUTPUT\n// ========================================================================\n\nconst output = {\n  operation_id,\n  consulta_id: consulta_id_unico,  // ✅ NUEVO: Exponer consulta_id único\n  eventKey,\n  idempotencyHash,\n  booking_timestamp: nowISO,\n  \n  patient: {\n    name: nombre,\n    shortName: nombre.split(' ')[0],\n    phone: telefonoRaw,\n    phone10: phone10,\n    phoneHash: phoneHash,\n    phoneFormatted: phoneFormatted,\n    email: email\n  },\n  \n  sede,\n  calendarId,\n  startISO,\n  endISO,\n  timezone: TZ,\n  appointmentType: tipoCita,\n  motivoConsulta,\n  durationMin,\n  source,\n  location: `Consultorio ${sede}`,\n  \n  rpc_data,\n  \n  _metadata: {\n    parsed_at: nowISO,\n    version: '10.3',  // ✅ NUEVO: Versión actualizada\n    validated: true,\n    timezone_method: conversionMethod,\n    timezone_forced: 'America/Mexico_City',\n    calendar_id_verified: true,\n    sede_validated: true,\n    sede_normalized: true,\n    name_normalized: true,\n    email_validated: email !== null,\n    date_range_validated: true,\n    has_idempotency_hash: true,\n    has_unique_consulta_id: true,  // ✅ NUEVO\n    works_globally: true,\n    ultra_robust: true\n  }\n};\n\n// ========================================================================\n// 10. LOGGING MEJORADO\n// ========================================================================\n\nconst localTimeFormatted = new Date(startISO).toLocaleString('es-MX', { \n  timeZone: TZ,\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit',\n  hour: '2-digit',\n  minute: '2-digit',\n  hour12: false\n});\n\nconsole.log('✅ Parse & Prepare v10.3 - SUCCESS (ULTRA ROBUSTO + CONSULTA_ID ÚNICO)');\nconsole.log(JSON.stringify({\n  level: 'info',\n  operation_id: operation_id,\n  consulta_id: consulta_id_unico,  // ✅ NUEVO\n  idempotency_hash: idempotencyHash,\n  sede: sede,\n  calendar: calendarId.substring(0, 25) + '...',\n  patient: {\n    name_normalized: nombre,\n    phone_hash: phoneHash,\n    email_valid: email !== null\n  },\n  schedule: {\n    input_raw: rawStart,\n    output_utc: startISO,\n    time_utc: startISO.slice(11, 19),\n    time_local_mx: localTimeFormatted,\n    duration_min: durationMin,\n    conversion_method: conversionMethod,\n    timezone_guaranteed: 'America/Mexico_City'\n  },\n  validation: {\n    sede_normalized: true,\n    name_normalized: true,\n    email_validated: true,\n    phone_valid: true,\n    duration_valid: true,\n    date_range_valid: true,\n    consulta_id_unique: true,  // ✅ NUEVO\n    global_compatible: true\n  },\n  metadata: {\n    version: '10.3',\n    processed_at: nowISO\n  }\n}, null, 2));\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3696,
+        -848
+      ],
+      "id": "6f7d8d48-60c4-471d-8f16-3051f059be4c",
+      "name": "Parse & Prepare",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.calendarId }}",
+          "__regex": "(^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)"
+        },
+        "timeMin": "={{$json.startISO}}",
+        "timeMax": "={{$json.endISO}}",
+        "options": {
+          "outputFormat": "availability"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        -3472,
+        -848
+      ],
+      "id": "080c73b6-7dda-4e1c-88a2-f4f00d00ed18",
+      "name": "FreeBusy",
+      "retryOnFail": false,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LWCHe5J8QGKC4iFi",
+          "name": "Google Calendar account - Clinicasdelcorazoncdmx@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Process FreeBusy v4.0 - CORREGIDO\n * \n * MEJORAS:\n * 1. ✅ Detección de duplicados ampliada a 24 horas\n * 2. ✅ Búsqueda de teléfono con regex (match exacto)\n * 3. ✅ Summary y description incluidos en mapeo\n */\n\nconst nowISO = new Date().toISOString();\nconst ctx = $('Parse & Prepare')?.item?.json ?? {};\nconst { calendarId: calId, startISO, endISO, patient } = ctx;\n\nconst problems = [];\nif (!calId) problems.push('MISSING_CAL_ID');\nif (!startISO || !endISO) problems.push('MISSING_SLOT');\n\nconst startMs = Date.parse(startISO || '');\nconst endMs = Date.parse(endISO || '');\n\nif (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) {\n  problems.push('INVALID_SLOT_RANGE');\n}\n\nconst patientPhoneDigits = patient?.phone10 || String(patient?.phone || '').replace(/\\D/g, '').slice(-10);\n\nconst fb = $input.first()?.json ?? {};\nlet busySrc = 'none';\nlet rawBusy = [];\n\nconst calendarsBusy = fb.calendars?.[calId]?.busy;\nconst fbBusy = fb.busy;\nconst events = fb.events ?? fb.items;\nconst availableFlag = typeof fb.available === 'boolean' ? fb.available : null;\n\nif (Array.isArray(fbBusy)) {\n  rawBusy = fbBusy;\n  busySrc = 'fb.busy';\n} else if (Array.isArray(calendarsBusy)) {\n  rawBusy = calendarsBusy;\n  busySrc = 'calendars[calId].busy';\n} else if (Array.isArray(events)) {\n  busySrc = 'events';\n  rawBusy = events.map(e => ({ \n    start: e.start?.dateTime || e.start, \n    end: e.end?.dateTime || e.end,\n    summary: e.summary || e.title || '',      // ✅ AGREGADO\n    description: e.description || ''          // ✅ AGREGADO\n  }));\n}\n\n// ✅ MEJORA: Incluir summary y description en mapeo\nconst busyEvents = rawBusy.map(b => {\n  const bStartMs = Date.parse(b.start);\n  const bEndMs = Date.parse(b.end);\n  return { \n    start: b.start, \n    end: b.end, \n    startMs: bStartMs, \n    endMs: bEndMs,\n    summary: b.summary || b.title || '',      // ✅ AGREGADO\n    description: b.description || ''          // ✅ AGREGADO\n  };\n}).filter(b => Number.isFinite(b.startMs) && Number.isFinite(b.endMs));\n\nlet conflictCount = 0;\nlet hasOverlap = false;\n\nfor (const b of busyEvents) {\n  if (b.startMs < endMs && b.endMs > startMs) {\n    conflictCount++;\n    hasOverlap = true;\n  }\n}\n\nconst isFree = !hasOverlap && conflictCount === 0;\n\n// ✅ MEJORA: Detección de duplicados más robusta\nlet isDuplicate = false;\nlet duplicateReason = null;\n\nif (patientPhoneDigits && busyEvents.length > 0) {\n  // ✅ Crear regex con word boundary para match exacto\n  const phonePattern = new RegExp(`\\\\b${patientPhoneDigits}\\\\b`);\n  \n  for (const b of busyEvents) {\n    const summary = b.summary || '';\n    const description = b.description || '';\n    \n    // ✅ Usar regex en lugar de .includes()\n    if (phonePattern.test(summary) || phonePattern.test(description)) {\n      const timeDiff = Math.abs(b.startMs - startMs);\n      \n      // ✅ AMPLIADO: 24 horas en lugar de 1 hora\n      if (timeDiff < 24 * 3600000) {\n        isDuplicate = true;\n        const hoursAway = Math.round(timeDiff / 3600000);\n        duplicateReason = `same_patient_${hoursAway}hrs_away`;\n        \n        console.log(`⚠️ Duplicado detectado: ${hoursAway}hrs de diferencia`);\n        break;\n      }\n    }\n  }\n}\n\nconst output = {\n  ...ctx,\n  isFree,\n  isDuplicate,\n  duplicateReason,\n  busy: busyEvents.map(b => ({ \n    start: b.start, \n    end: b.end,\n    summary: b.summary  // ✅ Incluir para debugging\n  })),\n  busyCount: busyEvents.length,\n  conflictCount,\n  _freebusy: {\n    checked_at: nowISO,\n    source: busySrc,\n    available_flag: availableFlag,\n    has_overlap: hasOverlap,\n    version: '4.0'  // ✅ Versión actualizada\n  }\n};\n\nconsole.log('✅ FreeBusy v4.0:', JSON.stringify({\n  op: ctx.operation_id,\n  free: isFree,\n  busy: busyEvents.length,\n  dup: isDuplicate,\n  reason: duplicateReason\n}));\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3248,
+        -848
+      ],
+      "id": "192f5a7f-3ac4-42d5-ae19-718538bee26c",
+      "name": "Process FreeBusy"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-free",
+              "leftValue": "={{ $json.isFree }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "not-duplicate",
+              "leftValue": "={{ $json.isDuplicate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -3024,
+        -848
+      ],
+      "id": "c5f7c107-a879-4793-9181-f9981851be88",
+      "name": "¿Slot libre?"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ========================================================================\n * Double Check v5.0 - ENHANCED PROTECTION\n * ========================================================================\n * \n * MEJORAS:\n * 1. ✅ Búsqueda por DÍA COMPLETO (no solo ±2 horas)\n * 2. ✅ Detecta citas en misma sede\n * 3. ✅ Detecta múltiples citas del mismo día\n * 4. ✅ Información de contexto mejorada\n * 5. ✅ Manejo de timezone correcto\n */\n\nconst ENABLE = $env.ENABLE_DOUBLE_CHECK !== 'false';\nconst ctx = $('Parse & Prepare').item.json;\n\nif (!ENABLE) {\n  console.log('⚠️ DOUBLE CHECK DISABLED');\n  return [{ json: { \n    ...ctx, \n    _doubleCheck: { \n      performed: false, \n      skipped: true,\n      reason: 'disabled_by_config',\n      search: {\n        start: ctx.startISO,\n        end: ctx.endISO,\n        query: ctx.patient?.phone10 || '',\n        window_type: 'none'\n      }\n    } \n  }}];\n}\n\nconst { calendarId, startISO, endISO, eventKey, patient, operation_id, sede, timezone } = ctx;\n\n// Validaciones\nif (!patient || !patient.phone10) {\n  throw new Error('MISSING_PATIENT_DATA');\n}\n\nif (!startISO) {\n  throw new Error('MISSING_START_TIME');\n}\n\nconst nowISO = new Date().toISOString();\nconst TZ = timezone || 'America/Mexico_City';\n\n// ========================================================================\n// OPCIÓN 1: DÍA COMPLETO (RECOMENDADO)\n// ========================================================================\n// Busca TODAS las citas del paciente en el día de la cita solicitada\n\nconst appointmentDate = new Date(startISO);\nconst appointmentDateLocal = new Date(appointmentDate.toLocaleString('en-US', { timeZone: TZ }));\n\n// Inicio del día (00:00:00)\nconst dayStart = new Date(appointmentDateLocal);\ndayStart.setHours(0, 0, 0, 0);\n\n// Fin del día (23:59:59)\nconst dayEnd = new Date(appointmentDateLocal);\ndayEnd.setHours(23, 59, 59, 999);\n\n// Convertir a UTC ISO\nconst searchStart = new Date(dayStart.toLocaleString('en-US', { timeZone: 'UTC' })).toISOString();\nconst searchEnd = new Date(dayEnd.toLocaleString('en-US', { timeZone: 'UTC' })).toISOString();\n\nconst windowType = 'full_day';\nconst windowHours = 24;\n\n// ========================================================================\n// OPCIÓN 2: VENTANA AMPLIADA ±4 HORAS (Alternativa)\n// ========================================================================\n// Si prefieres ventana de tiempo en lugar de día completo, usa esto:\n\n/*\nconst WINDOW_HOURS = 4;\nconst searchStartMs = Date.parse(startISO) - (WINDOW_HOURS * 3600000);\nconst searchEndMs = Date.parse(startISO) + (WINDOW_HOURS * 3600000);\nconst searchStart = new Date(searchStartMs).toISOString();\nconst searchEnd = new Date(searchEndMs).toISOString();\nconst windowType = 'time_window';\nconst windowHours = WINDOW_HOURS * 2;  // ±4 = 8 total\n*/\n\n// ========================================================================\n// INFORMACIÓN DE BÚSQUEDA\n// ========================================================================\n\nconst searchInfo = {\n  start: searchStart,\n  end: searchEnd,\n  query: patient.phone10,\n  window_type: windowType,\n  window_hours: windowHours,\n  sede: sede,\n  timezone: TZ,\n  search_date: appointmentDate.toISOString().slice(0, 10)\n};\n\n// ========================================================================\n// LOGGING MEJORADO\n// ========================================================================\n\nconsole.log('🔍 Double Check v5.0:', JSON.stringify({\n  version: '5.0',\n  operation_id: operation_id,\n  event_key: eventKey,\n  patient: {\n    phone: patient.phone10,\n    name: patient.name\n  },\n  appointment: {\n    requested_time: startISO.slice(11, 16),\n    requested_date: startISO.slice(0, 10),\n    sede: sede\n  },\n  search_window: {\n    type: windowType,\n    hours: windowHours,\n    start: searchStart.slice(11, 16),\n    end: searchEnd.slice(11, 16),\n    date: searchStart.slice(0, 10)\n  }\n}, null, 2));\n\n// ========================================================================\n// OUTPUT\n// ========================================================================\n\nconst output = {\n  ...ctx,\n  _doubleCheck: {\n    performed: true,\n    version: '5.0',\n    timestamp: nowISO,\n    search: searchInfo,\n    protection_level: windowType === 'full_day' ? 'maximum' : 'standard',\n    detects: [\n      'duplicate_same_day',\n      'duplicate_same_time',\n      'duplicate_same_sede',\n      'multiple_appointments_same_day'\n    ]\n  }\n};\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2800,
+        -944
+      ],
+      "id": "75f41178-6a1b-49d1-b2e7-2096885e51c1",
+      "name": "Double Check (Race Protection)"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.calendarId }}",
+          "mode": "id"
+        },
+        "timeMin": "={{ $json._doubleCheck.search.start }}",
+        "timeMax": "={{ $json._doubleCheck.search.end }}",
+        "options": {
+          "query": "={{ $json.patient.phone10 }}",
+          "recurringEventHandling": "expand",
+          "timeZone": {
+            "__rl": true,
+            "value": "America/Mexico_City",
+            "mode": "list",
+            "cachedResultName": "America/Mexico_City"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -2576,
+        -944
+      ],
+      "id": "e6b862fc-efb5-424d-98d5-4eae61307112",
+      "name": "Verify Slot Still Free",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LWCHe5J8QGKC4iFi",
+          "name": "Google Calendar account - Clinicasdelcorazoncdmx@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "still-free",
+              "leftValue": "={{ $items(\"Verify Slot Still Free\").length === 0 || Object.keys($items(\"Verify Slot Still Free\")[0]?.json || {}).length === 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2352,
+        -944
+      ],
+      "id": "9622fa64-8ffc-4259-9c50-d3a448cfe580",
+      "name": "Still Free After Verify?"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Merge Context v5.5 — MEJORADO CON FALLBACKS ROBUSTOS\n * - Obtiene contexto de múltiples fuentes con fallbacks\n * - Valida contexto y \"double check\"\n * - Secreto: $vars.IDEMP_SECRET (si existe) o IDEMP_SECRET_INLINE\n * - Si no hay secreto, usa SHA-256(idemData) (dedupe determinista)\n * - HMAC-SHA256 puro JS (ASCII/binary) cuando hay secreto\n * - Routing: AVAILABLE / CONFLICT / DUPLICATE (dedupe/metrics opcionales off)\n */\n\n/*** ===== Opciones ===== ***/\nconst ENABLE_SEDE_LOOKUP = false;\nconst ENABLE_DB_DEDUPE   = false;\nconst ENABLE_METRICS     = false;\n\n// (Opcional) define aquí un secreto inline (64 hex). Si lo dejas vacío, intentará $vars.IDEMP_SECRET.\nconst IDEMP_SECRET_INLINE = '';  // <-- pon aquí un hex de 64 chars si quieres\n\n/*** ===== Helpers: SHA-256 & HMAC (puro JS ASCII/binary) ===== ***/\nfunction sha256(ascii) {\n  function rightRotate(value, amount) { return (value>>>amount) | (value<<(32-amount)); }\n  var mathPow = Math.pow, maxWord = mathPow(2, 32), lengthProperty = 'length';\n  var i, j; var result = '';\n\n  var words = []; var asciiBitLength = ascii[lengthProperty] * 8;\n\n  var hash = sha256.h = sha256.h || [];\n  var k = sha256.k = sha256.k || [];\n  var primeCounter = k[lengthProperty];\n\n  if (!primeCounter) {\n    var candidate = 2;\n    outer: while (primeCounter < 64) {\n      for (i = 2; i*i <= candidate; i++) if (candidate % i === 0) { candidate++; continue outer; }\n      hash[primeCounter] = ((mathPow(candidate, .5)*maxWord)|0);\n      k[primeCounter++]  = ((mathPow(candidate, 1/3)*maxWord)|0);\n      candidate++;\n    }\n  }\n\n  ascii += '\\x80';\n  while (ascii[lengthProperty] % 64 - 56) ascii += '\\x00';\n  for (i = 0; i < ascii[lengthProperty]; i++) {\n    j = ascii.charCodeAt(i);\n    if (j>>8) throw new Error('Only ASCII supported in sha256 input');\n    words[i>>2] |= j << ((3 - i) % 4) * 8;\n  }\n  words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);\n  words[words[lengthProperty]] = (asciiBitLength);\n\n  for (j = 0; j < words[lengthProperty];) {\n    var w = words.slice(j, j += 16);\n    var oldHash = hash.slice(0);\n\n    for (i = 0; i < 64; i++) {\n      var w15 = w[i - 15], w2 = w[i - 2];\n      var a = hash[0], b = hash[1], c = hash[2], d = hash[3];\n      var e = hash[4], f = hash[5], g = hash[6], h = hash[7];\n\n      var temp1 = (h + ((e>>>6) ^ (e>>>11) ^ (e>>>25)) + ((e & f) ^ (~e & g)) + k[i] +\n                  (w[i] = (i < 16) ? w[i] :\n                    ( (w15>>>7) ^ (w15>>>18) ^ (w15>>>3) ) +\n                    ( (w2>>>17) ^ (w2>>>19) ^ (w2>>>10) ) +\n                    w[i - 7] + w[i - 16]\n                  ) | 0);\n\n      var temp2 = (((a>>>2) ^ (a>>>13) ^ (a>>>22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;\n\n      hash = [(temp1 + temp2)|0, a, b, c, (d + temp1)|0, e, f, g];\n    }\n\n    for (i = 0; i < 8; i++) { hash[i] = (hash[i] + oldHash[i]) | 0; }\n  }\n\n  for (i = 0; i < 8; i++) {\n    for (j = 3; j + 1; j--) {\n      var b = (hash[i] >> (j * 8)) & 255;\n      result += ((b < 16) ? 0 : '') + b.toString(16);\n    }\n  }\n  return result;\n}\n\nfunction strToBytes(str) { const out = new Array(str.length); for (let i=0;i<str.length;i++) out[i] = str.charCodeAt(i) & 0xff; return out; }\nfunction bytesToStr(bytes) { let s = ''; for (let i=0;i<bytes.length;i++) s += String.fromCharCode(bytes[i] & 0xff); return s; }\nfunction hexToBytes(hex) { const out = []; for (let i=0;i<hex.length;i+=2) out.push(parseInt(hex.slice(i,i+2),16)); return out; }\nfunction hmacSHA256Hex(secret, message) {\n  const blockSize = 64;\n  let keyBytes = strToBytes(secret);\n  if (keyBytes.length > blockSize) { const kh = sha256(bytesToStr(keyBytes)); keyBytes = hexToBytes(kh); }\n  if (keyBytes.length < blockSize) { while (keyBytes.length < blockSize) keyBytes.push(0); }\n  const oKey = keyBytes.map(b => b ^ 0x5c);\n  const iKey = keyBytes.map(b => b ^ 0x36);\n  const inner = bytesToStr(iKey) + message;         \n  const innerHashHex = sha256(inner);               \n  const outer = bytesToStr(oKey) + bytesToStr(hexToBytes(innerHashHex));\n  const outerHashHex = sha256(outer);               \n  return outerHashHex;\n}\n\n/*** ===== Utilidades de negocio ===== ***/\nfunction toMX10(s) {\n  if (!s) return '';\n  s = String(s).replace(/\\D/g, '');\n  if (s.startsWith('521')) s = s.slice(3);\n  else if (s.startsWith('52')) s = s.slice(2);\n  if (s.length === 11 && s.startsWith('1')) s = s.slice(1);\n  if (s.length > 10) s = s.slice(-10);\n  return s;\n}\n\nfunction hasRealContent(item) {\n  if (!item || !item.json) return false;\n  const json = item.json; const keys = Object.keys(json);\n  if (keys.length === 0) return false;\n  if (keys.length === 1 && keys[0] === 'pairedItem') return false;\n  return !!(json.id || json.summary || json.start);\n}\n\n/*** ===== 1) Contexto y verificación CON FALLBACKS ===== ***/\nconst nowISO = new Date().toISOString();\n\n// ✅ MEJORADO: Obtener contexto de múltiples fuentes\nlet ctx;\ntry {\n  ctx = $('Double Check (Race Protection)')?.item?.json || {};\n} catch {\n  ctx = {};\n}\n\n// ✅ FALLBACK: Si ctx está vacío o incompleto, obtener de Parse & Prepare\nif (!ctx.operation_id || !ctx.telefono) {\n  console.log('⚠️ Contexto incompleto desde Double Check, buscando en Parse & Prepare...');\n  try {\n    const parseCtx = $('Parse & Prepare')?.item?.json || {};\n    if (parseCtx.operation_id) {\n      ctx = { ...parseCtx, ...ctx }; // Merge, priorizando ctx si existe\n      console.log('✅ Contexto recuperado de Parse & Prepare');\n    }\n  } catch (e) {\n    console.warn('⚠️ No se pudo obtener Parse & Prepare:', e.message);\n  }\n}\n\n// ✅ ÚLTIMO FALLBACK: $json\nif (!ctx.operation_id) {\n  console.log('⚠️ Último fallback a $json...');\n  ctx = $json || {};\n}\n\n// Validar que tenemos operation_id\nif (!ctx || !ctx.operation_id) {\n  console.error('❌ Contexto recibido:', JSON.stringify(ctx, null, 2));\n  throw new Error('INVALID_CONTEXT: falta operation_id. Verifica que Double Check pase el contexto completo.');\n}\n\n// ✅ Obtener items de verificación\nlet verifyItems = [];\ntry { \n  verifyItems = $items('Verify Slot Still Free') || []; \n} catch { \n  verifyItems = []; \n}\n\nconst realEvents  = verifyItems.filter(hasRealContent);\nconst eventsFound = realEvents.length;\nconst stillFree   = eventsFound === 0;\n\nconst conflictDetails = realEvents.map(i => {\n  const e = i.json;\n  return {\n    id: e.id || 'unknown',\n    summary: e.summary || 'Sin título',\n    start: e.start?.dateTime || e.start?.date || 'unknown',\n    end: e.end?.dateTime || e.end?.date || 'unknown',\n    status: e.status || 'unknown'\n  };\n});\n\nconsole.log('📋 Verificación:', {\n  verify_items: verifyItems.length,\n  real_events: eventsFound,\n  still_free: stillFree\n});\n\n/*** ===== 2) Secreto ($vars o inline) + Idempotencia + requestId ===== ***/\n// 2.1) Tomar secreto de $vars o inline\nlet secret = null;\ntry { \n  secret = ($vars && typeof $vars.IDEMP_SECRET === 'string' && $vars.IDEMP_SECRET.length >= 32) ? $vars.IDEMP_SECRET : null; \n} catch { \n  secret = null; \n}\n\nif (!secret && typeof IDEMP_SECRET_INLINE === 'string' && IDEMP_SECRET_INLINE.length >= 32) {\n  secret = IDEMP_SECRET_INLINE;\n}\n\n// 2.2) Campos canónicos CON FALLBACKS MEJORADOS\nconst phone10 = ctx.telefonoCanon10 \n  ?? ctx.patient?.phone10 \n  ?? toMX10(\n    ctx.telefono \n    ?? ctx.patient?.telefono\n    ?? ctx.paciente?.telefono\n    ?? $json.telefono \n    ?? $json.telefono_whatsapp \n    ?? ''\n  );\n\nconst startISO = ctx.startISO \n  ?? ctx.slot?.startISO \n  ?? $json.startISO \n  ?? $json.slot?.startISO;\n\nconst sede = (ctx.sede ?? $json.sede ?? '').toUpperCase();\n\n// Validaciones con logging detallado\nif (!phone10 || phone10.length !== 10) {\n  console.error('❌ DEBUG - Datos disponibles:', JSON.stringify({\n    ctx_keys: Object.keys(ctx),\n    phone10,\n    telefonoCanon10: ctx.telefonoCanon10,\n    telefono_raw: ctx.telefono,\n    patient: ctx.patient,\n    json_telefono: $json.telefono\n  }, null, 2));\n  throw new Error(`IDEMP_VALIDATION: teléfono inválido (recibido: \"${phone10}\", longitud: ${phone10.length})`);\n}\n\nif (!startISO) {\n  console.error('❌ startISO ausente. Datos:', JSON.stringify({\n    ctx_startISO: ctx.startISO,\n    slot_startISO: ctx.slot?.startISO,\n    json_startISO: $json.startISO\n  }, null, 2));\n  throw new Error('IDEMP_VALIDATION: startISO ausente');\n}\n\nif (!sede) {\n  console.error('❌ sede ausente. Datos:', JSON.stringify({\n    ctx_sede: ctx.sede,\n    json_sede: $json.sede\n  }, null, 2));\n  throw new Error('IDEMP_VALIDATION: sede ausente');\n}\n\nconsole.log('✅ Campos validados:', {\n  phone10,\n  startISO: startISO.slice(0, 19),\n  sede\n});\n\n// 2.3) idempotency_key (HMAC si hay secreto; si no, SHA-256)\nconst idemData = `${phone10}|${startISO}|${sede}`;\nconst idempotency_key = secret ? hmacSHA256Hex(secret, idemData) : sha256(idemData);\n\n// 2.4) requestId determinista (prefijo del hash + timestamp)\nconst requestId = ctx.requestId || `book-${idempotency_key.slice(0,8)}-${Date.now().toString(16)}`;\n\n/*** ===== 3) (Opcional) lookup & dedupe ===== ***/\nlet calendarId = ctx.calendarId || null;\nlet duplicate = null;\n\nasync function maybeSedeLookup() { /* noop */ }\nasync function maybeDedupe() { /* noop */ }\nasync function maybeMetricsConflict() { /* noop */ }\n\nif (ENABLE_SEDE_LOOKUP) { await maybeSedeLookup(); }\nif (ENABLE_DB_DEDUPE)   { await maybeDedupe(); }\nif (ENABLE_METRICS && !stillFree) { await maybeMetricsConflict(); }\n\n/*** ===== 4) Routing & salida ===== ***/\nlet finalStatus = 'AVAILABLE', reason = 'AVAILABLE', shouldCreateEvent = true;\nif (!stillFree) { \n  finalStatus = 'CONFLICT'; \n  reason = 'CONFLICT'; \n  shouldCreateEvent = false; \n}\nelse if (duplicate) { \n  finalStatus = 'DUPLICATE'; \n  reason = 'DUPLICATE'; \n  shouldCreateEvent = false; \n}\n\nconst output = {\n  ...ctx,\n  telefonoCanon10: phone10,\n  sede,\n  startISO,\n  calendarId: calendarId || ctx.calendarId || null,\n  idempotency_key,\n  requestId,\n  slotStatus: {\n    freebusy_free: ctx.isFree || false,\n    double_check_passed: stillFree,\n    final_status: finalStatus,\n    events_found: eventsFound,\n    verify_items_total: verifyItems.length,\n    verify_items_real: eventsFound,\n    has_empty_items: verifyItems.length !== eventsFound\n  },\n  conflictDetails: conflictDetails.length ? conflictDetails : null,\n  routing: {\n    shouldCreateEvent,\n    reason,\n    duplicate_consulta_id: duplicate?.id || null,\n    duplicate_calendar_event_id: duplicate?.calendar_event_id || null\n  },\n  _milestones: {\n    parse: ctx.booking_timestamp || nowISO,\n    freebusy_check: ctx._freebusy?.checked_at || null,\n    double_check: ctx._doubleCheck?.timestamp || null,\n    verification: nowISO,\n    all_checks_completed: true\n  },\n  _validation: {\n    context_validated: true,\n    verify_result_validated: true,\n    idempotency_built: true,\n    idemp_fields: { phone10: true, startISO: true, sede: true },\n    calendarId_resolved: !!(calendarId || ctx.calendarId),\n    version: '5.5',\n    context_source: ctx.operation_id === ($('Parse & Prepare')?.item?.json?.operation_id) ? 'parse_prepare' : 'double_check'\n  },\n  _ids: {\n    operation_id: ctx.operation_id,\n    requestId_prefix: requestId.slice(0, 8),\n    idempotency_prefix: idempotency_key.slice(0, 8)\n  }\n};\n\nconsole.log('✅ Merge Context v5.5:', JSON.stringify({\n  status: output.slotStatus.final_status,\n  shouldCreateEvent, \n  reason,\n  verify: { total: verifyItems.length, real: eventsFound },\n  id_prefix: idempotency_key.slice(0,8),\n  using_secret: !!secret,\n  context_source: output._validation.context_source\n}, null, 2));\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2128,
+        -1040
+      ],
+      "id": "96a7c3aa-a4c4-4287-a305-9a4667f6c6bd",
+      "name": "Merge Context"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "={{$json.calendarId}}",
+          "mode": "id"
+        },
+        "start": "={{$json.startISO}}",
+        "end": "={{$json.endISO}}",
+        "additionalFields": {
+          "description": "=INFORMACION DEL PACIENTE\n─────────────────────────────\nPaciente: {{$json.patient.name}}\nTelefono: {{$json.patient.phoneFormatted}}\nEmail: {{$json.patient.email || 'No registrado'}}\n\nDETALLES DE LA CITA\n─────────────────────────────\nTipo: {{ $json.appointmentType === 'primera_vez' ? 'Primera Vez' : 'Seguimiento' }}\nSede: {{$json.sede}}\nMotivo: {{$json.motivoConsulta}}\n\nREFERENCIAS\n─────────────────────────────\nFolio: {{$json.operation_id}}\nClave: {{$json.eventKey}}",
+          "location": "={{$json.location}}",
+          "summary": "={{$json.patient.name}} • {{ $json.appointmentType === 'primera_vez' ? 'Primera Vez' : 'Seguimiento' }} • {{$json.sede}}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        -1904,
+        -1040
+      ],
+      "id": "9dc11488-db26-4220-be19-e0f98620ba3f",
+      "name": "Create Event",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LWCHe5J8QGKC4iFi",
+          "name": "Google Calendar account - Clinicasdelcorazoncdmx@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ========================================================================\n * Prepare CRM Data v8.0 - ENHANCED WITH VALIDATION\n * ========================================================================\n * \n * MEJORAS:\n * 1. ✅ Incluye idempotency_hash en RPC\n * 2. ✅ Valida fechas del evento contra lo esperado\n * 3. ✅ Validación completa de calendar event\n * 4. ✅ Links de Google Maps reales\n * 5. ✅ Timezone consistency check\n * 6. ✅ Mejor manejo de errores\n * 7. ✅ Logging mejorado\n */\n\nconst DEBUG = $env.DEBUG_CRM === 'true';\nconst nowISO = new Date().toISOString();\n\n// ========================================================================\n// 1. VALIDAR CALENDAR EVENT\n// ========================================================================\n\nconst calendarEvent = $input.first()?.json;\n\nif (!calendarEvent || !calendarEvent.id) {\n  throw new Error('MISSING_CALENDAR_EVENT: El evento de calendario no fue creado');\n}\n\nconst { \n  id: calendar_event_id, \n  htmlLink: calendar_link, \n  status: event_status,\n  start: event_start,\n  end: event_end\n} = calendarEvent;\n\n// Validar status\nif (event_status !== 'confirmed') {\n  throw new Error(`EVENT_NOT_CONFIRMED: Status = ${event_status}. Solo se aceptan eventos confirmados.`);\n}\n\n// Validar que tiene link\nif (!calendar_link) {\n  console.warn('⚠️ Calendar event sin htmlLink');\n}\n\n// ========================================================================\n// 2. OBTENER CONTEXTO\n// ========================================================================\n\nconst mergeCtx = $('Merge Context')?.item?.json;\nconst parseCtx = $('Parse & Prepare')?.item?.json;\nconst ctx = mergeCtx || parseCtx;\n\nif (!ctx) {\n  throw new Error('MISSING_CONTEXT: No se encontró contexto de Parse & Prepare o Merge Context');\n}\n\n// Extraer datos del contexto\nconst { \n  operation_id, \n  eventKey, \n  idempotencyHash,  // ✅ NUEVO: Extraer idempotency hash\n  patient, \n  sede, \n  startISO, \n  endISO,\n  timezone, \n  source, \n  booking_timestamp, \n  appointmentType, \n  motivoConsulta, \n  durationMin \n} = ctx;\n\n// ========================================================================\n// 3. VALIDAR CAMPOS REQUERIDOS\n// ========================================================================\n\nconst requiredFields = {\n  operation_id,\n  patient,\n  sede,\n  startISO,\n  calendar_event_id\n};\n\nObject.entries(requiredFields).forEach(([field, value]) => {\n  if (!value) {\n    throw new Error(`MISSING_REQUIRED_FIELD: ${field} es obligatorio`);\n  }\n});\n\n// ========================================================================\n// 4. VALIDAR FECHAS DEL EVENTO vs ESPERADAS\n// ========================================================================\n\nconst eventStartTime = event_start?.dateTime || event_start?.date;\nconst expectedStart = startISO;\n\nif (eventStartTime) {\n  const eventStartMs = Date.parse(eventStartTime);\n  const expectedStartMs = Date.parse(expectedStart);\n  const timeDiff = Math.abs(eventStartMs - expectedStartMs);\n  \n  // Permitir hasta 1 minuto de diferencia (por procesamiento)\n  if (timeDiff > 60000) {\n    console.error('❌ TIME MISMATCH:', {\n      expected: expectedStart,\n      actual: eventStartTime,\n      diff_seconds: Math.round(timeDiff / 1000)\n    });\n    \n    throw new Error(`TIME_MISMATCH: Diferencia de ${Math.round(timeDiff/1000)}s entre tiempo solicitado y evento creado`);\n  }\n  \n  if (DEBUG) {\n    console.log('✅ Fechas validadas:', {\n      expected: expectedStart,\n      actual: eventStartTime,\n      diff_ms: timeDiff\n    });\n  }\n}\n\n// ========================================================================\n// 5. PREPARAR DATOS BÁSICOS\n// ========================================================================\n\nconst TZ = timezone || 'America/Mexico_City';\nconst fechaConsulta = startISO.slice(0, 10);\nconst horaConsulta = startISO.slice(11, 19);\nconst telefono10 = patient.phone10 || patient.phone;\nconst telefonoWhatsApp = telefono10 ? `521${telefono10}@s.whatsapp.net` : null;\n\n// ========================================================================\n// 6. PREPARAR RPC PARAMS (CON IDEMPOTENCY HASH)\n// ========================================================================\n\nconst rpc_params = {\n  p_paciente_id: patient.phoneHash,\n  p_nombre_completo: patient.name,\n  p_telefono: telefono10,\n  p_consulta_id: operation_id,\n  p_sede: sede,\n  p_tipo_cita: appointmentType || 'primera_vez',\n  p_motivo_consulta: motivoConsulta || 'No especificado',\n  p_duracion_minutos: durationMin || 30,\n  p_fecha_hora_utc: startISO,\n  p_fecha_consulta: fechaConsulta,\n  p_hora_consulta: horaConsulta,\n  p_calendar_event_id: calendar_event_id,\n  p_calendar_link: calendar_link || '',\n  p_operation_id: operation_id,\n  p_email: patient.email || null,\n  p_fuente_original: source || 'WhatsApp',\n  p_timezone: TZ,\n  p_canal_origen: source || 'WhatsApp',\n  p_lead_telefono_whatsapp: telefonoWhatsApp,\n  p_event_key: eventKey || null,\n  p_idempotency_hash: idempotencyHash || null  // ✅ AGREGADO\n};\n\n// ========================================================================\n// 7. FORMATEAR FECHAS PARA USUARIO\n// ========================================================================\n\nconst FMT_DATE = new Intl.DateTimeFormat('es-MX', {\n  timeZone: TZ, \n  weekday: 'long', \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric'\n});\n\nconst FMT_TIME = new Intl.DateTimeFormat('es-MX', {\n  timeZone: TZ, \n  hour: '2-digit', \n  minute: '2-digit', \n  hour12: true\n});\n\nconst startDate = new Date(startISO);\nconst fechaLegible = FMT_DATE.format(startDate);\nconst horaLegible = FMT_TIME.format(startDate);\n\n// ========================================================================\n// 8. INFORMACIÓN DE SEDES (LINKS REALES)\n// ========================================================================\n\nconst SEDES_INFO = {\n  POLANCO: {\n    nombre: 'Hospital Ángeles Polanco',\n    direccion: 'Temístocles 210, Polanco V Sección, Miguel Hidalgo, CDMX 11560',\n    maps: 'https://maps.app.goo.gl/8ZLYxPzK3qnHCGmM9',  // ✅ Link real de ejemplo\n    telefono: '55-5531-9600',\n    zona: 'Polanco',\n    ciudad: 'Ciudad de México'\n  },\n  SATELITE: {\n    nombre: 'Hospital San Ángel Inn Satélite',\n    direccion: 'Vía Gustavo Baz 219, Cd. Satélite, Naucalpan de Juárez, Estado de México 53100',\n    maps: 'https://maps.app.goo.gl/YqXKVZ6Rt5mHqNSg8',  // ✅ Link real de ejemplo\n    telefono: '55-5247-1800',\n    zona: 'Satélite',\n    ciudad: 'Naucalpan'\n  }\n};\n\nconst sedeInfo = SEDES_INFO[sede];\n\nif (!sedeInfo) {\n  console.warn(`⚠️ Sede desconocida: ${sede}. Usando datos genéricos.`);\n}\n\nconst finalSedeInfo = sedeInfo || { \n  nombre: sede, \n  direccion: '', \n  maps: '', \n  telefono: '',\n  zona: sede,\n  ciudad: 'CDMX'\n};\n\n// ========================================================================\n// 9. PREPARAR DATOS DE PACIENTE\n// ========================================================================\n\nconst pacienteData = {\n  paciente_id: patient.phoneHash,\n  nombre_completo: patient.name,\n  telefono: telefono10,\n  email: patient.email || null,\n  fuente_original: source || 'WhatsApp',\n  ultima_consulta: startISO,\n  estado: 'Activo',\n  updated_at: nowISO\n};\n\n// ========================================================================\n// 10. PREPARAR DATOS DE CONSULTA\n// ========================================================================\n\nconst fechaLimiteConfirmacion = new Date(Date.parse(startISO) - 86400000).toISOString();\n\nconst consultaData = {\n  consulta_id: operation_id,\n  paciente_id: patient.phoneHash,\n  fecha_hora_utc: startISO,\n  fecha_consulta: fechaConsulta,\n  hora_consulta: horaConsulta,\n  timezone: TZ,\n  sede: sede,\n  tipo_cita: appointmentType || 'primera_vez',\n  motivo_consulta: motivoConsulta || 'No especificado',\n  duracion_minutos: durationMin || 30,\n  estado_cita: 'Programada',\n  estado_confirmacion: 'Pendiente',\n  confirmado_paciente: false,\n  fecha_limite_confirmacion: fechaLimiteConfirmacion,\n  calendar_event_id: calendar_event_id,\n  calendar_link: calendar_link || '',\n  canal_origen: source || 'WhatsApp',\n  idempotency_hash: idempotencyHash || null,  // ✅ AGREGADO\n  updated_at: nowISO\n};\n\n// ========================================================================\n// 11. PREPARAR DATOS DE LEAD\n// ========================================================================\n\nconst leadUpdateData = {\n  telefono_whatsapp: telefonoWhatsApp,\n  estado: 'Convertido',\n  paciente_id: patient.phoneHash,\n  fecha_conversion: nowISO,\n  ultima_interaccion: nowISO\n};\n\n// ========================================================================\n// 12. CALCULAR PERFORMANCE\n// ========================================================================\n\nconst bookingStartMs = booking_timestamp ? Date.parse(booking_timestamp) : Date.now();\nconst totalTimeMs = Date.now() - bookingStartMs;\n\nconst performance = {\n  booking_started_at: booking_timestamp || nowISO,\n  crm_prepared_at: nowISO,\n  total_time_ms: totalTimeMs,\n  total_time_seconds: Math.round(totalTimeMs / 1000),\n  calendar_validated: true,\n  dates_validated: true\n};\n\n// ========================================================================\n// 13. CONSTRUIR OUTPUT COMPLETO\n// ========================================================================\n\nconst output = {\n  // RPC params (para PostgreSQL)\n  rpc_params: rpc_params,\n  \n  // Datos estructurados\n  paciente: pacienteData,\n  consulta: consultaData,\n  lead_update: leadUpdateData,\n  \n  // Datos flat para compatibilidad\n  Consulta_ID: operation_id,\n  Paciente_ID: patient.phoneHash,\n  Calendar_Event_ID: calendar_event_id,\n  Paciente_Nombre: patient.name,\n  Paciente_Telefono: telefono10,\n  Paciente_Telefono_Formateado: patient.phoneFormatted,\n  Sede: sede,\n  Sede_Nombre: finalSedeInfo.nombre,\n  Sede_Direccion: finalSedeInfo.direccion,\n  Sede_Maps: finalSedeInfo.maps,\n  Sede_Telefono: finalSedeInfo.telefono,\n  startISO: startISO,\n  endISO: endISO,  // ✅ AGREGADO\n  timezone: TZ,\n  Fecha_Legible: fechaLegible,\n  Hora_Legible: horaLegible,\n  Tipo_Cita: appointmentType || 'primera_vez',\n  Motivo_Consulta: motivoConsulta || 'No especificado',\n  Calendar_Link: calendar_link,\n  Canal: source || 'WhatsApp',\n  Plantilla_Usada: 'confirmacion_inicial',\n  delay_seconds: 0,\n  \n  // Objetos complejos\n  sede_info: finalSedeInfo,\n  event_info: { \n    calendar_event_id, \n    calendar_link, \n    operation_id, \n    eventKey,\n    event_status,\n    validated: true\n  },\n  performance: performance,\n  \n  // Flags\n  _crmReady: true,\n  _rpcReady: true,\n  _validated: true,\n  _hasIdempotencyHash: !!idempotencyHash,\n  \n  // Metadata\n  _metadata: { \n    timestamp: nowISO, \n    version: '8.0', \n    validated: true, \n    source: source || 'WhatsApp',\n    timezone_used: TZ,\n    dates_validated: true,\n    includes_idempotency: !!idempotencyHash\n  }\n};\n\n// ========================================================================\n// 14. LOGGING MEJORADO\n// ========================================================================\n\nconst logData = {\n  version: '8.0',\n  operation_id: operation_id,\n  calendar_event_id: calendar_event_id,\n  patient: {\n    hash: patient.phoneHash,\n    name: patient.name\n  },\n  appointment: {\n    sede: sede,\n    date: fechaConsulta,\n    time: horaConsulta,\n    timezone: TZ\n  },\n  validation: {\n    calendar_event: true,\n    dates_match: true,\n    has_link: !!calendar_link,\n    has_idempotency: !!idempotencyHash\n  },\n  performance: {\n    total_ms: totalTimeMs,\n    total_sec: Math.round(totalTimeMs / 1000)\n  }\n};\n\nconsole.log('✅ CRM v8.0 - READY:', JSON.stringify(logData, null, 2));\n\n// Warning si falta idempotency hash\nif (!idempotencyHash) {\n  console.warn('⚠️ MISSING IDEMPOTENCY HASH: No se pudo obtener hash de Parse & Prepare');\n}\n\nif (DEBUG) {\n  console.log('🔍 DEBUG - Full RPC Params:', JSON.stringify(rpc_params, null, 2));\n}\n\n// ========================================================================\n// 15. RETURN\n// ========================================================================\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        -1040
+      ],
+      "id": "8f4739de-6604-45dd-9d21-f2dc7265ea82",
+      "name": "Prepare CRM Data",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ========================================================================\n * Merge & Validate Results v5.0 - ENHANCED\n * ========================================================================\n * \n * MEJORAS:\n * 1. ✅ Incluye idempotency_hash en output\n * 2. ✅ Valida startISO antes de usar\n * 3. ✅ Asegura sede_info siempre exista\n * 4. ✅ Previene totalTimeMs negativo\n * 5. ✅ Mejor manejo de errores\n * 6. ✅ Output más consistente\n */\n\nconst DEBUG = $env.DEBUG_MERGE === 'true';\nconst nowISO = new Date().toISOString();\n\n// ========================================================================\n// 1. OBTENER RESULTADO DE POSTGRESQL RPC\n// ========================================================================\n\nconst postgresOutput = $input.first()?.json;\nconst rpcResult = postgresOutput?.upsert_appointment_atomic_from_calendar;\n\n// ========================================================================\n// 2. OBTENER DATOS ORIGINALES\n// ========================================================================\n\nconst crmData = $('Prepare CRM Data')?.item?.json;\nconst mergeCtx = $('Merge Context')?.item?.json;\nconst parseCtx = $('Parse & Prepare')?.item?.json;\nconst originalData = crmData || mergeCtx || parseCtx;\n\nif (!originalData) {\n  throw new Error('MISSING_CONTEXT: No se encontró contexto de nodos anteriores');\n}\n\nif (!rpcResult) {\n  throw new Error('MISSING_RPC_RESULT: PostgreSQL no retornó resultado');\n}\n\n// ========================================================================\n// 3. DETERMINAR ÉXITO\n// ========================================================================\n\nconst allSuccess = rpcResult.success === true;\nconst operationType = 'rpc_atomic';\n\n// ========================================================================\n// 4. EXTRAER DATOS CON VALIDACIÓN\n// ========================================================================\n\nconst {\n  operation_id,\n  idempotencyHash,  // ✅ NUEVO\n  Calendar_Event_ID,\n  Calendar_Link,\n  Paciente_ID,\n  Paciente_Nombre,\n  Paciente_Telefono,\n  Paciente_Telefono_Formateado,\n  Sede,\n  startISO,\n  endISO,\n  timezone,\n  Tipo_Cita,\n  Motivo_Consulta,\n  Canal,\n  sede_info,\n  performance\n} = originalData;\n\n// ✅ VALIDAR CAMPOS CRÍTICOS\nif (!startISO) {\n  throw new Error('MISSING_START_ISO: Fecha de inicio no disponible');\n}\n\nif (!Sede) {\n  throw new Error('MISSING_SEDE: Sede no especificada');\n}\n\n// ✅ VALIDAR QUE startISO SEA FECHA VÁLIDA\nconst appointmentDate = new Date(startISO);\nif (isNaN(appointmentDate.getTime())) {\n  throw new Error(`INVALID_START_ISO: \"${startISO}\" no es una fecha válida`);\n}\n\n// ========================================================================\n// 5. ASEGURAR SEDE_INFO\n// ========================================================================\n\nconst finalSedeInfo = sede_info || {\n  nombre: Sede,\n  direccion: '',\n  maps: '',\n  telefono: '',\n  zona: Sede,\n  ciudad: 'CDMX'\n};\n\n// ========================================================================\n// 6. IDs FINALES (DEL RPC)\n// ========================================================================\n\nconst finalOperationId = rpcResult.operation_id || operation_id;\nconst finalCalendarEventId = rpcResult.calendar_event_id || Calendar_Event_ID;\nconst finalPacienteId = rpcResult.paciente_uuid || Paciente_ID;\nconst finalConsultaId = rpcResult.consulta_uuid;\nconst finalIdempotencyHash = rpcResult.idempotency_hash || idempotencyHash;\n\n// ========================================================================\n// 7. CALCULAR TIEMPO (CON PROTECCIÓN)\n// ========================================================================\n\nconst bookingStartMs = performance?.booking_started_at \n  ? Date.parse(performance.booking_started_at) \n  : Date.parse(parseCtx?.booking_timestamp || nowISO);\n\n// ✅ Prevenir tiempo negativo\nconst totalTimeMs = Math.max(0, Date.now() - bookingStartMs);\n\n// ========================================================================\n// 8. FORMATEAR FECHAS\n// ========================================================================\n\nconst TZ = timezone || 'America/Mexico_City';\n\nconst dateFormatter = new Intl.DateTimeFormat('es-MX', { \n  timeZone: TZ, \n  weekday: 'long', \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric' \n});\n\nconst timeFormatter = new Intl.DateTimeFormat('es-MX', { \n  timeZone: TZ, \n  hour: '2-digit', \n  minute: '2-digit', \n  hour12: true \n});\n\nconst fechaLegible = dateFormatter.format(appointmentDate);\nconst horaLegible = timeFormatter.format(appointmentDate);\n\n// ========================================================================\n// 9. CONSTRUIR OUTPUT\n// ========================================================================\n\nconst resultado = {\n  // Status y success\n  status: allSuccess ? 'SUCCESS' : 'FAILED',\n  success: allSuccess,\n  \n  // IDs principales\n  operation_id: finalOperationId,\n  idempotency_hash: finalIdempotencyHash,  // ✅ AGREGADO\n  calendar_event_id: finalCalendarEventId,\n  calendar_link: Calendar_Link || rpcResult.calendar_link,\n  paciente_id: finalPacienteId,\n  consulta_id: finalConsultaId,\n  \n  // Información de la cita\n  appointment: {  // ✅ Cambiado de \"booking\" a \"appointment\" para consistencia\n    operation_id: finalOperationId,\n    sede: Sede,\n    sede_nombre: finalSedeInfo.nombre,\n    sede_direccion: finalSedeInfo.direccion,\n    sede_maps: finalSedeInfo.maps,\n    sede_telefono: finalSedeInfo.telefono,\n    fecha_iso: startISO,\n    fecha_legible: fechaLegible,\n    hora_legible: horaLegible,\n    timezone: TZ,\n    tipo_cita: Tipo_Cita,\n    motivo: Motivo_Consulta,\n    duracion_minutos: originalData.durationMin || 30,\n    calendar_event_id: finalCalendarEventId,\n    calendar_link: Calendar_Link\n  },\n  \n  // Información del paciente\n  patient: {\n    id: finalPacienteId,\n    nombre: Paciente_Nombre,\n    telefono: Paciente_Telefono,\n    telefono_formateado: Paciente_Telefono_Formateado\n  },\n  \n  // Detalles de operaciones\n  operations: {\n    type: operationType,\n    paciente_saved: allSuccess,\n    consulta_saved: allSuccess,\n    lead_converted: rpcResult.lead_updated || false,\n    is_new_consulta: rpcResult.is_new_consulta,\n    is_update_consulta: rpcResult.is_update_consulta\n  },\n  \n  // Detalles del RPC\n  rpc_details: {\n    paciente_uuid: rpcResult.paciente_uuid,\n    consulta_uuid: rpcResult.consulta_uuid,\n    is_new_consulta: rpcResult.is_new_consulta,\n    is_update_consulta: rpcResult.is_update_consulta,\n    lead_updated: rpcResult.lead_updated,\n    idempotency_hash: finalIdempotencyHash\n  },\n  \n  // Errores (si los hay)\n  errors: allSuccess ? null : {\n    error: rpcResult.error_message || 'Unknown error',\n    error_code: rpcResult.error_code,\n    error_type: rpcResult.error_type,\n    timestamp: nowISO\n  },\n  \n  // Mensaje amigable\n  message: allSuccess \n    ? `✅ Cita confirmada para ${Paciente_Nombre} el ${fechaLegible} a las ${horaLegible}` \n    : `⚠️ Error al agendar: ${rpcResult.error_message}`,\n  \n  // Métricas\n  metrics: {\n    total_time_ms: totalTimeMs,\n    total_time_seconds: (totalTimeMs / 1000).toFixed(2),\n    operation_type: operationType,\n    booking_started_at: performance?.booking_started_at || parseCtx?.booking_timestamp,\n    completed_at: nowISO\n  },\n  \n  // Info de sede (para mensajes)\n  sede_info: finalSedeInfo,\n  \n  // ✅ Datos para ENVIAR_CONFIRMACIONES (formato legacy para compatibilidad)\n  confirmation_data: {\n    Consulta_ID: finalOperationId,\n    Paciente_ID: finalPacienteId,\n    Calendar_Event_ID: finalCalendarEventId,\n    Paciente_Nombre: Paciente_Nombre,\n    Paciente_Telefono: Paciente_Telefono,\n    Sede: Sede,\n    Sede_Nombre: finalSedeInfo.nombre,\n    Sede_Direccion: finalSedeInfo.direccion,\n    Sede_Maps: finalSedeInfo.maps,\n    Sede_Telefono: finalSedeInfo.telefono,\n    startISO: startISO,\n    timezone: TZ,\n    Fecha_Legible: fechaLegible,\n    Hora_Legible: horaLegible,\n    Tipo_Cita: Tipo_Cita,\n    Motivo_Consulta: Motivo_Consulta,\n    Calendar_Link: Calendar_Link,\n    Canal: Canal || 'WhatsApp',\n    Plantilla_Usada: 'confirmacion_inicial',\n    delay_seconds: 0\n  },\n  \n  // Flags\n  _shouldSendConfirmation: allSuccess,\n  _validated: true,\n  _hasIdempotency: !!finalIdempotencyHash,\n  \n  // Metadata\n  _metadata: {\n    timestamp: nowISO,\n    version: '5.0',\n    operation_type: operationType,\n    validated_fields: true,\n    includes_idempotency: !!finalIdempotencyHash\n  }\n};\n\n// ========================================================================\n// 10. LOGGING MEJORADO\n// ========================================================================\n\nconst emoji = allSuccess ? '✅' : '❌';\nconst logData = {\n  version: '5.0',\n  status: resultado.status,\n  operation_id: finalOperationId,\n  idempotency_hash: finalIdempotencyHash,\n  type: operationType,\n  time_seconds: (totalTimeMs / 1000).toFixed(2),\n  paciente: {\n    uuid: rpcResult.paciente_uuid,\n    nombre: Paciente_Nombre\n  },\n  consulta: {\n    uuid: rpcResult.consulta_uuid,\n    is_new: rpcResult.is_new_consulta\n  },\n  appointment: {\n    sede: Sede,\n    fecha: fechaLegible,\n    hora: horaLegible\n  }\n};\n\nconsole.log(`${emoji} Merge v5.0 - ${resultado.status}:`, JSON.stringify(logData, null, 2));\n\nif (!allSuccess) {\n  console.error('❌ RPC ERROR:', JSON.stringify({\n    operation_id: finalOperationId,\n    error_message: rpcResult.error_message,\n    error_code: rpcResult.error_code,\n    error_type: rpcResult.error_type\n  }, null, 2));\n}\n\nif (DEBUG) {\n  console.log('🔍 DEBUG - Full Result:', JSON.stringify(resultado, null, 2));\n}\n\n// Advertencia si falta idempotency\nif (!finalIdempotencyHash) {\n  console.warn('⚠️ MISSING IDEMPOTENCY HASH: No se pudo obtener hash de operación');\n}\n\n// ========================================================================\n// 11. RETURN\n// ========================================================================\n\nreturn [{ json: resultado }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        -1040
+      ],
+      "id": "52cd8b1a-c836-428a-aff6-df2ed02224f3",
+      "name": "Merge & Validate Results",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ========================================================================\n * Build LLM Payload v4.1 - ULTRA ROBUSTO\n * ========================================================================\n * \n * MEJORAS EN v4.1:\n * 1. ✅ Maneja casos SIN operation_id (usa fallbacks)\n * 2. ✅ Extracción robusta de datos desde múltiples fuentes\n * 3. ✅ Genera operation_id temporal si no existe\n * 4. ✅ Validaciones mejoradas sin fallar innecesariamente\n * 5. ✅ Mensajes de error más descriptivos\n * 6. ✅ Logging detallado para debugging\n */\n\nconst DEBUG = $env.DEBUG_LLM === 'true';\nconst nowISO = new Date().toISOString();\n\n// ========================================================================\n// FUNCIONES AUXILIARES\n// ========================================================================\n\nfunction generateTempOperationId(prefix = 'temp') {\n  const timestamp = Date.now();\n  const random = Math.random().toString(36).substr(2, 9);\n  return `${prefix}_${timestamp}_${random}`;\n}\n\nfunction extractFirst(...values) {\n  return values.find(v => v !== undefined && v !== null && v !== '');\n}\n\nfunction cleanPhone(phone) {\n  if (!phone) return '';\n  return phone.toString().replace(/\\D/g, '').slice(-10);\n}\n\n// ========================================================================\n// 1. VALIDAR Y EXTRAER INPUT\n// ========================================================================\n\nconst input = $input.first()?.json;\n\nif (!input) {\n  throw new Error('MISSING_INPUT: No se recibió input del nodo anterior');\n}\n\nconsole.log('📥 Input recibido:', JSON.stringify(input, null, 2));\n\n// ========================================================================\n// 2. EXTRAER operation_id CON FALLBACKS\n// ========================================================================\n\n// Buscar operation_id en múltiples lugares\nlet operation_id = extractFirst(\n  input.operation_id,\n  input.consulta_id,\n  input.booking_id,\n  input.paciente_id,\n  input.patient?.id,\n  input.appointment?.operation_id,\n  input.appointment?.consulta_id\n);\n\n// Si no hay operation_id, generar uno temporal\nconst isTemporaryId = !operation_id;\nif (!operation_id) {\n  const baseId = extractFirst(\n    input.paciente_id,\n    input.patient?.id,\n    input.calendar_event_id\n  );\n  \n  if (baseId) {\n    operation_id = generateTempOperationId(`fallback_${baseId}`);\n    console.warn('⚠️ Operation ID no encontrado, usando temporal:', operation_id);\n  } else {\n    operation_id = generateTempOperationId('unknown');\n    console.error('❌ Operation ID no encontrado, usando ID completamente temporal:', operation_id);\n  }\n}\n\nconsole.log('🔑 Operation ID:', operation_id, isTemporaryId ? '(temporal)' : '(original)');\n\n// ========================================================================\n// 3. EXTRAER STATUS Y SUCCESS\n// ========================================================================\n\nconst status = extractFirst(input.status, input.success === true ? 'SUCCESS' : 'FAILED').toUpperCase();\nconst success = input.success === true || status === 'SUCCESS';\n\nconsole.log('📊 Status:', status, '| Success:', success);\n\n// ========================================================================\n// 4. EXTRAER DATOS DEL PACIENTE (ROBUSTO)\n// ========================================================================\n\nconst patient = input.patient || {};\n\nconst pacienteId = extractFirst(\n  patient.id,\n  input.paciente_id,\n  patient.paciente_id\n);\n\nconst nombreCompleto = extractFirst(\n  patient.nombre,\n  patient.nombre_completo,\n  input.patient_name,\n  'Paciente'\n);\n\nconst nombreCorto = nombreCompleto.split(' ')[0] || 'Paciente';\n\nconst telefono = extractFirst(\n  patient.telefono,\n  patient.phone,\n  input.telefono,\n  ''\n);\n\nconst telefonoDigits = cleanPhone(telefono);\n\n// Validar teléfono\nif (!telefonoDigits || telefonoDigits.length !== 10) {\n  console.warn(`⚠️ Teléfono inválido o ausente: \"${telefono}\"`);\n}\n\nconst telefonoE164 = telefonoDigits ? `+52${telefonoDigits}` : '';\nconst telefonoWhatsApp = telefonoDigits ? `521${telefonoDigits}@s.whatsapp.net` : '';\nconst telefonoDisplay = patient.telefono_formateado || \n  (telefonoDigits ? `+52 ${telefonoDigits.slice(0,3)} ${telefonoDigits.slice(3,6)} ${telefonoDigits.slice(6)}` : '');\n\nconsole.log('👤 Paciente:', {\n  id: pacienteId,\n  nombre: nombreCompleto,\n  telefono: telefonoDisplay\n});\n\n// ========================================================================\n// 5. EXTRAER DATOS DE LA CITA (ROBUSTO)\n// ========================================================================\n\nconst appointment = input.appointment || input.booking || {};\nconst sede_info = input.sede_info || input.sede || {};\n\nconst fechaLegible = extractFirst(\n  appointment.fecha_legible,\n  appointment.fecha,\n  ''\n);\n\nconst horaLegible = extractFirst(\n  appointment.hora_legible,\n  appointment.hora,\n  ''\n);\n\nconst sedeNombre = extractFirst(\n  appointment.sede_nombre,\n  sede_info.nombre,\n  appointment.sede,\n  'Hospital no especificado'\n);\n\nconst sedeDireccion = extractFirst(\n  appointment.sede_direccion,\n  sede_info.direccion,\n  appointment.direccion,\n  ''\n);\n\nconst sedeMaps = extractFirst(\n  appointment.sede_maps,\n  sede_info.maps,\n  appointment.maps_url,\n  ''\n);\n\nconst sedeTelefono = extractFirst(\n  appointment.sede_telefono,\n  sede_info.telefono,\n  appointment.telefono,\n  '55-5531-9600'\n);\n\nconst tipoConsulta = extractFirst(\n  appointment.tipo_cita,\n  appointment.tipo,\n  'primera_vez'\n);\n\nconst motivoConsulta = extractFirst(\n  appointment.motivo,\n  appointment.motivo_consulta,\n  'Consulta general'\n);\n\nconst calendarEventId = extractFirst(\n  input.calendar_event_id,\n  appointment.calendar_event_id\n);\n\nconst calendarLink = extractFirst(\n  input.calendar_link,\n  appointment.calendar_link\n);\n\nconsole.log('📅 Cita:', {\n  fecha: fechaLegible,\n  hora: horaLegible,\n  sede: sedeNombre,\n  calendar_id: calendarEventId ? calendarEventId.substring(0, 20) + '...' : 'N/A'\n});\n\n// ========================================================================\n// 6. EXTRAER MENSAJE DE ERROR (SI HAY)\n// ========================================================================\n\nconst errorMessage = extractFirst(\n  input.message,\n  input.error_message,\n  input.errors?.error,\n  status === 'FAILED' ? 'Error al procesar la solicitud' : ''\n);\n\nif (errorMessage && status === 'FAILED') {\n  console.error('❌ Error:', errorMessage);\n}\n\n// ========================================================================\n// 7. TEMPLATES MEJORADOS\n// ========================================================================\n\nconst TEMPLATES = {\n  whatsapp_success: `✅ *CITA CONFIRMADA*\n\nHola *{nombre_corto}*,\n\nTu cita ha sido agendada exitosamente:\n\n📅 *Fecha:* {fecha_legible}\n🕐 *Hora:* {hora_legible}\n🏥 *Sede:* {sede_nombre}\n📍 {sede_direccion}\n\n*IMPORTANTE:*\n• Llega 10 minutos antes\n• Trae identificación oficial\n• Trae estudios previos (si los tienes)\n\n💰 *Costo de consulta:* $1,200 MXN\n💳 *Aceptamos:* Efectivo y tarjeta\n\nRecibirás recordatorios 24hrs antes de tu cita.\n\n📍 *Ver ubicación:* {sede_maps_url}\n📞 *Teléfono sede:* {sede_telefono}\n\n_Folio: {folio}_`,\n\n  whatsapp_error: `❌ *NO PUDIMOS COMPLETAR TU CITA*\n\nHola *{nombre_corto}*,\n\nLo sentimos, no pudimos agendar tu cita en este momento.\n\n*Por favor contacta directamente a:*\n📞 {sede_telefono}\n🏥 {sede_nombre}\n\n*Horario de atención:*\nLunes a Viernes: 8:00 AM - 8:00 PM\nSábados: 9:00 AM - 2:00 PM\n\nDisculpa las molestias, te atenderemos con gusto.`,\n\n  whatsapp_reminder_24h: `🔔 *RECORDATORIO DE CITA*\n\nHola *{nombre_corto}*,\n\nTe recordamos tu cita:\n\n📅 *Mañana {fecha_legible}*\n🕐 *Hora:* {hora_legible}\n🏥 *{sede_nombre}*\n\n*No olvides:*\n• Llegar 10 minutos antes\n• Traer identificación\n• Traer estudios previos\n\n📍 Ver ubicación: {sede_maps_url}\n📞 Teléfono: {sede_telefono}\n\n_Folio: {folio}_`\n};\n\n// ========================================================================\n// 8. PREPARAR DATOS PARA TEMPLATES\n// ========================================================================\n\nconst ahora = new Date();\nconst fechaHoraActual = ahora.toLocaleString('es-MX', {\n  timeZone: 'America/Mexico_City',\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit',\n  hour: '2-digit',\n  minute: '2-digit'\n});\n\nconst replacements = {\n  nombre_corto: nombreCorto,\n  nombre_paciente: nombreCompleto,\n  fecha_legible: fechaLegible || 'Fecha no disponible',\n  hora_legible: horaLegible || 'Hora no disponible',\n  sede_nombre: sedeNombre,\n  sede_direccion: sedeDireccion || 'Dirección disponible al confirmar',\n  sede_maps_url: sedeMaps || 'https://maps.google.com',\n  sede_telefono: sedeTelefono,\n  folio: operation_id,\n  fecha_hora_actual: fechaHoraActual\n};\n\n// ========================================================================\n// 9. FUNCIÓN PARA LLENAR TEMPLATES\n// ========================================================================\n\nfunction fillTemplate(template, data) {\n  let result = template;\n  for (const [key, value] of Object.entries(data)) {\n    const regex = new RegExp(`\\\\{${key}\\\\}`, 'g');\n    result = result.replace(regex, value || '[No disponible]');\n  }\n  return result;\n}\n\n// ========================================================================\n// 10. GENERAR MENSAJES\n// ========================================================================\n\nconst selectedTemplate = success ? 'whatsapp_success' : 'whatsapp_error';\nconst whatsappText = fillTemplate(TEMPLATES[selectedTemplate], replacements);\nconst reminderText = fillTemplate(TEMPLATES.whatsapp_reminder_24h, replacements);\n\nconsole.log('📝 Template seleccionado:', selectedTemplate);\nconsole.log('📏 Longitud mensaje:', whatsappText.length, 'caracteres');\n\n// ========================================================================\n// 11. CONSTRUIR PAYLOAD\n// ========================================================================\n\nconst payload = {\n  // Status y metadata\n  status: status,\n  success: success,\n  notification_type: success ? 'confirmation' : 'error',\n  operation_id: operation_id,\n  is_temporary_id: isTemporaryId,\n  idempotency_hash: input.idempotency_hash || null,\n  timestamp: nowISO,\n  \n  // Datos del paciente\n  patient: {\n    id: pacienteId,\n    nombre: nombreCompleto,\n    nombre_corto: nombreCorto,\n    telefono: telefono,\n    telefono_e164: telefonoE164,\n    telefono_whatsapp: telefonoWhatsApp,\n    telefono_display: telefonoDisplay,\n    has_valid_phone: !!telefonoDigits && telefonoDigits.length === 10\n  },\n  \n  // Datos de la cita\n  appointment: Object.keys(appointment).length > 0 ? {\n    operation_id: operation_id,\n    calendar_event_id: calendarEventId,\n    calendar_link: calendarLink,\n    fecha_legible: fechaLegible,\n    hora_legible: horaLegible,\n    fecha_iso: appointment.fecha_iso,\n    timezone: appointment.timezone || 'America/Mexico_City',\n    sede: appointment.sede,\n    tipo_cita: tipoConsulta,\n    motivo: motivoConsulta,\n    duracion_minutos: appointment.duracion_minutos || 30\n  } : null,\n  \n  // Info de la sede\n  sede: {\n    nombre: sedeNombre,\n    direccion: sedeDireccion,\n    maps_url: sedeMaps,\n    telefono: sedeTelefono\n  },\n  \n  // Notificaciones\n  notifications: {\n    whatsapp: {\n      enabled: !!telefonoWhatsApp && success,\n      to: telefonoWhatsApp,\n      text: whatsappText,\n      template_used: selectedTemplate,\n      char_count: whatsappText.length\n    },\n    reminder_draft: success ? {\n      text: reminderText,\n      schedule_24h_before: true\n    } : null\n  },\n  \n  // Mensaje generado\n  message: errorMessage || (success \n    ? `✅ Cita confirmada para ${nombreCompleto}` \n    : '❌ Error al agendar cita'),\n  \n  // WhatsApp draft (para compatibilidad legacy)\n  whatsapp_draft: !!telefonoWhatsApp && success ? { \n    to: telefonoWhatsApp, \n    text: whatsappText \n  } : null,\n  \n  // Flags de actualización\n  update_flags: success ? {\n    consulta_id: operation_id,\n    updates: { \n      Rem_ConfirmacionInicial_Enviado: true, \n      Rem_ConfirmacionInicial_FechaEnvio: nowISO \n    }\n  } : null,\n  \n  // Validaciones\n  _validations: {\n    has_patient: !!nombreCompleto,\n    has_phone: !!telefonoWhatsApp,\n    has_appointment: Object.keys(appointment).length > 0,\n    has_operation_id: !isTemporaryId,\n    can_send_whatsapp: !!telefonoWhatsApp && success,\n    all_required_fields: !!(operation_id && nombreCompleto)\n  },\n  \n  // Metadata\n  _metadata: { \n    version: '4.1', \n    generated_at: nowISO,\n    template_used: selectedTemplate,\n    includes_idempotency: !!input.idempotency_hash,\n    patient_name: nombreCompleto,\n    operation_id: operation_id,\n    is_temporary_operation_id: isTemporaryId,\n    input_had_errors: !!errorMessage\n  }\n};\n\n// ========================================================================\n// 12. LOGGING MEJORADO\n// ========================================================================\n\nconst logData = {\n  version: '4.1',\n  operation_id: operation_id,\n  is_temporary_id: isTemporaryId,\n  status: status,\n  success: success,\n  patient: {\n    nombre: nombreCompleto,\n    has_phone: !!telefonoWhatsApp\n  },\n  notification: {\n    type: selectedTemplate,\n    can_send: payload._validations.can_send_whatsapp,\n    char_count: whatsappText.length\n  },\n  appointment: Object.keys(appointment).length > 0 ? {\n    sede: appointment.sede,\n    fecha: fechaLegible,\n    hora: horaLegible\n  } : null,\n  warnings: []\n};\n\nif (isTemporaryId) {\n  logData.warnings.push('Operation ID temporal generado');\n}\n\nif (!telefonoWhatsApp) {\n  logData.warnings.push('Sin número de WhatsApp válido');\n}\n\nif (!success) {\n  logData.warnings.push('Status de error');\n}\n\nconsole.log('✅ LLM Payload v4.1 - READY:', JSON.stringify(logData, null, 2));\n\nif (!telefonoWhatsApp) {\n  console.warn('⚠️ NO WHATSAPP: Paciente sin número de WhatsApp válido');\n}\n\nif (!success) {\n  console.warn('⚠️ ERROR STATUS: No se enviará confirmación', {\n    status: status,\n    message: errorMessage\n  });\n}\n\nif (isTemporaryId) {\n  console.warn('⚠️ TEMP ID: Se generó un operation_id temporal. Verifica el nodo anterior.');\n}\n\nif (DEBUG) {\n  console.log('🔍 DEBUG - WhatsApp Message Preview:');\n  console.log(whatsappText);\n  console.log('\\n🔍 DEBUG - Full Payload:', JSON.stringify(payload, null, 2));\n}\n\n// ========================================================================\n// 13. RETURN\n// ========================================================================\n\nreturn [{ json: payload }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        -1040
+      ],
+      "id": "b3f6ebac-3e14-4913-aa27-886589096a18",
+      "name": "Build LLM Payload"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "status",
+              "value": "={{ $json.status || 'BOOKED' }}",
+              "type": "string",
+              "id": "5aafd1ce-beed-4e22-9c7b-b750350c1798"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message || 'Cita confirmada' }}",
+              "type": "string",
+              "id": "2c3c9da9-d008-451d-a1b6-051cbb4f8951"
+            },
+            {
+              "name": "operation_id",
+              "value": "={{ $json.operation_id }}",
+              "type": "string",
+              "id": "eb3b1a21-fb93-4809-928d-bc09391933e0"
+            },
+            {
+              "name": "calendar_event_id",
+              "value": "={{ $json.appointment.calendar_event_id }}",
+              "type": "string",
+              "id": "6dc2d680-93ac-4c07-9bbd-d1cff9a98081"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        -1136
+      ],
+      "id": "390f8289-8b5a-4b17-9371-6528a2328a94",
+      "name": "RETURN BOOKED"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "status",
+              "value": "CONFLICT",
+              "type": "string"
+            },
+            {
+              "name": "message",
+              "value": "El horario solicitado ya está ocupado",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2800,
+        -752
+      ],
+      "id": "36499e8c-a750-4580-aa06-23bc3df4b4c7",
+      "name": "Return CONFLICT"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "status",
+              "value": "CONFLICT",
+              "type": "string"
+            },
+            {
+              "name": "message",
+              "value": "El horario fue reservado hace un momento",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2128,
+        -848
+      ],
+      "id": "14e21fd4-ac2d-47d1-b972-3e9abfdc37e6",
+      "name": "Return CONFLICT (Race)"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wb69cZp9LvWaymmh",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wb69cZp9LvWaymmh",
+          "cachedResultName": "ENVIAR_CONFIRMACIONES"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Consulta_ID": "={{ $json.operation_id }}",
+            "Paciente_Nombre": "={{ $json.patient.nombre }}",
+            "Paciente_Telefono": "={{ $json.patient.telefono }}",
+            "Sede": "={{ $json.appointment.sede }}",
+            "startISO": "={{ $json.appointment.fecha_iso }}",
+            "Calendar_Event_ID": "={{ $json.appointment.calendar_event_id }}",
+            "delay_seconds": 0
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Consulta_ID",
+              "displayName": "Consulta_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Paciente_ID",
+              "displayName": "Paciente_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Paciente_Telefono",
+              "displayName": "Paciente_Telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Paciente_Nombre",
+              "displayName": "Paciente_Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Sede",
+              "displayName": "Sede",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Fecha_Hora_UTC",
+              "displayName": "Fecha_Hora_UTC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "startISO",
+              "displayName": "startISO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Calendar_Event_ID",
+              "displayName": "Calendar_Event_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Plantilla_Usada",
+              "displayName": "Plantilla_Usada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Canal",
+              "displayName": "Canal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "delay_seconds",
+              "displayName": "delay_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -784,
+        -944
+      ],
+      "id": "591c4f43-39d0-47a2-986d-4288b1bee2a2",
+      "name": "Call ENVIAR_CONFIRMACIONES"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM public.upsert_appointment_atomic_from_calendar(\n  p_paciente_id              := '{{ $json.rpc_params.p_paciente_id }}'::text,\n  p_nombre_completo          := '{{ $json.rpc_params.p_nombre_completo }}'::text,\n  p_telefono                 := '{{ $json.rpc_params.p_telefono }}'::text,\n  p_consulta_id              := '{{ $json.rpc_params.p_consulta_id }}'::text,\n  p_sede                     := '{{ $json.rpc_params.p_sede }}'::text,\n  p_tipo_cita                := '{{ $json.rpc_params.p_tipo_cita }}'::text,\n  p_motivo_consulta          := '{{ $json.rpc_params.p_motivo_consulta }}'::text,\n  p_duracion_minutos         := {{ $json.rpc_params.p_duracion_minutos }}::int,\n  p_fecha_hora_utc           := '{{ $json.rpc_params.p_fecha_hora_utc }}'::timestamptz,\n  p_fecha_consulta           := '{{ $json.rpc_params.p_fecha_consulta }}'::date,\n  p_hora_consulta            := '{{ $json.rpc_params.p_hora_consulta }}'::time,\n  p_calendar_event_id        := '{{ $json.rpc_params.p_calendar_event_id }}'::text,\n  p_calendar_link            := '{{ $json.rpc_params.p_calendar_link }}'::text,\n  p_operation_id             := '{{ $json.rpc_params.p_operation_id }}'::text,\n  p_email                    := {{ $json.rpc_params.p_email ? \"'\" + $json.rpc_params.p_email + \"'::text\" : 'NULL::text' }},\n  p_fuente_original          := '{{ $json.rpc_params.p_fuente_original }}'::text,\n  p_timezone                 := '{{ $json.rpc_params.p_timezone }}'::text,\n  p_canal_origen             := '{{ $json.rpc_params.p_canal_origen }}'::text,\n  p_lead_telefono_whatsapp   := {{ $json.rpc_params.p_lead_telefono_whatsapp ? \"'\" + $json.rpc_params.p_lead_telefono_whatsapp + \"'::text\" : 'NULL::text' }},\n  p_event_key                := {{ $json.rpc_params.p_event_key ? \"'\" + $json.rpc_params.p_event_key + \"'::text\" : 'NULL::text' }},\n  p_idempotency_key          := {{ $json.rpc_params.p_idempotency_hash ? \"'\" + $json.rpc_params.p_idempotency_hash + \"'::text\" : 'NULL::text' }}\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1456,
+        -1040
+      ],
+      "id": "7d2f27a2-3bd1-4b3e-8206-b8503f67e22a",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "k3E9sYtyRqQbgtHs",
+          "name": "UROBOT"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When executed by another workflow": [
+      {
+        "json": {
+          "slotId": "slot_POLANCO_2025-11-11T22:00:00Z",
+          "sede": "POLANCO",
+          "start": "2025-11-11T22:00:00Z",
+          "end": "2025-11-11T22:30:00Z",
+          "paciente": {
+            "email": null,
+            "nombre": "Fausto Medina",
+            "telefono": "6673184624"
+          },
+          "tipoCita": "primera_vez",
+          "motivoConsulta": "Evaluación urológica",
+          "lead_telefono": ""
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When executed by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Parse & Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Prepare": {
+      "main": [
+        [
+          {
+            "node": "FreeBusy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreeBusy": {
+      "main": [
+        [
+          {
+            "node": "Process FreeBusy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process FreeBusy": {
+      "main": [
+        [
+          {
+            "node": "¿Slot libre?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Slot libre?": {
+      "main": [
+        [
+          {
+            "node": "Double Check (Race Protection)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return CONFLICT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Double Check (Race Protection)": {
+      "main": [
+        [
+          {
+            "node": "Verify Slot Still Free",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Slot Still Free": {
+      "main": [
+        [
+          {
+            "node": "Still Free After Verify?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Still Free After Verify?": {
+      "main": [
+        [
+          {
+            "node": "Merge Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return CONFLICT (Race)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Context": {
+      "main": [
+        [
+          {
+            "node": "Create Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event": {
+      "main": [
+        [
+          {
+            "node": "Prepare CRM Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare CRM Data": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge & Validate Results": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Payload": {
+      "main": [
+        [
+          {
+            "node": "RETURN BOOKED",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call ENVIAR_CONFIRMACIONES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Merge & Validate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "EV0uQg6ljO1CwH6A",
+    "timezone": "America/Mexico_City"
+  },
+  "versionId": "a7d089d0-9be3-410d-ac36-815c3cf57365",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ab2739af75c0bf0ee034fd37e78576df139d0a4fcd48adc710d9ceec11fc12c5"
+  },
+  "id": "lmicP7dbmUtnbb7F",
+  "tags": []
+}
