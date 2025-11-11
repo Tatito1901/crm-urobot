@@ -105,7 +105,7 @@ export function useOptimizedQuery<T>(
 
   // ✅ OPTIMIZACIÓN: Debounced fetch para evitar múltiples llamadas rápidas
   const fetchDataRaw = useCallback(
-    async (opts: { silent?: boolean; attempt?: number } = {}) => {
+    async (opts: { silent?: boolean; attempt?: number } = {}): Promise<void> => {
       const { silent = false, attempt = 1 } = opts;
 
       // Cancelar request anterior si existe
@@ -174,7 +174,7 @@ export function useOptimizedQuery<T>(
         if (attempt < retryAttempts && err instanceof Error && err.name !== 'AbortError') {
           console.warn(`Retry attempt ${attempt}/${retryAttempts} for ${tableName}`);
           await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
-          return fetchData({ silent, attempt: attempt + 1 });
+          return fetchDataRaw({ silent, attempt: attempt + 1 });
         }
 
         console.error(`Error fetching ${tableName}:`, err);

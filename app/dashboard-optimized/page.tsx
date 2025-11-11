@@ -5,17 +5,15 @@ import { useDashboard } from '@/hooks/useDashboard'
 import { useLeadsOptimized } from '@/hooks/useLeadsOptimized'
 import { useConsultasOptimized } from '@/hooks/useConsultasOptimized'
 import { useRecordatoriosOptimized } from '@/hooks/useRecordatoriosOptimized'
-import { MetricCard } from '@/app/components/analytics/MetricCard'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card'
 import { Badge } from '@/app/components/crm/ui'
-import { formatDate, STATE_COLORS } from '@/app/lib/crm-data'
-import { AlertCircle, TrendingUp, TrendingDown, Users, Calendar, Bell, AlertTriangle } from 'lucide-react'
+import { AlertCircle, TrendingUp, TrendingDown, Calendar, Bell } from 'lucide-react'
 
 export default function DashboardOptimizedPage() {
   // Hooks optimizados con SWR
   const { metrics, loading: loadingMetrics, refresh: refreshMetrics } = useDashboard()
   const { leads, loading: loadingLeads, totalCount: totalLeads } = useLeadsOptimized()
-  const { consultas, consultasHoy, stats: consultasStats, loading: loadingConsultas } = useConsultasOptimized({ 
+  const { consultasHoy, stats: consultasStats, loading: loadingConsultas } = useConsultasOptimized({
     realtime: true // Activar real-time para consultas
   })
   const { recordatorios, stats: recordatoriosStats, loading: loadingRecordatorios } = useRecordatoriosOptimized({ 
