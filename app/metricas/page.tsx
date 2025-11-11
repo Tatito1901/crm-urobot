@@ -34,10 +34,14 @@ const ComparisonBars = dynamic(
 );
 
 export default function MetricasPage() {
-  // ✅ Datos reales de Supabase con real-time
-  const { metrics: dm, loading: loadingMetrics } = useDashboardMetrics();
-  const { leads, loading: loadingLeads } = useLeads();
-  const { consultas, loading: loadingConsultas } = useConsultas();
+  // ✅ Datos reales de Supabase
+  const { metrics: dm, loading: loadingMetrics, refetch: refetchMetrics } = useDashboardMetrics();
+  const { leads, loading: loadingLeads, refetch: refetchLeads } = useLeads();
+  const { consultas, loading: loadingConsultas, refetch: refetchConsultas } = useConsultas();
+
+  const handleRefresh = async () => {
+    await Promise.all([refetchMetrics(), refetchLeads(), refetchConsultas()]);
+  };
 
   // 📊 Calcular métricas principales con datos reales
   const metrics = useMemo(() => {
@@ -167,7 +171,16 @@ export default function MetricasPage() {
       accent
       eyebrow="Inteligencia Operativa"
       title="Métricas clave"
-      description="Indicadores de rendimiento en tiempo real desde Supabase con actualización automática."
+      description="Indicadores de rendimiento desde Supabase."
+      headerSlot={
+        <button
+          onClick={handleRefresh}
+          disabled={loadingMetrics || loadingLeads || loadingConsultas}
+          className="rounded-lg bg-blue-600/20 px-4 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {(loadingMetrics || loadingLeads || loadingConsultas) ? 'Actualizando...' : '↻ Actualizar datos'}
+        </button>
+      }
     >
       {/* Métricas principales */}
       {loadingMetrics ? (
@@ -207,15 +220,15 @@ export default function MetricasPage() {
             <ul className="space-y-3 text-sm text-white/70">
               <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
                 <span className="text-green-400">●</span>
-                <span>Dashboard metrics actualizado cada 60 segundos</span>
+                <span>Datos cargados desde Supabase con SWR caché</span>
               </li>
               <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
                 <span className="text-green-400">●</span>
-                <span>Real-time subscriptions activas en todas las tablas</span>
+                <span>Actualización manual con botón de refresh</span>
               </li>
               <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
                 <span className="text-blue-400">ⓘ</span>
-                <span>Cálculos automáticos si view dashboard_metricas no existe</span>
+                <span>Usa RPC → Vista → Cálculo manual (fallback en cascada)</span>
               </li>
               <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
                 <span className="text-purple-400">✓</span>

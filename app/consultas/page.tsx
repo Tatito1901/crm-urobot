@@ -19,8 +19,8 @@ export default function ConsultasPage() {
   const [search, setSearch] = useState('');
   const [sede, setSede] = useState<SedeFilter>('ALL');
 
-  // ✅ Datos reales de Supabase con real-time
-  const { consultas, loading, error } = useConsultas();
+  // ✅ Datos reales de Supabase
+  const { consultas, loading, error, refetch } = useConsultas();
 
   const filteredConsultas = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -112,14 +112,25 @@ export default function ConsultasPage() {
       {/* Tabla */}
       <Card className="border-white/10 bg-white/[0.02]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base text-white">
-            Listado de consultas
-          </CardTitle>
-          <CardDescription className="text-white/60">
-            {error
-              ? `Error: ${error.message}`
-              : 'Detalle operativo por paciente y sede · Datos en tiempo real'}
-          </CardDescription>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-base text-white">
+                Listado de consultas {loading && '(cargando...)'}
+              </CardTitle>
+              <CardDescription className="text-white/60">
+                {error
+                  ? `Error: ${error.message}`
+                  : 'Detalle operativo por paciente y sede'}
+              </CardDescription>
+            </div>
+            <button
+              onClick={() => refetch()}
+              disabled={loading}
+              className="rounded-lg bg-sky-600/20 px-3 py-1.5 text-sm font-medium text-sky-300 hover:bg-sky-600/30 disabled:opacity-50 transition-colors"
+            >
+              ↻
+            </button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
           {loading && (

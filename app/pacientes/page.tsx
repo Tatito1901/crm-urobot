@@ -11,8 +11,8 @@ import { usePacientes } from '@/hooks/usePacientes';
 export default function PacientesPage() {
   const [search, setSearch] = useState('');
 
-  // ✅ Datos reales de Supabase con real-time
-  const { pacientes, loading, error } = usePacientes();
+  // ✅ Datos reales de Supabase
+  const { pacientes, loading, error, refetch } = usePacientes();
 
   const filteredPacientes = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -89,15 +89,26 @@ export default function PacientesPage() {
 
       <Card className="bg-white/[0.03]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base text-white">
-            Listado de pacientes {loading && '(cargando...)'}
-          </CardTitle>
-          <CardDescription>
-            {error 
-              ? `Error: ${error.message}` 
-              : 'Información de contacto y estado clínico · Datos en tiempo real'
-            }
-          </CardDescription>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-base text-white">
+                Listado de pacientes {loading && '(cargando...)'}
+              </CardTitle>
+              <CardDescription>
+                {error 
+                  ? `Error: ${error.message}` 
+                  : 'Información de contacto y estado clínico'
+                }
+              </CardDescription>
+            </div>
+            <button
+              onClick={() => refetch()}
+              disabled={loading}
+              className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors"
+            >
+              ↻
+            </button>
+          </div>
         </CardHeader>
         <CardContent className="overflow-hidden pt-0">
           <DataTable

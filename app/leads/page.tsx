@@ -11,8 +11,8 @@ import { useLeads } from '@/hooks/useLeads';
 export default function LeadsPage() {
   const [search, setSearch] = useState('');
   
-  // ✅ Datos reales de Supabase con real-time
-  const { leads, loading, error } = useLeads();
+  // ✅ Datos reales de Supabase
+  const { leads, loading, error, refetch } = useLeads();
   
   const filteredLeads = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -50,15 +50,26 @@ export default function LeadsPage() {
     >
       <Card className="bg-white/[0.03]">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base text-white">
-            Listado de leads {loading && '(cargando...)'}
-          </CardTitle>
-          <CardDescription>
-            {error 
-              ? `Error: ${error.message}` 
-              : 'Todas las etapas del funnel en un solo lugar · Datos en tiempo real'
-            }
-          </CardDescription>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-base text-white">
+                Listado de leads {loading && '(cargando...)'}
+              </CardTitle>
+              <CardDescription>
+                {error 
+                  ? `Error: ${error.message}` 
+                  : 'Todas las etapas del funnel en un solo lugar'
+                }
+              </CardDescription>
+            </div>
+            <button
+              onClick={() => refetch()}
+              disabled={loading}
+              className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors"
+            >
+              ↻
+            </button>
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           <DataTable

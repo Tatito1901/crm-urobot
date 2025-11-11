@@ -16,8 +16,8 @@ export default function ConfirmacionesPage() {
   const [rangoFiltro, setRangoFiltro] = useState<RangoFilter>('ultimos_30');
   const [soloUltimo, setSoloUltimo] = useState(true);
 
-  // ✅ Datos reales de Supabase con real-time
-  const { recordatorios, loading, error } = useRecordatorios();
+  // ✅ Datos reales de Supabase
+  const { recordatorios, loading, error, refresh } = useRecordatorios();
 
   const filtered = useMemo(() => {
     const now = new Date();
@@ -206,18 +206,25 @@ export default function ConfirmacionesPage() {
       <Card className="bg-white/[0.03]">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-base text-white">
                 Detalle de confirmaciones {loading && '(cargando...)'}
               </CardTitle>
               <CardDescription>
                 {error 
                   ? `Error: ${error.message}` 
-                  : 'Flujos automatizados por paciente · Datos en tiempo real desde n8n'
+                  : 'Flujos automatizados por paciente desde n8n'
                 }
               </CardDescription>
             </div>
-            <div className="text-right">
+            <button
+              onClick={() => refresh()}
+              disabled={loading}
+              className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors"
+            >
+              ↻
+            </button>
+            <div className="text-right ml-4">
               <p className="text-2xl font-semibold text-white">{filtered.length}</p>
               <p className="text-xs text-white/50">
                 {recordatorios.length !== filtered.length && `de ${recordatorios.length} total`}

@@ -30,10 +30,14 @@ const BarChart = dynamic(() => import('@/app/components/analytics/BarChart').the
 });
 
 export default function DashboardPage() {
-  // ✅ Datos reales de Supabase con real-time
-  const { metrics: dm, loading: loadingMetrics } = useDashboardMetrics();
-  const { leads, loading: loadingLeads } = useLeads();
-  const { consultas, loading: loadingConsultas } = useConsultas();
+  // ✅ Datos reales de Supabase
+  const { metrics: dm, loading: loadingMetrics, refetch: refetchMetrics } = useDashboardMetrics();
+  const { leads, loading: loadingLeads, refetch: refetchLeads } = useLeads();
+  const { consultas, loading: loadingConsultas, refetch: refetchConsultas } = useConsultas();
+
+  const handleRefresh = async () => {
+    await Promise.all([refetchMetrics(), refetchLeads(), refetchConsultas()]);
+  };
 
   // Métricas balanceadas para MVP - Esquema de colores unificado
   const metrics = dm ? [
@@ -135,10 +139,21 @@ export default function DashboardPage() {
         {/* Header */}
         <header className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-blue-200/60">Panel operativo</p>
-          <h1 className="text-2xl font-semibold text-white sm:text-3xl">Resumen general</h1>
-          <p className="text-sm text-white/60">
-            Visión consolidada de métricas y actividad reciente
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-white sm:text-3xl">Resumen general</h1>
+              <p className="text-sm text-white/60">
+                Visión consolidada de métricas y actividad reciente
+              </p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={loadingMetrics || loadingLeads || loadingConsultas}
+              className="rounded-lg bg-blue-600/20 px-4 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {(loadingMetrics || loadingLeads || loadingConsultas) ? 'Actualizando...' : '↻ Actualizar'}
+            </button>
+          </div>
         </header>
 
         {/* Métricas principales */}
