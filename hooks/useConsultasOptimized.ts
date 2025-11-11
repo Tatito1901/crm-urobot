@@ -71,9 +71,9 @@ export function useConsultasOptimized(options: UseConsultasOptions = {}) {
     `consultas-${defaultStartDate}-${defaultEndDate}-${options.sede}-${options.estado}`,
     fetcher,
     {
-      refreshInterval: options.realtime ? 10000 : 0, // Polling cada 10s si se especifica realtime
-      revalidateOnFocus: true,
-      dedupingInterval: 5000,
+      refreshInterval: options.realtime ? 120000 : 0, // Polling cada 2 minutos (antes 10s)
+      revalidateOnFocus: false, // Deshabilitar revalidación automática
+      dedupingInterval: 30000, // No duplicar en 30s
     }
   )
 

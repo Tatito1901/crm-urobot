@@ -2,8 +2,8 @@
  * ============================================================
  * HOOK GENÉRICO: useRealtimeTable
  * ============================================================
- * Hook reutilizable para manejar tablas con subscripciones en tiempo real.
- * Elimina código duplicado y centraliza la lógica de realtime + debouncing.
+ * Hook reutilizable para manejar consultas a tablas de Supabase.
+ * Elimina código duplicado y centraliza la lógica de fetching.
  *
  * @template T - Tipo de datos que retorna el hook
  * @template TRow - Tipo de fila de la base de datos (antes del mapeo)
@@ -26,12 +26,6 @@ interface UseRealtimeTableOptions<TRow, T> {
 
   /** Función para mapear cada fila de la BD al tipo final */
   mapFn: (row: TRow) => T
-
-  /** Tiempo de debounce en ms (default: 300) */
-  debounceMs?: number
-
-  /** Habilitar realtime subscriptions (default: false - no necesario para CRM médico) */
-  enableRealtime?: boolean
 }
 
 interface UseRealtimeTableReturn<T> {
@@ -43,7 +37,7 @@ interface UseRealtimeTableReturn<T> {
 }
 
 /**
- * Hook genérico para consultas con realtime subscriptions
+ * Hook genérico para consultas a tablas de Supabase
  *
  * @example
  * ```typescript
@@ -58,8 +52,6 @@ export function useRealtimeTable<TRow = any, T = any>({
   table,
   queryBuilder,
   mapFn,
-  debounceMs = 300,
-  enableRealtime = false, // ✅ DESHABILITADO - SWR maneja caché y revalidación
 }: UseRealtimeTableOptions<TRow, T>): UseRealtimeTableReturn<T> {
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,35 +96,10 @@ export function useRealtimeTable<TRow = any, T = any>({
     [table, queryBuilder, mapFn]
   )
 
-  // ✅ OPTIMIZACIÓN: Debounced load para realtime (evita múltiples fetches seguidos)
-  const debouncedLoad = useMemo(
-    () => debounce(() => loadData({ silent: true }), debounceMs),
-    [loadData, debounceMs]
-  )
-
   useEffect(() => {
     // Carga inicial
     loadData()
-
-    // ✅ OPTIMIZACIÓN: Subscription en tiempo real
-    if (enableRealtime) {
-      const channel = supabase
-        .channel(`realtime:${table}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table },
-          () => {
-            // Usar versión debounced para evitar múltiples recargas
-            debouncedLoad()
-          }
-        )
-        .subscribe()
-
-      return () => {
-        supabase.removeChannel(channel)
-      }
-    }
-  }, [table, loadData, debouncedLoad, enableRealtime])
+  }, [loadData])
 
   return {
     data,

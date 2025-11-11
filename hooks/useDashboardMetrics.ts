@@ -109,47 +109,9 @@ export function useDashboardMetrics(): UseDashboardMetricsReturn {
   useEffect(() => {
     fetchMetrics()
 
-    // ✅ OPTIMIZACIÓN: Realtime en lugar de polling
-    // Suscribirse a las 3 tablas que afectan las métricas
-    const leadsChannel = supabase
-      .channel('metrics:leads')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'leads'
-      }, () => {
-        debouncedFetch()
-      })
-      .subscribe()
-
-    const pacientesChannel = supabase
-      .channel('metrics:pacientes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'pacientes'
-      }, () => {
-        debouncedFetch()
-      })
-      .subscribe()
-
-    const consultasChannel = supabase
-      .channel('metrics:consultas')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'consultas'
-      }, () => {
-        debouncedFetch()
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(leadsChannel)
-      supabase.removeChannel(pacientesChannel)
-      supabase.removeChannel(consultasChannel)
-    }
-  }, [fetchMetrics, debouncedFetch])
+    // ❌ REALTIME DESHABILITADO - Las métricas se actualizan con SWR
+    // Solo se revalidan cuando el usuario interactúa o cada 5 minutos
+  }, [fetchMetrics])
 
   return {
     metrics,
@@ -164,61 +126,44 @@ export function useDashboardMetrics(): UseDashboardMetricsReturn {
  */
 async function calculateMetricsManually(): Promise<DashboardMetrics> {
   try {
-    // Leads
-    const { count: leadsTotal } = await supabase
-      .from('leads')
-      .select('*', { count: 'exact', head: true })
-
-    const { count: leadsMes } = await supabase
-      .from('leads')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
-
-    const { count: leadsConvertidos } = await supabase
-      .from('leads')
-      .select('*', { count: 'exact', head: true })
-      .eq('estado', 'Convertido')
-
-    // Pacientes
-    const { count: totalPacientes } = await supabase
-      .from('pacientes')
-      .select('*', { count: 'exact', head: true })
-
-    const { count: pacientesActivos } = await supabase
-      .from('pacientes')
-      .select('*', { count: 'exact', head: true })
-      .eq('estado', 'Activo')
-
-    // Consultas
     const today = new Date().toISOString().split('T')[0]
-    
-    const { count: consultasFuturas } = await supabase
-      .from('consultas')
-      .select('*', { count: 'exact', head: true })
-      .gte('fecha_consulta', today)
+    const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
-    const { count: consultasHoy } = await supabase
-      .from('consultas')
-      .select('*', { count: 'exact', head: true })
-      .eq('fecha_consulta', today)
+    // ✅ OPTIMIZACIÓN: Ejecutar queries en paralelo con Promise.all
+    const [leadsResult, pacientesResult, consultasResult] = await Promise.all([
+      // Leads - 3 queries en paralelo
+      Promise.all([
+        supabase.from('leads').select('*', { count: 'exact', head: true }),
+        supabase.from('leads').select('*', { count: 'exact', head: true }).gte('created_at', primerDiaMes),
+        supabase.from('leads').select('*', { count: 'exact', head: true }).eq('estado', 'Convertido'),
+      ]),
+      // Pacientes - 2 queries en paralelo
+      Promise.all([
+        supabase.from('pacientes').select('*', { count: 'exact', head: true }),
+        supabase.from('pacientes').select('*', { count: 'exact', head: true }).eq('estado', 'Activo'),
+      ]),
+      // Consultas - 6 queries en paralelo
+      Promise.all([
+        supabase.from('consultas').select('*', { count: 'exact', head: true }).gte('fecha_consulta', today),
+        supabase.from('consultas').select('*', { count: 'exact', head: true }).eq('fecha_consulta', today),
+        supabase.from('consultas').select('*', { count: 'exact', head: true }).eq('confirmado_paciente', false).gte('fecha_consulta', today),
+        supabase.from('consultas').select('*', { count: 'exact', head: true }).eq('sede', 'POLANCO').gte('fecha_consulta', today),
+        supabase.from('consultas').select('*', { count: 'exact', head: true }).eq('sede', 'SATELITE').gte('fecha_consulta', today),
+      ]),
+    ])
 
-    const { count: pendientesConfirmacion } = await supabase
-      .from('consultas')
-      .select('*', { count: 'exact', head: true })
-      .eq('confirmado_paciente', false)
-      .gte('fecha_consulta', today)
+    const { count: leadsTotal } = leadsResult[0]
+    const { count: leadsMes } = leadsResult[1]
+    const { count: leadsConvertidos } = leadsResult[2]
 
-    const { count: polancoFuturas } = await supabase
-      .from('consultas')
-      .select('*', { count: 'exact', head: true })
-      .eq('sede', 'POLANCO')
-      .gte('fecha_consulta', today)
+    const { count: totalPacientes } = pacientesResult[0]
+    const { count: pacientesActivos } = pacientesResult[1]
 
-    const { count: sateliteFuturas } = await supabase
-      .from('consultas')
-      .select('*', { count: 'exact', head: true })
-      .eq('sede', 'SATELITE')
-      .gte('fecha_consulta', today)
+    const { count: consultasFuturas } = consultasResult[0]
+    const { count: consultasHoy } = consultasResult[1]
+    const { count: pendientesConfirmacion } = consultasResult[2]
+    const { count: polancoFuturas } = consultasResult[3]
+    const { count: sateliteFuturas } = consultasResult[4]
 
     const safeLeadsTotal = leadsTotal ?? 0
     const safeLeadsMes = leadsMes ?? 0

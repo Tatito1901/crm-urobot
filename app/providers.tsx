@@ -4,14 +4,15 @@ import { ReactNode } from 'react'
 import { SWRConfig } from 'swr'
 
 const swrConfig = {
-  // Configuración global de caché
-  dedupingInterval: 10000, // No duplicar llamadas en 10s
-  focusThrottleInterval: 5000, // Throttle al volver al tab
-  revalidateOnFocus: true,
-  revalidateOnReconnect: true,
+  // ✅ Configuración optimizada para reducir llamadas a API
+  dedupingInterval: 60000, // No duplicar llamadas en 1 minuto (antes 10s)
+  focusThrottleInterval: 60000, // Throttle de 1 minuto al volver al tab (antes 5s)
+  revalidateOnFocus: false, // ❌ Deshabilitar revalidación automática en focus
+  revalidateOnReconnect: false, // ❌ Deshabilitar revalidación automática en reconexión
+  revalidateIfStale: false, // ❌ No revalidar data "stale" automáticamente
   shouldRetryOnError: true,
-  errorRetryCount: 3,
-  errorRetryInterval: 5000,
+  errorRetryCount: 2, // Reducir reintentos de 3 a 2
+  errorRetryInterval: 10000, // Aumentar intervalo entre reintentos
   
   // Handler de errores global
   onError: (error: Error, key: string) => {

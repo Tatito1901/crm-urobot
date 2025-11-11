@@ -108,10 +108,10 @@ export function useDashboard() {
     'dashboard-metrics',
     fetcher,
     {
-      refreshInterval: 30000, // Refresh cada 30s
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 10000, // No duplicar llamadas en 10s
+      refreshInterval: 300000, // Refresh cada 5 minutos (antes 30s)
+      revalidateOnFocus: false, // Deshabilitar revalidación automática
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000, // No duplicar llamadas en 1 minuto
     }
   )
   

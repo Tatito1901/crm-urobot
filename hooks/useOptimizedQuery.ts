@@ -8,7 +8,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { debounce } from '@/lib/utils/debounce';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+// Realtime removido - solo fetching normal
 
 const supabase = getSupabaseClient();
 
@@ -24,7 +24,6 @@ export interface UseOptimizedQueryOptions<T> {
   orderBy?: { column: string; ascending?: boolean };
   filter?: Record<string, unknown>;
   pagination?: PaginationOptions;
-  enableRealtime?: boolean;
   cacheTime?: number; // ms (default: 30000 = 30s)
   retryAttempts?: number; // default: 3
 }
@@ -89,7 +88,6 @@ export function useOptimizedQuery<T>(
     orderBy,
     filter,
     pagination,
-    enableRealtime = true,
     cacheTime = 30000,
     retryAttempts = 3,
   } = options;
@@ -100,7 +98,6 @@ export function useOptimizedQuery<T>(
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(pagination?.page ?? 1);
 
-  const channelRef = useRef<RealtimeChannel | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // ✅ OPTIMIZACIÓN: Debounced fetch para evitar múltiples llamadas rápidas
@@ -195,44 +192,16 @@ export function useOptimizedQuery<T>(
     [fetchDataRaw]
   );
 
-  // ✅ OPTIMIZACIÓN: Versión con debounce para realtime (evita múltiples actualizaciones rápidas)
-  const debouncedFetch = useMemo(
-    () => debounce(() => fetchDataRaw({ silent: true }), 300),
-    [fetchDataRaw]
-  );
-
-  // Effect: Fetch inicial y real-time
+  // Effect: Fetch inicial solamente
   useEffect(() => {
     fetchData();
 
-    if (!enableRealtime) return;
-
-    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin Date.now())
-    // Esto permite compartir la misma suscripción entre múltiples usos del hook
-    const filterStr = filter ? `-${JSON.stringify(filter)}` : '';
-    const channelName = `realtime:${tableName}${filterStr}`;
-
-    // Configurar real-time
-    const channel = supabase
-      .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, () => {
-        // ✅ OPTIMIZACIÓN: Usar debounced fetch para agrupar múltiples cambios
-        debouncedFetch();
-      })
-      .subscribe();
-
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [fetchData, tableName, enableRealtime, filter, debouncedFetch]);
+  }, [fetchData]);
 
   // Paginación helpers
   const totalPages = pagination ? Math.ceil(totalCount / pagination.pageSize) : 1;

@@ -150,18 +150,9 @@ export function useRecordatorios(): UseRecordatoriosReturn {
   useEffect(() => {
     fetchRecordatorios();
 
-    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin timestamp)
-    const channel = supabase
-      .channel('realtime:recordatorios')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'recordatorios' }, () => {
-        debouncedFetch();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [fetchRecordatorios, debouncedFetch]);
+    // ❌ REALTIME DESHABILITADO - Los recordatorios se actualizan manualmente con refresh
+    // Para CRM médico no es crítico tener actualización en tiempo real
+  }, [fetchRecordatorios]);
 
   return {
     recordatorios,

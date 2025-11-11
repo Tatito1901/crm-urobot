@@ -67,7 +67,8 @@ export function useLeadsOptimized(options: UseLeadsOptions = {}) {
     {
       revalidateFirstPage: false,
       revalidateAll: false,
-      revalidateOnFocus: false, // Para evitar llamadas innecesarias
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
       parallel: false,
     }
   )

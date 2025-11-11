@@ -93,14 +93,15 @@ export function useRecordatoriosOptimized(options: UseRecordatoriosOptions = {})
     return enrichedData
   }
   
-  // Configurar polling (si está habilitado)
+  // SWR hook sin polling automático
   const { data, error, isLoading, mutate } = useSWR(
     `recordatorios-${options.estado}-${options.soloVencidos}`,
     fetcher,
     {
-      refreshInterval: options.polling ? 60000 : 0, // Polling cada minuto si está habilitado
-      revalidateOnFocus: true,
-      dedupingInterval: 30000, // No duplicar llamadas en 30s
+      refreshInterval: 0, // ❌ Polling deshabilitado
+      revalidateOnFocus: false, // ❌ No revalidar en focus
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000, // No duplicar llamadas en 1 minuto
     }
   )
   
