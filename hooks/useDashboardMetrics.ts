@@ -2,18 +2,21 @@
  * ============================================================
  * HOOK: useDashboardMetrics
  * ============================================================
- * Hook para obtener métricas del dashboard desde la view
+ * Hook para obtener métricas del dashboard usando RPC optimizado
+ * ✅ OPTIMIZACIÓN: Usa función RPC (1 query vs 9 queries)
+ * ✅ OPTIMIZACIÓN: Realtime en lugar de polling
  */
 
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { getSupabaseClient } from '@/lib/supabase/client'
+import { debounce } from '@/lib/utils/debounce'
 import {
   DEFAULT_DASHBOARD_METRICS,
   type DashboardMetrics,
 } from '@/types/dashboard'
 
-// Crear instancia del cliente para hooks
-const supabase = createClient()
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente
+const supabase = getSupabaseClient()
 
 interface UseDashboardMetricsReturn {
   metrics: DashboardMetrics | null
@@ -27,27 +30,52 @@ export function useDashboardMetrics(): UseDashboardMetricsReturn {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const fetchMetrics = useCallback(async () => {
+  const fetchMetrics = useCallback(async (opts: { silent?: boolean } = {}) => {
+    const { silent = false } = opts
     try {
-      setLoading(true)
+      if (!silent) setLoading(true)
       setError(null)
 
-      // Obtener de la view dashboard_metricas
-      const { data, error: fetchError } = await supabase
-        .from('dashboard_metricas')
-        .select('*')
-        .limit(1)
-        .single()
+      // ✅ OPTIMIZACIÓN: Usar función RPC (1 query en lugar de 9)
+      const { data, error: fetchError } = await supabase.rpc('get_dashboard_metrics')
 
       if (fetchError) {
-        // Si la view no existe, calcular manualmente
-        console.warn('View dashboard_metricas no encontrada, calculando manualmente')
-        const calculated = await calculateMetricsManually()
-        setMetrics(calculated)
+        // Fallback: intentar con la view
+        console.warn('RPC no disponible, intentando con view...')
+        const viewResult = await supabase
+          .from('dashboard_metricas')
+          .select('*')
+          .limit(1)
+          .single()
+
+        if (viewResult.error) {
+          // Último fallback: calcular manualmente
+          console.warn('View tampoco disponible, calculando manualmente')
+          const calculated = await calculateMetricsManually()
+          setMetrics(calculated)
+          return
+        }
+
+        // Transformar datos de la view
+        const viewData = viewResult.data
+        const transformedMetrics: DashboardMetrics = {
+          leadsTotal: viewData.leads_totales || 0,
+          leadsMes: viewData.leads_mes || 0,
+          leadsConvertidos: viewData.leads_convertidos || 0,
+          tasaConversion: viewData.tasa_conversion_pct || 0,
+          pacientesActivos: viewData.pacientes_activos || 0,
+          totalPacientes: viewData.total_pacientes || 0,
+          consultasFuturas: viewData.consultas_futuras || 0,
+          consultasHoy: viewData.consultas_hoy || 0,
+          pendientesConfirmacion: viewData.pendientes_confirmacion || 0,
+          polancoFuturas: viewData.polanco_futuras || 0,
+          sateliteFuturas: viewData.satelite_futuras || 0,
+        }
+        setMetrics(transformedMetrics)
         return
       }
 
-      // Transformar de BD a formato UI
+      // Transformar datos del RPC
       const transformedMetrics: DashboardMetrics = {
         leadsTotal: data.leads_totales || 0,
         leadsMes: data.leads_mes || 0,
@@ -68,20 +96,60 @@ export function useDashboardMetrics(): UseDashboardMetricsReturn {
       setError(err as Error)
       setMetrics(DEFAULT_DASHBOARD_METRICS)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [])
+
+  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
+  const debouncedFetch = useMemo(
+    () => debounce(() => fetchMetrics({ silent: true }), 500),
+    [fetchMetrics]
+  )
 
   useEffect(() => {
     fetchMetrics()
 
-    // Refrescar cada 60 segundos
-    const interval = setInterval(fetchMetrics, 60000)
+    // ✅ OPTIMIZACIÓN: Realtime en lugar de polling
+    // Suscribirse a las 3 tablas que afectan las métricas
+    const leadsChannel = supabase
+      .channel('metrics:leads')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'leads'
+      }, () => {
+        debouncedFetch()
+      })
+      .subscribe()
+
+    const pacientesChannel = supabase
+      .channel('metrics:pacientes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'pacientes'
+      }, () => {
+        debouncedFetch()
+      })
+      .subscribe()
+
+    const consultasChannel = supabase
+      .channel('metrics:consultas')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'consultas'
+      }, () => {
+        debouncedFetch()
+      })
+      .subscribe()
 
     return () => {
-      clearInterval(interval)
+      supabase.removeChannel(leadsChannel)
+      supabase.removeChannel(pacientesChannel)
+      supabase.removeChannel(consultasChannel)
     }
-  }, [fetchMetrics])
+  }, [fetchMetrics, debouncedFetch])
 
   return {
     metrics,

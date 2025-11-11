@@ -5,8 +5,9 @@
  * Hook para gestionar consultas usando datos locales (sin real-time)
  */
 
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { getSupabaseClient } from '@/lib/supabase/client'
+import { debounce } from '@/lib/utils/debounce'
 import {
   DEFAULT_CONSULTA_ESTADO,
   DEFAULT_CONSULTA_SEDE,
@@ -16,8 +17,8 @@ import {
 } from '@/types/consultas'
 import type { Tables } from '@/types/database'
 
-// Crear instancia del cliente para hooks
-const supabase = createClient()
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente
+const supabase = getSupabaseClient()
 
 interface UseConsultasReturn {
   consultas: Consulta[]
@@ -111,20 +112,27 @@ export function useConsultas(): UseConsultasReturn {
     }
   }, [])
 
+  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
+  const debouncedFetch = useMemo(
+    () => debounce(() => fetchConsultas({ silent: true }), 300),
+    [fetchConsultas]
+  )
+
   useEffect(() => {
     fetchConsultas()
 
+    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin timestamp)
     const channel = supabase
-      .channel('public:consultas')
+      .channel('realtime:consultas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'consultas' }, () => {
-        fetchConsultas({ silent: true })
+        debouncedFetch()
       })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [fetchConsultas])
+  }, [fetchConsultas, debouncedFetch])
 
   return {
     consultas,
