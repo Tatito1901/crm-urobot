@@ -30,7 +30,7 @@ export const AdvancedLineChart = memo(function AdvancedLineChart({
   showDots = true,
   animate = true,
 }: AdvancedLineChartProps) {
-  const { points, max, min, path, areaPath } = useMemo(() => {
+  const { points, path, areaPath } = useMemo(() => {
     if (data.length === 0) {
       return { points: [], max: 0, min: 0, path: '', areaPath: '' };
     }

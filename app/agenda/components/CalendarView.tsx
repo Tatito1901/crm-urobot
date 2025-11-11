@@ -110,7 +110,14 @@ export function CalendarView({ consultas, vistaCalendario }: CalendarViewProps) 
   useEffect(() => {
     if (!calendarApp || !vistaCalendario) return;
 
-    const app = calendarApp as any;
+    // Type-safe access to internal calendar state
+    const app = calendarApp as unknown as {
+      $app?: {
+        calendarState?: { setView: (view: string, date: unknown) => void };
+        datePickerState?: { selectedDate: { value: unknown } };
+      };
+    };
+
     if (!app.$app?.calendarState || !app.$app?.datePickerState) return;
 
     const { calendarState, datePickerState } = app.$app;
