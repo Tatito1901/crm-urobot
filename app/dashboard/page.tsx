@@ -110,14 +110,6 @@ export default function DashboardPage() {
       .slice(0, 5);
   }, [consultas]);
 
-  // Estados de consultas - memoizado para evitar recálculos
-  const consultasStats = useMemo(() => ({
-    confirmadas: consultas.filter((c) => c.estado === 'Confirmada').length,
-    programadas: consultas.filter((c) => c.estado === 'Programada').length,
-    polanco: dm?.polancoFuturas || 0,
-    satelite: dm?.sateliteFuturas || 0,
-  }), [consultas, dm?.polancoFuturas, dm?.sateliteFuturas]);
-
   // Loading state
   if (loadingMetrics && !dm) {
     return <FullPageLoader message="Cargando dashboard..." />;

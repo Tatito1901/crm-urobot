@@ -19,6 +19,10 @@ export interface Recordatorio {
   canal: RecordatorioCanal | null;
   mensaje_enviado?: string | null;
   plantilla_usada?: string | null;
+  entregado?: boolean | null;
+  leido?: boolean | null;
+  respondido?: boolean | null;
+  respuesta_texto?: string | null;
   intentos?: number | null;
   error_mensaje?: string | null;
   created_at?: string | null;
