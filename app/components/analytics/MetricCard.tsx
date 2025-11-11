@@ -41,7 +41,7 @@ export const MetricCard = memo(function MetricCard({
 }: MetricCardProps) {
   return (
     <div
-      className={`relative overflow-hidden p-6 rounded-xl border bg-gradient-to-br ${colorClasses[color]} transition-all hover:scale-105 hover:shadow-lg`}
+      className={`relative overflow-hidden p-6 rounded-xl border bg-gradient-to-br ${colorClasses[color]}`}
     >
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-16 translate-x-16" />

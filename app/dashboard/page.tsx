@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const { leads, loading: loadingLeads } = useLeads();
   const { consultas, loading: loadingConsultas } = useConsultas();
 
-  // Métricas balanceadas para MVP
+  // Métricas balanceadas para MVP - Esquema de colores unificado
   const metrics = dm ? [
     {
       title: 'Leads totales',
@@ -40,21 +40,21 @@ export default function DashboardPage() {
       value: `${dm.tasaConversion}%`,
       subtitle: 'Meta: 35%',
       icon: '📈',
-      color: dm.tasaConversion >= 35 ? ('green' as const) : ('orange' as const),
+      color: 'blue' as const,
     },
     {
       title: 'Pacientes activos',
       value: dm.pacientesActivos.toLocaleString('es-MX'),
       subtitle: `Total: ${dm.totalPacientes}`,
       icon: '🏥',
-      color: 'teal' as const,
+      color: 'blue' as const,
     },
     {
       title: 'Consultas futuras',
       value: dm.consultasFuturas.toLocaleString('es-MX'),
       subtitle: `Hoy: ${dm.consultasHoy}`,
       icon: '📅',
-      color: 'purple' as const,
+      color: 'blue' as const,
       trend: dm.consultasHoy > 0 ? { value: 8, isPositive: true } : undefined,
     },
     {
@@ -62,14 +62,14 @@ export default function DashboardPage() {
       value: dm.pendientesConfirmacion.toLocaleString('es-MX'),
       subtitle: 'Requieren seguimiento',
       icon: '⏰',
-      color: dm.pendientesConfirmacion > 10 ? ('red' as const) : ('orange' as const),
+      color: 'blue' as const,
     },
   ] : [];
 
   // Datos para gráfico de dona (consultas por sede)
   const sedesChartData = useMemo(() => dm ? [
     { label: 'Polanco', value: dm.polancoFuturas, color: '#3b82f6' },
-    { label: 'Satélite', value: dm.sateliteFuturas, color: '#8b5cf6' },
+    { label: 'Satélite', value: dm.sateliteFuturas, color: '#60a5fa' },
   ] : [], [dm]);
 
   // Datos para gráfico de barras (leads por estado)
@@ -89,9 +89,9 @@ export default function DashboardPage() {
 
     return [
       { label: 'Nuevo', value: estados.Nuevo, color: '#3b82f6' },
-      { label: 'Seguimiento', value: estados['En seguimiento'], color: '#f59e0b' },
-      { label: 'Convertido', value: estados.Convertido, color: '#10b981' },
-      { label: 'Descartado', value: estados.Descartado, color: '#ef4444' },
+      { label: 'Seguimiento', value: estados['En seguimiento'], color: '#60a5fa' },
+      { label: 'Convertido', value: estados.Convertido, color: '#93c5fd' },
+      { label: 'Descartado', value: estados.Descartado, color: '#cbd5e1' },
     ];
   }, [leads]);
 
