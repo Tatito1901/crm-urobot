@@ -1,6 +1,6 @@
 import useSWRInfinite from 'swr/infinite'
 import { getSupabaseClient } from '@/lib/supabase/client'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import type { Database } from '@/types/database'
 
 type Lead = Database['public']['Tables']['leads']['Row']
@@ -84,26 +84,7 @@ export function useLeadsOptimized(options: UseLeadsOptions = {}) {
       setSize(size + 1)
     }
   }, [size, isLoadingMore, hasMore, isValidating, setSize])
-  
-  // ✅ OPTIMIZACIÓN: Suscripción en tiempo real con canal consistente
-  useEffect(() => {
-    const channel = supabase
-      .channel('realtime:leads')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'leads'
-      }, () => {
-        // Revalidar datos cuando hay cambios
-        mutate()
-      })
-      .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [mutate])
-  
   return {
     leads,
     totalCount,
