@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { getSupabaseClient } from '@/lib/supabase/client'
+import { debounce } from '@/lib/utils/debounce'
 import { DEFAULT_LEAD_ESTADO, type Lead, isLeadEstado } from '@/types/leads'
 import type { Tables } from '@/types/database'
 
-// Crear instancia del cliente para hooks
-const supabase = createClient()
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente
+const supabase = getSupabaseClient()
 
 interface UseLeadsReturn {
   leads: Lead[]
@@ -65,20 +66,27 @@ export function useLeads(): UseLeadsReturn {
     }
   }, [])
 
+  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
+  const debouncedLoad = useMemo(
+    () => debounce(() => loadLeads({ silent: true }), 300),
+    [loadLeads]
+  )
+
   useEffect(() => {
     loadLeads()
 
+    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin timestamp)
     const channel = supabase
-      .channel('public:leads')
+      .channel('realtime:leads')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => {
-        loadLeads({ silent: true })
+        debouncedLoad()
       })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [loadLeads])
+  }, [loadLeads, debouncedLoad])
 
   return {
     leads,

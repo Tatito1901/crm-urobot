@@ -5,8 +5,9 @@
  * Hook para gestionar pacientes usando datos locales (sin real-time)
  */
 
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { getSupabaseClient } from '@/lib/supabase/client'
+import { debounce } from '@/lib/utils/debounce'
 import {
   DEFAULT_PACIENTE_ESTADO,
   type Paciente,
@@ -14,8 +15,8 @@ import {
 } from '@/types/pacientes'
 import type { Tables } from '@/types/database'
 
-// Crear instancia del cliente para hooks
-const supabase = createClient()
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente
+const supabase = getSupabaseClient()
 
 interface UsePacientesReturn {
   pacientes: Paciente[]
@@ -75,20 +76,27 @@ export function usePacientes(): UsePacientesReturn {
     }
   }, [])
 
+  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
+  const debouncedFetch = useMemo(
+    () => debounce(() => fetchPacientes({ silent: true }), 300),
+    [fetchPacientes]
+  )
+
   useEffect(() => {
     fetchPacientes()
 
+    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin timestamp)
     const channel = supabase
-      .channel('public:pacientes')
+      .channel('realtime:pacientes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pacientes' }, () => {
-        fetchPacientes({ silent: true })
+        debouncedFetch()
       })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [fetchPacientes])
+  }, [fetchPacientes, debouncedFetch])
 
   return {
     pacientes,

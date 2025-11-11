@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { getSupabaseClient } from '@/lib/supabase/client';
+import { debounce } from '@/lib/utils/debounce';
 import {
   DEFAULT_CONSULTA_ESTADO,
   DEFAULT_CONSULTA_SEDE,
@@ -20,8 +21,8 @@ import {
 } from '@/types/recordatorios';
 import { parseRecordatorioRows } from '@/lib/validators/recordatorios';
 
-// Crear instancia del cliente para hooks
-const supabase = createClient();
+// ✅ OPTIMIZACIÓN: Usar singleton del cliente
+const supabase = getSupabaseClient();
 
 interface UseRecordatoriosReturn {
   recordatorios: RecordatorioDetalle[];
@@ -140,20 +141,27 @@ export function useRecordatorios(): UseRecordatoriosReturn {
     }
   }, []);
 
+  // ✅ OPTIMIZACIÓN: Debounced fetch para realtime
+  const debouncedFetch = useMemo(
+    () => debounce(() => fetchRecordatorios({ silent: true }), 300),
+    [fetchRecordatorios]
+  );
+
   useEffect(() => {
     fetchRecordatorios();
 
+    // ✅ OPTIMIZACIÓN: Nombre de canal consistente (sin timestamp)
     const channel = supabase
-      .channel('public:recordatorios')
+      .channel('realtime:recordatorios')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'recordatorios' }, () => {
-        fetchRecordatorios({ silent: true });
+        debouncedFetch();
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchRecordatorios]);
+  }, [fetchRecordatorios, debouncedFetch]);
 
   return {
     recordatorios,
