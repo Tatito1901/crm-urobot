@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import useSWR from 'swr'
 import { getSupabaseClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/database'
@@ -72,33 +71,12 @@ export function useConsultasOptimized(options: UseConsultasOptions = {}) {
     `consultas-${defaultStartDate}-${defaultEndDate}-${options.sede}-${options.estado}`,
     fetcher,
     {
-      refreshInterval: options.realtime ? 10000 : 0, // Polling cada 10s si realtime
+      refreshInterval: options.realtime ? 10000 : 0, // Polling cada 10s si se especifica realtime
       revalidateOnFocus: true,
       dedupingInterval: 5000,
     }
   )
-  
-  // ✅ OPTIMIZACIÓN: Suscripción en tiempo real con canal consistente (opcional)
-  useEffect(() => {
-    if (!options.realtime) return
 
-    const channel = supabase
-      .channel('realtime:consultas')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'consultas'
-      }, () => {
-        // Refrescar datos cuando hay cambios
-        mutate()
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [options.realtime, mutate])
-  
   // Agrupar consultas por fecha (útil para calendario)
   const consultasByDate = data?.reduce((acc, consulta) => {
     const fecha = consulta.fecha_consulta

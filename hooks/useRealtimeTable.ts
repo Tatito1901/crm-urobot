@@ -30,7 +30,7 @@ interface UseRealtimeTableOptions<TRow, T> {
   /** Tiempo de debounce en ms (default: 300) */
   debounceMs?: number
 
-  /** Habilitar realtime subscriptions (default: true) */
+  /** Habilitar realtime subscriptions (default: false - no necesario para CRM médico) */
   enableRealtime?: boolean
 }
 
@@ -59,7 +59,7 @@ export function useRealtimeTable<TRow = any, T = any>({
   queryBuilder,
   mapFn,
   debounceMs = 300,
-  enableRealtime = true, // ✅ HABILITADO - Realtime con canal consistente
+  enableRealtime = false, // ✅ DESHABILITADO - SWR maneja caché y revalidación
 }: UseRealtimeTableOptions<TRow, T>): UseRealtimeTableReturn<T> {
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
