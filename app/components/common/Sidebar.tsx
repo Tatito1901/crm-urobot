@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/app/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 
 type NavItem = { readonly label: string; readonly href: string };
 
@@ -25,9 +26,9 @@ export function Sidebar() {
   const today = useMemo(() => DATE_FORMATTER.format(new Date()), []);
 
   return (
-    <aside className="hidden lg:flex lg:h-screen lg:w-60 xl:w-72 2xl:w-80 lg:flex-col lg:justify-between lg:border-r lg:border-white/5 lg:bg-gradient-to-b lg:from-[#0a1429]/90 lg:via-[#060b18]/88 lg:to-[#02040a]/92 lg:px-6 lg:py-8 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur">
+    <aside className="hidden lg:flex lg:h-screen lg:w-60 xl:w-72 2xl:w-80 lg:flex-col lg:justify-between lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/90 lg:via-[#060b18]/88 lg:to-[#02040a]/92 lg:px-6 lg:py-8 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur">
       <div className="flex flex-1 flex-col gap-8 overflow-hidden">
-        <header className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5/40 px-4 py-3 shadow-inner">
+        <header className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white/5/40 px-4 py-3 shadow-inner">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-lg font-semibold text-blue-100">
             DM
           </div>
@@ -79,7 +80,7 @@ export function Sidebar() {
       </div>
 
       <footer className="space-y-3">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs text-white/70">
+        <div className="rounded-2xl border border-white/20 bg-white/[0.04] px-4 py-3 text-xs text-white/70">
           <p className="font-medium text-white">Agenda al día</p>
           <p className="mt-1 text-white/60">Hoy · {today}</p>
           <p className="text-white/40">Actualización automática cada 60&nbsp;min</p>
@@ -89,8 +90,9 @@ export function Sidebar() {
           <button
             type="submit"
             className={cn(
-              "w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition-colors",
+              "w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition-all duration-100",
               "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
+              "active:bg-red-500/15 active:scale-95",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
             )}
           >
@@ -111,7 +113,7 @@ export function Sidebar() {
           </button>
         </form>
 
-        <p className="text-center text-[11px] uppercase tracking-[0.32em] text-white/30">
+        <p className="text-center text-xs uppercase tracking-[0.2em] text-white/50">
           UROBOT · CRM
         </p>
       </footer>
@@ -124,7 +126,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navegación inferior"
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-1 border-t border-white/10 bg-[#050b18]/90 px-2 py-2 text-[11px] text-white/60 backdrop-blur-md safe-bottom lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-1 border-t border-white/20 bg-[#050b18]/90 px-2 py-2 text-[11px] text-white/60 backdrop-blur-md safe-bottom lg:hidden"
     >
       {navItems.map((item) => {
         const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
@@ -134,12 +136,12 @@ export function BottomNav() {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex flex-1 flex-col items-center gap-1 rounded-lg px-1.5 py-2 text-center transition-colors",
+              "flex flex-1 flex-col items-center gap-1 rounded-lg px-1 py-2 text-center transition-colors",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
               isActive ? "bg-white/12 text-white" : "hover:text-white"
             )}
           >
-            <span className="leading-tight">{item.label}</span>
+            <span className="leading-tight truncate max-w-full text-center">{item.label}</span>
           </Link>
         );
       })}
@@ -150,6 +152,9 @@ export function BottomNav() {
 export function MobileSidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  // Swipe-to-close gesture
+  const swipeRef = useSwipeGesture(() => setOpen(false), undefined, 75);
 
   useEffect(() => {
     setOpen(false);
@@ -178,7 +183,7 @@ export function MobileSidebar() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm font-medium text-white shadow-lg shadow-blue-900/30 backdrop-blur transition hover:border-white/20 hover:bg-white/20"
+        className="lg:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 backdrop-blur transition-all duration-100 hover:border-white/30 hover:bg-white/20 active:scale-95 min-h-[44px] min-w-[44px]"
         aria-expanded={open}
         aria-label="Abrir menú principal"
       >
@@ -198,7 +203,7 @@ export function MobileSidebar() {
             onClick={() => setOpen(false)}
             aria-label="Cerrar menú"
           />
-          <aside className="relative h-full w-72 max-w-[85%] translate-x-0 bg-gradient-to-b from-[#0a1429]/95 via-[#060b18]/92 to-[#02040a]/96 p-6 shadow-2xl shadow-blue-900/40">
+          <aside ref={swipeRef} className="relative h-full w-72 max-w-[85%] translate-x-0 bg-gradient-to-b from-[#0a1429]/95 via-[#060b18]/92 to-[#02040a]/96 p-6 shadow-2xl shadow-blue-900/40">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-[10px] uppercase tracking-[0.32em] text-white/40">CRM Clínico</p>
@@ -207,7 +212,7 @@ export function MobileSidebar() {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/70 hover:text-white"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/70 hover:text-white active:scale-95 transition-all duration-100"
                 aria-label="Cerrar menú"
               >
                 ×
@@ -243,8 +248,9 @@ export function MobileSidebar() {
                 <button
                   type="submit"
                   className={cn(
-                    "w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-base font-medium text-white/70 transition-colors",
+                    "w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-base font-medium text-white/70 transition-all duration-100",
                     "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
+                    "active:bg-red-500/15 active:scale-95",
                     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
                   )}
                 >

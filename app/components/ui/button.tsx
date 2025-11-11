@@ -6,16 +6,16 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '@/app/lib/utils'
 
 const baseStyles =
-  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-60'
+  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-60'
 
 const variants = {
   primary:
-    'bg-sky-500 text-white shadow-lg shadow-sky-500/20 hover:bg-sky-400 focus-visible:outline-sky-300',
+    'bg-sky-500 text-white shadow-lg shadow-sky-500/20 hover:bg-sky-400 active:bg-sky-600 active:scale-95 focus-visible:outline-sky-300',
   secondary:
-    'bg-white/10 text-white hover:bg-white/15 focus-visible:outline-sky-200',
+    'bg-white/10 text-white hover:bg-white/15 active:bg-white/20 active:scale-95 focus-visible:outline-sky-200',
   outline:
-    'border border-white/20 bg-transparent text-white hover:bg-white/10 focus-visible:outline-sky-200',
-  ghost: 'text-white/70 hover:text-white hover:bg-white/10 focus-visible:outline-sky-200',
+    'border border-white/25 bg-transparent text-white hover:bg-white/10 active:bg-white/15 active:scale-95 focus-visible:outline-sky-200',
+  ghost: 'text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-95 focus-visible:outline-sky-200',
 } as const
 
 const sizes = {
