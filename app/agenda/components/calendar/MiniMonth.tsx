@@ -18,7 +18,7 @@ interface MiniMonthProps {
   onMonthChange: (date: Date) => void;
 }
 
-export function MiniMonth({ selectedDate, onDateSelect, currentMonth, onMonthChange }: MiniMonthProps) {
+export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSelect, currentMonth, onMonthChange }: MiniMonthProps) {
   const matrix = getMonthMatrix(currentMonth.getFullYear(), currentMonth.getMonth());
   const dayAbbreviations = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
@@ -93,4 +93,4 @@ export function MiniMonth({ selectedDate, onDateSelect, currentMonth, onMonthCha
       </div>
     </div>
   );
-}
+});

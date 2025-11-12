@@ -16,7 +16,7 @@ interface HeaderBarProps {
   onWeekChange: (weekStart: Date) => void;
 }
 
-export function HeaderBar({ currentWeekStart, onWeekChange }: HeaderBarProps) {
+export const HeaderBar = React.memo(function HeaderBar({ currentWeekStart, onWeekChange }: HeaderBarProps) {
   const weekRange = formatWeekRangeMX(currentWeekStart);
 
   const goToThisWeek = () => {
@@ -103,4 +103,4 @@ export function HeaderBar({ currentWeekStart, onWeekChange }: HeaderBarProps) {
       </div>
     </header>
   );
-}
+});

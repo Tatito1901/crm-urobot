@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { startOfWeek } from '@/lib/date-utils';
 import { Sidebar } from '../components/calendar/Sidebar';
 import { HeaderBar } from '../components/calendar/HeaderBar';
@@ -24,10 +24,10 @@ export default function CalendarPage() {
   );
 
   // Cuando se selecciona una fecha en el mini-calendario, ir a esa semana
-  const handleDateSelect = (date: Date) => {
+  const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
     setCurrentWeekStart(startOfWeek(date));
-  };
+  }, []);
 
   return (
     <div className="h-screen flex flex-col bg-white font-roboto">

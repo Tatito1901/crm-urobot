@@ -14,7 +14,7 @@ interface DaysHeaderProps {
   weekStart: Date;
 }
 
-export function DaysHeader({ weekStart }: DaysHeaderProps) {
+export const DaysHeader = React.memo(function DaysHeader({ weekStart }: DaysHeaderProps) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   return (
@@ -52,4 +52,4 @@ export function DaysHeader({ weekStart }: DaysHeaderProps) {
       })}
     </div>
   );
-}
+});

@@ -16,7 +16,7 @@ interface SidebarProps {
   onDateSelect: (date: Date) => void;
 }
 
-export function Sidebar({ selectedDate, onDateSelect }: SidebarProps) {
+export const Sidebar = React.memo(function Sidebar({ selectedDate, onDateSelect }: SidebarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showTodayVisits, setShowTodayVisits] = useState(false);
   const [showServices, setShowServices] = useState(false);
@@ -90,4 +90,4 @@ export function Sidebar({ selectedDate, onDateSelect }: SidebarProps) {
       </div>
     </aside>
   );
-}
+});

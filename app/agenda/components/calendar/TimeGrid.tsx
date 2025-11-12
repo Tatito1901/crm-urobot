@@ -16,7 +16,7 @@ interface TimeGridProps {
   endHour?: number;
 }
 
-export function TimeGrid({ weekStart, startHour = 11, endHour = 21 }: TimeGridProps) {
+export const TimeGrid = React.memo(function TimeGrid({ weekStart, startHour = 11, endHour = 21 }: TimeGridProps) {
   const timeSlots = generateTimeSlots(startHour, endHour);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -70,4 +70,4 @@ export function TimeGrid({ weekStart, startHour = 11, endHour = 21 }: TimeGridPr
       </div>
     </div>
   );
-}
+});
