@@ -15,6 +15,8 @@ const SEDE_COLORS: Record<'POLANCO' | 'SATELITE', string> = {
   SATELITE: 'border border-cyan-400/60 bg-cyan-500/15 text-cyan-100',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function ConsultasPage() {
   const [search, setSearch] = useState('');
   const [sede, setSede] = useState<SedeFilter>('ALL');

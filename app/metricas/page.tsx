@@ -8,7 +8,7 @@
  */
 
 import { useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { StatCard } from '@/app/components/crm/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
@@ -16,8 +16,10 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
 
+export const dynamic = 'force-dynamic';
+
 // ✅ OPTIMIZACIÓN: Lazy load de gráficos para reducir bundle inicial
-const GrowthChart = dynamic(
+const GrowthChart = dynamicImport(
   () => import('@/app/components/analytics/GrowthChart').then(mod => ({ default: mod.GrowthChart })),
   {
     loading: () => <div className="h-[300px] animate-pulse bg-white/5 rounded-xl" />,
@@ -25,7 +27,7 @@ const GrowthChart = dynamic(
   }
 );
 
-const ComparisonBars = dynamic(
+const ComparisonBars = dynamicImport(
   () => import('@/app/components/analytics/ComparisonBars').then(mod => ({ default: mod.ComparisonBars })),
   {
     loading: () => <div className="h-[200px] animate-pulse bg-white/5 rounded-xl" />,

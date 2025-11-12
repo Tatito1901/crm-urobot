@@ -7,7 +7,7 @@
  */
 
 import useSWR from 'swr'
-import { getSupabaseClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import {
   DEFAULT_PACIENTE_ESTADO,
   type Paciente,
@@ -15,7 +15,7 @@ import {
 } from '@/types/pacientes'
 import type { Tables } from '@/types/database'
 
-const supabase = getSupabaseClient()
+const supabase = createClient()
 
 interface UsePacientesReturn {
   pacientes: Paciente[]

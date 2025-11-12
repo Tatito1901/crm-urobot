@@ -7,11 +7,11 @@
  */
 
 import useSWR from 'swr'
-import { getSupabaseClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { DEFAULT_LEAD_ESTADO, type Lead, isLeadEstado } from '@/types/leads'
 import type { Tables } from '@/types/database'
 
-const supabase = getSupabaseClient()
+const supabase = createClient()
 
 interface UseLeadsReturn {
   leads: Lead[]

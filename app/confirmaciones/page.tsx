@@ -10,6 +10,8 @@ import { useRecordatorios } from '@/hooks/useRecordatorios';
 type TipoFilter = 'ALL' | '48h' | '24h' | '3h' | 'confirmacion_inicial';
 type RangoFilter = 'ultimos_7' | 'ultimos_30' | 'todos';
 
+export const dynamic = 'force-dynamic';
+
 export default function ConfirmacionesPage() {
   const [search, setSearch] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState<TipoFilter>('ALL');

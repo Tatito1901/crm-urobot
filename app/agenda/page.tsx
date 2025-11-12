@@ -13,11 +13,13 @@
  */
 
 import React, { useMemo, useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { Temporal } from '@js-temporal/polyfill';
 
 import { useConsultas } from '@/hooks/useConsultas';
 import { filterAppointments, getShortName } from './lib/agenda-utils';
+
+export const dynamic = 'force-dynamic';
 import type { Consulta } from '@/types/consultas';
 
 // Componentes estáticos
@@ -30,7 +32,7 @@ import { CalendarSkeleton } from './components/CalendarSkeleton';
 
 // ✅ OPTIMIZACIÓN: Lazy load del calendario Schedule-X (~150KB)
 // Solo se carga cuando el usuario selecciona la vista de calendario
-const CalendarView = dynamic(
+const CalendarView = dynamicImport(
   () => import('./components/CalendarView').then((mod) => ({ default: mod.CalendarView })),
   {
     ssr: false,

@@ -32,7 +32,7 @@ export const TimeGrid = React.memo(function TimeGrid({ weekStart, startHour = 11
       <div className="grid grid-cols-[80px_repeat(7,1fr)] min-h-full">
         {/* Columna de horas */}
         <div className="border-r border-gray-200 sticky left-0 bg-white z-10">
-          {timeSlots.map((time, index) => (
+          {timeSlots.map((time) => (
             <div
               key={time}
               className="h-12 flex items-start justify-end pr-3 pt-1 text-xs text-gray-600 border-b border-gray-100"
@@ -55,7 +55,7 @@ export const TimeGrid = React.memo(function TimeGrid({ weekStart, startHour = 11
               }`}
               role="gridcell"
             >
-              {timeSlots.map((time, slotIndex) => (
+              {timeSlots.map((time) => (
                 <div
                   key={`${dayIndex}-${time}`}
                   className="h-12 border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"

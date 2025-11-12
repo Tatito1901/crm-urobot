@@ -143,7 +143,7 @@ export function generateTimeSlots(startHour: number, endHour: number): string[] 
   const slots: string[] = [];
 
   for (let hour = startHour; hour <= endHour; hour++) {
-    for (let minutes of [0, 30]) {
+    for (const minutes of [0, 30]) {
       if (hour === endHour && minutes > 0) break;
       const hourStr = String(hour).padStart(2, '0');
       const minStr = String(minutes).padStart(2, '0');

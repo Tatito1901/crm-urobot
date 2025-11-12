@@ -8,6 +8,8 @@ import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import type { Lead } from '@/types/leads';
 import { useLeads } from '@/hooks/useLeads';
 
+export const dynamic = 'force-dynamic';
+
 export default function LeadsPage() {
   const [search, setSearch] = useState('');
   

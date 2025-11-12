@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getMonthMatrix, getMonthName, getDayName, isSameDay, isToday, addMonths } from '@/lib/date-utils';
+import { getMonthMatrix, getMonthName, isSameDay, isToday, addMonths } from '@/lib/date-utils';
 
 interface MiniMonthProps {
   selectedDate: Date;

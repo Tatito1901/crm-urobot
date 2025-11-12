@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { getSupabaseClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import {
   DEFAULT_CONSULTA_ESTADO,
   DEFAULT_CONSULTA_SEDE,
@@ -21,7 +21,7 @@ import {
 import { parseRecordatorioRows } from '@/lib/validators/recordatorios';
 
 // ✅ OPTIMIZACIÓN: Usar singleton del cliente
-const supabase = getSupabaseClient();
+const supabase = createClient();
 
 interface UseRecordatoriosReturn {
   recordatorios: RecordatorioDetalle[];

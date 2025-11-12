@@ -8,6 +8,8 @@ import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import type { Paciente } from '@/types/pacientes';
 import { usePacientes } from '@/hooks/usePacientes';
 
+export const dynamic = 'force-dynamic';
+
 export default function PacientesPage() {
   const [search, setSearch] = useState('');
 

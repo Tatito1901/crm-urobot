@@ -8,14 +8,14 @@
  */
 
 import useSWR from 'swr'
-import { getSupabaseClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import {
   DEFAULT_DASHBOARD_METRICS,
   type DashboardMetrics,
 } from '@/types/dashboard'
 
 // ✅ OPTIMIZACIÓN: Usar singleton del cliente
-const supabase = getSupabaseClient()
+const supabase = createClient()
 
 interface UseDashboardMetricsReturn {
   metrics: DashboardMetrics | null

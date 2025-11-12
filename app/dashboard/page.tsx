@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
 import { Badge } from '@/app/components/crm/ui';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -18,13 +18,15 @@ import { MetricCard } from '@/app/components/analytics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { FullPageLoader, EmptyState } from '@/app/components/common/LoadingStates';
 
+export const dynamic = 'force-dynamic';
+
 // Lazy load de gráficos pesados para mejorar rendimiento mobile
-const DonutChart = dynamic(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
+const DonutChart = dynamicImport(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
   loading: () => <div className="h-[200px] animate-pulse bg-white/5 rounded-xl" />,
   ssr: false,
 });
 
-const BarChart = dynamic(() => import('@/app/components/analytics/BarChart').then(mod => ({ default: mod.BarChart })), {
+const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart').then(mod => ({ default: mod.BarChart })), {
   loading: () => <div className="h-[250px] animate-pulse bg-white/5 rounded-xl" />,
   ssr: false,
 });
