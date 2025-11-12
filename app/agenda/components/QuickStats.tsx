@@ -24,7 +24,8 @@ export const QuickStats: React.FC<QuickStatsProps> = React.memo(({ consultas }) 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
-      color: 'blue',
+      bgClass: 'bg-blue-500/15',
+      textClass: 'text-blue-400',
     },
     {
       label: 'Confirmadas',
@@ -35,7 +36,8 @@ export const QuickStats: React.FC<QuickStatsProps> = React.memo(({ consultas }) 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      color: 'green',
+      bgClass: 'bg-green-500/15',
+      textClass: 'text-green-400',
     },
     {
       label: 'Programadas',
@@ -45,7 +47,8 @@ export const QuickStats: React.FC<QuickStatsProps> = React.memo(({ consultas }) 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      color: 'blue',
+      bgClass: 'bg-blue-500/15',
+      textClass: 'text-blue-400',
     },
     {
       label: 'Canceladas',
@@ -56,7 +59,8 @@ export const QuickStats: React.FC<QuickStatsProps> = React.memo(({ consultas }) 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      color: 'red',
+      bgClass: 'bg-red-500/15',
+      textClass: 'text-red-400',
     },
   ];
 
@@ -85,7 +89,7 @@ export const QuickStats: React.FC<QuickStatsProps> = React.memo(({ consultas }) 
                   <p className="mt-0.5 text-xs text-slate-400">{stat.subtitle}</p>
                 )}
               </div>
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-${stat.color}-500/15 text-${stat.color}-400`}>
+              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${stat.bgClass} ${stat.textClass}`}>
                 {stat.icon}
               </div>
             </div>
