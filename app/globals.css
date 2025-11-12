@@ -3,6 +3,30 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Material Design Tokens - Calendar */
+  --color-green: #2E7D32;
+  --color-blue-light: #E3F2FD;
+  --color-blue-accent: #42A5F5;
+  --color-yellow-light: #FFF8E1;
+  --color-yellow-accent: #FFC107;
+
+  /* Grays */
+  --color-gray-50: #FAFAFA;
+  --color-gray-100: #F5F5F5;
+  --color-gray-200: #EEEEEE;
+  --color-gray-300: #E0E0E0;
+  --color-gray-500: #9E9E9E;
+  --color-gray-700: #616161;
+  --color-gray-900: #111;
+
+  /* Calendar Layout */
+  --sidebar-w: 280px;
+  --header-h: 80px;
+  --slot-h: 48px;
+  --color-line: #E0E0E0;
+  --color-today: #2E7D32;
+  --radius-card: 8px;
 }
 
 @theme inline {
@@ -10,6 +34,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-roboto: var(--font-roboto);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +48,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Roboto Font Utility */
+.font-roboto {
+  font-family: var(--font-roboto), -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Utilidades de responsividad */
