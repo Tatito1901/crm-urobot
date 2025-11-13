@@ -91,11 +91,16 @@ export default function LeadsPage() {
                 </div>
               ),
               telefono: <span className="text-white/80">{lead.telefono}</span>,
-              estado: <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />, 
+              estado: <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />,
               primerContacto: <span>{formatDate(lead.primerContacto)}</span>,
               fuente: <Badge label={lead.fuente || '—'} />,
             }))}
             empty={search ? 'Sin resultados para el criterio aplicado.' : 'Aún no hay leads registrados.'}
+            mobileConfig={{
+              primary: 'nombre',
+              secondary: 'telefono',
+              metadata: ['estado', 'primerContacto']
+            }}
           />
         </CardContent>
       </Card>

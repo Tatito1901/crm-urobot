@@ -54,16 +54,32 @@ export function StatCard({ title, value, hint }: { title: string; value: string;
 
 type DataTableHeader = { key: string; label: string; align?: "left" | "right" };
 
+/**
+ * ✅ QUICK WIN #4: Configuración mobile optimizada
+ * Define qué campos mostrar en cards mobile para mejor UX
+ */
+type MobileCardConfig = {
+  /** Campo principal (ej: nombre) - mostrado como título */
+  primary: string;
+  /** Campo secundario opcional (ej: teléfono) - mostrado como subtítulo */
+  secondary?: string;
+  /** Campos de metadata (ej: estado, fecha) - mostrados como chips */
+  metadata?: string[];
+};
+
 export function DataTable({
   headers,
   rows,
   empty,
   onRowClick,
+  mobileConfig,
 }: {
   headers: DataTableHeader[];
   rows: (Record<string, React.ReactNode> & { id: string })[];
   empty: string;
   onRowClick?: (rowId: string) => void;
+  /** ✅ NUEVO: Configuración para vista mobile optimizada */
+  mobileConfig?: MobileCardConfig;
 }) {
   const getAlignmentClasses = (align?: "left" | "right") => {
     switch (align) {
@@ -116,28 +132,96 @@ export function DataTable({
         </table>
       </div>
 
+      {/* ✅ MOBILE CARDS OPTIMIZADAS - Quick Win #4 */}
       <div className="grid gap-3 md:hidden">
-        {rows.map((row) => (
-          <button
-            key={row.id}
-            type="button"
-            className={cn(
-              "flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-              onRowClick ? "cursor-pointer hover:border-white/20 hover:bg-white/[0.08]" : "cursor-default"
-            )}
-            onClick={onRowClick ? () => onRowClick(row.id) : undefined}
-            disabled={!onRowClick}
-          >
-            {headers.map((header) => (
-              <div key={header.key} className="flex flex-col gap-1">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-white/40">
-                  {header.label}
-                </span>
-                <div className="text-sm text-white/90">{row[header.key] ?? "—"}</div>
-              </div>
-            ))}
-          </button>
-        ))}
+        {rows.map((row) => {
+          // Si hay configuración mobile, usar layout optimizado
+          if (mobileConfig) {
+            const primary = row[mobileConfig.primary];
+            const secondary = mobileConfig.secondary ? row[mobileConfig.secondary] : null;
+            const metadata = mobileConfig.metadata?.map(key => row[key]).filter(Boolean) || [];
+
+            return (
+              <button
+                key={row.id}
+                type="button"
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-left transition-all",
+                  onRowClick
+                    ? "cursor-pointer hover:border-white/20 hover:bg-white/[0.08] active:scale-[0.98]"
+                    : "cursor-default"
+                )}
+                onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+                disabled={!onRowClick}
+              >
+                <div className="flex-1 min-w-0">
+                  {/* Título principal */}
+                  <p className="font-medium text-white truncate text-sm">
+                    {primary}
+                  </p>
+
+                  {/* Subtítulo opcional */}
+                  {secondary && (
+                    <p className="text-xs text-white/60 truncate mt-0.5">
+                      {secondary}
+                    </p>
+                  )}
+
+                  {/* Metadata chips */}
+                  {metadata.length > 0 && (
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      {metadata.map((item, i) => (
+                        <span key={i} className="text-xs">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Icono de expansión si es clickeable */}
+                {onRowClick && (
+                  <svg
+                    className="w-5 h-5 text-white/30 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                )}
+              </button>
+            );
+          }
+
+          // Fallback: Layout tradicional (sin configuración mobile)
+          return (
+            <button
+              key={row.id}
+              type="button"
+              className={cn(
+                "flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+                onRowClick ? "cursor-pointer hover:border-white/20 hover:bg-white/[0.08]" : "cursor-default"
+              )}
+              onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+              disabled={!onRowClick}
+            >
+              {headers.map((header) => (
+                <div key={header.key} className="flex flex-col gap-1">
+                  <span className="text-[11px] uppercase tracking-[0.22em] text-white/40">
+                    {header.label}
+                  </span>
+                  <div className="text-sm text-white/90">{row[header.key] ?? "—"}</div>
+                </div>
+              ))}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

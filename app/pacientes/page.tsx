@@ -144,6 +144,11 @@ export default function PacientesPage() {
               ),
             }))}
             empty={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay pacientes registrados aún.'}
+            mobileConfig={{
+              primary: 'nombre',
+              secondary: 'contacto',
+              metadata: ['estado', 'ultimaConsulta']
+            }}
           />
         </CardContent>
       </Card>
