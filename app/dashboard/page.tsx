@@ -17,6 +17,7 @@ import {
 import { MetricCard } from '@/app/components/analytics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { FullPageLoader, EmptyState } from '@/app/components/common/LoadingStates';
+import { MetricCardSkeleton, ChartSkeleton } from '@/app/components/common/SkeletonLoader';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,18 +161,28 @@ export default function DashboardPage() {
 
         {/* Métricas principales */}
         <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {metrics.map((metric) => (
-            <MetricCard
-              key={metric.title}
-              title={metric.title}
-              value={metric.value}
-              subtitle={metric.subtitle}
-              icon={metric.icon}
-              color={metric.color}
-              trend={metric.trend}
-              loading={loadingMetrics}
-            />
-          ))}
+          {loadingMetrics && !dm ? (
+            // ✅ QUICK WIN #5: Skeleton loaders mientras carga
+            <>
+              <MetricCardSkeleton />
+              <MetricCardSkeleton />
+              <MetricCardSkeleton />
+              <MetricCardSkeleton />
+              <MetricCardSkeleton />
+            </>
+          ) : (
+            metrics.map((metric) => (
+              <MetricCard
+                key={metric.title}
+                title={metric.title}
+                value={metric.value}
+                subtitle={metric.subtitle}
+                icon={metric.icon}
+                color={metric.color}
+                trend={metric.trend}
+              />
+            ))
+          )}
         </section>
 
         {/* Actividad reciente */}
