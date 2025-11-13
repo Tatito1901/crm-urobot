@@ -59,17 +59,40 @@ const fetchLeads = async (): Promise<{ leads: Lead[], count: number }> => {
 
 /**
  * Hook para gestionar leads
+ *
+ * ✅ QUICK WIN #3: Configuración SWR optimizada
+ * - Revalida automáticamente cuando vuelves a la pestaña (mejor UX)
+ * - Caché de 5 minutos (menos requests duplicados con 2 usuarios)
+ * - Retry automático en caso de error de red
+ * - Mantiene datos previos mientras recarga (sin parpadeos)
  */
 export function useLeads(): UseLeadsReturn {
   const { data, error, isLoading, mutate } = useSWR(
     'leads',
     fetchLeads,
     {
-      refreshInterval: 0, // ❌ DESHABILITADO - Solo carga inicial y refresh manual
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
+      // ✅ Revalidar cuando el usuario vuelve a la pestaña
+      revalidateOnFocus: true,
+
+      // ✅ Revalidar si pierde conexión y vuelve (útil en mobile)
+      revalidateOnReconnect: true,
+
+      // ✅ Caché compartido por 5 minutos (evita requests duplicados)
+      dedupingInterval: 5 * 60 * 1000,
+
+      // ✅ NO revalidar automáticamente datos en caché
       revalidateIfStale: false,
-      dedupingInterval: 60000,
+
+      // ❌ NO polling automático (no necesario con 2 usuarios)
+      refreshInterval: 0,
+
+      // ✅ Mantener datos previos mientras recarga (mejor UX, sin parpadeos)
+      keepPreviousData: true,
+
+      // ✅ Retry automático en caso de error
+      shouldRetryOnError: true,
+      errorRetryCount: 3,
+      errorRetryInterval: 2000,
     }
   )
 
