@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import type { Paciente } from '@/types/pacientes';
 import { usePacientes } from '@/hooks/usePacientes';
+import { DataTableSkeleton } from '@/app/components/common/SkeletonLoader';
+import { ErrorState } from '@/app/components/common/ErrorState';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,43 +115,56 @@ export default function PacientesPage() {
           </div>
         </CardHeader>
         <CardContent className="overflow-hidden pt-0">
-          <DataTable
-            headers={[
-              { key: 'nombre', label: 'Nombre' },
-              { key: 'contacto', label: 'Contacto' },
-              { key: 'estado', label: 'Estado' },
-              { key: 'consultas', label: 'Consultas', align: 'right' },
-              { key: 'ultimaConsulta', label: 'Última consulta' },
-            ]}
-            rows={filteredPacientes.map((paciente: Paciente) => ({
-              id: paciente.id,
-              nombre: (
-                <div className="flex flex-col">
-                  <span className="font-medium text-white">{paciente.nombre}</span>
-                  <span className="text-xs text-white/40">ID: {paciente.id}</span>
-                </div>
-              ),
-              contacto: (
-                <div className="space-y-1 text-sm">
-                  <p className="text-white/80">{paciente.telefono}</p>
-                  <p className="text-white/40">{paciente.email}</p>
-                </div>
-              ),
-              estado: <Badge label={paciente.estado} tone={STATE_COLORS[paciente.estado]} />,
-              consultas: <span className="font-medium text-white">{paciente.totalConsultas}</span>,
-              ultimaConsulta: (
-                <span>
-                  {paciente.ultimaConsulta ? formatDate(paciente.ultimaConsulta) : 'Sin consulta previa'}
-                </span>
-              ),
-            }))}
-            empty={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay pacientes registrados aún.'}
-            mobileConfig={{
-              primary: 'nombre',
-              secondary: 'contacto',
-              metadata: ['estado', 'ultimaConsulta']
-            }}
-          />
+          {loading && pacientes.length === 0 ? (
+            // ✅ Skeleton loader mientras carga datos
+            <DataTableSkeleton rows={8} />
+          ) : error ? (
+            // ✅ Error state con opción de retry
+            <ErrorState
+              title="Error al cargar pacientes"
+              error={error}
+              onRetry={refetch}
+              size="medium"
+            />
+          ) : (
+            <DataTable
+              headers={[
+                { key: 'nombre', label: 'Nombre' },
+                { key: 'contacto', label: 'Contacto' },
+                { key: 'estado', label: 'Estado' },
+                { key: 'consultas', label: 'Consultas', align: 'right' },
+                { key: 'ultimaConsulta', label: 'Última consulta' },
+              ]}
+              rows={filteredPacientes.map((paciente: Paciente) => ({
+                id: paciente.id,
+                nombre: (
+                  <div className="flex flex-col">
+                    <span className="font-medium text-white">{paciente.nombre}</span>
+                    <span className="text-xs text-white/40">ID: {paciente.id}</span>
+                  </div>
+                ),
+                contacto: (
+                  <div className="space-y-1 text-sm">
+                    <p className="text-white/80">{paciente.telefono}</p>
+                    <p className="text-white/40">{paciente.email}</p>
+                  </div>
+                ),
+                estado: <Badge label={paciente.estado} tone={STATE_COLORS[paciente.estado]} />,
+                consultas: <span className="font-medium text-white">{paciente.totalConsultas}</span>,
+                ultimaConsulta: (
+                  <span>
+                    {paciente.ultimaConsulta ? formatDate(paciente.ultimaConsulta) : 'Sin consulta previa'}
+                  </span>
+                ),
+              }))}
+              empty={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay pacientes registrados aún.'}
+              mobileConfig={{
+                primary: 'nombre',
+                secondary: 'contacto',
+                metadata: ['estado', 'ultimaConsulta']
+              }}
+            />
+          )}
         </CardContent>
       </Card>
     </PageShell>
