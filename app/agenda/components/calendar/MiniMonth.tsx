@@ -36,29 +36,29 @@ export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSel
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={handlePrevMonth}
-          className="rounded p-1 hover:bg-gray-100 transition-colors"
+          className="rounded p-1 hover:bg-slate-800/60 transition-colors"
           aria-label="Mes anterior"
         >
-          <ChevronLeft className="h-4 w-4 text-gray-600" />
+          <ChevronLeft className="h-4 w-4 text-slate-300" />
         </button>
 
-        <span className="text-sm font-bold text-gray-900">
+        <span className="text-sm font-bold text-slate-100">
           {getMonthName(currentMonth.getMonth())} {currentMonth.getFullYear()}
         </span>
 
         <button
           onClick={handleNextMonth}
-          className="rounded p-1 hover:bg-gray-100 transition-colors"
+          className="rounded p-1 hover:bg-slate-800/60 transition-colors"
           aria-label="Mes siguiente"
         >
-          <ChevronRight className="h-4 w-4 text-gray-600" />
+          <ChevronRight className="h-4 w-4 text-slate-300" />
         </button>
       </div>
 
       {/* Días de la semana */}
       <div className="mb-2 grid grid-cols-7 gap-1">
         {dayAbbreviations.map((day, index) => (
-          <div key={index} className="text-center text-xs font-medium text-gray-500">
+          <div key={index} className="text-center text-xs font-medium text-slate-400">
             {day}
           </div>
         ))}
@@ -78,10 +78,10 @@ export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSel
                 onClick={() => onDateSelect(date)}
                 className={`
                   aspect-square flex items-center justify-center rounded-full text-xs transition-colors
-                  ${!isCurrentMonth ? 'text-gray-300' : 'text-gray-900'}
-                  ${isCurrentDay ? 'bg-[#2E7D32] text-white font-bold' : ''}
-                  ${isSelected && !isCurrentDay ? 'bg-gray-200' : ''}
-                  ${!isCurrentDay && !isSelected ? 'hover:bg-gray-100' : ''}
+                  ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-200'}
+                  ${isCurrentDay ? 'bg-emerald-500 text-white font-bold' : ''}
+                  ${isSelected && !isCurrentDay ? 'bg-slate-700' : ''}
+                  ${!isCurrentDay && !isSelected ? 'hover:bg-slate-800/60' : ''}
                 `}
                 aria-current={isCurrentDay ? 'date' : undefined}
               >

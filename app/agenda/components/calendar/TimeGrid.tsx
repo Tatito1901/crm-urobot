@@ -28,14 +28,14 @@ export const TimeGrid = React.memo(function TimeGrid({ weekStart, startHour = 11
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-white">
+    <div className="flex-1 overflow-auto bg-[#0b0f16]">
       <div className="grid grid-cols-[80px_repeat(7,1fr)] min-h-full">
         {/* Columna de horas */}
-        <div className="border-r border-gray-200 sticky left-0 bg-white z-10">
+        <div className="border-r border-slate-800/60 sticky left-0 bg-slate-900/40 z-10">
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="h-12 flex items-start justify-end pr-3 pt-1 text-xs text-gray-600 border-b border-gray-100"
+              className="h-12 flex items-start justify-end pr-3 pt-1 text-xs text-slate-400 border-b border-slate-800/40"
               style={{ minHeight: '48px' }}
             >
               <span>{time}</span>
@@ -50,15 +50,15 @@ export const TimeGrid = React.memo(function TimeGrid({ weekStart, startHour = 11
           return (
             <div
               key={dayIndex}
-              className={`border-r border-gray-200 last:border-r-0 ${
-                hasWorkingHours ? 'bg-[#FFFEF7]' : 'bg-white'
+              className={`border-r border-slate-800/60 last:border-r-0 ${
+                hasWorkingHours ? 'bg-slate-900/20' : 'bg-[#0b0f16]'
               }`}
               role="gridcell"
             >
               {timeSlots.map((time) => (
                 <div
                   key={`${dayIndex}-${time}`}
-                  className="h-12 border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
+                  className="h-12 border-b border-slate-800/40 hover:bg-blue-900/20 transition-colors cursor-pointer"
                   style={{ minHeight: '48px' }}
                   data-time={time}
                   data-date={date.toISOString().split('T')[0]}

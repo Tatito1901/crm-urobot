@@ -34,12 +34,12 @@ export const HeaderBar = React.memo(function HeaderBar({ currentWeekStart, onWee
   };
 
   return (
-    <header className="h-[80px] border-b border-gray-200 bg-white px-6 flex items-center justify-between">
+    <header className="h-[80px] border-b border-slate-800/60 bg-slate-900/40 px-6 flex items-center justify-between">
       {/* Controles de navegación izquierda */}
       <div className="flex items-center gap-4">
         <button
           onClick={goToThisWeek}
-          className="px-4 py-2 text-sm font-medium border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium border border-slate-700 rounded hover:bg-slate-800/60 transition-colors text-slate-200"
         >
           Esta semana
         </button>
@@ -47,22 +47,22 @@ export const HeaderBar = React.memo(function HeaderBar({ currentWeekStart, onWee
         <div className="flex items-center gap-2">
           <button
             onClick={goToPreviousWeek}
-            className="p-2 rounded hover:bg-gray-100 transition-colors"
+            className="p-2 rounded hover:bg-slate-800/60 transition-colors"
             aria-label="Semana anterior"
           >
-            <ChevronLeft className="h-5 w-5 text-gray-700" />
+            <ChevronLeft className="h-5 w-5 text-slate-300" />
           </button>
 
           <button
             onClick={goToNextWeek}
-            className="p-2 rounded hover:bg-gray-100 transition-colors"
+            className="p-2 rounded hover:bg-slate-800/60 transition-colors"
             aria-label="Semana siguiente"
           >
-            <ChevronRight className="h-5 w-5 text-gray-700" />
+            <ChevronRight className="h-5 w-5 text-slate-300" />
           </button>
         </div>
 
-        <span className="text-base font-bold text-gray-900">
+        <span className="text-base font-bold text-slate-100">
           {weekRange}
         </span>
       </div>
@@ -71,34 +71,34 @@ export const HeaderBar = React.memo(function HeaderBar({ currentWeekStart, onWee
       <div className="flex items-center gap-3">
         {/* Buscador */}
         <div className="relative w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
             placeholder="Buscar paciente por nombre, teléfono o CURP"
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 text-sm border border-slate-700 rounded bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
         {/* Selector de vista */}
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-slate-700 rounded hover:bg-slate-800/60 transition-colors text-slate-200">
           <span>Semana</span>
           <ChevronDown className="h-4 w-4" />
         </button>
 
         {/* Configuración */}
         <button
-          className="p-2 rounded hover:bg-gray-100 transition-colors"
+          className="p-2 rounded hover:bg-slate-800/60 transition-colors"
           aria-label="Configuración"
         >
-          <Settings className="h-5 w-5 text-gray-700" />
+          <Settings className="h-5 w-5 text-slate-300" />
         </button>
 
         {/* Más opciones */}
         <button
-          className="p-2 rounded hover:bg-gray-100 transition-colors"
+          className="p-2 rounded hover:bg-slate-800/60 transition-colors"
           aria-label="Más opciones"
         >
-          <MoreVertical className="h-5 w-5 text-gray-700" />
+          <MoreVertical className="h-5 w-5 text-slate-300" />
         </button>
       </div>
     </header>
