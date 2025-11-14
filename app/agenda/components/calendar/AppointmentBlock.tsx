@@ -38,22 +38,43 @@ export const AppointmentBlock: React.FC<AppointmentBlockProps> = ({
   // Calcular altura según duración (cada 30 min = slotHeight px)
   const heightPx = (appointment.duracionMinutos / 30) * slotHeight;
 
-  // Colores según estado
-  const statusColors: Record<string, string> = {
-    Programada: 'bg-blue-500/10 border-blue-500/60 hover:bg-blue-500/20',
-    Confirmada: 'bg-emerald-500/10 border-emerald-500/60 hover:bg-emerald-500/20',
-    Reagendada: 'bg-amber-500/10 border-amber-500/60 hover:bg-amber-500/20',
-    Cancelada: 'bg-slate-500/10 border-slate-500/40 opacity-60',
-    En_Curso: 'bg-purple-500/10 border-purple-500/60 animate-pulse',
-    Completada: 'bg-slate-500/10 border-slate-500/40 opacity-70',
-    No_Acudio: 'bg-red-500/10 border-red-500/40 opacity-50',
-  };
+  // Función para obtener colores según tipo y prioridad
+  const getAppointmentColors = () => {
+    // Si es urgente, siempre rojo con efecto
+    if (appointment.prioridad === 'urgente') {
+      return 'bg-red-500/15 border-red-500 border-2 hover:bg-red-500/25 shadow-lg shadow-red-500/20';
+    }
 
-  // Bordes según prioridad
-  const priorityBorder: Record<string, string> = {
-    urgente: 'border-2 border-red-500 shadow-lg shadow-red-500/20 animate-pulse',
-    alta: 'border-l-4 border-l-yellow-500',
-    normal: '',
+    // Si es prioridad alta, borde amarillo más grueso
+    if (appointment.prioridad === 'alta') {
+      return 'border-l-4 border-l-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/20';
+    }
+
+    // Colores según estado si no es urgente/alta
+    if (appointment.estado === 'Cancelada') {
+      return 'bg-slate-500/10 border-slate-500/40 opacity-60';
+    }
+
+    if (appointment.estado === 'Completada') {
+      return 'bg-slate-500/10 border-slate-500/40 opacity-70';
+    }
+
+    if (appointment.estado === 'Confirmada') {
+      return 'bg-emerald-500/10 border-emerald-500/60 hover:bg-emerald-500/20';
+    }
+
+    // Colores según tipo de consulta para estados normales
+    const tipoColors: Record<string, string> = {
+      primera_vez: 'bg-blue-500/10 border-blue-500/60 hover:bg-blue-500/20',
+      subsecuente: 'bg-indigo-500/10 border-indigo-500/60 hover:bg-indigo-500/20',
+      control_post_op: 'bg-cyan-500/10 border-cyan-500/60 hover:bg-cyan-500/20',
+      urgencia: 'bg-red-500/15 border-red-500/70 hover:bg-red-500/25',
+      procedimiento_menor: 'bg-purple-500/10 border-purple-500/60 hover:bg-purple-500/20',
+      valoracion_prequirurgica: 'bg-pink-500/10 border-pink-500/60 hover:bg-pink-500/20',
+      teleconsulta: 'bg-violet-500/10 border-violet-500/60 hover:bg-violet-500/20',
+    };
+
+    return tipoColors[appointment.tipo] || 'bg-slate-500/10 border-slate-500/60 hover:bg-slate-500/20';
   };
 
   // Iconos según modalidad
@@ -68,8 +89,8 @@ export const AppointmentBlock: React.FC<AppointmentBlockProps> = ({
       className={`
         absolute left-1 right-1 rounded-lg border px-2 py-1.5
         cursor-pointer transition-all duration-200
-        ${statusColors[appointment.estado] || statusColors.Programada}
-        ${priorityBorder[appointment.prioridad]}
+        ${getAppointmentColors()}
+        ${appointment.prioridad === 'urgente' ? 'animate-pulse' : ''}
       `}
       style={{
         height: `${heightPx}px`,

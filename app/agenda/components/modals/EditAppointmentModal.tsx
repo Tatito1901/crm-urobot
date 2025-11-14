@@ -1,26 +1,24 @@
 /**
  * ============================================================
- * CREATE APPOINTMENT MODAL - Modal para crear nueva cita
+ * EDIT APPOINTMENT MODAL - Modal para editar cita existente
  * ============================================================
- * Modal con formulario completo para agendar una nueva consulta
+ * Permite modificar todos los campos de una cita
  */
 
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '../shared/Modal';
 import { PatientSearch } from '../shared/PatientSearch';
-import { useAppointmentForm } from '../../hooks/useAppointmentForm';
 import { formatShortTime } from '../../lib/agenda-utils';
-import type { TimeSlot } from '@/types/agenda';
-import type { CreateAppointmentData } from '../../services/appointments-service';
+import type { Appointment } from '@/types/agenda';
 import type { Paciente } from '@/types/pacientes';
 
-interface CreateAppointmentModalProps {
-  slot: TimeSlot | null;
+interface EditAppointmentModalProps {
+  appointment: Appointment | null;
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: Omit<CreateAppointmentData, 'slotId' | 'start' | 'end' | 'timezone'>) => Promise<{ success: boolean; error?: string }>;
+  onUpdate: (id: string, updates: Partial<Appointment>) => Promise<{ success: boolean; error?: string }>;
 }
 
 const TIPOS_CONSULTA = [
@@ -42,92 +40,102 @@ const DURACIONES = [
   { value: 120, label: '2 horas' },
 ];
 
-export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
-  slot,
+export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
+  appointment,
   isOpen,
   onClose,
-  onCreate,
+  onUpdate,
 }) => {
-  const {
-    formData,
-    errors,
-    touched,
-    isSubmitting,
-    submitError,
-    isValid,
-    updateField,
-    touchField,
-    handleSubmit,
-    reset,
-  } = useAppointmentForm({
-    initialSlot: slot || undefined,
-    onSubmit: async (data) => {
-      if (!slot) {
-        throw new Error('No hay slot seleccionado');
-      }
-
-      const result = await onCreate(data);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Error al crear la cita');
-      }
-
-      // Si fue exitoso, cerrar modal y resetear
-      onClose();
-      reset();
-    },
+  const [formData, setFormData] = useState({
+    patientId: '',
+    patientName: '',
+    tipo: 'primera_vez',
+    motivoConsulta: '',
+    duracionMinutos: 45,
+    sede: 'POLANCO' as 'POLANCO' | 'SATELITE',
+    modalidad: 'presencial' as 'presencial' | 'teleconsulta' | 'hibrida',
+    prioridad: 'normal' as 'normal' | 'alta' | 'urgente',
+    notasInternas: '',
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  // Cargar datos de la cita cuando se abre el modal
+  useEffect(() => {
+    if (appointment && isOpen) {
+      setFormData({
+        patientId: appointment.pacienteId,
+        patientName: appointment.paciente,
+        tipo: appointment.tipo,
+        motivoConsulta: appointment.motivoConsulta || '',
+        duracionMinutos: appointment.duracionMinutos,
+        sede: appointment.sede,
+        modalidad: appointment.modalidad,
+        prioridad: appointment.prioridad,
+        notasInternas: appointment.notasInternas || '',
+      });
+    }
+  }, [appointment, isOpen]);
 
   // Resetear formulario cuando se cierra el modal
   useEffect(() => {
     if (!isOpen) {
-      reset();
+      setSubmitError('');
     }
-  }, [isOpen, reset]);
+  }, [isOpen]);
 
-  // Actualizar sede cuando cambia el slot
-  useEffect(() => {
-    if (slot) {
-      updateField('sede', slot.sede);
-    }
-  }, [slot, updateField]);
-
-  if (!slot) return null;
-
-  // Formatear información del slot
-  const slotDate = slot.start.toPlainDate();
-  const slotStartTime = formatShortTime(slot.start);
-  const slotEndTime = formatShortTime(slot.end);
-
-  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  const monthNames = [
-    'ene',
-    'feb',
-    'mar',
-    'abr',
-    'may',
-    'jun',
-    'jul',
-    'ago',
-    'sep',
-    'oct',
-    'nov',
-    'dic',
-  ];
-
-  const formattedDate = `${dayNames[slotDate.dayOfWeek % 7]} ${slotDate.day} ${
-    monthNames[slotDate.month - 1]
-  } ${slotDate.year}`;
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleSubmit(e);
+
+    if (!appointment) return;
+
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const updates: Partial<Appointment> = {
+        tipo: formData.tipo,
+        motivoConsulta: formData.motivoConsulta,
+        duracionMinutos: formData.duracionMinutos,
+        sede: formData.sede,
+        modalidad: formData.modalidad,
+        prioridad: formData.prioridad,
+        notasInternas: formData.notasInternas,
+      };
+
+      const result = await onUpdate(appointment.id, updates);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Error al actualizar la cita');
+      }
+
+      onClose();
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Error desconocido');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  if (!appointment) return null;
+
+  // Formatear información de fecha/hora
+  const startDate = appointment.start.toPlainDate();
+  const startTime = formatShortTime(appointment.start);
+  const endTime = formatShortTime(appointment.end);
+
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+  const formattedDate = `${dayNames[startDate.dayOfWeek % 7]} ${startDate.day} ${
+    monthNames[startDate.month - 1]
+  } ${startDate.year}`;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Nueva Cita" size="lg">
-      <form onSubmit={handleFormSubmit} className="space-y-6">
-        {/* Información del slot seleccionado */}
+    <Modal isOpen={isOpen} onClose={onClose} title="Editar Cita" size="lg">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Información de fecha/hora (no editable) */}
         <div className="rounded-xl bg-blue-500/10 border border-blue-500/30 p-4">
           <div className="flex items-center gap-2 text-blue-400">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,32 +149,27 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             <div>
               <p className="font-medium">{formattedDate}</p>
               <p className="text-sm">
-                {slotStartTime} - {slotEndTime} • {slot.sede}
+                {startTime} - {endTime} • {appointment.sede}
               </p>
             </div>
           </div>
+          <p className="text-xs text-slate-400 mt-2">
+            💡 Para cambiar fecha/hora, cancela y crea una nueva cita
+          </p>
         </div>
 
-        {/* Selección de paciente */}
+        {/* Información del paciente (no editable) */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Paciente <span className="text-red-400">*</span>
-          </label>
-          <PatientSearch
-            onSelect={(patient: Paciente) => {
-              if (patient.id) {
-                updateField('patientId', patient.id);
-                updateField('patientName', patient.nombre);
-              } else {
-                // Limpiar selección
-                updateField('patientId', '');
-                updateField('patientName', '');
-              }
-            }}
-            selectedPatientId={formData.patientId}
-            error={errors.patient}
-            touched={touched.patientName}
-          />
+          <label className="block text-sm font-medium text-slate-300 mb-2">Paciente</label>
+          <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700">
+            <p className="text-sm text-slate-200 font-medium">{appointment.paciente}</p>
+            {appointment.telefono && (
+              <p className="text-xs text-slate-400 mt-1">{appointment.telefono}</p>
+            )}
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            💡 No se puede cambiar el paciente de una cita existente
+          </p>
         </div>
 
         {/* Tipo de consulta */}
@@ -176,18 +179,8 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
           </label>
           <select
             value={formData.tipo}
-            onChange={(e) => updateField('tipo', e.target.value)}
-            onBlur={() => touchField('tipo')}
-            className={`
-              w-full px-4 py-2.5 rounded-xl
-              bg-slate-800/50 border text-slate-100
-              focus:outline-none focus:ring-2
-              ${
-                touched.tipo && errors.tipo
-                  ? 'border-red-500 focus:ring-red-500/20'
-                  : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'
-              }
-            `}
+            onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
+            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
           >
             {TIPOS_CONSULTA.map((tipo) => (
               <option key={tipo.value} value={tipo.value}>
@@ -195,38 +188,18 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
               </option>
             ))}
           </select>
-          {touched.tipo && errors.tipo && (
-            <p className="mt-1 text-sm text-red-400">{errors.tipo}</p>
-          )}
         </div>
 
         {/* Motivo de consulta */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Motivo de la consulta
-          </label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Motivo de la consulta</label>
           <textarea
             value={formData.motivoConsulta}
-            onChange={(e) => updateField('motivoConsulta', e.target.value)}
-            onBlur={() => touchField('motivoConsulta')}
+            onChange={(e) => setFormData({ ...formData, motivoConsulta: e.target.value })}
             placeholder="Ej: Evaluación de próstata, dolor abdominal, etc."
             rows={3}
-            className={`
-              w-full px-4 py-2.5 rounded-xl
-              bg-slate-800/50 border text-slate-100
-              placeholder-slate-500
-              focus:outline-none focus:ring-2
-              resize-none
-              ${
-                touched.motivoConsulta && errors.motivoConsulta
-                  ? 'border-red-500 focus:ring-red-500/20'
-                  : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'
-              }
-            `}
+            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
           />
-          {touched.motivoConsulta && errors.motivoConsulta && (
-            <p className="mt-1 text-sm text-red-400">{errors.motivoConsulta}</p>
-          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -235,7 +208,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             <label className="block text-sm font-medium text-slate-300 mb-2">Duración</label>
             <select
               value={formData.duracionMinutos}
-              onChange={(e) => updateField('duracionMinutos', parseInt(e.target.value))}
+              onChange={(e) => setFormData({ ...formData, duracionMinutos: parseInt(e.target.value) })}
               className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
             >
               {DURACIONES.map((dur) => (
@@ -252,7 +225,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             <select
               value={formData.modalidad}
               onChange={(e) =>
-                updateField('modalidad', e.target.value as 'presencial' | 'teleconsulta')
+                setFormData({ ...formData, modalidad: e.target.value as 'presencial' | 'teleconsulta' | 'hibrida' })
               }
               className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
             >
@@ -276,7 +249,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
                 key={priority.value}
                 type="button"
                 onClick={() =>
-                  updateField('prioridad', priority.value as 'normal' | 'alta' | 'urgente')
+                  setFormData({ ...formData, prioridad: priority.value as 'normal' | 'alta' | 'urgente' })
                 }
                 className={`
                   flex-1 px-4 py-2.5 rounded-xl border transition-all
@@ -299,12 +272,10 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
         {/* Notas internas */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Notas internas (opcional)
-          </label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Notas internas (opcional)</label>
           <textarea
             value={formData.notasInternas}
-            onChange={(e) => updateField('notasInternas', e.target.value)}
+            onChange={(e) => setFormData({ ...formData, notasInternas: e.target.value })}
             placeholder="Notas privadas para el equipo médico..."
             rows={2}
             className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
@@ -330,10 +301,10 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || !isValid}
+            disabled={isSubmitting}
             className="flex-1 px-6 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
-            {isSubmitting ? 'Guardando...' : 'Guardar Cita'}
+            {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
           </button>
         </div>
       </form>

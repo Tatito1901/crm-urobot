@@ -1,33 +1,218 @@
 /**
  * ============================================================
- * AGENDA PAGE - Vista de calendario tipo Google Calendar
+ * AGENDA PAGE - Vista de calendario profesional mejorada
  * ============================================================
- * Diseño limpio y minimalista con navegación semanal
+ * Sistema completo de gestión de consultas médicas
  */
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Temporal } from '@js-temporal/polyfill';
 import { startOfWeek } from '@/lib/date-utils';
+import { useAgendaState } from './hooks/useAgendaState';
+import { useConsultas } from '@/hooks/useConsultas';
 import { Sidebar } from './components/calendar/Sidebar';
 import { HeaderBar } from './components/calendar/HeaderBar';
 import { DaysHeader } from './components/calendar/DaysHeader';
 import { TimeGrid } from './components/calendar/TimeGrid';
+import { ListView } from './components/calendar/ListView';
+import { FiltersPanel } from './components/calendar/FiltersPanel';
+import { CreateAppointmentModal } from './components/modals/CreateAppointmentModal';
+import { AppointmentDetailsModal } from './components/modals/AppointmentDetailsModal';
+import { EditAppointmentModal } from './components/modals/EditAppointmentModal';
+import {
+  createAppointment,
+  updateAppointment,
+  cancelAppointment,
+  confirmAppointment,
+} from './services/appointments-service';
 
 export default function AgendaPage() {
   // Estado: fecha seleccionada (default: hoy)
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Estado: inicio de la semana actual
-  const [currentWeekStart, setCurrentWeekStart] = useState(() =>
-    startOfWeek(new Date())
-  );
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date()));
+
+  // Estado global de agenda
+  const {
+    viewMode,
+    searchQuery,
+    selectedSede,
+    selectedEstados,
+    selectedTipos,
+    selectedPrioridades,
+    onlyToday,
+    onlyPendingConfirmation,
+    isCreateModalOpen,
+    isDetailsModalOpen,
+    isEditModalOpen,
+    selectedAppointment,
+    selectedSlot,
+    closeCreateModal,
+    closeDetailsModal,
+    closeEditModal,
+    openEditModal,
+  } = useAgendaState();
+
+  // Cargar consultas
+  const { consultas, loading, refetch } = useConsultas();
 
   // Cuando se selecciona una fecha en el mini-calendario, ir a esa semana
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
     setCurrentWeekStart(startOfWeek(date));
   }, []);
+
+  // Filtrar consultas según filtros activos
+  const filteredAppointments = useMemo(() => {
+    return consultas.filter((apt) => {
+      // Búsqueda global
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+          apt.paciente.toLowerCase().includes(query) ||
+          (apt.telefono && apt.telefono.includes(query)) ||
+          (apt.email && apt.email.toLowerCase().includes(query)) ||
+          (apt.motivoConsulta && apt.motivoConsulta.toLowerCase().includes(query));
+
+        if (!matchesSearch) return false;
+      }
+
+      // Filtro de sede
+      if (selectedSede !== 'ALL' && apt.sede !== selectedSede) return false;
+
+      // Filtro de estados
+      if (selectedEstados.length > 0 && !selectedEstados.includes(apt.estado)) return false;
+
+      // Filtro de tipos
+      if (selectedTipos.length > 0 && !selectedTipos.includes(apt.tipo)) return false;
+
+      // Filtro de prioridades
+      if (selectedPrioridades.length > 0 && !selectedPrioridades.includes(apt.prioridad))
+        return false;
+
+      // Solo hoy
+      if (onlyToday) {
+        const today = Temporal.Now.plainDateISO('America/Mexico_City');
+        const aptDate = apt.start.toPlainDate();
+        if (!aptDate.equals(today)) return false;
+      }
+
+      // Solo pendientes de confirmación
+      if (onlyPendingConfirmation && apt.confirmadoPaciente) return false;
+
+      return true;
+    });
+  }, [
+    consultas,
+    searchQuery,
+    selectedSede,
+    selectedEstados,
+    selectedTipos,
+    selectedPrioridades,
+    onlyToday,
+    onlyPendingConfirmation,
+  ]);
+
+  // Calcular estadísticas
+  const stats = useMemo(() => {
+    const today = Temporal.Now.plainDateISO('America/Mexico_City');
+
+    const todayAppointments = filteredAppointments.filter((apt) =>
+      apt.start.toPlainDate().equals(today)
+    ).length;
+
+    const pendingConfirmation = filteredAppointments.filter(
+      (apt) => !apt.confirmadoPaciente && apt.estado === 'Programada'
+    ).length;
+
+    return {
+      total: filteredAppointments.length,
+      today: todayAppointments,
+      pending: pendingConfirmation,
+    };
+  }, [filteredAppointments]);
+
+  // Handlers de modales
+  const handleCreateAppointment = async (data: any) => {
+    try {
+      const result = await createAppointment({
+        ...data,
+        slotId: selectedSlot?.id || '',
+        start: selectedSlot?.start || ({} as any),
+        end: selectedSlot?.end || ({} as any),
+        timezone: 'America/Mexico_City',
+      });
+
+      if (result.success) {
+        await refetch();
+        return { success: true };
+      }
+
+      return { success: false, error: result.error };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      };
+    }
+  };
+
+  const handleUpdateAppointment = async (id: string, updates: any) => {
+    try {
+      const result = await updateAppointment(id, updates);
+
+      if (result.success) {
+        await refetch();
+        return { success: true };
+      }
+
+      return { success: false, error: result.error };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      };
+    }
+  };
+
+  const handleCancelAppointment = async (id: string, reason: string, cancelledBy: string) => {
+    try {
+      const result = await cancelAppointment(id, reason, cancelledBy);
+
+      if (result.success) {
+        await refetch();
+        return { success: true };
+      }
+
+      return { success: false, error: result.error };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      };
+    }
+  };
+
+  const handleConfirmAppointment = async (id: string) => {
+    try {
+      const result = await confirmAppointment(id);
+
+      if (result.success) {
+        await refetch();
+        return { success: true };
+      }
+
+      return { success: false, error: result.error };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      };
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col bg-[#0b0f16] font-roboto">
@@ -37,19 +222,70 @@ export default function AgendaPage() {
 
         {/* Zona principal */}
         <div className="flex-1 flex flex-col">
-          {/* Header de navegación */}
-          <HeaderBar currentWeekStart={currentWeekStart} onWeekChange={setCurrentWeekStart} />
+          {/* Header de navegación con estadísticas */}
+          <HeaderBar
+            currentWeekStart={currentWeekStart}
+            onWeekChange={setCurrentWeekStart}
+            totalAppointments={stats.total}
+            pendingConfirmation={stats.pending}
+            todayAppointments={stats.today}
+          />
 
-          {/* Área del calendario */}
+          {/* Panel de filtros */}
+          <FiltersPanel />
+
+          {/* Área del calendario o lista */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Header de días (sticky) */}
-            <DaysHeader weekStart={currentWeekStart} />
+            {viewMode === 'list' ? (
+              <ListView
+                appointments={filteredAppointments}
+                onAppointmentClick={(apt) => {
+                  // Abrir modal de detalles
+                  const state = useAgendaState.getState();
+                  state.openDetailsModal(apt);
+                }}
+                dateRange={{
+                  start: currentWeekStart,
+                  end: new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000),
+                }}
+              />
+            ) : (
+              <>
+                {/* Header de días (sticky) */}
+                <DaysHeader weekStart={currentWeekStart} />
 
-            {/* Grid de tiempo (scrollable) */}
-            <TimeGrid weekStart={currentWeekStart} startHour={11} endHour={21} />
+                {/* Grid de tiempo (scrollable) */}
+                <TimeGrid weekStart={currentWeekStart} startHour={11} endHour={21} />
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Modales */}
+      <CreateAppointmentModal
+        slot={selectedSlot}
+        isOpen={isCreateModalOpen}
+        onClose={closeCreateModal}
+        onCreate={handleCreateAppointment}
+      />
+
+      <AppointmentDetailsModal
+        appointment={selectedAppointment}
+        isOpen={isDetailsModalOpen}
+        onClose={closeDetailsModal}
+        onUpdate={handleUpdateAppointment}
+        onCancel={handleCancelAppointment}
+        onEdit={openEditModal}
+        onConfirm={handleConfirmAppointment}
+      />
+
+      <EditAppointmentModal
+        appointment={selectedAppointment}
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        onUpdate={handleUpdateAppointment}
+      />
     </div>
   );
 }
