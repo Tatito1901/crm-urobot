@@ -24,6 +24,7 @@ import {
   updateAppointment,
   cancelAppointment,
   type CreateAppointmentData,
+  type UpdateAppointmentData,
 } from '../services/appointments-service';
 
 interface NewCalendarViewProps {
@@ -68,7 +69,7 @@ export const NewCalendarView: React.FC<NewCalendarViewProps> = ({
    * Handler para crear nueva cita
    */
   const handleCreateAppointment = useCallback(
-    async (formData: any) => {
+    async (formData: Omit<CreateAppointmentData, 'slotId' | 'start' | 'end' | 'timezone'>) => {
       try {
         if (!selectedSlot) {
           return {
@@ -133,7 +134,7 @@ export const NewCalendarView: React.FC<NewCalendarViewProps> = ({
     async (id: string, updates: Partial<Appointment>) => {
       try {
         // Convertir updates de Appointment a formato de servicio
-        const updateData: any = {};
+        const updateData: Partial<UpdateAppointmentData> = {};
 
         if (updates.start && updates.end) {
           updateData.start = updates.start;

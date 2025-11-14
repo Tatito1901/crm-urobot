@@ -8,17 +8,17 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Temporal } from '@js-temporal/polyfill';
 import { Modal } from '../shared/Modal';
 import { useAppointmentForm } from '../../hooks/useAppointmentForm';
 import { formatShortTime } from '../../lib/agenda-utils';
 import type { TimeSlot } from '@/types/agenda';
+import type { CreateAppointmentData } from '../../services/appointments-service';
 
 interface CreateAppointmentModalProps {
   slot: TimeSlot | null;
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: any) => Promise<{ success: boolean; error?: string }>;
+  onCreate: (data: Omit<CreateAppointmentData, 'slotId' | 'start' | 'end' | 'timezone'>) => Promise<{ success: boolean; error?: string }>;
 }
 
 const TIPOS_CONSULTA = [

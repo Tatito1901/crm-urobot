@@ -12,19 +12,24 @@ import { Modal } from '../shared/Modal';
 import { formatTimeRange, formatLongDate, getStatusConfig } from '../../lib/agenda-utils';
 import type { Appointment } from '@/types/agenda';
 
+interface ServiceResponse<T = void> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 interface AppointmentDetailsModalProps {
   appointment: Appointment | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate?: (id: string, updates: Partial<Appointment>) => Promise<any>;
-  onCancel?: (id: string, reason: string, cancelledBy: string) => Promise<any>;
+  onUpdate?: (id: string, updates: Partial<Appointment>) => Promise<ServiceResponse>;
+  onCancel?: (id: string, reason: string, cancelledBy: string) => Promise<ServiceResponse>;
 }
 
 export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = ({
   appointment,
   isOpen,
   onClose,
-  onUpdate,
   onCancel,
 }) => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -49,7 +54,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
       setShowCancelDialog(false);
       setCancelReason('');
       onClose();
-    } catch (error) {
+    } catch {
       alert('Error al cancelar la cita');
     } finally {
       setIsCancelling(false);
