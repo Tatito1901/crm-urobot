@@ -7,11 +7,12 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '../shared/Modal';
-import { PatientSearch } from '../shared/PatientSearch';
+import { PatientSearchEnhanced } from '../shared/PatientSearchEnhanced';
 import { useAppointmentForm } from '../../hooks/useAppointmentForm';
 import { formatShortTime } from '../../lib/agenda-utils';
+import { createPatient } from '../../services/patients-service';
 import type { TimeSlot } from '@/types/agenda';
 import type { CreateAppointmentData } from '../../services/appointments-service';
 import type { Paciente } from '@/types/pacientes';
@@ -48,6 +49,13 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   onClose,
   onCreate,
 }) => {
+  const [newPatientData, setNewPatientData] = useState<{
+    nombre: string;
+    telefono: string;
+    email: string;
+  } | null>(null);
+  const [isCreatingPatient, setIsCreatingPatient] = useState(false);
+
   const {
     formData,
     errors,
@@ -66,6 +74,30 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
         throw new Error('No hay slot seleccionado');
       }
 
+      // Si hay datos de nuevo paciente, crear primero el paciente
+      if (newPatientData && newPatientData.nombre && newPatientData.telefono) {
+        setIsCreatingPatient(true);
+        try {
+          const patientResult = await createPatient({
+            nombre: newPatientData.nombre,
+            telefono: newPatientData.telefono,
+            email: newPatientData.email,
+          });
+
+          if (!patientResult.success || !patientResult.data) {
+            throw new Error(patientResult.error || 'Error al crear el paciente');
+          }
+
+          // Actualizar el formulario con el ID del paciente creado
+          data.patientId = patientResult.data.id;
+          data.patientName = patientResult.data.nombre;
+        } catch (error) {
+          setIsCreatingPatient(false);
+          throw error;
+        }
+        setIsCreatingPatient(false);
+      }
+
       const result = await onCreate(data);
 
       if (!result.success) {
@@ -73,6 +105,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
       }
 
       // Si fue exitoso, cerrar modal y resetear
+      setNewPatientData(null);
       onClose();
       reset();
     },
@@ -82,6 +115,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       reset();
+      setNewPatientData(null);
     }
   }, [isOpen, reset]);
 
@@ -152,18 +186,25 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
           <label className="block text-sm font-medium text-slate-300 mb-2">
             Paciente <span className="text-red-400">*</span>
           </label>
-          <PatientSearch
-            onSelect={(patient: Paciente) => {
-              if (patient.id) {
+          <PatientSearchEnhanced
+            onSelect={(patient: Paciente | null) => {
+              if (patient?.id) {
                 updateField('patientId', patient.id);
                 updateField('patientName', patient.nombre);
+                setNewPatientData(null);
               } else {
                 // Limpiar selección
                 updateField('patientId', '');
                 updateField('patientName', '');
               }
             }}
-            selectedPatientId={formData.patientId}
+            onNewPatientData={(data) => {
+              setNewPatientData(data);
+              updateField('patientId', 'new-patient');
+              updateField('patientName', data.nombre);
+            }}
+            selectedPatientId={formData.patientId === 'new-patient' ? undefined : formData.patientId}
+            newPatientData={newPatientData}
             error={errors.patient}
             touched={touched.patientName}
           />
@@ -330,10 +371,16 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || !isValid}
+            disabled={isSubmitting || !isValid || isCreatingPatient}
             className="flex-1 px-6 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
-            {isSubmitting ? 'Guardando...' : 'Guardar Cita'}
+            {isCreatingPatient
+              ? 'Creando paciente...'
+              : isSubmitting
+              ? 'Guardando...'
+              : newPatientData
+              ? 'Crear paciente y cita'
+              : 'Guardar Cita'}
           </button>
         </div>
       </form>

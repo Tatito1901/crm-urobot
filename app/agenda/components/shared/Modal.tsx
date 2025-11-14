@@ -64,7 +64,7 @@ export const Modal: React.FC<ModalProps> = ({
   // No renderizar si está cerrado
   if (!isOpen) return null;
 
-  // Tamaños del modal
+  // Tamaños del modal - responsivo
   const sizeClasses = {
     sm: 'max-w-md',
     md: 'max-w-lg',
@@ -74,7 +74,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -87,17 +87,19 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         className={`
           relative w-full ${sizeClasses[size]}
-          bg-slate-900 rounded-2xl border border-slate-800
+          bg-slate-900
+          rounded-t-2xl sm:rounded-2xl
+          border-t border-l border-r sm:border border-slate-800
           shadow-2xl shadow-black/50
-          animate-in zoom-in-95 duration-200
-          max-h-[90vh] overflow-hidden flex flex-col
+          animate-in slide-in-from-bottom sm:zoom-in-95 duration-200
+          max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col
         `}
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-800">
             {title && (
-              <h2 id="modal-title" className="text-xl font-semibold text-slate-100">
+              <h2 id="modal-title" className="text-lg sm:text-xl font-semibold text-slate-100">
                 {title}
               </h2>
             )}
@@ -121,7 +123,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">{children}</div>
       </div>
     </div>
   );

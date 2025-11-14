@@ -89,55 +89,55 @@ export const HeaderBar = React.memo(function HeaderBar({
   return (
     <header className="border-b border-slate-800/60 bg-slate-900/40">
       {/* Barra principal */}
-      <div className="h-[80px] px-6 flex items-center justify-between">
+      <div className="h-[80px] px-3 md:px-6 flex items-center justify-between gap-2">
         {/* Controles de navegación izquierda */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <button
             onClick={goToThisWeek}
-            className="px-4 py-2 text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+            className="px-2 md:px-4 py-2 text-xs md:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
           >
             Hoy
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <button
               onClick={goToPreviousWeek}
-              className="p-2 rounded-lg hover:bg-slate-800/60 transition-colors"
+              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors"
               aria-label="Anterior"
             >
-              <ChevronLeft className="h-5 w-5 text-slate-300" />
+              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
             </button>
 
             <button
               onClick={goToNextWeek}
-              className="p-2 rounded-lg hover:bg-slate-800/60 transition-colors"
+              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors"
               aria-label="Siguiente"
             >
-              <ChevronRight className="h-5 w-5 text-slate-300" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
             </button>
           </div>
 
-          <span className="text-base font-bold text-slate-100">{weekRange}</span>
+          <span className="text-sm md:text-base font-bold text-slate-100 hidden sm:inline">{weekRange}</span>
         </div>
 
         {/* Acciones derecha */}
-        <div className="flex items-center gap-3">
-          {/* Buscador global */}
-          <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Buscador global - oculto en móvil, se puede agregar un botón para mostrar */}
+          <div className="relative w-40 sm:w-60 md:w-80">
+            <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 md:h-4 md:w-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar paciente, teléfono o consulta..."
-              className="w-full pl-10 pr-4 py-2 text-sm border border-slate-700 rounded-lg bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Buscar..."
+              className="w-full pl-8 md:pl-10 pr-8 md:pr-4 py-1.5 md:py-2 text-xs md:text-sm border border-slate-700 rounded-lg bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -147,14 +147,14 @@ export const HeaderBar = React.memo(function HeaderBar({
           {/* Botón de filtros */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border rounded-lg transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium border rounded-lg transition-colors ${
               showFilters || activeFiltersCount > 0
                 ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                 : 'border-slate-700 hover:bg-slate-800/60 text-slate-200'
             }`}
           >
-            <Filter className="h-4 w-4" />
-            <span>Filtros</span>
+            <Filter className="h-3.5 w-3.5 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Filtros</span>
             {activeFiltersCount > 0 && (
               <span className="px-1.5 py-0.5 text-xs rounded-full bg-blue-500 text-white">
                 {activeFiltersCount}
@@ -166,11 +166,11 @@ export const HeaderBar = React.memo(function HeaderBar({
           <div className="relative" ref={viewMenuRef}>
             <button
               onClick={() => setShowViewMenu(!showViewMenu)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+              className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
             >
-              <ViewIcon className="h-4 w-4" />
-              <span>{currentView.label}</span>
-              <ChevronDown className="h-4 w-4" />
+              <ViewIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">{currentView.label}</span>
+              <ChevronDown className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </button>
 
             {/* Dropdown de vistas */}
@@ -217,23 +217,24 @@ export const HeaderBar = React.memo(function HeaderBar({
 
       {/* Barra de estadísticas rápidas */}
       {(totalAppointments > 0 || pendingConfirmation > 0 || todayAppointments > 0) && (
-        <div className="px-6 py-2 border-t border-slate-800/40 bg-slate-900/20">
-          <div className="flex items-center gap-6 text-xs">
+        <div className="px-3 md:px-6 py-2 border-t border-slate-800/40 bg-slate-900/20 overflow-x-auto">
+          <div className="flex items-center gap-3 md:gap-6 text-xs whitespace-nowrap">
             {todayAppointments > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <span className="text-slate-400">Hoy:</span>
                 <span className="font-semibold text-slate-200">{todayAppointments}</span>
               </div>
             )}
             {totalAppointments > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-slate-400">Total visible:</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <span className="text-slate-400 hidden sm:inline">Total visible:</span>
+                <span className="text-slate-400 sm:hidden">Total:</span>
                 <span className="font-semibold text-slate-200">{totalAppointments}</span>
               </div>
             )}
             {pendingConfirmation > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-amber-400">⏳ Pendientes:</span>
+              <div className="flex items-center gap-1 md:gap-2">
+                <span className="text-amber-400">⏳ Pend:</span>
                 <span className="font-semibold text-amber-400">{pendingConfirmation}</span>
               </div>
             )}
