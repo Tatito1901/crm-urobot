@@ -86,17 +86,19 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 overflow-hidden">
+    <div className="w-full h-full flex flex-col">
       {/* Header con días */}
       <CalendarHeader days={days} />
 
-      {/* Grid principal */}
-      <div className="flex overflow-x-auto">
-        {/* Columna de horas */}
-        <TimeColumn startHour={startHour} endHour={endHour} slotHeight={slotHeight} />
+      {/* Grid principal con scroll optimizado */}
+      <div className="flex overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] sm:max-h-[calc(100vh-240px)] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900/50 hover:scrollbar-thumb-slate-600">
+        {/* Columna de horas - sticky en desktop */}
+        <div className="sticky left-0 z-10 bg-slate-900 shadow-lg">
+          <TimeColumn startHour={startHour} endHour={endHour} slotHeight={slotHeight} />
+        </div>
 
-        {/* Columnas por día */}
-        <div className="flex flex-1">
+        {/* Columnas por día - flex responsivo */}
+        <div className="flex flex-1 min-w-0">
           {days.map((day) => (
             <DayColumn
               key={day.toString()}

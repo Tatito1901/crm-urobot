@@ -29,6 +29,7 @@ import { FilterBar } from './components/FilterBar';
 import { QuickStats } from './components/QuickStats';
 import { UpcomingAppointments } from './components/UpcomingAppointments';
 import { CalendarSkeleton } from './components/CalendarSkeleton';
+import { NewCalendarView } from './components/NewCalendarView';
 
 // ✅ OPTIMIZACIÓN: Lazy load del calendario Schedule-X (~150KB)
 // Solo se carga cuando el usuario selecciona la vista de calendario
@@ -66,7 +67,7 @@ const VIEWS = [
 
 export default function AgendaPage() {
   // Estado de datos
-  const { consultas, loading } = useConsultas();
+  const { consultas, loading, refetch } = useConsultas();
 
   // Estado de UI
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -253,9 +254,10 @@ export default function AgendaPage() {
           {/* CONTENIDO - Calendario o Lista */}
           <section className="rounded-xl border border-slate-800/60 bg-slate-900/40 overflow-hidden">
             {viewMode === 'calendar' ? (
-              <CalendarView
+              <NewCalendarView
                 consultas={filteredConsultas}
-                vistaCalendario={vistaCalendario}
+                loading={loading}
+                onRefresh={refetch}
               />
             ) : (
               <div className="p-6">

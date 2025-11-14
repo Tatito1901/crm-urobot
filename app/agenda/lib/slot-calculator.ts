@@ -154,6 +154,7 @@ function generateDaySlots(
       id: slotId,
       start: startDateTime,
       end: endDateTime,
+      timezone,
       sede,
       duracionMinutos: duration,
       available: true,

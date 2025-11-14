@@ -139,8 +139,8 @@ function consultaToAppointment(consulta: Consulta): Appointment {
     estadoConfirmacion: consulta.estadoConfirmacion,
     confirmadoPaciente: consulta.confirmadoPaciente,
     confirmadoEn: null, // TODO: Agregar a modelo Consulta
-    canceladoPor: consulta.canceladoPor || null,
-    motivoCancelacion: consulta.motivoCancelacion,
+    canceladoPor: consulta.canceladoPor ?? null,
+    motivoCancelacion: consulta.motivoCancelacion ?? null,
     canceladoEn: null, // TODO: Agregar a modelo Consulta
     calendarEventId: consulta.calendarEventId,
     calendarLink: consulta.calendarLink,

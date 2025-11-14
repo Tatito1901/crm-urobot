@@ -104,6 +104,7 @@ export interface TimeSlot {
   id: string; // "slot_2025-11-13_1030_polanco"
   start: Temporal.ZonedDateTime;
   end: Temporal.ZonedDateTime;
+  timezone: string; // Default: "America/Mexico_City"
   sede: 'POLANCO' | 'SATELITE';
   duracionMinutos: number;
 

@@ -9,7 +9,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { Temporal } from '@js-temporal/polyfill';
 import type { Appointment } from '@/types/agenda';
-import type { Tables } from '@/types/database';
+import type { Tables, Insertable, Updatable } from '@/types/database';
 import { nanoid } from 'nanoid';
 
 const supabase = createClient();
@@ -86,7 +86,7 @@ function generateConsultaId(): string {
 /**
  * Convierte Appointment a formato de base de datos
  */
-function appointmentToDbInsert(data: CreateAppointmentData): Tables<'consultas'>['Insert'] {
+function appointmentToDbInsert(data: CreateAppointmentData): Insertable<'consultas'> {
   const fechaConsulta = data.start.toPlainDate().toString();
   const horaConsulta = data.start.toPlainTime().toString();
   const fechaHoraUtc = data.start.toInstant().toString();
@@ -114,8 +114,8 @@ function appointmentToDbInsert(data: CreateAppointmentData): Tables<'consultas'>
 /**
  * Convierte campos de actualización a formato de base de datos
  */
-function updateToDbUpdate(data: UpdateAppointmentData): Tables<'consultas'>['Update'] {
-  const update: Tables<'consultas'>['Update'] = {};
+function updateToDbUpdate(data: UpdateAppointmentData): Updatable<'consultas'> {
+  const update: Updatable<'consultas'> = {};
 
   if (data.start && data.end) {
     const fechaConsulta = data.start.toPlainDate().toString();
@@ -471,7 +471,10 @@ export async function rescheduleAppointment(
     });
 
     if (!cancelResult.success) {
-      return cancelResult;
+      return {
+        success: false,
+        error: cancelResult.error || 'Error al cancelar la cita original',
+      };
     }
 
     // Crear la nueva cita

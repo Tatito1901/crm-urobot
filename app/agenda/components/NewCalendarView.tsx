@@ -298,8 +298,8 @@ function consultaToAppointment(consulta: Consulta): Appointment {
     confirmadoEn: null, // TODO: Agregar a modelo Consulta
 
     // Cancelación
-    canceladoPor: consulta.canceladoPor || null,
-    motivoCancelacion: consulta.motivoCancelacion,
+    canceladoPor: consulta.canceladoPor ?? null,
+    motivoCancelacion: consulta.motivoCancelacion ?? null,
     canceladoEn: null, // TODO: Agregar a modelo Consulta
 
     // Integración Google Calendar
