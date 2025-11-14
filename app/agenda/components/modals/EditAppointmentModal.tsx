@@ -9,10 +9,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../shared/Modal';
-import { PatientSearch } from '../shared/PatientSearch';
 import { formatShortTime } from '../../lib/agenda-utils';
 import type { Appointment } from '@/types/agenda';
-import type { Paciente } from '@/types/pacientes';
 
 interface EditAppointmentModalProps {
   appointment: Appointment | null;

@@ -210,7 +210,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           className="absolute z-50 w-full mt-2 rounded-xl bg-slate-800 border border-slate-700 shadow-2xl p-4"
         >
           <p className="text-sm text-slate-400 text-center">
-            No se encontraron pacientes con "{query}"
+            No se encontraron pacientes con &ldquo;{query}&rdquo;
           </p>
           <p className="text-xs text-slate-500 text-center mt-1">
             Se creará un nuevo paciente al guardar la cita
