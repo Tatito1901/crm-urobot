@@ -23,7 +23,9 @@ interface AppointmentDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate?: (id: string, updates: Partial<Appointment>) => Promise<ServiceResponse>;
-  onCancel?: (id: string, reason: string, cancelledBy: string) => Promise<ServiceResponse>;
+  onCancel?: (id: string, reason: string) => Promise<ServiceResponse>;
+  onEdit?: (appointment: Appointment) => void;
+  onConfirm?: (id: string) => Promise<ServiceResponse>;
 }
 
 export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = ({
@@ -31,10 +33,13 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
   isOpen,
   onClose,
   onCancel,
+  onEdit,
+  onConfirm,
 }) => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   if (!appointment) return null;
 
@@ -50,7 +55,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
 
     setIsCancelling(true);
     try {
-      await onCancel(appointment.id, cancelReason, 'user');
+      await onCancel(appointment.id, cancelReason);
       setShowCancelDialog(false);
       setCancelReason('');
       onClose();
@@ -58,6 +63,20 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
       alert('Error al cancelar la cita');
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!onConfirm) return;
+
+    setIsConfirming(true);
+    try {
+      await onConfirm(appointment.id);
+      onClose();
+    } catch {
+      alert('Error al confirmar la cita');
+    } finally {
+      setIsConfirming(false);
     }
   };
 
@@ -88,8 +107,8 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                     inline-flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-medium
                     ${
                       appointment.prioridad === 'urgente'
-                        ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                        : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
+                        ? 'bg-red-600/10 border-red-600/30 text-red-400'
+                        : 'bg-amber-500/10 border-amber-500/30 text-amber-500'
                     }
                     border
                   `}
@@ -292,31 +311,74 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
           </div>
         ) : (
           /* Botones de acción */
-          <div className="flex gap-3 pt-4 border-t border-slate-800">
+          <div className="space-y-3 pt-4 border-t border-slate-800">
+            {/* Acciones rápidas */}
             {appointment.estado !== 'Cancelada' && (
-              <>
-                <button
-                  onClick={() => setShowCancelDialog(true)}
-                  className="flex-1 px-6 py-3 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
-                >
-                  Cancelar Cita
-                </button>
+              <div className="grid grid-cols-2 gap-3">
+                {/* Confirmar cita */}
+                {!appointment.confirmadoPaciente && onConfirm && (
+                  <button
+                    onClick={handleConfirm}
+                    disabled={isConfirming}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {isConfirming ? 'Confirmando...' : 'Confirmar'}
+                  </button>
+                )}
+
+                {/* Editar cita */}
+                {onEdit && (
+                  <button
+                    onClick={() => {
+                      onEdit(appointment);
+                      onClose();
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-colors"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                    Editar
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Botones principales */}
+            <div className="flex gap-3">
+              {appointment.estado !== 'Cancelada' && (
+                <>
+                  <button
+                    onClick={() => setShowCancelDialog(true)}
+                    className="flex-1 px-6 py-3 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                  >
+                    Cancelar Cita
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="flex-1 px-6 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                  >
+                    Cerrar
+                  </button>
+                </>
+              )}
+              {appointment.estado === 'Cancelada' && (
                 <button
                   onClick={onClose}
-                  className="flex-1 px-6 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                  className="w-full px-6 py-3 rounded-xl bg-slate-700 text-slate-200 hover:bg-slate-600 transition-colors"
                 >
                   Cerrar
                 </button>
-              </>
-            )}
-            {appointment.estado === 'Cancelada' && (
-              <button
-                onClick={onClose}
-                className="w-full px-6 py-3 rounded-xl bg-slate-700 text-slate-200 hover:bg-slate-600 transition-colors"
-              >
-                Cerrar
-              </button>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>

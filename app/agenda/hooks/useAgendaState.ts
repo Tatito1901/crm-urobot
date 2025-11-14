@@ -12,8 +12,8 @@ import type { Appointment, TimeSlot } from '@/types/agenda';
 
 interface AgendaState {
   // ========== VISTA ==========
-  viewMode: 'week' | 'day' | 'month';
-  setViewMode: (mode: 'week' | 'day' | 'month') => void;
+  viewMode: 'week' | 'day' | 'month' | 'list';
+  setViewMode: (mode: 'week' | 'day' | 'month' | 'list') => void;
 
   // ========== FECHA Y RANGO ==========
   selectedDate: Temporal.PlainDate;
@@ -25,12 +25,18 @@ interface AgendaState {
   setSelectedSede: (sede: 'ALL' | 'POLANCO' | 'SATELITE') => void;
   selectedEstados: string[];
   setSelectedEstados: (estados: string[]) => void;
+  selectedTipos: string[];
+  setSelectedTipos: (tipos: string[]) => void;
+  selectedPrioridades: string[];
+  setSelectedPrioridades: (prioridades: string[]) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   onlyToday: boolean;
   setOnlyToday: (value: boolean) => void;
   onlyPendingConfirmation: boolean;
   setOnlyPendingConfirmation: (value: boolean) => void;
+  showFilters: boolean;
+  setShowFilters: (value: boolean) => void;
 
   // ========== SELECCIÓN ==========
   selectedAppointment: Appointment | null;
@@ -45,6 +51,9 @@ interface AgendaState {
   isCreateModalOpen: boolean;
   openCreateModal: (slot?: TimeSlot) => void;
   closeCreateModal: () => void;
+  isEditModalOpen: boolean;
+  openEditModal: (appointment: Appointment) => void;
+  closeEditModal: () => void;
 
   // ========== NAVEGACIÓN ==========
   goToToday: () => void;
@@ -69,13 +78,17 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
   dateRange: getWeekRange(Temporal.Now.plainDateISO('America/Mexico_City')),
   selectedSede: 'ALL',
   selectedEstados: [],
+  selectedTipos: [],
+  selectedPrioridades: [],
   searchQuery: '',
   onlyToday: false,
   onlyPendingConfirmation: false,
+  showFilters: false,
   selectedAppointment: null,
   selectedSlot: null,
   isDetailsModalOpen: false,
   isCreateModalOpen: false,
+  isEditModalOpen: false,
 
   // ========== ACCIONES DE VISTA ==========
   setViewMode: (mode) => {
@@ -108,14 +121,19 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
   // ========== ACCIONES DE FILTROS ==========
   setSelectedSede: (sede) => set({ selectedSede: sede }),
   setSelectedEstados: (estados) => set({ selectedEstados: estados }),
+  setSelectedTipos: (tipos) => set({ selectedTipos: tipos }),
+  setSelectedPrioridades: (prioridades) => set({ selectedPrioridades: prioridades }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setOnlyToday: (value) => set({ onlyToday: value }),
   setOnlyPendingConfirmation: (value) => set({ onlyPendingConfirmation: value }),
+  setShowFilters: (value) => set({ showFilters: value }),
 
   resetFilters: () => {
     set({
       selectedSede: 'ALL',
       selectedEstados: [],
+      selectedTipos: [],
+      selectedPrioridades: [],
       searchQuery: '',
       onlyToday: false,
       onlyPendingConfirmation: false,
@@ -148,6 +166,18 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
   closeCreateModal: () => {
     set({ isCreateModalOpen: false });
     setTimeout(() => set({ selectedSlot: null }), 300);
+  },
+
+  openEditModal: (appointment) => {
+    set({
+      selectedAppointment: appointment,
+      isEditModalOpen: true,
+    });
+  },
+
+  closeEditModal: () => {
+    set({ isEditModalOpen: false });
+    setTimeout(() => set({ selectedAppointment: null }), 300);
   },
 
   // ========== ACCIONES DE NAVEGACIÓN ==========
