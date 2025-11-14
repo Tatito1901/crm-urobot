@@ -11,7 +11,6 @@ import { useMemo } from 'react';
 import { cn } from '@/app/lib/utils';
 import type { Consulta } from '@/types/consultas';
 import {
-  Calendar,
   Clock,
   MapPin,
   User,

@@ -6,10 +6,10 @@
  * y recordatorios de citas
  */
 
-import { createClient } from '@/lib/supabase/client';
+// import { createClient } from '@/lib/supabase/client';
 import type { Consulta } from '@/types/consultas';
 
-const supabase = createClient();
+// const supabase = createClient();
 
 // ============================================================
 // TIPOS
@@ -315,7 +315,7 @@ export async function processScheduledReminders(): Promise<void> {
 /**
  * Obtiene estadísticas de notificaciones
  */
-export async function getNotificationStats(appointmentId?: string): Promise<{
+export async function getNotificationStats(): Promise<{
   total: number;
   sent: number;
   failed: number;

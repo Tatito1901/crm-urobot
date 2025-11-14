@@ -143,7 +143,6 @@ export function QuickAddAppointmentModal() {
       const dateTimeStr = `${formData.fecha}T${formData.hora}`;
       const plainDateTime = Temporal.PlainDateTime.from(dateTimeStr);
       const zonedDateTime = plainDateTime.toZonedDateTime(timezone);
-      const endDateTime = zonedDateTime.add({ minutes: formData.duracionMinutos });
 
       // Generar consulta_id único
       const timestamp = Date.now().toString(36);

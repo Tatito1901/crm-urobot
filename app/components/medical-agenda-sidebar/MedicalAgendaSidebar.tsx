@@ -20,7 +20,6 @@ import {
   Plus,
   Filter,
   Search,
-  Bell,
   X,
   CalendarDays,
   CalendarRange,
