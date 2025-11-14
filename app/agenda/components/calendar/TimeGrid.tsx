@@ -8,7 +8,6 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Temporal } from '@js-temporal/polyfill';
 import { addDays, generateTimeSlots } from '@/lib/date-utils';
 import { AppointmentCard } from '../shared/AppointmentCard';
 import { positionAppointmentsForDay, getDayOfWeek } from '../../lib/appointment-positioning';

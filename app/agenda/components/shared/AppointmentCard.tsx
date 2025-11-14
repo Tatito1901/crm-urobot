@@ -8,19 +8,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, Edit2, Phone, MessageCircle, MoreVertical, X } from 'lucide-react';
+import { CheckCircle2, Edit2, Phone, MessageCircle } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { SedeBadge } from './SedeBadge';
 import type { Appointment } from '@/types/agenda';
-
-// Extender el tipo para manejar todos los estados posibles
-type AppointmentEstado = Appointment['estado'];
 
 interface AppointmentCardProps {
   appointment: Appointment;
   onConfirm?: (id: string) => void;
   onEdit?: (appointment: Appointment) => void;
-  onCancel?: (id: string) => void;
   onClick?: (appointment: Appointment) => void;
 }
 
