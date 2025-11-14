@@ -294,9 +294,22 @@ export default function AgendaPage() {
   return (
     <div className="h-screen flex flex-col bg-[#0b0f16] font-roboto">
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar fijo - oculto en móvil */}
+        {/* Sidebar unificado - oculto en móvil */}
         <div className="hidden lg:block">
-          <Sidebar selectedDate={selectedDate} onDateSelect={handleDateSelect} />
+          <Sidebar 
+            selectedDate={selectedDate} 
+            onDateSelect={handleDateSelect}
+            onCreateAppointment={() => {
+              const state = useAgendaState.getState();
+              state.openCreateModal();
+            }}
+            onAppointmentClick={(consulta) => {
+              // Convertir Consulta a Appointment y abrir detalles
+              const appointment = consultaToAppointment(consulta);
+              const state = useAgendaState.getState();
+              state.openDetailsModal(appointment);
+            }}
+          />
         </div>
 
         {/* Zona principal */}
