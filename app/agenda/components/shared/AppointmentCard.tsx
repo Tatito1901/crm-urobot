@@ -24,7 +24,6 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   appointment,
   onConfirm,
   onEdit,
-  onCancel,
   onClick,
 }) => {
   const [showActions, setShowActions] = useState(false);
