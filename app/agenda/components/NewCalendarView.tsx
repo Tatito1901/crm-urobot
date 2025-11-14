@@ -86,7 +86,7 @@ export const NewCalendarView: React.FC<NewCalendarViewProps> = ({
         const appointmentData: CreateAppointmentData = {
           patientId: formData.patientId,
           patientName: formData.patientName,
-          slotId: formData.slotId || selectedSlot.id,
+          slotId: selectedSlot.id,
           start,
           end,
           timezone: selectedSlot.timezone,
@@ -143,11 +143,11 @@ export const NewCalendarView: React.FC<NewCalendarViewProps> = ({
 
         if (updates.duracionMinutos) updateData.duracionMinutos = updates.duracionMinutos;
         if (updates.tipo) updateData.tipo = updates.tipo;
-        if (updates.motivoConsulta !== undefined) updateData.motivoConsulta = updates.motivoConsulta;
+        if (updates.motivoConsulta !== undefined) updateData.motivoConsulta = updates.motivoConsulta || undefined;
         if (updates.prioridad) updateData.prioridad = updates.prioridad;
         if (updates.modalidad) updateData.modalidad = updates.modalidad;
         if (updates.sede) updateData.sede = updates.sede;
-        if (updates.notasInternas !== undefined) updateData.notasInternas = updates.notasInternas;
+        if (updates.notasInternas !== undefined) updateData.notasInternas = updates.notasInternas || undefined;
 
         // Llamada real a la API
         const result = await updateAppointment(id, updateData);

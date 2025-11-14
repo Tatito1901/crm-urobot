@@ -26,28 +26,47 @@ interface UseDashboardMetricsReturn {
 }
 
 /**
+ * Tipo para los datos retornados por el RPC get_dashboard_metrics
+ */
+interface DashboardMetricsRPC {
+  leads_totales: number
+  leads_mes: number
+  leads_convertidos: number
+  tasa_conversion_pct: number
+  pacientes_activos: number
+  total_pacientes: number
+  consultas_futuras: number
+  consultas_hoy: number
+  pendientes_confirmacion: number
+  polanco_futuras: number
+  satelite_futuras: number
+}
+
+/**
  * Fetcher function para SWR
  */
 const fetchMetrics = async (): Promise<DashboardMetrics> => {
   try {
 
     // ✅ OPTIMIZACIÓN: Intentar RPC primero
+    // @ts-expect-error - RPC function may not be in types yet
     const { data, error: rpcError } = await supabase.rpc('get_dashboard_metrics')
 
     if (!rpcError && data) {
       // Transformar datos del RPC
+      const rpcData = data as unknown as DashboardMetricsRPC;
       return {
-        leadsTotal: data.leads_totales || 0,
-        leadsMes: data.leads_mes || 0,
-        leadsConvertidos: data.leads_convertidos || 0,
-        tasaConversion: data.tasa_conversion_pct || 0,
-        pacientesActivos: data.pacientes_activos || 0,
-        totalPacientes: data.total_pacientes || 0,
-        consultasFuturas: data.consultas_futuras || 0,
-        consultasHoy: data.consultas_hoy || 0,
-        pendientesConfirmacion: data.pendientes_confirmacion || 0,
-        polancoFuturas: data.polanco_futuras || 0,
-        sateliteFuturas: data.satelite_futuras || 0,
+        leadsTotal: rpcData.leads_totales || 0,
+        leadsMes: rpcData.leads_mes || 0,
+        leadsConvertidos: rpcData.leads_convertidos || 0,
+        tasaConversion: rpcData.tasa_conversion_pct || 0,
+        pacientesActivos: rpcData.pacientes_activos || 0,
+        totalPacientes: rpcData.total_pacientes || 0,
+        consultasFuturas: rpcData.consultas_futuras || 0,
+        consultasHoy: rpcData.consultas_hoy || 0,
+        pendientesConfirmacion: rpcData.pendientes_confirmacion || 0,
+        polancoFuturas: rpcData.polanco_futuras || 0,
+        sateliteFuturas: rpcData.satelite_futuras || 0,
       }
     }
 
