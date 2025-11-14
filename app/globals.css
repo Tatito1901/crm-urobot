@@ -342,6 +342,20 @@ body {
 }
 
 /* ============================================
+   UTILIDADES PERSONALIZADAS
+   ============================================ */
+
+/* Ocultar scrollbar pero mantener scroll funcional */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ============================================
    ACCESIBILIDAD: Reduced Motion (WCAG 2.1)
    ============================================
    Respeta las preferencias del usuario con
