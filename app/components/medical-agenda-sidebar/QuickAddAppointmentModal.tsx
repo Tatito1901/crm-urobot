@@ -99,7 +99,7 @@ export function QuickAddAppointmentModal() {
           if (conflictingAppointments.length > 0) {
             setConflicts(
               conflictingAppointments.map(
-                (apt) => `${apt.hora_consulta.substring(0, 5)} - Paciente existente`
+                (apt) => `${apt.hora_consulta?.substring(0, 5) || '00:00'} - Paciente existente`
               )
             );
           } else {

@@ -103,8 +103,9 @@ export function AgendaAppointmentCard({
 
   // Formatear hora
   const formattedTime = useMemo(() => {
-    const [hours, minutes] = appointment.horaConsulta.split(':');
-    return `${hours}:${minutes}`;
+    if (!appointment.horaConsulta) return '00:00';
+    const parts = appointment.horaConsulta.split(':');
+    return `${parts[0]}:${parts[1]}`;
   }, [appointment.horaConsulta]);
 
   // Determinar si es urgente o prioritaria

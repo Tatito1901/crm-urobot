@@ -138,7 +138,9 @@ export function QuickAppointmentDetails() {
     year: 'numeric',
   });
 
-  const formattedTime = selectedAppointment.horaConsulta.substring(0, 5);
+  const formattedTime = selectedAppointment.horaConsulta
+    ? selectedAppointment.horaConsulta.substring(0, 5)
+    : '00:00';
 
   // Estado config
   const getStatusColor = () => {

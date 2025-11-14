@@ -137,7 +137,7 @@ export function Sidebar() {
       {/* Medical Agenda Sidebar (Expandable Panel) */}
       <aside
         className={cn(
-          "hidden lg:flex lg:h-screen lg:flex-col lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/95 lg:via-[#060b18]/92 lg:to-[#02040a]/96 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur transition-all duration-300",
+          "hidden lg:flex lg:h-screen lg:flex-col lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/95 lg:via-[#060b18]/92 lg:to-[#02040a]/96 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur transition-all duration-300 relative",
           isExpanded ? "lg:w-80 xl:w-96" : "lg:w-12"
         )}
       >
