@@ -8,8 +8,7 @@
 
 import { createClient } from '@/lib/supabase/client';
 import { Temporal } from '@js-temporal/polyfill';
-import type { Appointment } from '@/types/agenda';
-import type { Tables, Insertable, Updatable } from '@/types/database';
+import type { Insertable, Updatable } from '@/types/database';
 import { nanoid } from 'nanoid';
 
 const supabase = createClient();

@@ -13,7 +13,6 @@
  */
 
 import React, { useMemo, useState, useCallback } from 'react';
-import dynamicImport from 'next/dynamic';
 import { Temporal } from '@js-temporal/polyfill';
 
 import { useConsultas } from '@/hooks/useConsultas';
@@ -28,18 +27,7 @@ import { AppointmentListView } from './components/AppointmentListView';
 import { FilterBar } from './components/FilterBar';
 import { QuickStats } from './components/QuickStats';
 import { UpcomingAppointments } from './components/UpcomingAppointments';
-import { CalendarSkeleton } from './components/CalendarSkeleton';
 import { NewCalendarView } from './components/NewCalendarView';
-
-// ✅ OPTIMIZACIÓN: Lazy load del calendario Schedule-X (~150KB)
-// Solo se carga cuando el usuario selecciona la vista de calendario
-const CalendarView = dynamicImport(
-  () => import('./components/CalendarView').then((mod) => ({ default: mod.CalendarView })),
-  {
-    ssr: false,
-    loading: () => <CalendarSkeleton />,
-  }
-);
 
 // ========== TYPES ==========
 

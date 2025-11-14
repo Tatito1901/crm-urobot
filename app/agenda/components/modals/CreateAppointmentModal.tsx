@@ -64,10 +64,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
         throw new Error('No hay slot seleccionado');
       }
 
-      const result = await onCreate({
-        ...data,
-        slotId: slot.id,
-      });
+      const result = await onCreate(data);
 
       if (!result.success) {
         throw new Error(result.error || 'Error al crear la cita');

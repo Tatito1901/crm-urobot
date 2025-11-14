@@ -17,7 +17,7 @@ import {
 import { MetricCard } from '@/app/components/analytics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { FullPageLoader, EmptyState } from '@/app/components/common/LoadingStates';
-import { MetricCardSkeleton, ChartSkeleton } from '@/app/components/common/SkeletonLoader';
+import { MetricCardSkeleton } from '@/app/components/common/SkeletonLoader';
 
 export const dynamic = 'force-dynamic';
 

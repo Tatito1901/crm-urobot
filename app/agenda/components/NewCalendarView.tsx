@@ -86,7 +86,7 @@ export const NewCalendarView: React.FC<NewCalendarViewProps> = ({
         const appointmentData: CreateAppointmentData = {
           patientId: formData.patientId,
           patientName: formData.patientName,
-          slotId: formData.slotId || selectedSlot.id,
+          slotId: selectedSlot.id,
           start,
           end,
           timezone: selectedSlot.timezone,
