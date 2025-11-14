@@ -333,8 +333,22 @@ export default function AgendaPage() {
                 {/* Header de días (sticky) */}
                 <DaysHeader weekStart={currentWeekStart} />
 
-                {/* Grid de tiempo (scrollable) */}
-                <TimeGrid weekStart={currentWeekStart} startHour={11} endHour={21} />
+                {/* Grid de tiempo (scrollable) con citas */}
+                <TimeGrid 
+                  weekStart={currentWeekStart} 
+                  appointments={filteredAppointments}
+                  startHour={11} 
+                  endHour={21}
+                  onAppointmentClick={(apt) => {
+                    const state = useAgendaState.getState();
+                    state.openDetailsModal(apt);
+                  }}
+                  onAppointmentConfirm={handleConfirmAppointment}
+                  onAppointmentEdit={(apt) => {
+                    const state = useAgendaState.getState();
+                    state.openEditModal(apt);
+                  }}
+                />
               </>
             )}
           </div>
