@@ -106,9 +106,8 @@ export function DataTableSkeleton({ rows = 5 }: { rows?: number }) {
  */
 export function ChartSkeleton({ height = 200 }: { height?: number }) {
   return (
-    <Skeleton
-      className="w-full rounded-xl"
-      style={{ height: `${height}px` }}
-    />
+    <div style={{ height: `${height}px` }} className="w-full">
+      <Skeleton className="h-full w-full rounded-xl" />
+    </div>
   );
 }
