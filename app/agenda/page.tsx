@@ -294,11 +294,13 @@ export default function AgendaPage() {
   return (
     <div className="h-screen flex flex-col bg-[#0b0f16] font-roboto">
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar fijo */}
-        <Sidebar selectedDate={selectedDate} onDateSelect={handleDateSelect} />
+        {/* Sidebar fijo - oculto en móvil */}
+        <div className="hidden lg:block">
+          <Sidebar selectedDate={selectedDate} onDateSelect={handleDateSelect} />
+        </div>
 
         {/* Zona principal */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Header de navegación con estadísticas */}
           <HeaderBar
             currentWeekStart={currentWeekStart}
@@ -338,6 +340,45 @@ export default function AgendaPage() {
           </div>
         </div>
       </div>
+
+      {/* Botón flotante para crear cita (móvil) */}
+      <button
+        onClick={() => {
+          const state = useAgendaState.getState();
+          // Crear un slot temporal para hoy
+          const now = Temporal.Now.zonedDateTimeISO('America/Mexico_City');
+          const roundedHour = Math.ceil(now.hour);
+          const slotStart = now.with({ hour: roundedHour, minute: 0, second: 0 });
+          const slotEnd = slotStart.add({ minutes: 45 });
+
+          state.openCreateModal({
+            id: 'quick-slot',
+            start: slotStart,
+            end: slotEnd,
+            timezone: 'America/Mexico_City',
+            sede: 'POLANCO',
+            duracionMinutos: 45,
+            available: true,
+            occupied: false,
+            blocked: false,
+            restrictions: [],
+            reason: null,
+            appointmentId: null,
+            blockId: null,
+          });
+        }}
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+        aria-label="Nueva cita"
+      >
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+      </button>
 
       {/* Modales */}
       <CreateAppointmentModal
