@@ -221,9 +221,22 @@ export default function AgendaPage() {
     }
   };
 
-  const handleUpdateAppointment = async (id: string, updates: UpdateAppointmentData) => {
+  const handleUpdateAppointment = async (id: string, updates: Partial<Appointment>) => {
     try {
-      const result = await updateAppointment(id, updates);
+      // Adaptar Partial<Appointment> a UpdateAppointmentData
+      const updateData: UpdateAppointmentData = {};
+
+      if (updates.start) updateData.start = updates.start;
+      if (updates.end) updateData.end = updates.end;
+      if (updates.duracionMinutos !== undefined) updateData.duracionMinutos = updates.duracionMinutos;
+      if (updates.tipo !== undefined) updateData.tipo = updates.tipo;
+      if (updates.motivoConsulta !== undefined) updateData.motivoConsulta = updates.motivoConsulta ?? undefined;
+      if (updates.notasInternas !== undefined) updateData.notasInternas = updates.notasInternas ?? undefined;
+      if (updates.prioridad !== undefined) updateData.prioridad = updates.prioridad;
+      if (updates.modalidad !== undefined) updateData.modalidad = updates.modalidad;
+      if (updates.sede !== undefined) updateData.sede = updates.sede;
+
+      const result = await updateAppointment(id, updateData);
 
       if (result.success) {
         await refetch();
