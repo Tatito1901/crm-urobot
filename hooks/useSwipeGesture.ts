@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 /**
  * Hook para detectar gestos de swipe (deslizamiento)
@@ -15,16 +15,16 @@ export function useSwipeGesture(
 
   const minSwipeDistance = threshold;
 
-  const onTouchStart = (e: TouchEvent) => {
+  const onTouchStart = useCallback((e: TouchEvent) => {
     setTouchEnd(null); // Reset touchEnd
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const onTouchMove = (e: TouchEvent) => {
+  const onTouchMove = useCallback((e: TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const onTouchEnd = () => {
+  const onTouchEnd = useCallback(() => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
@@ -38,7 +38,7 @@ export function useSwipeGesture(
     if (isRightSwipe && onSwipeRight) {
       onSwipeRight();
     }
-  };
+  }, [touchStart, touchEnd, minSwipeDistance, onSwipeLeft, onSwipeRight]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -53,7 +53,7 @@ export function useSwipeGesture(
       container.removeEventListener('touchmove', onTouchMove);
       container.removeEventListener('touchend', onTouchEnd);
     };
-  }, [touchStart, touchEnd]);
+  }, [onTouchStart, onTouchMove, onTouchEnd]);
 
   return containerRef;
 }
