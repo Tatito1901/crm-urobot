@@ -107,8 +107,8 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                     inline-flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-medium
                     ${
                       appointment.prioridad === 'urgente'
-                        ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                        : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
+                        ? 'bg-red-600/10 border-red-600/30 text-red-400'
+                        : 'bg-amber-500/10 border-amber-500/30 text-amber-500'
                     }
                     border
                   `}

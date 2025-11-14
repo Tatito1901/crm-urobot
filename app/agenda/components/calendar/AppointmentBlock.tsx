@@ -42,12 +42,12 @@ export const AppointmentBlock: React.FC<AppointmentBlockProps> = ({
   const getAppointmentColors = () => {
     // Si es urgente, siempre rojo con efecto
     if (appointment.prioridad === 'urgente') {
-      return 'bg-red-500/15 border-red-500 border-2 hover:bg-red-500/25 shadow-lg shadow-red-500/20';
+      return 'bg-red-600/15 border-red-600 border-2 hover:bg-red-600/25 shadow-lg shadow-red-600/20';
     }
 
-    // Si es prioridad alta, borde amarillo más grueso
+    // Si es prioridad alta, borde ámbar más grueso
     if (appointment.prioridad === 'alta') {
-      return 'border-l-4 border-l-yellow-500 bg-yellow-500/10 hover:bg-yellow-500/20';
+      return 'border-l-4 border-l-amber-500 bg-amber-500/10 hover:bg-amber-500/20';
     }
 
     // Colores según estado si no es urgente/alta
@@ -60,18 +60,18 @@ export const AppointmentBlock: React.FC<AppointmentBlockProps> = ({
     }
 
     if (appointment.estado === 'Confirmada') {
-      return 'bg-emerald-500/10 border-emerald-500/60 hover:bg-emerald-500/20';
+      return 'bg-emerald-600/10 border-emerald-600/60 hover:bg-emerald-600/20';
     }
 
-    // Colores según tipo de consulta para estados normales
+    // Colores según tipo de consulta para estados normales - tonos profesionales
     const tipoColors: Record<string, string> = {
-      primera_vez: 'bg-blue-500/10 border-blue-500/60 hover:bg-blue-500/20',
-      subsecuente: 'bg-indigo-500/10 border-indigo-500/60 hover:bg-indigo-500/20',
-      control_post_op: 'bg-cyan-500/10 border-cyan-500/60 hover:bg-cyan-500/20',
-      urgencia: 'bg-red-500/15 border-red-500/70 hover:bg-red-500/25',
-      procedimiento_menor: 'bg-purple-500/10 border-purple-500/60 hover:bg-purple-500/20',
-      valoracion_prequirurgica: 'bg-pink-500/10 border-pink-500/60 hover:bg-pink-500/20',
-      teleconsulta: 'bg-violet-500/10 border-violet-500/60 hover:bg-violet-500/20',
+      primera_vez: 'bg-blue-600/10 border-blue-600/60 hover:bg-blue-600/20',
+      subsecuente: 'bg-blue-500/10 border-blue-500/60 hover:bg-blue-500/20',
+      control_post_op: 'bg-emerald-600/10 border-emerald-600/60 hover:bg-emerald-600/20',
+      urgencia: 'bg-red-600/15 border-red-600/70 hover:bg-red-600/25',
+      procedimiento_menor: 'bg-blue-700/10 border-blue-700/60 hover:bg-blue-700/20',
+      valoracion_prequirurgica: 'bg-blue-600/10 border-blue-600/60 hover:bg-blue-600/20',
+      teleconsulta: 'bg-cyan-600/10 border-cyan-600/60 hover:bg-cyan-600/20',
     };
 
     return tipoColors[appointment.tipo] || 'bg-slate-500/10 border-slate-500/60 hover:bg-slate-500/20';

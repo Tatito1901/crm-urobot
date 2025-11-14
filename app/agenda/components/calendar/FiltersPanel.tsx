@@ -11,11 +11,11 @@ import React from 'react';
 import { useAgendaState } from '../../hooks/useAgendaState';
 
 const ESTADOS = [
-  { value: 'Programada', label: 'Programada', color: 'blue' },
-  { value: 'Confirmada', label: 'Confirmada', color: 'green' },
+  { value: 'Programada', label: 'Programada', color: 'blue-600' },
+  { value: 'Confirmada', label: 'Confirmada', color: 'emerald-600' },
   { value: 'Completada', label: 'Completada', color: 'slate' },
-  { value: 'Cancelada', label: 'Cancelada', color: 'red' },
-  { value: 'Reagendada', label: 'Reagendada', color: 'yellow' },
+  { value: 'Cancelada', label: 'Cancelada', color: 'red-600' },
+  { value: 'Reagendada', label: 'Reagendada', color: 'amber-500' },
 ];
 
 const TIPOS_CONSULTA = [
@@ -30,8 +30,8 @@ const TIPOS_CONSULTA = [
 
 const PRIORIDADES = [
   { value: 'normal', label: 'Normal', color: 'slate' },
-  { value: 'alta', label: 'Alta', color: 'yellow' },
-  { value: 'urgente', label: 'Urgente', color: 'red' },
+  { value: 'alta', label: 'Alta', color: 'amber-500' },
+  { value: 'urgente', label: 'Urgente', color: 'red-600' },
 ];
 
 export const FiltersPanel: React.FC = () => {
@@ -183,14 +183,14 @@ export const FiltersPanel: React.FC = () => {
                   px-2.5 py-1 rounded-lg text-xs font-medium transition-all
                   ${
                     selectedEstados.includes(estado.value)
-                      ? estado.color === 'blue'
-                        ? 'bg-blue-500 text-white'
-                        : estado.color === 'green'
-                        ? 'bg-green-500 text-white'
-                        : estado.color === 'red'
-                        ? 'bg-red-500 text-white'
-                        : estado.color === 'yellow'
-                        ? 'bg-yellow-500 text-white'
+                      ? estado.color === 'blue-600'
+                        ? 'bg-blue-600 text-white'
+                        : estado.color === 'emerald-600'
+                        ? 'bg-emerald-600 text-white'
+                        : estado.color === 'red-600'
+                        ? 'bg-red-600 text-white'
+                        : estado.color === 'amber-500'
+                        ? 'bg-amber-500 text-white'
                         : 'bg-slate-500 text-white'
                       : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                   }
@@ -214,10 +214,10 @@ export const FiltersPanel: React.FC = () => {
                   flex-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all
                   ${
                     selectedPrioridades.includes(prioridad.value)
-                      ? prioridad.color === 'red'
-                        ? 'bg-red-500 text-white'
-                        : prioridad.color === 'yellow'
-                        ? 'bg-yellow-500 text-white'
+                      ? prioridad.color === 'red-600'
+                        ? 'bg-red-600 text-white'
+                        : prioridad.color === 'amber-500'
+                        ? 'bg-amber-500 text-white'
                         : 'bg-slate-500 text-white'
                       : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                   }
@@ -242,7 +242,7 @@ export const FiltersPanel: React.FC = () => {
                 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                 ${
                   selectedTipos.includes(tipo.value)
-                    ? 'bg-purple-500 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                 }
               `}

@@ -283,9 +283,9 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
                   ${
                     formData.prioridad === priority.value
                       ? priority.color === 'red'
-                        ? 'bg-red-500/10 border-red-500 text-red-400'
+                        ? 'bg-red-600/10 border-red-600 text-red-400'
                         : priority.color === 'yellow'
-                        ? 'bg-yellow-500/10 border-yellow-500 text-yellow-400'
+                        ? 'bg-amber-500/10 border-amber-500 text-amber-500'
                         : 'bg-slate-500/10 border-slate-500 text-slate-300'
                       : 'bg-slate-800/30 border-slate-700 text-slate-400 hover:border-slate-600'
                   }

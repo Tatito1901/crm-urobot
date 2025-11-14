@@ -12,6 +12,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import { startOfWeek } from '@/lib/date-utils';
 import { useAgendaState } from './hooks/useAgendaState';
 import { useConsultas } from '@/hooks/useConsultas';
+import type { Consulta } from '@/types/consultas';
+import type { Appointment } from '@/types/agenda';
 import { Sidebar } from './components/calendar/Sidebar';
 import { HeaderBar } from './components/calendar/HeaderBar';
 import { DaysHeader } from './components/calendar/DaysHeader';
@@ -24,9 +26,59 @@ import { EditAppointmentModal } from './components/modals/EditAppointmentModal';
 import {
   createAppointment,
   updateAppointment,
-  cancelAppointment,
-  confirmAppointment,
+  cancelAppointment as cancelAppointmentService,
+  confirmAppointment as confirmAppointmentService,
 } from './services/appointments-service';
+
+// Adaptador: Convierte Consulta a Appointment
+function consultaToAppointment(consulta: Consulta): Appointment {
+  const dateTimeStr = `${consulta.fechaConsulta}T${consulta.horaConsulta}`;
+  const startDateTime = Temporal.ZonedDateTime.from({
+    timeZone: consulta.timezone,
+    year: parseInt(consulta.fechaConsulta.split('-')[0]),
+    month: parseInt(consulta.fechaConsulta.split('-')[1]),
+    day: parseInt(consulta.fechaConsulta.split('-')[2]),
+    hour: parseInt(consulta.horaConsulta.split(':')[0]),
+    minute: parseInt(consulta.horaConsulta.split(':')[1]),
+    second: parseInt(consulta.horaConsulta.split(':')[2] || '0'),
+  });
+
+  const endDateTime = startDateTime.add({ minutes: consulta.duracionMinutos });
+
+  return {
+    id: consulta.id,
+    uuid: consulta.uuid,
+    pacienteId: consulta.pacienteId || '',
+    paciente: consulta.paciente,
+    telefono: null,
+    email: null,
+    start: startDateTime,
+    end: endDateTime,
+    timezone: consulta.timezone,
+    duracionMinutos: consulta.duracionMinutos,
+    sede: consulta.sede,
+    consultorio: null,
+    tipo: consulta.tipo,
+    prioridad: 'normal',
+    modalidad: 'presencial',
+    motivoConsulta: consulta.motivoConsulta,
+    notasInternas: null,
+    requisitosEspeciales: null,
+    estado: consulta.estado,
+    estadoConfirmacion: consulta.estadoConfirmacion,
+    confirmadoPaciente: consulta.confirmadoPaciente,
+    confirmadoEn: null,
+    fechaLimiteConfirmacion: null,
+    calendarEventId: consulta.calendarEventId,
+    calendarLink: consulta.calendarLink,
+    canceladoPor: consulta.canceladoPor || null,
+    canceladoEn: null,
+    motivoCancelacion: consulta.motivoCancelacion || null,
+    creadoPor: null,
+    createdAt: consulta.createdAt,
+    updatedAt: consulta.updatedAt,
+  };
+}
 
 export default function AgendaPage() {
   // Estado: fecha seleccionada (default: hoy)
@@ -59,6 +111,11 @@ export default function AgendaPage() {
   // Cargar consultas
   const { consultas, loading, refetch } = useConsultas();
 
+  // Convertir consultas a appointments
+  const appointments = useMemo(() => {
+    return consultas.map(consultaToAppointment);
+  }, [consultas]);
+
   // Cuando se selecciona una fecha en el mini-calendario, ir a esa semana
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -67,7 +124,7 @@ export default function AgendaPage() {
 
   // Filtrar consultas según filtros activos
   const filteredAppointments = useMemo(() => {
-    return consultas.filter((apt) => {
+    return appointments.filter((apt) => {
       // Búsqueda global
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -106,7 +163,7 @@ export default function AgendaPage() {
       return true;
     });
   }, [
-    consultas,
+    appointments,
     searchQuery,
     selectedSede,
     selectedEstados,
@@ -178,9 +235,9 @@ export default function AgendaPage() {
     }
   };
 
-  const handleCancelAppointment = async (id: string, reason: string, cancelledBy: string) => {
+  const handleCancelAppointment = async (id: string, reason: string) => {
     try {
-      const result = await cancelAppointment(id, reason, cancelledBy);
+      const result = await cancelAppointmentService(id, reason, 'user');
 
       if (result.success) {
         await refetch();
@@ -198,7 +255,7 @@ export default function AgendaPage() {
 
   const handleConfirmAppointment = async (id: string) => {
     try {
-      const result = await confirmAppointment(id);
+      const result = await confirmAppointmentService(id);
 
       if (result.success) {
         await refetch();

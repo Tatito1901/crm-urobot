@@ -132,15 +132,19 @@ export const ListView: React.FC<ListViewProps> = ({
                       <div
                         className={`w-1 rounded-full self-stretch ${
                           apt.prioridad === 'urgente'
-                            ? 'bg-red-500'
+                            ? 'bg-red-600'
                             : apt.prioridad === 'alta'
-                            ? 'bg-yellow-500'
+                            ? 'bg-amber-500'
                             : apt.tipo === 'primera_vez'
+                            ? 'bg-blue-600'
+                            : apt.tipo === 'subsecuente'
                             ? 'bg-blue-500'
+                            : apt.tipo === 'control_post_op'
+                            ? 'bg-emerald-600'
                             : apt.tipo === 'urgencia'
-                            ? 'bg-red-500'
+                            ? 'bg-red-600'
                             : apt.tipo === 'teleconsulta'
-                            ? 'bg-purple-500'
+                            ? 'bg-cyan-600'
                             : 'bg-slate-500'
                         }`}
                       />
@@ -227,8 +231,8 @@ export const ListView: React.FC<ListViewProps> = ({
                             <span
                               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
                                 apt.prioridad === 'urgente'
-                                  ? 'bg-red-500/10 text-red-400'
-                                  : 'bg-yellow-500/10 text-yellow-400'
+                                  ? 'bg-red-600/10 text-red-400'
+                                  : 'bg-amber-500/10 text-amber-500'
                               }`}
                             >
                               {apt.prioridad === 'urgente' ? '🔴 Urgente' : '⚠️ Alta'}
