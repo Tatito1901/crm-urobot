@@ -68,7 +68,7 @@ function consultaToAppointment(consulta: Consulta): Appointment {
     estadoConfirmacion: consulta.estadoConfirmacion,
     confirmadoPaciente: consulta.confirmadoPaciente,
     confirmadoEn: null,
-    fechaLimiteConfirmacion: null,
+    canalOrigen: consulta.canalOrigen || 'Sistema',
     calendarEventId: consulta.calendarEventId,
     calendarLink: consulta.calendarLink,
     canceladoPor: consulta.canceladoPor || null,
@@ -237,7 +237,10 @@ export default function AgendaPage() {
 
   const handleCancelAppointment = async (id: string, reason: string) => {
     try {
-      const result = await cancelAppointmentService(id, reason, 'user');
+      const result = await cancelAppointmentService(id, {
+        reason,
+        cancelledBy: 'asistente',
+      });
 
       if (result.success) {
         await refetch();

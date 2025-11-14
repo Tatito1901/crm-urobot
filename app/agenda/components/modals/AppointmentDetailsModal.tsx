@@ -23,7 +23,7 @@ interface AppointmentDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate?: (id: string, updates: Partial<Appointment>) => Promise<ServiceResponse>;
-  onCancel?: (id: string, reason: string, cancelledBy: string) => Promise<ServiceResponse>;
+  onCancel?: (id: string, reason: string) => Promise<ServiceResponse>;
   onEdit?: (appointment: Appointment) => void;
   onConfirm?: (id: string) => Promise<ServiceResponse>;
 }
@@ -55,7 +55,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
 
     setIsCancelling(true);
     try {
-      await onCancel(appointment.id, cancelReason, 'user');
+      await onCancel(appointment.id, cancelReason);
       setShowCancelDialog(false);
       setCancelReason('');
       onClose();
