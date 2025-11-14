@@ -35,7 +35,7 @@ export const TimeColumn: React.FC<TimeColumnProps> = ({
 
   return (
     <div className="w-16 flex-shrink-0 border-r border-slate-800/60 bg-slate-900/40">
-      {timeSlots.map((time, index) => (
+      {timeSlots.map((time) => (
         <div
           key={time}
           className="relative border-b border-slate-800/50"
