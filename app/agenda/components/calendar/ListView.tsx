@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { formatTimeRange, formatLongDate, getStatusConfig } from '../../lib/agenda-utils';
+import { formatTimeRange, getStatusConfig } from '../../lib/agenda-utils';
 import type { Appointment } from '@/types/agenda';
 
 interface ListViewProps {
