@@ -7,6 +7,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/app/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import { useMedicalAgendaSidebar } from "@/hooks/useMedicalAgendaSidebar";
+import {
+  MedicalAgendaSidebar,
+  QuickAddAppointmentModal,
+  QuickAppointmentDetails,
+} from "@/app/components/medical-agenda-sidebar";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type NavItem = { readonly label: string; readonly href: string };
 
@@ -24,100 +31,156 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });
 export function Sidebar() {
   const pathname = usePathname();
   const today = useMemo(() => DATE_FORMATTER.format(new Date()), []);
+  const { isExpanded, toggleExpanded } = useMedicalAgendaSidebar();
 
   return (
-    <aside className="hidden lg:flex lg:h-screen lg:w-60 xl:w-72 2xl:w-80 lg:flex-col lg:justify-between lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/90 lg:via-[#060b18]/88 lg:to-[#02040a]/92 lg:px-6 lg:py-8 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur">
-      <div className="flex flex-1 flex-col gap-8 overflow-hidden">
-        <header className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white/5/40 px-4 py-3 shadow-inner">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-lg font-semibold text-blue-100">
-            DM
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-[0.32em] text-white/40">CRM Clínico</p>
-            <p className="text-base font-semibold text-white">Dr. Mario Martínez Thomas</p>
-            <p className="text-xs text-white/50">Operativo en tiempo real</p>
-          </div>
-        </header>
+    <>
+      {/* Main Sidebar */}
+      <aside
+        className={cn(
+          "hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/90 lg:via-[#060b18]/88 lg:to-[#02040a]/92 lg:px-6 lg:py-8 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur transition-all duration-300",
+          isExpanded ? "lg:w-60 xl:w-72 2xl:w-80" : "lg:w-60 xl:w-72 2xl:w-80"
+        )}
+      >
+        <div className="flex flex-1 flex-col gap-8 overflow-hidden">
+          <header className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white/5/40 px-4 py-3 shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-lg font-semibold text-blue-100">
+              DM
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-[0.32em] text-white/40">CRM Clínico</p>
+              <p className="text-base font-semibold text-white">Dr. Mario Martínez Thomas</p>
+              <p className="text-xs text-white/50">Operativo en tiempo real</p>
+            </div>
+          </header>
 
-        <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1">
-          <ul className="flex flex-col gap-1.5 text-sm">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-              return (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 font-medium text-white/65 transition-colors",
-                      "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-                      "hover:border-white/15 hover:bg-white/5 hover:text-white",
-                      isActive && "border-white/20 bg-white/12 text-white shadow-[0_15px_35px_-25px_rgba(56,189,248,0.7)]"
-                    )}
-                  >
-                    <span className="relative flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "h-2 w-2 rounded-full bg-blue-400/70 opacity-0 transition group-hover:opacity-70",
-                          isActive && "opacity-100"
-                        )}
-                        aria-hidden
-                      />
-                      <span>{item.label}</span>
-                    </span>
-                    <span
-                      className="ml-auto text-xs text-white/40 transition group-hover:text-white/70"
-                      aria-hidden
+          <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1">
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                return (
+                  <li key={item.label}>
+                    <Link
+                      href={item.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={cn(
+                        "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 font-medium text-white/65 transition-colors",
+                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+                        "hover:border-white/15 hover:bg-white/5 hover:text-white",
+                        isActive && "border-white/20 bg-white/12 text-white shadow-[0_15px_35px_-25px_rgba(56,189,248,0.7)]"
+                      )}
                     >
-                      →
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </div>
-
-      <footer className="space-y-3">
-        <div className="rounded-2xl border border-white/20 bg-white/[0.04] px-4 py-3 text-xs text-white/70">
-          <p className="font-medium text-white">Agenda al día</p>
-          <p className="mt-1 text-white/60">Hoy · {today}</p>
-          <p className="text-white/40">Actualización automática cada 60&nbsp;min</p>
+                      <span className="relative flex items-center gap-2">
+                        <span
+                          className={cn(
+                            "h-2 w-2 rounded-full bg-blue-400/70 opacity-0 transition group-hover:opacity-70",
+                            isActive && "opacity-100"
+                          )}
+                          aria-hidden
+                        />
+                        <span>{item.label}</span>
+                      </span>
+                      <span
+                        className="ml-auto text-xs text-white/40 transition group-hover:text-white/70"
+                        aria-hidden
+                      >
+                        →
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
         </div>
-        
-        <form action={signOutAction} className="w-full">
-          <button
-            type="submit"
-            className={cn(
-              "w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition-all duration-100",
-              "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
-              "active:bg-red-500/15 active:scale-95",
-              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
-            )}
-          >
-            <svg 
-              className="h-4 w-4" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
-              />
-            </svg>
-            Cerrar sesión
-          </button>
-        </form>
 
-        <p className="text-center text-xs uppercase tracking-[0.2em] text-white/50">
-          UROBOT · CRM
-        </p>
-      </footer>
-    </aside>
+        <footer className="space-y-3">
+          <div className="rounded-2xl border border-white/20 bg-white/[0.04] px-4 py-3 text-xs text-white/70">
+            <p className="font-medium text-white">Agenda al día</p>
+            <p className="mt-1 text-white/60">Hoy · {today}</p>
+            <p className="text-white/40">Actualización automática cada 60&nbsp;min</p>
+          </div>
+
+          <form action={signOutAction} className="w-full">
+            <button
+              type="submit"
+              className={cn(
+                "w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition-all duration-100",
+                "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
+                "active:bg-red-500/15 active:scale-95",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
+              )}
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              Cerrar sesión
+            </button>
+          </form>
+
+          <p className="text-center text-xs uppercase tracking-[0.2em] text-white/50">
+            UROBOT · CRM
+          </p>
+        </footer>
+      </aside>
+
+      {/* Medical Agenda Sidebar (Expandable Panel) */}
+      <aside
+        className={cn(
+          "hidden lg:flex lg:h-screen lg:flex-col lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/95 lg:via-[#060b18]/92 lg:to-[#02040a]/96 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur transition-all duration-300",
+          isExpanded ? "lg:w-80 xl:w-96" : "lg:w-12"
+        )}
+      >
+        {/* Toggle Button */}
+        <button
+          onClick={toggleExpanded}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 z-20 rounded-full border border-white/20 bg-gradient-to-b from-[#0a1429]/95 to-[#060b18]/95 p-2 text-white/70 shadow-lg transition-all hover:bg-white/10 hover:text-white",
+            isExpanded ? "right-[-16px]" : "right-[-16px]"
+          )}
+          style={{
+            left: isExpanded ? 'auto' : '100%',
+            transform: isExpanded ? 'translateY(-50%)' : 'translateX(-50%) translateY(-50%)',
+          }}
+          aria-label={isExpanded ? "Ocultar agenda" : "Mostrar agenda"}
+        >
+          {isExpanded ? (
+            <ChevronLeft className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </button>
+
+        {/* Content - Solo visible cuando está expandido */}
+        {isExpanded && <MedicalAgendaSidebar />}
+
+        {/* Collapsed State - Indicador visual */}
+        {!isExpanded && (
+          <div className="flex h-full items-center justify-center">
+            <div className="flex flex-col items-center gap-4 -rotate-180 [writing-mode:vertical-lr]">
+              <span className="text-xs font-medium text-white/50 tracking-wider">
+                AGENDA
+              </span>
+              <div className="h-8 w-px bg-white/20" />
+            </div>
+          </div>
+        )}
+      </aside>
+
+      {/* Modals */}
+      <QuickAddAppointmentModal />
+      <QuickAppointmentDetails />
+    </>
   );
 }
 
