@@ -14,6 +14,7 @@ import { useAgendaState } from './hooks/useAgendaState';
 import { useConsultas } from '@/hooks/useConsultas';
 import type { Consulta } from '@/types/consultas';
 import type { Appointment } from '@/types/agenda';
+import type { CreateAppointmentData, UpdateAppointmentData } from './services/appointments-service';
 import { Sidebar } from './components/calendar/Sidebar';
 import { HeaderBar } from './components/calendar/HeaderBar';
 import { DaysHeader } from './components/calendar/DaysHeader';
@@ -32,7 +33,6 @@ import {
 
 // Adaptador: Convierte Consulta a Appointment
 function consultaToAppointment(consulta: Consulta): Appointment {
-  const dateTimeStr = `${consulta.fechaConsulta}T${consulta.horaConsulta}`;
   const startDateTime = Temporal.ZonedDateTime.from({
     timeZone: consulta.timezone,
     year: parseInt(consulta.fechaConsulta.split('-')[0]),
@@ -109,7 +109,7 @@ export default function AgendaPage() {
   } = useAgendaState();
 
   // Cargar consultas
-  const { consultas, loading, refetch } = useConsultas();
+  const { consultas, refetch } = useConsultas();
 
   // Convertir consultas a appointments
   const appointments = useMemo(() => {
@@ -193,13 +193,17 @@ export default function AgendaPage() {
   }, [filteredAppointments]);
 
   // Handlers de modales
-  const handleCreateAppointment = async (data: any) => {
+  const handleCreateAppointment = async (data: Omit<CreateAppointmentData, 'slotId' | 'start' | 'end' | 'timezone'>) => {
     try {
+      if (!selectedSlot?.start || !selectedSlot?.end) {
+        return { success: false, error: 'No se ha seleccionado un horario válido' };
+      }
+
       const result = await createAppointment({
         ...data,
-        slotId: selectedSlot?.id || '',
-        start: selectedSlot?.start || ({} as any),
-        end: selectedSlot?.end || ({} as any),
+        slotId: selectedSlot.id || '',
+        start: selectedSlot.start,
+        end: selectedSlot.end,
         timezone: 'America/Mexico_City',
       });
 
@@ -217,9 +221,22 @@ export default function AgendaPage() {
     }
   };
 
-  const handleUpdateAppointment = async (id: string, updates: any) => {
+  const handleUpdateAppointment = async (id: string, updates: Partial<Appointment>) => {
     try {
-      const result = await updateAppointment(id, updates);
+      // Adaptar Partial<Appointment> a UpdateAppointmentData
+      const updateData: UpdateAppointmentData = {};
+
+      if (updates.start) updateData.start = updates.start;
+      if (updates.end) updateData.end = updates.end;
+      if (updates.duracionMinutos !== undefined) updateData.duracionMinutos = updates.duracionMinutos;
+      if (updates.tipo !== undefined) updateData.tipo = updates.tipo;
+      if (updates.motivoConsulta !== undefined) updateData.motivoConsulta = updates.motivoConsulta ?? undefined;
+      if (updates.notasInternas !== undefined) updateData.notasInternas = updates.notasInternas ?? undefined;
+      if (updates.prioridad !== undefined) updateData.prioridad = updates.prioridad;
+      if (updates.modalidad !== undefined) updateData.modalidad = updates.modalidad;
+      if (updates.sede !== undefined) updateData.sede = updates.sede;
+
+      const result = await updateAppointment(id, updateData);
 
       if (result.success) {
         await refetch();
