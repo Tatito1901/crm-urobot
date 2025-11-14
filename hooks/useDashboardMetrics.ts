@@ -26,6 +26,23 @@ interface UseDashboardMetricsReturn {
 }
 
 /**
+ * Tipo para los datos retornados por el RPC get_dashboard_metrics
+ */
+interface DashboardMetricsRPC {
+  leads_totales: number
+  leads_mes: number
+  leads_convertidos: number
+  tasa_conversion_pct: number
+  pacientes_activos: number
+  total_pacientes: number
+  consultas_futuras: number
+  consultas_hoy: number
+  pendientes_confirmacion: number
+  polanco_futuras: number
+  satelite_futuras: number
+}
+
+/**
  * Fetcher function para SWR
  */
 const fetchMetrics = async (): Promise<DashboardMetrics> => {
@@ -37,7 +54,7 @@ const fetchMetrics = async (): Promise<DashboardMetrics> => {
 
     if (!rpcError && data) {
       // Transformar datos del RPC
-      const rpcData = data as any;
+      const rpcData = data as unknown as DashboardMetricsRPC;
       return {
         leadsTotal: rpcData.leads_totales || 0,
         leadsMes: rpcData.leads_mes || 0,
