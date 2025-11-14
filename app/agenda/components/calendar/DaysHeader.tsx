@@ -18,9 +18,9 @@ export const DaysHeader = React.memo(function DaysHeader({ weekStart }: DaysHead
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   return (
-    <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-slate-800/60 bg-slate-900/40 sticky top-0 z-10">
+    <div className="grid grid-cols-[100px_repeat(7,1fr)] gap-1 border-b border-slate-800/40 bg-slate-900/60 backdrop-blur-sm sticky top-0 z-20 p-2 pb-3">
       {/* Columna vacía para alinear con columna de horas */}
-      <div className="border-r border-slate-800/60" />
+      <div className="border-r border-slate-800/40" />
 
       {/* Días de la semana */}
       {days.map((date, index) => {
@@ -31,19 +31,19 @@ export const DaysHeader = React.memo(function DaysHeader({ weekStart }: DaysHead
         return (
           <div
             key={index}
-            className="flex flex-col items-center justify-center py-4 border-r border-slate-800/60 last:border-r-0"
+            className="flex flex-col items-center justify-center py-3 border-r border-slate-800/30 last:border-r-0 rounded-sm"
           >
-            <span className="text-xs font-medium text-slate-400 mb-1">
+            <span className="text-xs font-semibold text-slate-400 mb-1.5 tracking-wider">
               {dayName}
             </span>
             {isTodayDate ? (
-              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-emerald-500">
-                <span className="text-lg font-semibold text-white">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30">
+                <span className="text-xl font-bold text-white">
                   {dayNumber}
                 </span>
               </div>
             ) : (
-              <span className="text-lg font-semibold text-slate-200">
+              <span className="text-xl font-bold text-slate-100">
                 {dayNumber}
               </span>
             )}

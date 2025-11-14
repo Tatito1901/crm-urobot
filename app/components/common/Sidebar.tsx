@@ -19,6 +19,7 @@ type NavItem = { readonly label: string; readonly href: string };
 
 const navItems: readonly NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Agenda", href: "/agenda" },
   { label: "Leads", href: "/leads" },
   { label: "Pacientes", href: "/pacientes" },
   { label: "Consultas", href: "/consultas" },
@@ -32,6 +33,9 @@ export function Sidebar() {
   const pathname = usePathname();
   const today = useMemo(() => DATE_FORMATTER.format(new Date()), []);
   const { isExpanded, toggleExpanded } = useMedicalAgendaSidebar();
+  
+  // Mostrar MedicalAgendaSidebar SOLO en la ruta /agenda
+  const isAgendaRoute = pathname === '/agenda' || pathname?.startsWith('/agenda/');
 
   return (
     <>
@@ -134,52 +138,56 @@ export function Sidebar() {
         </footer>
       </aside>
 
-      {/* Medical Agenda Sidebar (Expandable Panel) */}
-      <aside
-        className={cn(
-          "hidden lg:flex lg:h-screen lg:flex-col lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/95 lg:via-[#060b18]/92 lg:to-[#02040a]/96 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur transition-all duration-300 relative",
-          isExpanded ? "lg:w-80 xl:w-96" : "lg:w-12"
-        )}
-      >
-        {/* Toggle Button */}
-        <button
-          onClick={toggleExpanded}
-          className={cn(
-            "absolute top-1/2 -translate-y-1/2 z-20 rounded-full border border-white/20 bg-gradient-to-b from-[#0a1429]/95 to-[#060b18]/95 p-2 text-white/70 shadow-lg transition-all hover:bg-white/10 hover:text-white",
-            isExpanded ? "right-[-16px]" : "right-[-16px]"
-          )}
-          style={{
-            left: isExpanded ? 'auto' : '100%',
-            transform: isExpanded ? 'translateY(-50%)' : 'translateX(-50%) translateY(-50%)',
-          }}
-          aria-label={isExpanded ? "Ocultar agenda" : "Mostrar agenda"}
-        >
-          {isExpanded ? (
-            <ChevronLeft className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
-        </button>
+      {/* Medical Agenda Sidebar (Expandable Panel) - SOLO en ruta /agenda */}
+      {isAgendaRoute && (
+        <>
+          <aside
+            className={cn(
+              "hidden lg:flex lg:h-screen lg:flex-col lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/95 lg:via-[#060b18]/92 lg:to-[#02040a]/96 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur transition-all duration-300 relative",
+              isExpanded ? "lg:w-80 xl:w-96" : "lg:w-12"
+            )}
+          >
+            {/* Toggle Button */}
+            <button
+              onClick={toggleExpanded}
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 z-20 rounded-full border border-white/20 bg-gradient-to-b from-[#0a1429]/95 to-[#060b18]/95 p-2 text-white/70 shadow-lg transition-all hover:bg-white/10 hover:text-white",
+                isExpanded ? "right-[-16px]" : "right-[-16px]"
+              )}
+              style={{
+                left: isExpanded ? 'auto' : '100%',
+                transform: isExpanded ? 'translateY(-50%)' : 'translateX(-50%) translateY(-50%)',
+              }}
+              aria-label={isExpanded ? "Ocultar agenda" : "Mostrar agenda"}
+            >
+              {isExpanded ? (
+                <ChevronLeft className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </button>
 
-        {/* Content - Solo visible cuando está expandido */}
-        {isExpanded && <MedicalAgendaSidebar />}
+            {/* Content - Solo visible cuando está expandido */}
+            {isExpanded && <MedicalAgendaSidebar />}
 
-        {/* Collapsed State - Indicador visual */}
-        {!isExpanded && (
-          <div className="flex h-full items-center justify-center">
-            <div className="flex flex-col items-center gap-4 -rotate-180 [writing-mode:vertical-lr]">
-              <span className="text-xs font-medium text-white/50 tracking-wider">
-                AGENDA
-              </span>
-              <div className="h-8 w-px bg-white/20" />
-            </div>
-          </div>
-        )}
-      </aside>
+            {/* Collapsed State - Indicador visual */}
+            {!isExpanded && (
+              <div className="flex h-full items-center justify-center">
+                <div className="flex flex-col items-center gap-4 -rotate-180 [writing-mode:vertical-lr]">
+                  <span className="text-xs font-medium text-white/50 tracking-wider">
+                    AGENDA
+                  </span>
+                  <div className="h-8 w-px bg-white/20" />
+                </div>
+              </div>
+            )}
+          </aside>
 
-      {/* Modals */}
-      <QuickAddAppointmentModal />
-      <QuickAppointmentDetails />
+          {/* Modals - Solo en ruta /agenda */}
+          <QuickAddAppointmentModal />
+          <QuickAppointmentDetails />
+        </>
+      )}
     </>
   );
 }

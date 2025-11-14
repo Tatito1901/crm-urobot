@@ -54,24 +54,25 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   return (
     <div
       className={`
-        relative group
-        bg-gradient-to-br from-slate-800/90 to-slate-900/90
-        backdrop-blur-sm
-        border border-white/10 ${getBorderColor()} border-l-4
-        rounded-lg p-2
+        relative group h-full
+        bg-gradient-to-br from-slate-800/95 to-slate-900/95
+        backdrop-blur-md
+        border border-white/10 ${getBorderColor()} border-l-[3px]
+        rounded-xl p-3
         cursor-pointer
         transition-all duration-200
-        hover:shadow-xl hover:shadow-blue-900/20
-        hover:scale-[1.02]
+        hover:shadow-2xl hover:shadow-blue-900/30
+        hover:scale-[1.01]
         hover:border-white/20
+        hover:from-slate-800 hover:to-slate-900
       `}
       onClick={() => onClick?.(appointment)}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
       {/* Header con badges */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex flex-wrap items-center gap-1">
+      <div className="flex items-start justify-between gap-2 mb-2.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <StatusBadge estado={appointment.estado} size="sm" />
           <SedeBadge sede={appointment.sede} size="sm" />
         </div>
@@ -129,38 +130,38 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
       </div>
 
       {/* Paciente */}
-      <div className="mb-1">
-        <p className="text-sm font-semibold text-white truncate">
+      <div className="mb-2">
+        <p className="text-sm font-bold text-white truncate leading-tight">
           {appointment.paciente}
         </p>
       </div>
 
       {/* Horario */}
-      <div className="flex items-center gap-1 text-xs text-slate-400 mb-1">
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center gap-1.5 text-xs text-slate-300 mb-2">
+        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span className="font-medium">
+        <span className="font-semibold">
           {startTime} - {endTime}
         </span>
-        <span className="text-slate-500">({appointment.duracionMinutos} min)</span>
+        <span className="text-slate-500 text-[10px]">({appointment.duracionMinutos}min)</span>
       </div>
 
       {/* Tipo de consulta */}
-      <div className="flex items-center gap-1 text-xs text-slate-400">
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <span className="truncate">
+        <span className="truncate capitalize">
           {appointment.tipo.replace(/_/g, ' ')}
         </span>
       </div>
 
       {/* Indicador de confirmación pendiente */}
       {canConfirm && (
-        <div className="mt-2 pt-2 border-t border-white/10">
-          <div className="flex items-center gap-1 text-[10px] text-amber-400">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <div className="mt-2.5 pt-2 border-t border-white/10">
+          <div className="flex items-center gap-1.5 text-[10px] font-medium text-amber-400">
+            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
             <span>Pendiente confirmación</span>

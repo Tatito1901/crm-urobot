@@ -61,15 +61,15 @@ export const TimeGrid = React.memo(function TimeGrid({
   }, [appointments, weekStart]);
 
   return (
-    <div className="flex-1 overflow-auto bg-[#0b0f16]">
-      <div className="grid grid-cols-[80px_repeat(7,1fr)] min-h-full">
+    <div className="flex-1 overflow-auto bg-[#0b0f16] p-2">
+      <div className="grid grid-cols-[100px_repeat(7,1fr)] min-h-full gap-1 rounded-lg overflow-hidden">
         {/* Columna de horas */}
-        <div className="border-r border-slate-800/60 sticky left-0 bg-slate-900/40 z-10">
+        <div className="border-r border-slate-800/40 sticky left-0 bg-slate-900/60 z-10 backdrop-blur-sm">
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="h-12 flex items-start justify-end pr-3 pt-1 text-xs text-slate-400 border-b border-slate-800/40"
-              style={{ minHeight: '48px' }}
+              className="h-16 flex items-start justify-end pr-4 pt-2 text-sm font-medium text-slate-300 border-b border-slate-800/30"
+              style={{ minHeight: '64px' }}
             >
               <span>{time}</span>
             </div>
@@ -84,14 +84,14 @@ export const TimeGrid = React.memo(function TimeGrid({
             dayAppointments,
             dayIndex,
             startHour,
-            48 // slot height
+            64 // slot height aumentado para mejor visualización
           );
 
           return (
             <div
               key={dayIndex}
-              className={`relative border-r border-slate-800/60 last:border-r-0 ${
-                hasWorkingHours ? 'bg-slate-900/20' : 'bg-[#0b0f16]'
+              className={`relative border-r border-slate-800/30 last:border-r-0 rounded-sm ${
+                hasWorkingHours ? 'bg-slate-900/30' : 'bg-[#0b0f16]'
               }`}
               role="gridcell"
             >
@@ -99,8 +99,8 @@ export const TimeGrid = React.memo(function TimeGrid({
               {timeSlots.map((time) => (
                 <div
                   key={`${dayIndex}-${time}`}
-                  className="h-12 border-b border-slate-800/40 hover:bg-blue-900/10 transition-colors cursor-pointer"
-                  style={{ minHeight: '48px' }}
+                  className="h-16 border-b border-slate-800/20 hover:bg-blue-900/10 transition-colors cursor-pointer"
+                  style={{ minHeight: '64px' }}
                   data-time={time}
                   data-date={date.toISOString().split('T')[0]}
                 />
@@ -110,10 +110,10 @@ export const TimeGrid = React.memo(function TimeGrid({
               {positionedAppointments.map((apt) => (
                 <div
                   key={apt.id}
-                  className="absolute inset-x-0 px-1"
+                  className="absolute inset-x-0 px-2 py-1"
                   style={{
                     top: `${apt.top}px`,
-                    height: `${apt.height - 4}px`, // -4px para spacing
+                    height: `${apt.height - 8}px`, // -8px para mejor spacing
                     left: `${apt.left}%`,
                     width: `${apt.width}%`,
                     zIndex: apt.zIndex,
