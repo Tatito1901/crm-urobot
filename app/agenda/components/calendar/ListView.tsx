@@ -117,7 +117,7 @@ export const ListView: React.FC<ListViewProps> = ({
                   <button
                     key={apt.id}
                     onClick={() => onAppointmentClick(apt)}
-                    className="w-full text-left p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 hover:bg-slate-800/70 hover:border-slate-600 transition-all group"
+                    className="w-full text-left p-4 rounded-lg bg-slate-900/80 border border-slate-700/70 shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group"
                   >
                     <div className="flex items-start gap-4">
                       {/* Hora */}

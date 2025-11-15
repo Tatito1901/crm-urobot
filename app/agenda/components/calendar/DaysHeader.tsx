@@ -25,10 +25,10 @@ export const DaysHeader = React.memo(function DaysHeader({ weekStart, mode = 'we
     <div
       className={`grid ${
         mode === 'day' ? 'grid-cols-[100px_1fr]' : 'grid-cols-[100px_repeat(7,1fr)]'
-      } gap-1 border-b border-slate-800/40 bg-slate-900/60 backdrop-blur-sm sticky top-0 z-20 p-2 pb-3`}
+      } gap-1 border-b border-slate-700/60 bg-slate-900/60 backdrop-blur-sm sticky top-0 z-20 p-2 pb-3`}
     >
       {/* Columna vacía para alinear con columna de horas */}
-      <div className="border-r border-slate-800/40" />
+      <div className="border-r border-slate-700/50" />
 
       {/* Días de la semana */}
       {days.map((date, index) => {
@@ -39,7 +39,7 @@ export const DaysHeader = React.memo(function DaysHeader({ weekStart, mode = 'we
         return (
           <div
             key={index}
-            className="flex flex-col items-center justify-center py-3 border-r border-slate-800/30 last:border-r-0 rounded-sm"
+            className="flex flex-col items-center justify-center py-3 border-r border-slate-700/50 last:border-r-0 rounded-sm"
           >
             <span className="text-xs font-semibold text-slate-400 mb-1.5 tracking-wider">
               {dayName}

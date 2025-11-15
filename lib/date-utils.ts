@@ -137,18 +137,14 @@ export function getDayName(day: number, short = false): string {
 }
 
 /**
- * Genera slots de tiempo cada 30 minutos
+ * Genera slots de tiempo cada hora completa
  */
 export function generateTimeSlots(startHour: number, endHour: number): string[] {
   const slots: string[] = [];
 
-  for (let hour = startHour; hour <= endHour; hour++) {
-    for (const minutes of [0, 30]) {
-      if (hour === endHour && minutes > 0) break;
-      const hourStr = String(hour).padStart(2, '0');
-      const minStr = String(minutes).padStart(2, '0');
-      slots.push(`${hourStr}:${minStr}`);
-    }
+  for (let hour = startHour; hour < endHour; hour++) {
+    const hourStr = String(hour).padStart(2, '0');
+    slots.push(`${hourStr}:00`);
   }
 
   return slots;

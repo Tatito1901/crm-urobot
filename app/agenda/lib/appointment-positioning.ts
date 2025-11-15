@@ -19,35 +19,37 @@ interface PositionedAppointment extends Appointment {
 /**
  * Calcula la posición vertical de una cita basado en su hora de inicio
  * @param start - Hora de inicio de la cita
- * @param gridStartHour - Hora de inicio del grid (default: 11)
- * @param slotHeight - Altura de cada slot de 30min en pixels (default: 48)
+ * @param gridStartHour - Hora de inicio del grid (default: 0)
+ * @param slotHeight - Altura de cada slot de 60min en pixels (default: 60)
  */
 export function calculateTop(
   start: Temporal.ZonedDateTime,
-  gridStartHour: number = 11,
-  slotHeight: number = 48
+  gridStartHour: number = 0,
+  slotHeight: number = 60
 ): number {
   const startTime = start.toPlainTime();
   const startMinutes = startTime.hour * 60 + startTime.minute;
   const gridStartMinutes = gridStartHour * 60;
   
   const minutesFromGridStart = startMinutes - gridStartMinutes;
-  const slotsFromStart = minutesFromGridStart / 30; // Cada slot es 30min
+  // Calcular posición precisa: cada hora completa = 1 slot
+  const pixelsPerMinute = slotHeight / 60;
   
-  return slotsFromStart * slotHeight;
+  return minutesFromGridStart * pixelsPerMinute;
 }
 
 /**
  * Calcula la altura de una cita basado en su duración
  * @param duracionMinutos - Duración en minutos
- * @param slotHeight - Altura de cada slot de 30min en pixels (default: 48)
+ * @param slotHeight - Altura de cada slot de 60min en pixels (default: 60)
  */
 export function calculateHeight(
   duracionMinutos: number,
-  slotHeight: number = 48
+  slotHeight: number = 60
 ): number {
-  const slots = duracionMinutos / 30;
-  return slots * slotHeight;
+  // Calcular altura proporcional: cada minuto = slotHeight/60 pixels
+  const pixelsPerMinute = slotHeight / 60;
+  return duracionMinutos * pixelsPerMinute;
 }
 
 /**
@@ -131,8 +133,8 @@ export function calculateHorizontalPositions(
 export function positionAppointmentsForDay(
   appointments: Appointment[],
   dayIndex: number,
-  gridStartHour: number = 11,
-  slotHeight: number = 48
+  gridStartHour: number = 0,
+  slotHeight: number = 60
 ): PositionedAppointment[] {
   const overlaps = detectOverlaps(appointments);
   const positioned: PositionedAppointment[] = [];

@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { Temporal } from '@js-temporal/polyfill';
 import { startOfWeek } from '@/lib/date-utils';
 import { useAgendaState } from './hooks/useAgendaState';
@@ -19,12 +19,6 @@ import { Sidebar } from './components/calendar/Sidebar';
 import { HeaderBar } from './components/calendar/HeaderBar';
 import { DaysHeader } from './components/calendar/DaysHeader';
 import { TimeGrid } from './components/calendar/TimeGrid';
-import { ListView } from './components/calendar/ListView';
-import { FiltersPanel } from './components/calendar/FiltersPanel';
-import { MiniMonth } from './components/calendar/MiniMonth';
-import { CreateAppointmentModal } from './components/modals/CreateAppointmentModal';
-import { AppointmentDetailsModal } from './components/modals/AppointmentDetailsModal';
-import { EditAppointmentModal } from './components/modals/EditAppointmentModal';
 import {
   createAppointment,
   updateAppointment,
@@ -32,17 +26,44 @@ import {
   confirmAppointment as confirmAppointmentService,
 } from './services/appointments-service';
 
+// Lazy load de componentes pesados (reduce bundle inicial)
+const ListView = lazy(() => import('./components/calendar/ListView').then(m => ({ default: m.ListView })));
+const FiltersPanel = lazy(() => import('./components/calendar/FiltersPanel').then(m => ({ default: m.FiltersPanel })));
+const MiniMonth = lazy(() => import('./components/calendar/MiniMonth').then(m => ({ default: m.MiniMonth })));
+const CreateAppointmentModal = lazy(() => import('./components/modals/CreateAppointmentModal').then(m => ({ default: m.CreateAppointmentModal })));
+const AppointmentDetailsModal = lazy(() => import('./components/modals/AppointmentDetailsModal').then(m => ({ default: m.AppointmentDetailsModal })));
+const EditAppointmentModal = lazy(() => import('./components/modals/EditAppointmentModal').then(m => ({ default: m.EditAppointmentModal })));
+
+// Loading fallback optimizado
+const ModalLoader = () => <div className="flex items-center justify-center p-4"><div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full" /></div>;
+
 // Adaptador: Convierte Consulta a Appointment
 function consultaToAppointment(consulta: Consulta): Appointment {
-  const startDateTime = Temporal.ZonedDateTime.from({
-    timeZone: consulta.timezone,
-    year: parseInt(consulta.fechaConsulta.split('-')[0]),
-    month: parseInt(consulta.fechaConsulta.split('-')[1]),
-    day: parseInt(consulta.fechaConsulta.split('-')[2]),
-    hour: parseInt(consulta.horaConsulta.split(':')[0]),
-    minute: parseInt(consulta.horaConsulta.split(':')[1]),
-    second: parseInt(consulta.horaConsulta.split(':')[2] || '0'),
-  });
+  let startDateTime: Temporal.ZonedDateTime;
+
+  try {
+    // Preferir fecha_hora_utc (consulta.fecha) y convertirla al timezone local
+    if (consulta.fecha) {
+      const instant = Temporal.Instant.from(consulta.fecha);
+      startDateTime = instant.toZonedDateTimeISO(consulta.timezone);
+    } else {
+      throw new Error('Missing fecha');
+    }
+  } catch {
+    // Fallback: usar fechaConsulta + horaConsulta como hora local
+    const [yearStr, monthStr, dayStr] = consulta.fechaConsulta.split('-');
+    const [hourStr, minuteStr, secondStr] = consulta.horaConsulta.split(':');
+
+    startDateTime = Temporal.ZonedDateTime.from({
+      timeZone: consulta.timezone,
+      year: parseInt(yearStr),
+      month: parseInt(monthStr),
+      day: parseInt(dayStr),
+      hour: parseInt(hourStr || '0'),
+      minute: parseInt(minuteStr || '0'),
+      second: parseInt((secondStr ?? '0') || '0'),
+    });
+  }
 
   const endDateTime = startDateTime.add({ minutes: consulta.duracionMinutos });
 
@@ -113,10 +134,8 @@ export default function AgendaPage() {
   // Cargar consultas
   const { consultas, refetch } = useConsultas();
 
-  // Convertir consultas a appointments
-  const appointments = useMemo(() => {
-    return consultas.map(consultaToAppointment);
-  }, [consultas]);
+  // Convertir consultas a appointments (memoizado para evitar recálculos)
+  const appointments = useMemo(() => consultas.map(consultaToAppointment), [consultas]);
 
   // Cuando se selecciona una fecha en el mini-calendario, ir a esa semana
   const handleDateSelect = useCallback((date: Date) => {
@@ -181,22 +200,22 @@ export default function AgendaPage() {
     onlyPendingConfirmation,
   ]);
 
-  // Calcular estadísticas
+  // Calcular estadísticas (optimizado con single pass)
   const stats = useMemo(() => {
     const today = Temporal.Now.plainDateISO('America/Mexico_City');
-
-    const todayAppointments = filteredAppointments.filter((apt) =>
-      apt.start.toPlainDate().equals(today)
-    ).length;
-
-    const pendingConfirmation = filteredAppointments.filter(
-      (apt) => !apt.confirmadoPaciente && apt.estado === 'Programada'
-    ).length;
+    let todayCount = 0;
+    let pendingCount = 0;
+    
+    // Single loop para mejorar performance
+    for (const apt of filteredAppointments) {
+      if (apt.start.toPlainDate().equals(today)) todayCount++;
+      if (!apt.confirmadoPaciente && apt.estado === 'Programada') pendingCount++;
+    }
 
     return {
       total: filteredAppointments.length,
-      today: todayAppointments,
-      pending: pendingConfirmation,
+      today: todayCount,
+      pending: pendingCount,
     };
   }, [filteredAppointments]);
 
@@ -303,7 +322,7 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#0b0f16] font-roboto">
+    <div className="h-screen flex flex-col bg-slate-900 font-roboto">
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar unificado - oculto en móvil */}
         <div className="hidden lg:block">
@@ -335,31 +354,37 @@ export default function AgendaPage() {
           />
 
           {/* Panel de filtros */}
-          <FiltersPanel />
+          <Suspense fallback={null}>
+            <FiltersPanel />
+          </Suspense>
 
           {/* Área del calendario o lista */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {viewMode === 'list' ? (
-              <ListView
-                appointments={filteredAppointments}
-                onAppointmentClick={(apt) => {
-                  // Abrir modal de detalles
-                  const state = useAgendaState.getState();
-                  state.openDetailsModal(apt);
-                }}
-                dateRange={{
-                  start: currentWeekStart,
-                  end: new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000),
-                }}
-              />
-            ) : viewMode === 'month' ? (
-              <div className="flex-1 overflow-auto bg-[#0b0f16] p-4">
-                <MiniMonth
-                  selectedDate={selectedDate}
-                  onDateSelect={handleDateSelect}
-                  currentMonth={monthViewCurrent}
-                  onMonthChange={handleMonthChange}
+              <Suspense fallback={<ModalLoader />}>
+                <ListView
+                  appointments={filteredAppointments}
+                  onAppointmentClick={(apt) => {
+                    // Abrir modal de detalles
+                    const state = useAgendaState.getState();
+                    state.openDetailsModal(apt);
+                  }}
+                  dateRange={{
+                    start: currentWeekStart,
+                    end: new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000),
+                  }}
                 />
+              </Suspense>
+            ) : viewMode === 'month' ? (
+              <div className="flex-1 overflow-auto bg-[#050b18] p-4">
+                <Suspense fallback={<ModalLoader />}>
+                  <MiniMonth
+                    selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect}
+                    currentMonth={monthViewCurrent}
+                    onMonthChange={handleMonthChange}
+                  />
+                </Suspense>
               </div>
             ) : (
               <>
@@ -370,8 +395,8 @@ export default function AgendaPage() {
                 <TimeGrid 
                   weekStart={calendarBaseDate} 
                   appointments={filteredAppointments}
-                  startHour={11} 
-                  endHour={21}
+                  startHour={0} 
+                  endHour={24}
                   mode={timeGridMode}
                   onAppointmentClick={(apt) => {
                     const state = useAgendaState.getState();
@@ -428,30 +453,42 @@ export default function AgendaPage() {
         </svg>
       </button>
 
-      {/* Modales */}
-      <CreateAppointmentModal
-        slot={selectedSlot}
-        isOpen={isCreateModalOpen}
-        onClose={closeCreateModal}
-        onCreate={handleCreateAppointment}
-      />
+      {/* Modales - Lazy loaded para optimizar bundle */}
+      {isCreateModalOpen && (
+        <Suspense fallback={<ModalLoader />}>
+          <CreateAppointmentModal
+            slot={selectedSlot}
+            isOpen={isCreateModalOpen}
+            onClose={closeCreateModal}
+            onCreate={handleCreateAppointment}
+          />
+        </Suspense>
+      )}
 
-      <AppointmentDetailsModal
-        appointment={selectedAppointment}
-        isOpen={isDetailsModalOpen}
-        onClose={closeDetailsModal}
-        onUpdate={handleUpdateAppointment}
-        onCancel={handleCancelAppointment}
-        onEdit={openEditModal}
-        onConfirm={handleConfirmAppointment}
-      />
+      {isDetailsModalOpen && (
+        <Suspense fallback={<ModalLoader />}>
+          <AppointmentDetailsModal
+            appointment={selectedAppointment}
+            isOpen={isDetailsModalOpen}
+            onClose={closeDetailsModal}
+            onUpdate={handleUpdateAppointment}
+            onCancel={handleCancelAppointment}
+            onEdit={openEditModal}
+            onConfirm={handleConfirmAppointment}
+          />
+        </Suspense>
+      )}
 
-      <EditAppointmentModal
-        appointment={selectedAppointment}
-        isOpen={isEditModalOpen}
-        onClose={closeEditModal}
-        onUpdate={handleUpdateAppointment}
-      />
+      {isEditModalOpen && (
+        <Suspense fallback={<ModalLoader />}>
+          <EditAppointmentModal
+            appointment={selectedAppointment}
+            isOpen={isEditModalOpen}
+            onClose={closeEditModal}
+            onUpdate={handleUpdateAppointment}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -8,7 +8,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
 
@@ -92,6 +93,14 @@ export const HeaderBar = React.memo(function HeaderBar({
       <div className="h-[80px] px-3 md:px-6 flex items-center justify-between gap-2">
         {/* Controles de navegación izquierda */}
         <div className="flex items-center gap-2 md:gap-4">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-2.5 py-1.5 text-xs md:text-sm font-medium text-slate-100 hover:bg-slate-800/80 hover:border-slate-500 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Volver al dashboard</span>
+            <span className="sm:hidden">Dashboard</span>
+          </Link>
           <button
             onClick={goToThisWeek}
             className="px-2 md:px-4 py-2 text-xs md:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"

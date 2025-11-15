@@ -13,6 +13,7 @@ import { MiniMonth } from './MiniMonth';
 import { useConsultas } from '@/hooks/useConsultas';
 import { isSameDay } from '@/lib/date-utils';
 import type { Consulta } from '@/types/consultas';
+import { useAgendaState } from '../../hooks/useAgendaState';
 
 interface SidebarProps {
   selectedDate: Date;
@@ -30,17 +31,20 @@ export const Sidebar = React.memo(function Sidebar({
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const { consultas, loading } = useConsultas();
+  const { selectedSede, setSelectedSede } = useAgendaState();
 
-  // Filtrar citas del día seleccionado
   const todayAppointments = useMemo(() => {
-    return consultas.filter(apt => {
-      const aptDate = new Date(apt.fechaConsulta);
-      return isSameDay(aptDate, selectedDate);
-    }).sort((a, b) => {
-      // Ordenar por hora
-      return a.horaConsulta.localeCompare(b.horaConsulta);
-    });
-  }, [consultas, selectedDate]);
+    return consultas
+      .filter((apt) => {
+        const aptDate = new Date(apt.fechaConsulta);
+        if (!isSameDay(aptDate, selectedDate)) return false;
+        if (selectedSede !== 'ALL' && apt.sede !== selectedSede) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        return a.horaConsulta.localeCompare(b.horaConsulta);
+      });
+  }, [consultas, selectedDate, selectedSede]);
 
   // Filtrar por búsqueda
   const filteredAppointments = useMemo(() => {
@@ -59,6 +63,15 @@ export const Sidebar = React.memo(function Sidebar({
       case 'Programada': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
       case 'Cancelada': return 'bg-red-500/20 text-red-400 border-red-500/30';
       default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+    }
+  };
+
+  // Color por sede
+  const getSedeColor = (sede: string) => {
+    switch (sede) {
+      case 'POLANCO': return 'border-l-blue-500';
+      case 'SATELITE': return 'border-l-emerald-500';
+      default: return 'border-l-slate-500';
     }
   };
 
@@ -100,6 +113,21 @@ export const Sidebar = React.memo(function Sidebar({
               <X className="h-4 w-4" />
             </button>
           )}
+        </div>
+        <div className="mt-3 flex gap-2">
+          {(['ALL', 'POLANCO', 'SATELITE'] as const).map((sede) => (
+            <button
+              key={sede}
+              onClick={() => setSelectedSede(sede)}
+              className={`flex-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                selectedSede === sede
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              {sede === 'ALL' ? 'Todas las sedes' : sede}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -146,7 +174,7 @@ export const Sidebar = React.memo(function Sidebar({
                 <button
                   key={apt.id}
                   onClick={() => onAppointmentClick?.(apt)}
-                  className="w-full text-left p-3 rounded-lg bg-slate-800/40 hover:bg-slate-800/60 border border-slate-700/40 hover:border-slate-600/60 transition-all group"
+                  className={`w-full text-left p-2.5 rounded-lg bg-slate-900/80 border border-slate-700/70 border-l-[3px] shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group ${getSedeColor(apt.sede)}`}
                 >
                   {/* Hora */}
                   <div className="flex items-center justify-between mb-2">
