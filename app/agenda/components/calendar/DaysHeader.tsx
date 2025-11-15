@@ -12,13 +12,21 @@ import { addDays, getDayName, isToday } from '@/lib/date-utils';
 
 interface DaysHeaderProps {
   weekStart: Date;
+  mode?: 'week' | 'day';
 }
 
-export const DaysHeader = React.memo(function DaysHeader({ weekStart }: DaysHeaderProps) {
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+export const DaysHeader = React.memo(function DaysHeader({ weekStart, mode = 'week' }: DaysHeaderProps) {
+  const days =
+    mode === 'day'
+      ? [weekStart]
+      : Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   return (
-    <div className="grid grid-cols-[100px_repeat(7,1fr)] gap-1 border-b border-slate-800/40 bg-slate-900/60 backdrop-blur-sm sticky top-0 z-20 p-2 pb-3">
+    <div
+      className={`grid ${
+        mode === 'day' ? 'grid-cols-[100px_1fr]' : 'grid-cols-[100px_repeat(7,1fr)]'
+      } gap-1 border-b border-slate-800/40 bg-slate-900/60 backdrop-blur-sm sticky top-0 z-20 p-2 pb-3`}
+    >
       {/* Columna vacía para alinear con columna de horas */}
       <div className="border-r border-slate-800/40" />
 

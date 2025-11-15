@@ -6,12 +6,14 @@ import type { PropsWithChildren } from 'react'
 import { BottomNav, MobileSidebar, Sidebar } from './Sidebar'
 
 const AUTH_PREFIX = '/auth'
+const AGENDA_PREFIX = '/agenda'
 
 export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname() ?? ''
   const isAuthRoute = pathname.startsWith(AUTH_PREFIX)
+  const isAgendaRoute = pathname.startsWith(AGENDA_PREFIX)
 
-  if (isAuthRoute) {
+  if (isAuthRoute || isAgendaRoute) {
     return <>{children}</>
   }
 

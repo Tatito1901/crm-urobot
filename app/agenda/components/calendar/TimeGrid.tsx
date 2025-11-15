@@ -18,6 +18,7 @@ interface TimeGridProps {
   appointments?: Appointment[];
   startHour?: number;
   endHour?: number;
+  mode?: 'week' | 'day';
   onAppointmentClick?: (appointment: Appointment) => void;
   onAppointmentConfirm?: (id: string) => void;
   onAppointmentEdit?: (appointment: Appointment) => void;
@@ -28,12 +29,16 @@ export const TimeGrid = React.memo(function TimeGrid({
   appointments = [],
   startHour = 11, 
   endHour = 21,
+  mode = 'week',
   onAppointmentClick,
   onAppointmentConfirm,
   onAppointmentEdit,
 }: TimeGridProps) {
   const timeSlots = generateTimeSlots(startHour, endHour);
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const days =
+    mode === 'day'
+      ? [weekStart]
+      : Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   // Determinar si un día tiene horario laboral
   const isWorkingDay = (date: Date) => {
@@ -62,7 +67,11 @@ export const TimeGrid = React.memo(function TimeGrid({
 
   return (
     <div className="flex-1 overflow-auto bg-[#0b0f16] p-2">
-      <div className="grid grid-cols-[100px_repeat(7,1fr)] min-h-full gap-1 rounded-lg overflow-hidden">
+      <div
+        className={`grid ${
+          mode === 'day' ? 'grid-cols-[100px_1fr]' : 'grid-cols-[100px_repeat(7,1fr)]'
+        } min-h-full gap-1 rounded-lg overflow-hidden`}
+      >
         {/* Columna de horas */}
         <div className="border-r border-slate-800/40 sticky left-0 bg-slate-900/60 z-10 backdrop-blur-sm">
           {timeSlots.map((time) => (

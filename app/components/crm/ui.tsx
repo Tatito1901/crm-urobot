@@ -156,15 +156,15 @@ export function DataTable({
               >
                 <div className="flex-1 min-w-0">
                   {/* Título principal */}
-                  <p className="font-medium text-white truncate text-sm">
+                  <div className="font-medium text-white truncate text-sm">
                     {primary}
-                  </p>
+                  </div>
 
                   {/* Subtítulo opcional */}
                   {secondary && (
-                    <p className="text-xs text-white/60 truncate mt-0.5">
+                    <div className="text-xs text-white/60 truncate mt-0.5">
                       {secondary}
-                    </p>
+                    </div>
                   )}
 
                   {/* Metadata chips */}

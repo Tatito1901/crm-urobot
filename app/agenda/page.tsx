@@ -21,6 +21,7 @@ import { DaysHeader } from './components/calendar/DaysHeader';
 import { TimeGrid } from './components/calendar/TimeGrid';
 import { ListView } from './components/calendar/ListView';
 import { FiltersPanel } from './components/calendar/FiltersPanel';
+import { MiniMonth } from './components/calendar/MiniMonth';
 import { CreateAppointmentModal } from './components/modals/CreateAppointmentModal';
 import { AppointmentDetailsModal } from './components/modals/AppointmentDetailsModal';
 import { EditAppointmentModal } from './components/modals/EditAppointmentModal';
@@ -86,6 +87,7 @@ export default function AgendaPage() {
 
   // Estado: inicio de la semana actual
   const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date()));
+  const [monthViewCurrent, setMonthViewCurrent] = useState(() => new Date());
 
   // Estado global de agenda
   const {
@@ -118,6 +120,12 @@ export default function AgendaPage() {
 
   // Cuando se selecciona una fecha en el mini-calendario, ir a esa semana
   const handleDateSelect = useCallback((date: Date) => {
+    setSelectedDate(date);
+    setCurrentWeekStart(startOfWeek(date));
+  }, []);
+
+  const handleMonthChange = useCallback((date: Date) => {
+    setMonthViewCurrent(date);
     setSelectedDate(date);
     setCurrentWeekStart(startOfWeek(date));
   }, []);
@@ -191,6 +199,9 @@ export default function AgendaPage() {
       pending: pendingConfirmation,
     };
   }, [filteredAppointments]);
+
+  const calendarBaseDate = viewMode === 'day' ? selectedDate : currentWeekStart;
+  const timeGridMode: 'week' | 'day' = viewMode === 'day' ? 'day' : 'week';
 
   // Handlers de modales
   const handleCreateAppointment = async (data: Omit<CreateAppointmentData, 'slotId' | 'start' | 'end' | 'timezone'>) => {
@@ -341,17 +352,27 @@ export default function AgendaPage() {
                   end: new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000),
                 }}
               />
+            ) : viewMode === 'month' ? (
+              <div className="flex-1 overflow-auto bg-[#0b0f16] p-4">
+                <MiniMonth
+                  selectedDate={selectedDate}
+                  onDateSelect={handleDateSelect}
+                  currentMonth={monthViewCurrent}
+                  onMonthChange={handleMonthChange}
+                />
+              </div>
             ) : (
               <>
                 {/* Header de días (sticky) */}
-                <DaysHeader weekStart={currentWeekStart} />
+                <DaysHeader weekStart={calendarBaseDate} mode={timeGridMode} />
 
                 {/* Grid de tiempo (scrollable) con citas */}
                 <TimeGrid 
-                  weekStart={currentWeekStart} 
+                  weekStart={calendarBaseDate} 
                   appointments={filteredAppointments}
                   startHour={11} 
                   endHour={21}
+                  mode={timeGridMode}
                   onAppointmentClick={(apt) => {
                     const state = useAgendaState.getState();
                     state.openDetailsModal(apt);
