@@ -5,7 +5,6 @@
  * Evita layout shifts y proporciona transiciones suaves
  */
 
-'use client';
 
 import { ReactNode } from 'react';
 
@@ -35,7 +34,7 @@ export function ContentLoader({
     return (
       <div className={`flex items-center justify-center ${minHeight}`}>
         <div className="max-w-md text-center space-y-4">
-          <div className="text-4xl">⚠️</div>
+          <div className="text-xl font-bold text-red-400">Error</div>
           <h3 className="text-lg font-semibold text-white">Error al cargar datos</h3>
           <p className="text-sm text-slate-400">{error.message}</p>
           {onRetry && (

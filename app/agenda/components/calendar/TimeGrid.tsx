@@ -20,8 +20,6 @@ interface TimeGridProps {
   endHour?: number;
   mode?: 'week' | 'day';
   onAppointmentClick?: (appointment: Appointment) => void;
-  onAppointmentConfirm?: (id: string) => void;
-  onAppointmentEdit?: (appointment: Appointment) => void;
 }
 
 export const TimeGrid = React.memo(function TimeGrid({ 
@@ -31,8 +29,6 @@ export const TimeGrid = React.memo(function TimeGrid({
   endHour = 24,
   mode = 'week',
   onAppointmentClick,
-  onAppointmentConfirm,
-  onAppointmentEdit,
 }: TimeGridProps) {
   // Memoizar slots para evitar regeneración en cada render
   const timeSlots = useMemo(() => generateTimeSlots(startHour, endHour), [startHour, endHour]);
@@ -138,8 +134,6 @@ export const TimeGrid = React.memo(function TimeGrid({
                   <AppointmentCard
                     appointment={apt}
                     onClick={onAppointmentClick}
-                    onConfirm={onAppointmentConfirm}
-                    onEdit={onAppointmentEdit}
                   />
                 </div>
               ))}

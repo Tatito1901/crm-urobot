@@ -136,7 +136,7 @@ export type AppointmentStatus = 'programada' | 'confirmada' | 'reagendada' | 'ca
 export const STATUS_CONFIG = {
   programada: {
     label: 'Programada',
-    icon: '⏳',
+    icon: '',
     color: 'blue',
     bgClass: 'bg-blue-500/10',
     borderClass: 'border-blue-500/40',
@@ -145,7 +145,7 @@ export const STATUS_CONFIG = {
   },
   confirmada: {
     label: 'Confirmada',
-    icon: '✅',
+    icon: '',
     color: 'green',
     bgClass: 'bg-green-500/10',
     borderClass: 'border-green-500/40',
@@ -154,7 +154,7 @@ export const STATUS_CONFIG = {
   },
   reagendada: {
     label: 'Reagendada',
-    icon: '🔄',
+    icon: '',
     color: 'yellow',
     bgClass: 'bg-yellow-500/10',
     borderClass: 'border-yellow-500/40',
@@ -163,7 +163,7 @@ export const STATUS_CONFIG = {
   },
   cancelada: {
     label: 'Cancelada',
-    icon: '❌',
+    icon: '',
     color: 'red',
     bgClass: 'bg-red-500/10',
     borderClass: 'border-red-500/40',
@@ -172,10 +172,10 @@ export const STATUS_CONFIG = {
   },
   completada: {
     label: 'Completada',
-    icon: '✔️',
+    icon: '',
     color: 'gray',
-    bgClass: 'bg-slate-500/10',
-    borderClass: 'border-slate-500/40',
+    bgClass: 'bg-gray-500/10',
+    borderClass: 'border-gray-500/40',
     textClass: 'text-slate-300',
     dotClass: 'bg-slate-400',
   },

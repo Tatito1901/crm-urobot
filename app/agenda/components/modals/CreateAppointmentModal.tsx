@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../shared/Modal';
-import { PatientSearchEnhanced } from '../shared/PatientSearchEnhanced';
+import { PatientSearch } from '../shared/PatientSearch';
 import { useAppointmentForm } from '../../hooks/useAppointmentForm';
 import { formatShortTime } from '../../lib/agenda-utils';
 import { createPatient } from '../../services/patients-service';
@@ -186,7 +186,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
           <label className="block text-sm font-medium text-slate-300 mb-2">
             Paciente <span className="text-red-400">*</span>
           </label>
-          <PatientSearchEnhanced
+          <PatientSearch
             onSelect={(patient: Paciente | null) => {
               if (patient?.id) {
                 updateField('patientId', patient.id);
@@ -198,7 +198,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
                 updateField('patientName', '');
               }
             }}
-            onNewPatientData={(data) => {
+            onNewPatientData={(data: { nombre: string; telefono: string; email: string }) => {
               setNewPatientData(data);
               updateField('patientId', 'new-patient');
               updateField('patientName', data.nombre);

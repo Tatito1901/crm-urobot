@@ -12,8 +12,25 @@ export interface Consulta {
   sede: ConsultaSede;
   tipo: string;
   estado: ConsultaEstado;
-  estadoConfirmacion: string;
+  
+  // Sistema de confirmación completo
+  estadoConfirmacion: 'Pendiente' | 'Confirmada' | 'No Confirmada';
   confirmadoPaciente: boolean;
+  fechaConfirmacion: string | null;
+  fechaLimiteConfirmacion: string | null;
+  
+  // Recordatorios enviados
+  remConfirmacionInicialEnviado: boolean;
+  rem48hEnviado: boolean;
+  rem24hEnviado: boolean;
+  rem3hEnviado: boolean;
+  
+  // Métricas calculadas
+  horasHastaConsulta: number | null;
+  diasHastaConsulta: number | null;
+  requiereConfirmacion: boolean;
+  confirmacionVencida: boolean;
+  
   fecha: string;
   fechaConsulta: string;
   horaConsulta: string;

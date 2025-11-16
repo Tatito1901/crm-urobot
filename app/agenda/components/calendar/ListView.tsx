@@ -235,14 +235,14 @@ export const ListView: React.FC<ListViewProps> = ({
                                   : 'bg-amber-500/10 text-amber-500'
                               }`}
                             >
-                              {apt.prioridad === 'urgente' ? '🔴 Urgente' : '⚠️ Alta'}
+                              {apt.prioridad === 'urgente' ? 'Urgente' : 'Alta'}
                             </span>
                           )}
 
                           {/* Confirmación */}
                           {!apt.confirmadoPaciente && apt.estado !== 'Cancelada' && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-400">
-                              ⏳ Sin confirmar
+                              Sin confirmar
                             </span>
                           )}
                         </div>

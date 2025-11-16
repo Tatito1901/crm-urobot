@@ -233,7 +233,7 @@ export function QuickAddAppointmentModal() {
         {conflicts.length > 0 && (
           <div className="mb-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
             <p className="text-xs font-medium text-yellow-300 mb-1">
-              ⚠️ Conflictos de horario detectados:
+              Conflictos de horario detectados:
             </p>
             {conflicts.map((conflict, i) => (
               <p key={i} className="text-xs text-yellow-200">

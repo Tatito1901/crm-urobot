@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
@@ -15,9 +16,15 @@ export const dynamic = 'force-dynamic';
 
 export default function ConfirmacionesPage() {
   const [search, setSearch] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState<TipoFilter>('ALL');
   const [rangoFiltro, setRangoFiltro] = useState<RangoFilter>('ultimos_30');
   const [soloUltimo, setSoloUltimo] = useState(true);
+
+  // ✅ OPTIMIZACIÓN: Debounce para búsqueda (300ms)
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    setSearch(value);
+  }, 300);
 
   // ✅ Datos reales de Supabase
   const { recordatorios, loading, error, refresh } = useRecordatorios();
@@ -104,8 +111,11 @@ export default function ConfirmacionesPage() {
             <CardContent className="flex items-center gap-3 pt-0">
               <span className="text-white/40 text-xl">🔍</span>
               <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                value={inputValue}
+                onChange={(event) => {
+                  setInputValue(event.target.value);
+                  debouncedSearch(event.target.value);
+                }}
                 placeholder="Buscar..."
                 className="w-full bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
               />

@@ -4,12 +4,25 @@ export type PacienteEstado = (typeof PACIENTE_ESTADOS)[number];
 
 export interface Paciente {
   id: string;
+  pacienteId: string; // ID legible (ej: "PAC-123")
   nombre: string;
   telefono: string;
-  email: string;
+  email: string | null;
+  
+  // Métricas de consultas
   totalConsultas: number;
   ultimaConsulta: string | null;
+  diasDesdeUltimaConsulta: number | null;
+  
+  // Estado y metadata
   estado: PacienteEstado;
+  fechaRegistro: string | null;
+  fuenteOriginal: string | null;
+  notas: string | null;
+  
+  // Indicadores visuales
+  esReciente: boolean; // Registrado hace menos de 30 días
+  requiereAtencion: boolean; // Sin consulta en 90+ días y activo
 }
 
 // Información médica extendida del paciente

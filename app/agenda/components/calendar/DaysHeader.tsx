@@ -5,8 +5,6 @@
  * Muestra los días con formato: DÍA (mayúsculas) + número
  */
 
-'use client';
-
 import React from 'react';
 import { addDays, getDayName, isToday } from '@/lib/date-utils';
 

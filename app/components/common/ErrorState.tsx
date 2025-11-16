@@ -7,7 +7,6 @@
  * Este componente muestra errores de API, network, etc.
  */
 
-'use client';
 
 import React from 'react';
 

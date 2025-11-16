@@ -404,11 +404,6 @@ export default function AgendaPage() {
                     const state = useAgendaState.getState();
                     state.openDetailsModal(apt);
                   }}
-                  onAppointmentConfirm={handleConfirmAppointment}
-                  onAppointmentEdit={(apt) => {
-                    const state = useAgendaState.getState();
-                    state.openEditModal(apt);
-                  }}
                 />
               </>
             )}

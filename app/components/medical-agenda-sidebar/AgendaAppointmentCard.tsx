@@ -5,7 +5,6 @@
  * Tarjeta de cita individual con indicadores visuales por estado
  */
 
-'use client';
 
 import { useMemo } from 'react';
 import { cn } from '@/app/lib/utils';

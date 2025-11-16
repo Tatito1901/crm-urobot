@@ -111,3 +111,56 @@ export function ChartSkeleton({ height = 200 }: { height?: number }) {
     </div>
   );
 }
+
+/**
+ * Spinner component
+ */
+export function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+  const sizeClasses = {
+    sm: 'w-4 h-4 border-2',
+    md: 'w-8 h-8 border-3',
+    lg: 'w-12 h-12 border-4',
+  };
+
+  return (
+    <div
+      className={`${sizeClasses[size]} border-blue-400/30 border-t-blue-400 rounded-full animate-spin`}
+    />
+  );
+}
+
+/**
+ * Empty state component
+ */
+export function EmptyState({
+  icon = '📭',
+  title = 'No hay datos',
+  description,
+  action,
+}: {
+  icon?: string;
+  title?: string;
+  description?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
+      <div className="text-6xl mb-4 opacity-50">{icon}</div>
+      <h3 className="text-lg font-semibold text-slate-200 mb-2">{title}</h3>
+      {description && <p className="text-sm text-slate-400 mb-4 max-w-md">{description}</p>}
+      {action && <div className="mt-4">{action}</div>}
+    </div>
+  );
+}
+
+/**
+ * Full page loader
+ */
+export function FullPageLoader({ message = 'Cargando...' }: { message?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      <Spinner size="lg" />
+      <p className="mt-4 text-slate-400">{message}</p>
+    </div>
+  );
+}

@@ -6,7 +6,6 @@
  * Captura errores de rendering de React y muestra UI de fallback
  */
 
-'use client';
 
 import React, { Component, type ReactNode } from 'react';
 
@@ -51,7 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8 bg-red-500/10 border border-red-500/20 rounded-xl">
-          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <div className="text-red-400 text-2xl font-bold mb-4">Error</div>
 
           <h2 className="text-xl font-semibold text-red-100 mb-2">
             Algo salió mal

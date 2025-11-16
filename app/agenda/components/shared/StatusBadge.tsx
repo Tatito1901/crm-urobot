@@ -5,8 +5,6 @@
  * Badges con colores médicos profesionales y iconos
  */
 
-'use client';
-
 import React from 'react';
 import { CheckCircle2, Clock, XCircle, Calendar, AlertCircle } from 'lucide-react';
 

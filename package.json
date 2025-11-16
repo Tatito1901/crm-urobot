@@ -10,21 +10,14 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",
-    "@radix-ui/react-tabs": "^1.0.5",
-    "@schedule-x/calendar": "^3.3.0",
-    "@schedule-x/events-service": "^3.3.0",
-    "@schedule-x/react": "^3.3.0",
-    "@schedule-x/theme-default": "^3.3.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.78.0",
-    "@tanstack/react-virtual": "^3.13.12",
     "lucide-react": "^0.553.0",
     "nanoid": "^5.1.6",
     "next": "15.5.5",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "swr": "^2.3.6",
-    "use-debounce": "^10.0.6",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

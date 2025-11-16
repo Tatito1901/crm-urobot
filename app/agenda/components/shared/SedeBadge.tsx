@@ -5,8 +5,6 @@
  * Badges con colores distintivos por sede
  */
 
-'use client';
-
 import React from 'react';
 import { Building2, MapPin } from 'lucide-react';
 

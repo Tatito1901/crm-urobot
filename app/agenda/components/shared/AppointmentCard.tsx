@@ -144,20 +144,20 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
           <div className="font-bold text-white mb-2 text-sm">{appointment.paciente}</div>
           <div className="space-y-1.5 text-slate-300">
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">🕐</span>
+              <span className="text-slate-400 font-medium">Hora:</span>
               <span className="font-medium">{startTime} - {endTime}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">📍</span>
+              <span className="text-slate-400 font-medium">Sede:</span>
               <span>{appointment.sede}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">📋</span>
+              <span className="text-slate-400 font-medium">Tipo:</span>
               <span>{appointment.tipo.replace(/_/g, ' ')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">⏱️</span>
-              <span>{appointment.duracionMinutos} minutos</span>
+              <span className="text-slate-400 font-medium">Duración:</span>
+              <span>{appointment.duracionMinutos} min</span>
             </div>
             {appointment.motivoConsulta && (
               <div className="text-slate-400 text-[10px] mt-2 pt-2 border-t border-slate-700 italic">

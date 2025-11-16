@@ -15,9 +15,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/app/components/ui/card';
-import { MetricCard } from '@/app/components/analytics/MetricCard';
+import { MetricCard } from '@/app/components/metrics';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
-import { EmptyState } from '@/app/components/common/LoadingStates';
+import { EmptyState } from '@/app/components/common/SkeletonLoader';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,43 +44,36 @@ export default function DashboardPage() {
     await Promise.all([refetchMetrics(), refetchLeads(), refetchConsultas()]);
   };
 
-  // Métricas balanceadas para MVP - Esquema de colores unificado
+  // Métricas para MVP
   const metrics = dm ? [
     {
       title: 'Leads totales',
       value: dm.leadsTotal.toLocaleString('es-MX'),
       subtitle: `${dm.leadsConvertidos} convertidos`,
-      icon: '👥',
       color: 'blue' as const,
-      trend: dm.leadsMes > 0 ? { value: 12, isPositive: true } : undefined,
     },
     {
       title: 'Tasa de conversión',
       value: `${dm.tasaConversion}%`,
       subtitle: 'Meta: 35%',
-      icon: '📈',
       color: 'blue' as const,
     },
     {
       title: 'Pacientes activos',
       value: dm.pacientesActivos.toLocaleString('es-MX'),
       subtitle: `Total: ${dm.totalPacientes}`,
-      icon: '🏥',
       color: 'blue' as const,
     },
     {
       title: 'Consultas futuras',
       value: dm.consultasFuturas.toLocaleString('es-MX'),
       subtitle: `Hoy: ${dm.consultasHoy}`,
-      icon: '📅',
       color: 'blue' as const,
-      trend: dm.consultasHoy > 0 ? { value: 8, isPositive: true } : undefined,
     },
     {
       title: 'Pendientes confirmación',
       value: dm.pendientesConfirmacion.toLocaleString('es-MX'),
       subtitle: 'Requieren seguimiento',
-      icon: '⏰',
       color: 'blue' as const,
     },
   ] : [];
@@ -172,9 +165,7 @@ export default function DashboardPage() {
                 title={metric.title}
                 value={metric.value}
                 subtitle={metric.subtitle}
-                icon={metric.icon}
                 color={metric.color}
-                trend={metric.trend}
                 loading={loadingMetrics && !dm}
               />
             ))}
@@ -321,7 +312,6 @@ export default function DashboardPage() {
                 <CardContent className="space-y-3">
                   {leadsChartData.every((d) => d.value === 0) ? (
                     <EmptyState
-                      icon="📊"
                       title="Sin datos"
                       description="No hay leads registrados aún"
                     />
@@ -370,7 +360,6 @@ export default function DashboardPage() {
                 <CardContent className="flex justify-center py-4">
                   {sedesChartData.every((d) => d.value === 0) ? (
                     <EmptyState
-                      icon="📅"
                       title="Sin consultas"
                       description="No hay consultas programadas"
                     />
