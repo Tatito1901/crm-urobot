@@ -52,9 +52,11 @@ export function Sidebar() {
                   <li key={item.label}>
                     <Link
                       href={item.href}
+                      prefetch={true}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 font-medium text-white/65 transition-colors",
+                        // ✅ Touch target optimizado desktop
+                        "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-3 font-medium text-white/65 transition-colors",
                         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
                         "hover:border-white/15 hover:bg-white/5 hover:text-white",
                         isActive && "border-white/20 bg-white/12 text-white shadow-[0_15px_35px_-25px_rgba(56,189,248,0.7)]"
@@ -132,25 +134,35 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navegación inferior"
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-1 border-t border-white/20 bg-[#050b18]/90 px-2 py-2 text-[11px] text-white/60 backdrop-blur-md safe-bottom lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-urobot/98 backdrop-blur-lg shadow-[0_-4px_16px_rgba(0,0,0,0.3)] lg:hidden"
     >
-      {navItems.map((item) => {
-        const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-        return (
-          <Link
-            key={item.label}
-            href={item.href}
-            aria-current={isActive ? "page" : undefined}
-            className={cn(
-              "flex flex-1 flex-col items-center gap-1 rounded-lg px-1 py-2 text-center transition-colors",
-              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-              isActive ? "bg-white/12 text-white" : "hover:text-white"
-            )}
-          >
-            <span className="leading-tight truncate max-w-full text-center">{item.label}</span>
-          </Link>
-        );
-      })}
+      <div className="flex items-center justify-between gap-1 px-2 py-2 sm:px-3">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              prefetch={true}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                // ✅ Touch target optimizado: min 48px height
+                "flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2.5 min-h-[48px] justify-center text-center transition-all duration-200 active:scale-95 active:bg-white/20",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+                isActive 
+                  ? "bg-blue-500/15 text-white font-semibold shadow-[0_0_12px_rgba(59,130,246,0.3)]" 
+                  : "text-white/60 active:text-white"
+              )}
+            >
+              <span className="text-[10px] sm:text-xs leading-tight truncate max-w-full text-center">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+      {/* ✅ Safe area para iPhones con notch */}
+      <div className="h-[env(safe-area-inset-bottom)] bg-urobot/98" />
     </nav>
   );
 }

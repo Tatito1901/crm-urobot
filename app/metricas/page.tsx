@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
+import { typography, spacing, cards } from '@/app/lib/design-system';
 
 export const dynamic = 'force-dynamic';
 
@@ -178,7 +179,7 @@ export default function MetricasPage() {
         <button
           onClick={handleRefresh}
           disabled={loadingMetrics || loadingLeads || loadingConsultas}
-          className="rounded-lg bg-blue-600/20 px-4 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="rounded-lg bg-blue-600/20 px-4 py-3 sm:px-5 sm:py-2.5 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] sm:min-h-0"
         >
           {(loadingMetrics || loadingLeads || loadingConsultas) ? 'Actualizando...' : '↻ Actualizar datos'}
         </button>
@@ -213,28 +214,28 @@ export default function MetricasPage() {
           title="Estatus de confirmaciones" 
           items={confirmStatus} 
         />
-        <Card className="bg-white/[0.03]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-white">Datos en tiempo real</CardTitle>
-            <CardDescription>Conexión activa con Supabase</CardDescription>
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className={typography.cardTitle}>Datos en tiempo real</CardTitle>
+            <CardDescription className={typography.cardDescription}>Conexión activa con Supabase</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <ul className="space-y-3 text-sm text-white/70">
-              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
-                <span className="text-green-400">●</span>
-                <span>Datos cargados desde Supabase con SWR caché</span>
+            <ul className={spacing.spaceSm}>
+              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-3">
+                <span className="text-green-400 text-lg">●</span>
+                <span className={typography.bodySecondary}>Datos cargados desde Supabase con SWR caché</span>
               </li>
-              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
-                <span className="text-green-400">●</span>
-                <span>Actualización manual con botón de refresh</span>
+              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-3">
+                <span className="text-green-400 text-lg">●</span>
+                <span className={typography.bodySecondary}>Actualización manual con botón de refresh</span>
               </li>
-              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
-                <span className="text-blue-400">ⓘ</span>
-                <span>Usa RPC → Vista → Cálculo manual (fallback en cascada)</span>
+              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-3">
+                <span className="text-blue-400 text-lg">ⓘ</span>
+                <span className={typography.bodySecondary}>Usa RPC → Vista → Cálculo manual (fallback en cascada)</span>
               </li>
-              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-2">
-                <span className="text-purple-400">✓</span>
-                <span>Integración completa con n8n workflows</span>
+              <li className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-3">
+                <span className="text-purple-400 text-lg">✓</span>
+                <span className={typography.bodySecondary}>Integración completa con n8n workflows</span>
               </li>
             </ul>
           </CardContent>

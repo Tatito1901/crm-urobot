@@ -76,7 +76,7 @@ export interface Appointment {
   requisitosEspeciales: string[] | null;
 
   // Estado
-  estado: 'Programada' | 'Confirmada' | 'Reagendada' | 'En_Curso' | 'Completada' | 'Cancelada' | 'No_Acudio';
+  estado: 'Programada' | 'Confirmada' | 'Reagendada' | 'Completada' | 'Cancelada' | 'No Asistió';
   estadoConfirmacion: string;
   confirmadoPaciente: boolean;
   confirmadoEn: string | null; // ISO string

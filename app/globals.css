@@ -382,3 +382,238 @@ body {
     transition: none !important;
   }
 }
+
+/* ============================================
+   BACKGROUND UNIFICADO - CRM UROBOT
+   ============================================
+   Consistencia visual en toda la plataforma
+   con gradiente radial azul profesional
+*/
+.bg-urobot {
+  background: radial-gradient(circle at top, #101c3b, #02040a 70%);
+}
+
+.bg-urobot-dark {
+  background: radial-gradient(circle at top, #0a1429, #02040a 70%);
+}
+
+.bg-urobot-light {
+  background: radial-gradient(circle at top, #1a2f52, #050b18 70%);
+}
+
+/* ============================================
+   ANIMACIONES ELEGANTES - DASHBOARD
+   ============================================ */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s ease-out forwards;
+}
+
+/* Optimizar viewport */
+html, body {
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height para mobile */
+}
+
+/* Smooth scroll behavior */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================================
+   OPTIMIZACIONES ANTI-PARPADEO
+   ============================================ */
+
+/* Contenido que carga debe mantener espacio */
+.content-placeholder {
+  min-height: inherit;
+  will-change: contents;
+}
+
+/* Transiciones suaves sin layout shift */
+.smooth-transition {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Prevent layout shift on load */
+.prevent-shift {
+  contain: layout;
+}
+
+/* Optimización de repaint */
+.optimize-repaint {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Skeleton con mejor performance */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.skeleton-animate {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Content loader transitions */
+.content-enter {
+  animation: fade-in-up 0.4s ease-out;
+}
+
+/* Bar Chart animations */
+@keyframes bar-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-bar {
+  animation: bar-slide-up 0.8s ease-out both;
+}
+
+/* Prevent FOUC (Flash of Unstyled Content) */
+.ssr-loading {
+  opacity: 0;
+}
+
+.ssr-loaded {
+  opacity: 1;
+  transition: opacity 0.3s ease-in;
+}
+
+/* ============================================
+   MOBILE-FIRST UTILITIES
+   ============================================ */
+
+/* Touch targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-large {
+  min-height: 56px;
+  min-width: 56px;
+}
+
+/* Safe areas para iOS */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Mobile scroll optimization */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Mobile container spacing */
+.mobile-container {
+  @apply px-4 py-6;
+}
+
+@media (min-width: 640px) {
+  .mobile-container {
+    @apply px-6 py-8;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-container {
+    @apply px-8 py-10;
+  }
+}
+
+/* Typography mobile-first */
+.mobile-heading {
+  @apply text-xl font-bold leading-tight tracking-tight;
+}
+
+@media (min-width: 640px) {
+  .mobile-heading {
+    @apply text-2xl;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-heading {
+    @apply text-3xl;
+  }
+}
+
+/* Prevent text size adjustment on mobile */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Better tap highlight */
+* {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.15);
+}

@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import type { PropsWithChildren } from 'react'
+import { usePrefetchRoutes } from '@/hooks/usePrefetchRoutes'
 
 import { BottomNav, MobileSidebar, Sidebar } from './Sidebar'
 
@@ -13,12 +14,15 @@ export function AppShell({ children }: PropsWithChildren) {
   const isAuthRoute = pathname.startsWith(AUTH_PREFIX)
   const isAgendaRoute = pathname.startsWith(AGENDA_PREFIX)
 
+  // ✅ OPTIMIZACIÓN: Prefetch inteligente de rutas probables
+  usePrefetchRoutes()
+
   if (isAuthRoute || isAgendaRoute) {
     return <>{children}</>
   }
 
   return (
-    <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,_#101c3b,_#02040a_70%)]">
+    <div className="flex min-h-screen bg-urobot">
       <MobileSidebar />
       <Sidebar />
       <div className="flex min-h-screen flex-1 flex-col lg:pl-0">

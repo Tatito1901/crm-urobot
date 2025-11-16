@@ -1,0 +1,20 @@
+{
+  "name": "CRM · Dr. Mario Martínez Thomas",
+  "short_name": "CRM Clínico",
+  "description": "Panel operativo para agentes asistidos por IA",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#03060f",
+  "theme_color": "#03060f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "productivity", "business"],
+  "lang": "es-MX"
+}

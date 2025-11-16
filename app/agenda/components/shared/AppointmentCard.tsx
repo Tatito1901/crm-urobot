@@ -8,25 +8,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle2, Edit2, Phone, MessageCircle } from 'lucide-react';
-import { StatusBadge } from './StatusBadge';
-import { SedeBadge } from './SedeBadge';
 import type { Appointment } from '@/types/agenda';
 
 interface AppointmentCardProps {
   appointment: Appointment;
-  onConfirm?: (id: string) => void;
-  onEdit?: (appointment: Appointment) => void;
   onClick?: (appointment: Appointment) => void;
 }
 
 export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   appointment,
-  onConfirm,
-  onEdit,
   onClick,
 }) => {
-  const [showActions, setShowActions] = useState(false);
+  const [, setShowActions] = useState(false);
 
   // Formatear hora
   const startTime = appointment.start.toPlainTime().toString().slice(0, 5);
@@ -34,7 +27,6 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   
   // Determinar nivel de detalle según duración
   const isShortAppointment = appointment.duracionMinutos <= 30;
-  const isMediumAppointment = appointment.duracionMinutos > 30 && appointment.duracionMinutos <= 60;
   const isLongAppointment = appointment.duracionMinutos > 60;
 
   // Determinar color del borde según sede (estilo Google Calendar)

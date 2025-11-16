@@ -8,12 +8,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Calendar, Search, Plus, X } from 'lucide-react';
+import { Calendar, Plus } from 'lucide-react';
 import { MiniMonth } from './MiniMonth';
 import { useConsultas } from '@/hooks/useConsultas';
 import { isSameDay } from '@/lib/date-utils';
 import type { Consulta } from '@/types/consultas';
 import { useAgendaState } from '../../hooks/useAgendaState';
+import { typography, badges } from '@/app/lib/design-system';
 
 interface SidebarProps {
   selectedDate: Date;
@@ -29,32 +30,31 @@ export const Sidebar = React.memo(function Sidebar({
   onAppointmentClick 
 }: SidebarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [searchQuery, setSearchQuery] = useState('');
   const { consultas, loading } = useConsultas();
-  const { selectedSede, setSelectedSede } = useAgendaState();
+  const { selectedSede, setSelectedSede, searchQuery } = useAgendaState();
 
-  const todayAppointments = useMemo(() => {
-    return consultas
-      .filter((apt) => {
-        const aptDate = new Date(apt.fechaConsulta);
-        if (!isSameDay(aptDate, selectedDate)) return false;
-        if (selectedSede !== 'ALL' && apt.sede !== selectedSede) return false;
-        return true;
-      })
-      .sort((a, b) => {
-        return a.horaConsulta.localeCompare(b.horaConsulta);
-      });
-  }, [consultas, selectedDate, selectedSede]);
-
-  // Filtrar por búsqueda
+  // Filtrar citas del día seleccionado por sede y búsqueda global
   const filteredAppointments = useMemo(() => {
-    if (!searchQuery.trim()) return todayAppointments;
-    const query = searchQuery.toLowerCase();
-    return todayAppointments.filter(apt =>
-      apt.paciente.toLowerCase().includes(query) ||
-      apt.motivoConsulta?.toLowerCase().includes(query)
+    const dayAppointments = consultas.filter((apt) => {
+      const aptDate = new Date(apt.fechaConsulta);
+      if (!isSameDay(aptDate, selectedDate)) return false;
+      if (selectedSede !== 'ALL' && apt.sede !== selectedSede) return false;
+      
+      // Aplicar búsqueda global
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matches = apt.paciente.toLowerCase().includes(query) ||
+          apt.motivoConsulta?.toLowerCase().includes(query);
+        if (!matches) return false;
+      }
+      
+      return true;
+    });
+    
+    return dayAppointments.sort((a, b) => 
+      a.horaConsulta.localeCompare(b.horaConsulta)
     );
-  }, [todayAppointments, searchQuery]);
+  }, [consultas, selectedDate, selectedSede, searchQuery]);
 
   // Determinar color del estado
   const getStatusColor = (estado: string) => {
@@ -76,13 +76,13 @@ export const Sidebar = React.memo(function Sidebar({
   };
 
   return (
-    <aside className="w-[320px] h-full border-r border-slate-800/40 bg-gradient-to-b from-slate-900/60 to-slate-950/60 backdrop-blur-sm flex flex-col">
+    <aside className="w-[320px] h-full border-r-2 border-slate-700/50 bg-gradient-to-b from-slate-900/60 to-slate-950/60 backdrop-blur-sm flex flex-col shadow-xl shadow-black/20">
       {/* Header */}
       <div className="px-4 py-4 border-b border-slate-800/40">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-blue-400" />
-            <h2 className="text-lg font-bold text-white">Agenda Médica</h2>
+            <h2 className={`${typography.sectionTitle} text-lg`}>Agenda Médica</h2>
           </div>
           {onCreateAppointment && (
             <button
@@ -95,31 +95,13 @@ export const Sidebar = React.memo(function Sidebar({
           )}
         </div>
 
-        {/* Búsqueda */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar paciente..."
-            className="w-full pl-9 pr-9 py-2 bg-slate-800/60 border border-slate-700/60 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-        <div className="mt-3 flex gap-2">
+        {/* Filtro de sedes */}
+        <div className="flex gap-2">
           {(['ALL', 'POLANCO', 'SATELITE'] as const).map((sede) => (
             <button
               key={sede}
               onClick={() => setSelectedSede(sede)}
-              className={`flex-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+              className={`flex-1 rounded-lg px-2.5 py-2 text-[11px] font-medium transition-colors min-h-[44px] flex items-center justify-center ${
                 selectedSede === sede
                   ? 'bg-blue-500 text-white'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
@@ -145,14 +127,14 @@ export const Sidebar = React.memo(function Sidebar({
       <div className="flex-1 overflow-y-auto">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-300">
+            <h3 className={typography.cardTitleSmall}>
               {selectedDate.toLocaleDateString('es-MX', { 
                 weekday: 'long', 
                 day: 'numeric', 
                 month: 'long' 
               })}
             </h3>
-            <span className="text-xs font-medium text-slate-400">
+            <span className={`${typography.metadataSmall} font-medium`}>
               {filteredAppointments.length} {filteredAppointments.length === 1 ? 'cita' : 'citas'}
             </span>
           </div>
@@ -164,9 +146,10 @@ export const Sidebar = React.memo(function Sidebar({
           ) : filteredAppointments.length === 0 ? (
             <div className="text-center py-8">
               <Calendar className="h-12 w-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-400">
-                {searchQuery ? 'No se encontraron citas' : 'Sin citas programadas'}
-              </p>
+              <p className={typography.body}>Sin citas programadas</p>
+              {searchQuery && (
+                <p className={`${typography.metadataSmall} mt-1`}>Intenta con otra búsqueda</p>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
@@ -181,7 +164,7 @@ export const Sidebar = React.memo(function Sidebar({
                     <span className="text-sm font-bold text-white">
                       {apt.horaConsulta.slice(0, 5)}
                     </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${getStatusColor(apt.estado)}`}>
+                    <span className={`${badges.base} ${badges.sizeSmall} ${getStatusColor(apt.estado)}`}>
                       {apt.estado}
                     </span>
                   </div>

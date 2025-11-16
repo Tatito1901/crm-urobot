@@ -61,38 +61,25 @@ export const BarChart = memo(function BarChart({
 
               {/* Bar */}
               <div
-                className={`w-full rounded-t-lg transition-all duration-700 ease-out ${
+                className={`w-full rounded-t-lg transition-all duration-500 ease-out ${
                   animate ? 'hover:opacity-80' : ''
                 }`}
                 style={{
                   height: `${barHeight}%`,
+                  minHeight: item.value > 0 ? 6 : 0,
                   backgroundColor: color,
                   boxShadow: `0 0 20px ${color}40`,
-                  animation: animate ? `slideUp 0.8s ease-out ${index * 0.1}s both` : 'none',
                 }}
               />
 
               {/* Label */}
-              <span className="text-xs text-slate-400 text-center mt-2">
+              <span className="text-xs text-slate-400 text-center mt-2 font-medium">
                 {item.label}
               </span>
             </div>
           );
         })}
       </div>
-
-      <style jsx>{`
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 });

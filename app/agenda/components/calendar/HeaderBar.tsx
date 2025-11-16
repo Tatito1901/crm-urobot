@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
+import { badges } from '@/app/lib/design-system';
 
 interface HeaderBarProps {
   currentWeekStart: Date;
@@ -95,7 +96,7 @@ export const HeaderBar = React.memo(function HeaderBar({
         <div className="flex items-center gap-2 md:gap-4">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-2.5 py-1.5 text-xs md:text-sm font-medium text-slate-100 hover:bg-slate-800/80 hover:border-slate-500 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-slate-100 hover:bg-slate-800/80 hover:border-slate-500 transition-colors min-h-[44px] sm:min-h-0"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Volver al dashboard</span>
@@ -103,7 +104,7 @@ export const HeaderBar = React.memo(function HeaderBar({
           </Link>
           <button
             onClick={goToThisWeek}
-            className="px-2 md:px-4 py-2 text-xs md:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+            className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200 min-h-[44px] sm:min-h-0"
           >
             Hoy
           </button>
@@ -111,7 +112,7 @@ export const HeaderBar = React.memo(function HeaderBar({
           <div className="flex items-center gap-1 md:gap-2">
             <button
               onClick={goToPreviousWeek}
-              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors"
+              className="p-2 sm:p-2 rounded-lg hover:bg-slate-800/60 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
               aria-label="Anterior"
             >
               <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
@@ -119,7 +120,7 @@ export const HeaderBar = React.memo(function HeaderBar({
 
             <button
               onClick={goToNextWeek}
-              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors"
+              className="p-2 sm:p-2 rounded-lg hover:bg-slate-800/60 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
               aria-label="Siguiente"
             >
               <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
@@ -156,7 +157,7 @@ export const HeaderBar = React.memo(function HeaderBar({
           {/* Botón de filtros */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium border rounded-lg transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border rounded-lg transition-colors min-h-[44px] sm:min-h-0 ${
               showFilters || activeFiltersCount > 0
                 ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                 : 'border-slate-700 hover:bg-slate-800/60 text-slate-200'
@@ -165,7 +166,7 @@ export const HeaderBar = React.memo(function HeaderBar({
             <Filter className="h-3.5 w-3.5 md:h-4 md:w-4" />
             <span className="hidden sm:inline">Filtros</span>
             {activeFiltersCount > 0 && (
-              <span className="px-1.5 py-0.5 text-xs rounded-full bg-blue-500 text-white">
+              <span className={`${badges.base} ${badges.sizeSmall} ${badges.primary}`}>
                 {activeFiltersCount}
               </span>
             )}
@@ -175,7 +176,7 @@ export const HeaderBar = React.memo(function HeaderBar({
           <div className="relative" ref={viewMenuRef}>
             <button
               onClick={() => setShowViewMenu(!showViewMenu)}
-              className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+              className="flex items-center gap-1 md:gap-2 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200 min-h-[44px] sm:min-h-0"
             >
               <ViewIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
               <span className="hidden sm:inline">{currentView.label}</span>

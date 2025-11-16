@@ -7,6 +7,8 @@
 
 'use client';
 
+// ✅ OPTIMIZACIÓN: Importar polyfill solo en esta página que lo necesita
+import '@js-temporal/polyfill';
 import React, { useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { Temporal } from '@js-temporal/polyfill';
 import { startOfWeek } from '@/lib/date-utils';
@@ -322,7 +324,7 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-900 font-roboto">
+    <div className="h-screen flex flex-col bg-urobot font-roboto">
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar unificado - oculto en móvil */}
         <div className="hidden lg:block">

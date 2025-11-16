@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo -->
+  <rect width="512" height="512" fill="#03060f" rx="128"/>
+  
+  <!-- Círculo central con gradiente -->
+  <circle cx="256" cy="256" r="180" fill="url(#gradient)"/>
+  
+  <!-- Texto DM estilizado -->
+  <text x="256" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="160" font-weight="700" fill="white" text-anchor="middle">DM</text>
+  
+  <!-- Gradiente -->
+  <defs>
+    <linearGradient id="gradient" x1="76" y1="76" x2="436" y2="436" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+</svg>

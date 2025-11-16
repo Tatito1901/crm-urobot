@@ -7,6 +7,7 @@ import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import { useConsultas } from '@/hooks/useConsultas';
+import { typography, spacing, cards, filters } from '@/app/lib/design-system';
 
 type SedeFilter = 'ALL' | 'POLANCO' | 'SATELITE';
 
@@ -46,13 +47,13 @@ export default function ConsultasPage() {
       description="Controla el pipeline de citas: filtra, revisa KPIs y comparte el detalle operativo."
       headerSlot={
         <div className="grid w-full gap-3 sm:grid-cols-2">
-          <Card className="border-white/10 bg-white/[0.04] text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.28em] text-white/70">Buscar</CardTitle>
-              <CardDescription className="text-[0.68rem] text-white/40">Paciente o folio</CardDescription>
+          <Card className={cards.base}>
+            <CardHeader className={spacing.cardHeader}>
+              <CardTitle className={typography.label}>Buscar</CardTitle>
+              <CardDescription className={typography.metadataSmall}>Paciente o folio</CardDescription>
             </CardHeader>
             <CardContent className="flex items-center gap-2 pt-0">
-              <span aria-hidden className="text-white/40">🔍</span>
+              <span aria-hidden className="text-white/40 text-xl">🔍</span>
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -61,17 +62,17 @@ export default function ConsultasPage() {
               />
             </CardContent>
           </Card>
-          <Card className="border-white/10 bg-white/[0.04] text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.28em] text-white/70">Sede</CardTitle>
-              <CardDescription className="text-[0.68rem] text-white/40">Filtra por ubicación</CardDescription>
+          <Card className={cards.base}>
+            <CardHeader className={spacing.cardHeader}>
+              <CardTitle className={typography.label}>Sede</CardTitle>
+              <CardDescription className={typography.metadataSmall}>Filtra por ubicación</CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="relative">
                 <select
                   value={sede}
                   onChange={(e) => setSede(e.target.value as SedeFilter)}
-                  className="w-full appearance-none rounded-lg border border-white/10 bg-white/[0.08] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-sky-400/50"
+                  className={filters.select}
                 >
                   <option className="bg-slate-900" value="ALL">Todas las sedes</option>
                   <option className="bg-slate-900" value="POLANCO">Polanco</option>
@@ -86,9 +87,9 @@ export default function ConsultasPage() {
         </div>
       }
     >
-      <Card className="border-white/10 bg-white/[0.02]">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-white">Agenda centralizada</CardTitle>
+      <Card className={cards.base}>
+        <CardHeader className={spacing.cardHeader}>
+          <CardTitle className={typography.cardTitleSmall}>Agenda centralizada</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 pt-0 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-white/60">
@@ -112,14 +113,14 @@ export default function ConsultasPage() {
       </section>
 
       {/* Tabla */}
-      <Card className="border-white/10 bg-white/[0.02]">
-        <CardHeader className="pb-2">
+      <Card className={`${cards.base} min-h-[600px]`}>
+        <CardHeader className={spacing.cardHeader}>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-base text-white">
-                Listado de consultas {loading && '(cargando...)'}
+              <CardTitle className={typography.cardTitle}>
+                Listado completo
               </CardTitle>
-              <CardDescription className="text-white/60">
+              <CardDescription className={typography.cardDescription}>
                 {error
                   ? `Error: ${error.message}`
                   : 'Detalle operativo por paciente y sede'}
@@ -128,7 +129,7 @@ export default function ConsultasPage() {
             <button
               onClick={() => refetch()}
               disabled={loading}
-              className="rounded-lg bg-sky-600/20 px-3 py-1.5 text-sm font-medium text-sky-300 hover:bg-sky-600/30 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-sky-600/20 px-3 py-2 text-sm font-medium text-sky-300 hover:bg-sky-600/30 disabled:opacity-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               ↻
             </button>

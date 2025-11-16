@@ -6,6 +6,7 @@ import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import { useRecordatorios } from '@/hooks/useRecordatorios';
+import { typography, spacing, cards, filters } from '@/app/lib/design-system';
 
 type TipoFilter = 'ALL' | '48h' | '24h' | '3h' | 'confirmacion_inicial';
 type RangoFilter = 'ultimos_7' | 'ultimos_30' | 'todos';
@@ -93,15 +94,15 @@ export default function ConfirmacionesPage() {
       description="Automatización de follow-ups multicanal para reducir no-shows y asegurar la agenda del día."
       headerSlot={
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="bg-white/[0.03]">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.3em] text-white/60">Buscar</CardTitle>
-              <CardDescription className="text-[0.68rem] text-white/40">
+          <Card className={cards.base}>
+            <CardHeader className={spacing.cardHeader}>
+              <CardTitle className={typography.label}>Buscar</CardTitle>
+              <CardDescription className={typography.metadataSmall}>
                 Paciente o consulta
               </CardDescription>
             </CardHeader>
             <CardContent className="flex items-center gap-3 pt-0">
-              <span className="text-white/50">🔍</span>
+              <span className="text-white/40 text-xl">🔍</span>
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -111,10 +112,10 @@ export default function ConfirmacionesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.03]">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.3em] text-white/60">Tipo</CardTitle>
-              <CardDescription className="text-[0.68rem] text-white/40">
+          <Card className={cards.base}>
+            <CardHeader className={spacing.cardHeader}>
+              <CardTitle className={typography.label}>Tipo</CardTitle>
+              <CardDescription className={typography.metadataSmall}>
                 Filtrar recordatorio
               </CardDescription>
             </CardHeader>
@@ -122,7 +123,7 @@ export default function ConfirmacionesPage() {
               <select
                 value={tipoFiltro}
                 onChange={(e) => setTipoFiltro(e.target.value as TipoFilter)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"
+                className={filters.select}
               >
                 <option value="ALL">Todos los tipos</option>
                 <option value="48h">48 horas</option>
@@ -133,10 +134,10 @@ export default function ConfirmacionesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.03]">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.3em] text-white/60">Rango</CardTitle>
-              <CardDescription className="text-[0.68rem] text-white/40">
+          <Card className={cards.base}>
+            <CardHeader className={spacing.cardHeader}>
+              <CardTitle className={typography.label}>Rango</CardTitle>
+              <CardDescription className={typography.metadataSmall}>
                 Período de tiempo
               </CardDescription>
             </CardHeader>
@@ -144,7 +145,7 @@ export default function ConfirmacionesPage() {
               <select
                 value={rangoFiltro}
                 onChange={(e) => setRangoFiltro(e.target.value as RangoFilter)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"
+                className={filters.select}
               >
                 <option value="ultimos_7">Últimos 7 días</option>
                 <option value="ultimos_30">Últimos 30 días</option>
@@ -153,10 +154,10 @@ export default function ConfirmacionesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/[0.03]">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-[0.3em] text-white/60">Vista</CardTitle>
-              <CardDescription className="text-[0.68rem] text-white/40">
+          <Card className={cards.base}>
+            <CardHeader className={spacing.cardHeader}>
+              <CardTitle className={typography.label}>Vista</CardTitle>
+              <CardDescription className={typography.metadataSmall}>
                 Agrupar por consulta
               </CardDescription>
             </CardHeader>
@@ -176,43 +177,43 @@ export default function ConfirmacionesPage() {
       }
     >
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className="bg-white/[0.03]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-white">Pendientes</CardTitle>
-            <CardDescription>Aguardando confirmación</CardDescription>
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className={typography.cardTitleSmall}>Pendientes</CardTitle>
+            <CardDescription className={typography.cardDescription}>Aguardando confirmación</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-3xl font-semibold text-white">{stats.pendientes}</p>
+            <p className={typography.metricLarge}>{stats.pendientes}</p>
           </CardContent>
         </Card>
-        <Card className="bg-white/[0.03]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-white">Enviados</CardTitle>
-            <CardDescription>Recordatorios completados</CardDescription>
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className={typography.cardTitleSmall}>Enviados</CardTitle>
+            <CardDescription className={typography.cardDescription}>Recordatorios completados</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-3xl font-semibold text-white">{stats.enviados}</p>
+            <p className={typography.metricLarge}>{stats.enviados}</p>
           </CardContent>
         </Card>
-        <Card className="bg-white/[0.03]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-white">Errores</CardTitle>
-            <CardDescription>Requieren revisión</CardDescription>
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className={typography.cardTitleSmall}>Errores</CardTitle>
+            <CardDescription className={typography.cardDescription}>Requieren revisión</CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-3xl font-semibold text-white">{stats.errores}</p>
+            <p className={typography.metricLarge}>{stats.errores}</p>
           </CardContent>
         </Card>
       </section>
 
-      <Card className="bg-white/[0.03]">
-        <CardHeader className="pb-2">
+      <Card className={cards.base}>
+        <CardHeader className={spacing.cardHeader}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex-1">
-              <CardTitle className="text-base text-white">
+              <CardTitle className={typography.cardTitle}>
                 Detalle de confirmaciones {loading && '(cargando...)'}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className={typography.cardDescription}>
                 {error 
                   ? `Error: ${error.message}` 
                   : 'Flujos automatizados por paciente desde n8n'
@@ -222,13 +223,13 @@ export default function ConfirmacionesPage() {
             <button
               onClick={() => refresh()}
               disabled={loading}
-              className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               ↻
             </button>
             <div className="text-right ml-4">
-              <p className="text-2xl font-semibold text-white">{filtered.length}</p>
-              <p className="text-xs text-white/50">
+              <p className={typography.metricMedium}>{filtered.length}</p>
+              <p className={typography.metadataSmall}>
                 {recordatorios.length !== filtered.length && `de ${recordatorios.length} total`}
                 {soloUltimo && ' (último por consulta)'}
               </p>
@@ -252,16 +253,16 @@ export default function ConfirmacionesPage() {
                 id: recordatorio.id,
                 programado: (
                   <div className="flex flex-col gap-1">
-                    <span className="font-medium text-white">{formatDate(recordatorio.programado_para, { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    <span className={`${typography.body} font-medium`}>{formatDate(recordatorio.programado_para, { dateStyle: 'short', timeStyle: 'short' })}</span>
                     {recordatorio.enviado_en && (
-                      <span className="text-xs text-white/50">Enviado: {formatDate(recordatorio.enviado_en, { dateStyle: 'short', timeStyle: 'short' })}</span>
+                      <span className={typography.metadataSmall}>Enviado: {formatDate(recordatorio.enviado_en, { dateStyle: 'short', timeStyle: 'short' })}</span>
                     )}
                   </div>
                 ),
                 paciente: (
                   <div className="flex flex-col gap-1">
-                    <span className="font-medium text-white/90">{recordatorio.paciente?.nombre_completo || 'Sin paciente'}</span>
-                    <span className="text-xs text-white/50">{recordatorio.consulta?.sede || ''}</span>
+                    <span className={`${typography.body} font-medium`}>{recordatorio.paciente?.nombre_completo || 'Sin paciente'}</span>
+                    <span className={typography.metadataSmall}>{recordatorio.consulta?.sede || ''}</span>
                   </div>
                 ),
                 consulta: <span className="font-semibold text-white">{recordatorio.consulta?.consulta_id || 'N/A'}</span>,

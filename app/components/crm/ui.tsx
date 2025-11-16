@@ -72,15 +72,26 @@ export function DataTable({
   rows,
   empty,
   onRowClick,
+  onRowHover,
   mobileConfig,
 }: {
   headers: DataTableHeader[];
   rows: (Record<string, React.ReactNode> & { id: string })[];
   empty: string;
   onRowClick?: (rowId: string) => void;
+  onRowHover?: (rowId: string) => void;
   /** ✅ NUEVO: Configuración para vista mobile optimizada */
   mobileConfig?: MobileCardConfig;
 }) {
+  // ✅ OPTIMIZACIÓN: Prevenir layout shift
+  if (rows.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] text-center py-12">
+        <p className="text-sm text-slate-400">{empty}</p>
+      </div>
+    );
+  }
+
   const getAlignmentClasses = (align?: "left" | "right") => {
     switch (align) {
       case "right":
@@ -89,14 +100,6 @@ export function DataTable({
         return "text-left";
     }
   };
-
-  if (rows.length === 0) {
-    return (
-      <div className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-8 text-center text-white/40">
-        {empty}
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -120,6 +123,7 @@ export function DataTable({
                   onRowClick && "cursor-pointer"
                 )}
                 onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+                onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
               >
                 {headers.map((header) => (
                   <td key={header.key} className={cn("px-3 py-3 align-top", getAlignmentClasses(header.align))}>
@@ -132,94 +136,38 @@ export function DataTable({
         </table>
       </div>
 
-      {/* ✅ MOBILE CARDS OPTIMIZADAS - Quick Win #4 */}
-      <div className="grid gap-3 md:hidden">
+      {/* Mobile: Card-based layout optimizado */}
+      <div className="space-y-3 md:hidden">
         {rows.map((row) => {
-          // Si hay configuración mobile, usar layout optimizado
-          if (mobileConfig) {
-            const primary = row[mobileConfig.primary];
-            const secondary = mobileConfig.secondary ? row[mobileConfig.secondary] : null;
-            const metadata = mobileConfig.metadata?.map(key => row[key]).filter(Boolean) || [];
+          const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
+          const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
+          const metadata = mobileConfig?.metadata ?? [];
 
-            return (
-              <button
-                key={row.id}
-                type="button"
-                className={cn(
-                  "flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-left transition-all",
-                  onRowClick
-                    ? "cursor-pointer hover:border-white/20 hover:bg-white/[0.08] active:scale-[0.98]"
-                    : "cursor-default"
-                )}
-                onClick={onRowClick ? () => onRowClick(row.id) : undefined}
-                disabled={!onRowClick}
-              >
-                <div className="flex-1 min-w-0">
-                  {/* Título principal */}
-                  <div className="font-medium text-white truncate text-sm">
-                    {primary}
-                  </div>
-
-                  {/* Subtítulo opcional */}
-                  {secondary && (
-                    <div className="text-xs text-white/60 truncate mt-0.5">
-                      {secondary}
-                    </div>
-                  )}
-
-                  {/* Metadata chips */}
-                  {metadata.length > 0 && (
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      {metadata.map((item, i) => (
-                        <span key={i} className="text-xs">
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Icono de expansión si es clickeable */}
-                {onRowClick && (
-                  <svg
-                    className="w-5 h-5 text-white/30 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                )}
-              </button>
-            );
-          }
-
-          // Fallback: Layout tradicional (sin configuración mobile)
           return (
-            <button
+            <div
               key={row.id}
-              type="button"
-              className={cn(
-                "flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-                onRowClick ? "cursor-pointer hover:border-white/20 hover:bg-white/[0.08]" : "cursor-default"
-              )}
               onClick={onRowClick ? () => onRowClick(row.id) : undefined}
-              disabled={!onRowClick}
+              onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
+              className={cn(
+                "rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 transition-all duration-200 active:scale-[0.98] min-h-[80px] flex flex-col justify-center",
+                onRowClick && "cursor-pointer active:bg-white/10 active:border-blue-400/30"
+              )}
             >
-              {headers.map((header) => (
-                <div key={header.key} className="flex flex-col gap-1">
-                  <span className="text-[11px] uppercase tracking-[0.22em] text-white/40">
-                    {header.label}
-                  </span>
-                  <div className="text-sm text-white/90">{row[header.key] ?? "—"}</div>
+              <div className="mb-3">
+                {primary && <div className="text-base font-semibold text-white leading-tight">{primary}</div>}
+                {secondary && <div className="mt-1.5 text-sm text-white/70">{secondary}</div>}
+              </div>
+              {metadata.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  {metadata.map((key) => (
+                    <div key={key} className="flex flex-col gap-0.5">
+                      <span className="text-white/40 text-[10px] uppercase tracking-wide">{headers.find((h) => h.key === key)?.label}</span>
+                      <span className="text-white/90 font-medium">{row[key]}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </button>
+              )}
+            </div>
           );
         })}
       </div>
