@@ -1,7 +1,5 @@
 'use client';
 
-import { ReactNode } from 'react';
-
 interface MetricCardProps {
   title: string;
   value: number | string;

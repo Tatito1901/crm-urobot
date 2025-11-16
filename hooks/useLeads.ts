@@ -7,7 +7,6 @@
  * ✅ Realtime: Actualización automática cuando n8n modifica la tabla
  */
 
-import { useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { DEFAULT_LEAD_ESTADO, type Lead, isLeadEstado } from '@/types/leads'

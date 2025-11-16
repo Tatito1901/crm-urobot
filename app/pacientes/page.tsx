@@ -11,7 +11,7 @@ import type { Paciente } from '@/types/pacientes';
 import { usePacientes } from '@/hooks/usePacientes';
 import { ContentLoader, TableContentSkeleton } from '@/app/components/common/ContentLoader';
 import { Pagination } from '@/app/components/common/Pagination';
-import { typography, spacing, cards, inputs, badges } from '@/app/lib/design-system';
+import { typography, spacing, cards, inputs } from '@/app/lib/design-system';
 import { MetricCard, MetricGrid, DistributionCard } from '@/app/components/metrics';
 
 export const dynamic = 'force-dynamic';
@@ -59,14 +59,6 @@ export default function PacientesPage() {
 
   // ✅ OPTIMIZACIÓN: Paginación para mejor rendimiento
   const itemsPerPage = 50;
-  const paginatedPacientes = useMemo(() => {
-    const start = currentPage * itemsPerPage;
-    const end = start + itemsPerPage;
-    return filteredPacientes.slice(start, end);
-  }, [filteredPacientes, currentPage, itemsPerPage]);
-
-  // Usar stats del hook (más eficiente que re-filtrar)
-  const totalPacientes = filteredPacientes.length;
   
   // Estado filter
   const [estadoFilter, setEstadoFilter] = useState<'all' | 'Activo' | 'Inactivo'>('all');

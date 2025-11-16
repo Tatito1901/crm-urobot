@@ -39,7 +39,7 @@ export default function ConsultasPage() {
     const term = search.trim().toLowerCase();
     
     // Filtrar por sede primero
-    let filtered = sedeFilter !== 'all'
+    const filtered = sedeFilter !== 'all'
       ? consultas.filter((c) => c.sede === sedeFilter)
       : consultas;
     

@@ -191,7 +191,6 @@ export function usePacientes(): UsePacientesReturn {
   )
 
   const pacientes = data?.pacientes || []
-  const now = new Date()
   
   // Calcular estadísticas básicas
   const stats = {
@@ -205,7 +204,6 @@ export function usePacientes(): UsePacientesReturn {
   }
   
   // Calcular métricas avanzadas
-  const pacientesConConsultas = pacientes.filter(p => p.totalConsultas > 0)
   const tasaRetencion = pacientes.length > 0
     ? Math.round((pacientes.filter(p => p.totalConsultas >= 2).length / pacientes.length) * 100)
     : 0
