@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import type { Consulta } from '@/types/consultas';
 import { useConsultas } from '@/hooks/useConsultas';

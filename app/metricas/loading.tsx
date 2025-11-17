@@ -5,7 +5,7 @@
  */
 
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardHeader } from '@/app/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CardSkeleton } from '@/app/components/common/ContentLoader';
 
 export default function MetricasLoading() {

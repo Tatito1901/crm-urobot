@@ -11,7 +11,7 @@ import { useMemo } from 'react';
 import dynamicImport from 'next/dynamic';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { StatCard } from '@/app/components/crm/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';

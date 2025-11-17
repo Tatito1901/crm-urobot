@@ -14,8 +14,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/app/components/ui/card';
-import { MetricCard } from '@/app/components/metrics';
+} from '@/components/ui/card';
+import { MetricCard } from '@/app/components/metrics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { EmptyState } from '@/app/components/common/SkeletonLoader';
 

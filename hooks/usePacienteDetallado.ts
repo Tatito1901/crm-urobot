@@ -71,6 +71,20 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       }
 
       // Mapear datos del paciente
+      const now = new Date();
+      const ultimaConsulta = pacienteData.ultima_consulta ? new Date(pacienteData.ultima_consulta) : null;
+      const diasDesdeUltimaConsulta = ultimaConsulta
+        ? Math.floor((now.getTime() - ultimaConsulta.getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+      
+      const fechaRegistro = pacienteData.fecha_registro ? new Date(pacienteData.fecha_registro) : null;
+      const diasDesdeRegistro = fechaRegistro
+        ? Math.floor((now.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+      
+      const esReciente = diasDesdeRegistro !== null && diasDesdeRegistro <= 30;
+      const requiereAtencion = pacienteData.estado === 'Activo' && diasDesdeUltimaConsulta !== null && diasDesdeUltimaConsulta >= 90;
+      
       const pacienteDetallado: PacienteDetallado = {
         id: pacienteData.id,
         pacienteId: pacienteData.paciente_id,
@@ -81,8 +95,11 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
         fechaRegistro: pacienteData.fecha_registro || new Date().toISOString(),
         fuenteOriginal: pacienteData.fuente_original || 'WhatsApp',
         ultimaConsulta: pacienteData.ultima_consulta,
+        diasDesdeUltimaConsulta,
         totalConsultas: pacienteData.total_consultas || 0,
         estado: (pacienteData.estado as 'Activo' | 'Inactivo') || 'Activo',
+        esReciente,
+        requiereAtencion,
         notas: pacienteData.notas,
         createdAt: pacienteData.created_at || new Date().toISOString(),
         updatedAt: pacienteData.updated_at || new Date().toISOString(),
@@ -114,6 +131,18 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
           estado = row.estado_cita;
         }
 
+        // Calcular métricas temporales
+        const now = new Date();
+        const fechaConsulta = new Date(row.fecha_hora_utc);
+        const horasHastaConsulta = Math.floor((fechaConsulta.getTime() - now.getTime()) / (1000 * 60 * 60));
+        const diasHastaConsulta = Math.floor(horasHastaConsulta / 24);
+        
+        // Determinar si requiere confirmación (consultas futuras)
+        const requiereConfirmacion = horasHastaConsulta > 0 && horasHastaConsulta <= 48;
+        
+        // Determinar si la confirmación está vencida (menos de 24h y no confirmada)
+        const confirmacionVencida = horasHastaConsulta > 0 && horasHastaConsulta < 24 && row.estado_confirmacion !== 'Confirmada';
+
         return {
           id: row.id,
           uuid: row.consulta_id,
@@ -122,8 +151,18 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
           sede,
           tipo: row.tipo_cita ?? 'Consulta',
           estado,
-          estadoConfirmacion: row.estado_confirmacion ?? 'Pendiente',
+          estadoConfirmacion: (row.estado_confirmacion as 'Pendiente' | 'Confirmada' | 'No Confirmada') ?? 'Pendiente',
           confirmadoPaciente: Boolean(row.confirmado_paciente),
+          fechaConfirmacion: null,
+          fechaLimiteConfirmacion: null,
+          remConfirmacionInicialEnviado: false,
+          rem48hEnviado: false,
+          rem24hEnviado: false,
+          rem3hEnviado: false,
+          horasHastaConsulta: horasHastaConsulta > 0 ? horasHastaConsulta : null,
+          diasHastaConsulta: horasHastaConsulta > 0 ? diasHastaConsulta : null,
+          requiereConfirmacion,
+          confirmacionVencida,
           fecha: row.fecha_hora_utc,
           fechaConsulta: row.fecha_consulta,
           horaConsulta: row.hora_consulta,

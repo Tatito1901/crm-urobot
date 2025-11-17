@@ -121,22 +121,44 @@ export async function createPatient(
     // Verificar si ya existe un paciente con ese teléfono
     const { data: existingPatient } = await supabase
       .from('pacientes')
-      .select('id, nombre_completo, telefono, email')
+      .select('id, paciente_id, nombre_completo, telefono, email, total_consultas, ultima_consulta, estado, fecha_registro, fuente_original, notas')
       .eq('telefono', normalizedPhone)
       .maybeSingle();
 
     if (existingPatient) {
+      // Calcular días desde última consulta
+      const now = new Date();
+      const ultimaConsulta = existingPatient.ultima_consulta ? new Date(existingPatient.ultima_consulta) : null;
+      const diasDesdeUltimaConsulta = ultimaConsulta
+        ? Math.floor((now.getTime() - ultimaConsulta.getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+      
+      const fechaRegistro = existingPatient.fecha_registro ? new Date(existingPatient.fecha_registro) : null;
+      const diasDesdeRegistro = fechaRegistro
+        ? Math.floor((now.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+      
+      const esReciente = diasDesdeRegistro !== null && diasDesdeRegistro <= 30;
+      const requiereAtencion = existingPatient.estado === 'Activo' && diasDesdeUltimaConsulta !== null && diasDesdeUltimaConsulta >= 90;
+      
       // Retornar el paciente existente
       return {
         success: true,
         data: {
           id: existingPatient.id,
+          pacienteId: existingPatient.paciente_id,
           nombre: existingPatient.nombre_completo,
           telefono: existingPatient.telefono,
-          email: existingPatient.email || '',
-          totalConsultas: 0,
-          ultimaConsulta: null,
-          estado: 'Activo',
+          email: existingPatient.email,
+          totalConsultas: existingPatient.total_consultas || 0,
+          ultimaConsulta: existingPatient.ultima_consulta,
+          diasDesdeUltimaConsulta,
+          estado: existingPatient.estado as 'Activo' | 'Inactivo',
+          fechaRegistro: existingPatient.fecha_registro,
+          fuenteOriginal: existingPatient.fuente_original ?? 'WhatsApp',
+          notas: existingPatient.notas,
+          esReciente,
+          requiereAtencion,
         },
       };
     }
@@ -158,7 +180,7 @@ export async function createPatient(
     const { data: newPatient, error: insertError } = await supabase
       .from('pacientes')
       .insert(insertData)
-      .select('id, paciente_id, nombre_completo, telefono, email, total_consultas, ultima_consulta, estado')
+      .select('id, paciente_id, nombre_completo, telefono, email, total_consultas, ultima_consulta, estado, fecha_registro, fuente_original, notas')
       .single();
 
     if (insertError) {
@@ -170,14 +192,27 @@ export async function createPatient(
     }
 
     // Mapear a tipo Paciente
+    const now = new Date();
+    const fechaRegistro = newPatient.fecha_registro ? new Date(newPatient.fecha_registro) : null;
+    const diasDesdeRegistro = fechaRegistro
+      ? Math.floor((now.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+    
     const paciente: Paciente = {
       id: newPatient.id,
+      pacienteId: newPatient.paciente_id,
       nombre: newPatient.nombre_completo,
       telefono: newPatient.telefono,
-      email: newPatient.email || '',
+      email: newPatient.email,
       totalConsultas: newPatient.total_consultas || 0,
       ultimaConsulta: newPatient.ultima_consulta,
+      diasDesdeUltimaConsulta: null,
       estado: newPatient.estado as 'Activo' | 'Inactivo',
+      fechaRegistro: newPatient.fecha_registro,
+      fuenteOriginal: newPatient.fuente_original ?? 'Agenda',
+      notas: newPatient.notas,
+      esReciente: diasDesdeRegistro !== null && diasDesdeRegistro <= 30,
+      requiereAtencion: false,
     };
 
     return {
@@ -207,7 +242,7 @@ export async function findPatientByPhone(
 
     const { data, error } = await supabase
       .from('pacientes')
-      .select('id, nombre_completo, telefono, email, total_consultas, ultima_consulta, estado')
+      .select('id, paciente_id, nombre_completo, telefono, email, total_consultas, ultima_consulta, estado, fecha_registro, fuente_original, notas')
       .eq('telefono', normalizedPhone)
       .maybeSingle();
 
@@ -225,14 +260,35 @@ export async function findPatientByPhone(
       };
     }
 
+    const now = new Date();
+    const ultimaConsulta = data.ultima_consulta ? new Date(data.ultima_consulta) : null;
+    const diasDesdeUltimaConsulta = ultimaConsulta
+      ? Math.floor((now.getTime() - ultimaConsulta.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+    
+    const fechaRegistro = data.fecha_registro ? new Date(data.fecha_registro) : null;
+    const diasDesdeRegistro = fechaRegistro
+      ? Math.floor((now.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+    
+    const esReciente = diasDesdeRegistro !== null && diasDesdeRegistro <= 30;
+    const requiereAtencion = data.estado === 'Activo' && diasDesdeUltimaConsulta !== null && diasDesdeUltimaConsulta >= 90;
+
     const paciente: Paciente = {
       id: data.id,
+      pacienteId: data.paciente_id,
       nombre: data.nombre_completo,
       telefono: data.telefono,
-      email: data.email || '',
+      email: data.email,
       totalConsultas: data.total_consultas || 0,
       ultimaConsulta: data.ultima_consulta,
+      diasDesdeUltimaConsulta,
       estado: data.estado as 'Activo' | 'Inactivo',
+      fechaRegistro: data.fecha_registro,
+      fuenteOriginal: data.fuente_original ?? 'WhatsApp',
+      notas: data.notas,
+      esReciente,
+      requiereAtencion,
     };
 
     return {
@@ -266,7 +322,7 @@ export async function findPatientByEmail(
 
     const { data, error } = await supabase
       .from('pacientes')
-      .select('id, nombre_completo, telefono, email, total_consultas, ultima_consulta, estado')
+      .select('id, paciente_id, nombre_completo, telefono, email, total_consultas, ultima_consulta, estado, fecha_registro, fuente_original, notas')
       .eq('email', email.trim().toLowerCase())
       .maybeSingle();
 
@@ -284,14 +340,35 @@ export async function findPatientByEmail(
       };
     }
 
+    const now = new Date();
+    const ultimaConsulta = data.ultima_consulta ? new Date(data.ultima_consulta) : null;
+    const diasDesdeUltimaConsulta = ultimaConsulta
+      ? Math.floor((now.getTime() - ultimaConsulta.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+    
+    const fechaRegistro = data.fecha_registro ? new Date(data.fecha_registro) : null;
+    const diasDesdeRegistro = fechaRegistro
+      ? Math.floor((now.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+    
+    const esReciente = diasDesdeRegistro !== null && diasDesdeRegistro <= 30;
+    const requiereAtencion = data.estado === 'Activo' && diasDesdeUltimaConsulta !== null && diasDesdeUltimaConsulta >= 90;
+
     const paciente: Paciente = {
       id: data.id,
+      pacienteId: data.paciente_id,
       nombre: data.nombre_completo,
       telefono: data.telefono,
-      email: data.email || '',
+      email: data.email,
       totalConsultas: data.total_consultas || 0,
       ultimaConsulta: data.ultima_consulta,
+      diasDesdeUltimaConsulta,
       estado: data.estado as 'Activo' | 'Inactivo',
+      fechaRegistro: data.fecha_registro,
+      fuenteOriginal: data.fuente_original ?? 'WhatsApp',
+      notas: data.notas,
+      esReciente,
+      requiereAtencion,
     };
 
     return {

@@ -3,7 +3,7 @@
 import { forwardRef, useMemo } from 'react'
 import type { ButtonHTMLAttributes } from 'react'
 
-import { cn } from '@/app/lib/utils'
+import { cn } from '@/lib/utils'
 
 const baseStyles =
   'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-60'

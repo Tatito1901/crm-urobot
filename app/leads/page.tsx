@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/app/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { STATE_COLORS } from '@/app/lib/crm-data';
 import type { Lead } from '@/types/leads';
 import { useLeads } from '@/hooks/useLeads';

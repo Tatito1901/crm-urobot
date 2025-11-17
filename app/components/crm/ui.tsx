@@ -1,15 +1,15 @@
 
 import React from "react";
 
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import { Badge as ShadcnBadge, type BadgeProps as ShadcnBadgeProps } from "@/app/components/ui/badge";
+} from "@/components/ui/card";
+import { Badge as ShadcnBadge, type BadgeProps as ShadcnBadgeProps } from "@/components/ui/badge";
 
 export function Badge({
   label,

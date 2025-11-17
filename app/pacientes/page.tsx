@@ -5,14 +5,16 @@ import { useRouter } from 'next/navigation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import type { Paciente } from '@/types/pacientes';
 import { usePacientes } from '@/hooks/usePacientes';
 import { ContentLoader, TableContentSkeleton } from '@/app/components/common/ContentLoader';
 import { Pagination } from '@/app/components/common/Pagination';
 import { typography, spacing, cards, inputs } from '@/app/lib/design-system';
-import { MetricCard, MetricGrid, DistributionCard } from '@/app/components/metrics';
+import { MetricCard } from '@/app/components/metrics/MetricCard';
+import { MetricGrid } from '@/app/components/metrics/MetricGrid';
+import { DistributionCard } from '@/app/components/metrics/DistributionCard';
 
 export const dynamic = 'force-dynamic';
 

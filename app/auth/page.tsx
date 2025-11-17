@@ -1,8 +1,8 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { Button } from '@/app/components/ui/button'
-import { Input } from '@/app/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { initialAuthState, type AuthFormState } from './state'
 import { resetPasswordAction, signInAction } from './actions'
 

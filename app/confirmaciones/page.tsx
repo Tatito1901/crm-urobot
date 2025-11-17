@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import { useRecordatorios } from '@/hooks/useRecordatorios';
 import { typography, spacing, cards, filters } from '@/app/lib/design-system';
