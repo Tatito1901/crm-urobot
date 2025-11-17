@@ -90,29 +90,28 @@ export const HeaderBar = React.memo(function HeaderBar({
 
   return (
     <header className="border-b border-slate-800/60 bg-slate-900/40">
-      {/* Barra principal */}
-      <div className="h-[80px] px-3 md:px-6 flex items-center justify-between gap-2">
+      {/* Barra principal - mejorada para mobile */}
+      <div className="min-h-[70px] md:h-[80px] px-3 md:px-6 flex items-center justify-between gap-2 py-2 md:py-0">
         {/* Controles de navegación izquierda */}
         <div className="flex items-center gap-2 md:gap-4">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-slate-100 hover:bg-slate-800/80 hover:border-slate-500 transition-colors min-h-[44px] sm:min-h-0"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/70 px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-slate-100 hover:bg-slate-800/80 hover:border-slate-500 transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Volver al dashboard</span>
-            <span className="sm:hidden">Dashboard</span>
+            <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden md:inline">Volver</span>
           </Link>
           <button
             onClick={goToThisWeek}
-            className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200 min-h-[44px] sm:min-h-0"
+            className="px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
           >
             Hoy
           </button>
 
-          <div className="flex items-center gap-1 md:gap-2">
+          <div className="flex items-center gap-0.5 md:gap-1">
             <button
               onClick={goToPreviousWeek}
-              className="p-2 sm:p-2 rounded-lg hover:bg-slate-800/60 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
+              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center justify-center"
               aria-label="Anterior"
             >
               <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
@@ -120,27 +119,27 @@ export const HeaderBar = React.memo(function HeaderBar({
 
             <button
               onClick={goToNextWeek}
-              className="p-2 sm:p-2 rounded-lg hover:bg-slate-800/60 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
+              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center justify-center"
               aria-label="Siguiente"
             >
               <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
             </button>
           </div>
 
-          <span className="text-sm md:text-base font-bold text-slate-100 hidden sm:inline">{weekRange}</span>
+          <span className="text-xs md:text-sm lg:text-base font-bold text-slate-100 hidden sm:inline truncate">{weekRange}</span>
         </div>
 
         {/* Acciones derecha */}
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Buscador global - oculto en móvil, se puede agregar un botón para mostrar */}
-          <div className="relative w-40 sm:w-60 md:w-80">
-            <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 md:h-4 md:w-4 text-slate-400" />
+          {/* Buscador global - más compacto en móvil */}
+          <div className="relative flex-1 max-w-[120px] sm:max-w-[200px] md:max-w-xs">
+            <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 h-3 w-3 md:h-4 md:w-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar..."
-              className="w-full pl-8 md:pl-10 pr-8 md:pr-4 py-1.5 md:py-2 text-xs md:text-sm border border-slate-700 rounded-lg bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-7 md:pl-10 pr-7 md:pr-10 py-1.5 md:py-2 text-xs md:text-sm border border-slate-700 rounded-lg bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             {searchQuery && (
               <button
@@ -154,33 +153,33 @@ export const HeaderBar = React.memo(function HeaderBar({
             )}
           </div>
 
-          {/* Botón de filtros */}
+          {/* Botón de filtros - más compacto */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-1 md:gap-2 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border rounded-lg transition-colors min-h-[44px] sm:min-h-0 ${
+            className={`flex items-center gap-1 md:gap-2 px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border rounded-lg transition-colors relative ${
               showFilters || activeFiltersCount > 0
                 ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                 : 'border-slate-700 hover:bg-slate-800/60 text-slate-200'
             }`}
           >
             <Filter className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            <span className="hidden sm:inline">Filtros</span>
+            <span className="hidden md:inline">Filtros</span>
             {activeFiltersCount > 0 && (
-              <span className={`${badges.base} ${badges.sizeSmall} ${badges.primary}`}>
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-bold">
                 {activeFiltersCount}
               </span>
             )}
           </button>
 
-          {/* Selector de vista */}
+          {/* Selector de vista - más compacto */}
           <div className="relative" ref={viewMenuRef}>
             <button
               onClick={() => setShowViewMenu(!showViewMenu)}
-              className="flex items-center gap-1 md:gap-2 px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200 min-h-[44px] sm:min-h-0"
+              className="flex items-center gap-1 md:gap-2 px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
             >
               <ViewIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">{currentView.label}</span>
-              <ChevronDown className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden md:inline">{currentView.label}</span>
+              <ChevronDown className="h-3 w-3 md:h-3.5 md:w-3.5" />
             </button>
 
             {/* Dropdown de vistas */}

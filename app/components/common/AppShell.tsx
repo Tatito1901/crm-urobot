@@ -1,10 +1,13 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import type { PropsWithChildren } from 'react'
+import { lazy, Suspense, type PropsWithChildren } from 'react'
 import { usePrefetchRoutes } from '@/hooks/usePrefetchRoutes'
 
-import { BottomNav, MobileSidebar, Sidebar } from './Sidebar'
+// Lazy loading de componentes pesados para optimizar carga inicial
+const MobileSidebar = lazy(() => import('./Sidebar').then(mod => ({ default: mod.MobileSidebar })))
+const Sidebar = lazy(() => import('./Sidebar').then(mod => ({ default: mod.Sidebar })))
+const BottomNav = lazy(() => import('./Sidebar').then(mod => ({ default: mod.BottomNav })))
 
 const AUTH_PREFIX = '/auth'
 const AGENDA_PREFIX = '/agenda'
@@ -23,11 +26,17 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <div className="flex min-h-screen bg-urobot">
-      <MobileSidebar />
-      <Sidebar />
+      <Suspense fallback={null}>
+        <MobileSidebar />
+      </Suspense>
+      <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80" />}>
+        <Sidebar />
+      </Suspense>
       <div className="flex min-h-screen flex-1 flex-col lg:pl-0">
         <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
-        <BottomNav />
+        <Suspense fallback={<div className="h-16 lg:hidden" />}>
+          <BottomNav />
+        </Suspense>
       </div>
     </div>
   )

@@ -14,7 +14,12 @@ import { useConsultas } from '@/hooks/useConsultas';
 import { isSameDay } from '@/lib/date-utils';
 import type { Consulta } from '@/types/consultas';
 import { useAgendaState } from '../../hooks/useAgendaState';
-import { typography, badges } from '@/app/lib/design-system';
+import { typography } from '@/app/lib/design-system';
+import { StatusBadge } from '../shared/StatusBadge';
+import { SedeBadge } from '../shared/SedeBadge';
+import { FilterButton } from '../shared/FilterButton';
+import { SEDES, getSedeConfig } from '../../lib/constants';
+import type { EstadoConsulta, Sede } from '../../lib/constants';
 
 interface SidebarProps {
   selectedDate: Date;
@@ -56,24 +61,7 @@ export const Sidebar = React.memo(function Sidebar({
     );
   }, [consultas, selectedDate, selectedSede, searchQuery]);
 
-  // Determinar color del estado
-  const getStatusColor = (estado: string) => {
-    switch (estado) {
-      case 'Confirmada': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      case 'Programada': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'Cancelada': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-    }
-  };
-
-  // Color por sede
-  const getSedeColor = (sede: string) => {
-    switch (sede) {
-      case 'POLANCO': return 'border-l-blue-500';
-      case 'SATELITE': return 'border-l-emerald-500';
-      default: return 'border-l-slate-500';
-    }
-  };
+  // Configuración eliminada - ahora usa constantes centralizadas
 
   return (
     <aside className="w-[320px] h-full border-r-2 border-slate-700/50 bg-gradient-to-b from-slate-900/60 to-slate-950/60 backdrop-blur-sm flex flex-col shadow-xl shadow-black/20">
@@ -95,20 +83,17 @@ export const Sidebar = React.memo(function Sidebar({
           )}
         </div>
 
-        {/* Filtro de sedes */}
+        {/* Filtro de sedes - optimizado */}
         <div className="flex gap-2">
-          {(['ALL', 'POLANCO', 'SATELITE'] as const).map((sede) => (
-            <button
-              key={sede}
-              onClick={() => setSelectedSede(sede)}
-              className={`flex-1 rounded-lg px-2.5 py-2 text-[11px] font-medium transition-colors min-h-[44px] flex items-center justify-center ${
-                selectedSede === sede
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              {sede === 'ALL' ? 'Todas las sedes' : sede}
-            </button>
+          {SEDES.map((sede) => (
+            <FilterButton
+              key={sede.value}
+              label={sede.label}
+              selected={selectedSede === sede.value}
+              onClick={() => setSelectedSede(sede.value)}
+              fullWidth
+              size="md"
+            />
           ))}
         </div>
       </div>
@@ -153,41 +138,48 @@ export const Sidebar = React.memo(function Sidebar({
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredAppointments.map((apt) => (
-                <button
-                  key={apt.id}
-                  onClick={() => onAppointmentClick?.(apt)}
-                  className={`w-full text-left p-2.5 rounded-lg bg-slate-900/80 border border-slate-700/70 border-l-[3px] shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group ${getSedeColor(apt.sede)}`}
-                >
-                  {/* Hora */}
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold text-white">
-                      {apt.horaConsulta.slice(0, 5)}
-                    </span>
-                    <span className={`${badges.base} ${badges.sizeSmall} ${getStatusColor(apt.estado)}`}>
-                      {apt.estado}
-                    </span>
-                  </div>
+              {filteredAppointments.map((apt) => {
+                const sedeConfig = getSedeConfig(apt.sede);
+                return (
+                  <button
+                    key={apt.id}
+                    onClick={() => onAppointmentClick?.(apt)}
+                    className={`w-full text-left p-3 rounded-xl bg-slate-900/80 border border-slate-700/70 border-l-[3px] shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group ${sedeConfig.borderLeftClass}`}
+                  >
+                    {/* Hora y Estado */}
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className="text-base font-bold text-white tabular-nums">
+                        {apt.horaConsulta.slice(0, 5)}
+                      </span>
+                      <StatusBadge estado={apt.estado as EstadoConsulta} size="sm" showIcon={false} />
+                    </div>
 
-                  {/* Paciente */}
-                  <p className="text-sm font-semibold text-slate-200 mb-1 group-hover:text-white transition-colors">
-                    {apt.paciente}
-                  </p>
+                    {/* Paciente */}
+                    <p className="text-base font-semibold text-slate-200 mb-2 group-hover:text-white transition-colors">
+                      {apt.paciente}
+                    </p>
 
-                  {/* Tipo y sede */}
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <span className="capitalize">{apt.tipo.replace(/_/g, ' ')}</span>
-                    <span>•</span>
-                    <span>{apt.sede}</span>
-                    {apt.duracionMinutos && (
-                      <>
-                        <span>•</span>
-                        <span>{apt.duracionMinutos}min</span>
-                      </>
-                    )}
-                  </div>
-                </button>
-              ))}
+                    {/* Tipo, sede y duración */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-slate-400 capitalize">
+                        {apt.tipo.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-slate-600">•</span>
+                      {(apt.sede === 'POLANCO' || apt.sede === 'SATELITE') && (
+                        <SedeBadge sede={apt.sede} size="sm" showIcon={false} />
+                      )}
+                      {apt.duracionMinutos && (
+                        <>
+                          <span className="text-slate-600">•</span>
+                          <span className="text-xs text-slate-400 tabular-nums">
+                            {apt.duracionMinutos}min
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

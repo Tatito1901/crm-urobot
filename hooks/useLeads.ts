@@ -11,6 +11,7 @@ import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { DEFAULT_LEAD_ESTADO, type Lead, isLeadEstado } from '@/types/leads'
 import type { Tables } from '@/types/database'
+import { mapLeadFromDB, enrichLead } from '@/lib/mappers'
 
 const supabase = createClient()
 
@@ -48,54 +49,18 @@ type LeadRowEnriquecido = LeadRow & {
 
 /**
  * Mapea una fila de la tabla 'leads' al tipo Lead con datos enriquecidos
- * Valida todos los campos para consistencia con DB
+ * Usa mapper centralizado + enriquece con datos de paciente
  */
 const mapLead = (row: LeadRowEnriquecido): Lead => {
-  // Validar estado (debe coincidir con DB)
-  const estado = isLeadEstado(row.estado) ? row.estado : DEFAULT_LEAD_ESTADO
-  const now = new Date()
+  // Usar mapper centralizado (convierte snake_case → camelCase)
+  const leadBase = mapLeadFromDB(row as any);
   
-  const primerContacto = new Date(row.fecha_primer_contacto || row.created_at || now)
-  const ultimaInteraccion = row.ultima_interaccion ? new Date(row.ultima_interaccion) : null
-  const fechaConversion = row.fecha_conversion ? new Date(row.fecha_conversion) : null
+  // Enriquecer con cálculos (días, esCaliente, esInactivo)
+  const leadEnriquecido = enrichLead(leadBase);
   
-  // Calcular días
-  const diasDesdeContacto = Math.floor((now.getTime() - primerContacto.getTime()) / (1000 * 60 * 60 * 24))
-  const diasDesdeUltimaInteraccion = ultimaInteraccion 
-    ? Math.floor((now.getTime() - ultimaInteraccion.getTime()) / (1000 * 60 * 60 * 24))
-    : null
-  const diasDesdeConversion = fechaConversion
-    ? Math.floor((now.getTime() - fechaConversion.getTime()) / (1000 * 60 * 60 * 24))
-    : null
-  
-  // Determinar si es cliente
-  const esCliente = !!row.paciente_id && !!row.paciente
-  
-  // Indicadores de actividad (validados contra DB)
-  const totalInteracciones = typeof row.total_interacciones === 'number' ? row.total_interacciones : 0
-  const esCaliente = totalInteracciones >= 3 && (diasDesdeUltimaInteraccion !== null && diasDesdeUltimaInteraccion <= 2)
-  const esInactivo = diasDesdeUltimaInteraccion !== null && diasDesdeUltimaInteraccion >= 7 && estado !== 'Convertido' && estado !== 'Descartado'
-
+  // Añadir relación con paciente (JOIN)
   return {
-    // Campos base (validados contra schema DB)
-    id: row.id, // uuid PK
-    leadId: row.lead_id, // string | null UNIQUE
-    nombre: row.nombre_completo, // string NOT NULL
-    telefono: row.telefono_whatsapp, // string UNIQUE NOT NULL
-    estado, // validado con isLeadEstado()
-    primerContacto: row.fecha_primer_contacto ?? row.created_at ?? now.toISOString(), // timestamptz
-    fuente: row.fuente_lead ?? 'WhatsApp', // string DEFAULT 'WhatsApp'
-    ultimaInteraccion: row.ultima_interaccion, // timestamptz | null
-    
-    totalInteracciones,
-    diasDesdeContacto,
-    diasDesdeUltimaInteraccion,
-    
-    esCliente,
-    fechaConversion: row.fecha_conversion,
-    diasDesdeConversion,
-    
-    // Relación FK validada (paciente_id puede ser null)
+    ...leadEnriquecido,
     paciente: row.paciente ? {
       id: row.paciente.id,
       pacienteId: row.paciente.paciente_id,
@@ -105,13 +70,7 @@ const mapLead = (row: LeadRowEnriquecido): Lead => {
       totalConsultas: typeof row.paciente.total_consultas === 'number' ? row.paciente.total_consultas : 0,
       ultimaConsulta: row.paciente.ultima_consulta,
     } : null,
-    
-    sessionId: row.session_id,
-    notas: row.notas_iniciales,
-    
-    esCaliente,
-    esInactivo,
-  }
+  };
 }
 
 /**
@@ -126,13 +85,20 @@ const fetchLeads = async (): Promise<{ leads: Lead[], count: number }> => {
       lead_id,
       nombre_completo,
       telefono_whatsapp,
+      telefono_mx10,
       fuente_lead,
+      canal_marketing,
       fecha_primer_contacto,
       estado,
+      temperatura,
+      puntuacion_lead,
       notas_iniciales,
       session_id,
       ultima_interaccion,
+      ultimo_mensaje_id,
       total_interacciones,
+      total_mensajes_enviados,
+      total_mensajes_recibidos,
       paciente_id,
       fecha_conversion,
       created_at,
@@ -206,13 +172,13 @@ export function useLeads(): UseLeadsReturn {
 
   const leads = data?.leads || []
   
-  // Calcular estadísticas
+  // Calcular estadísticas (usando estados reales de BD)
   const stats = {
     total: leads.length,
     nuevos: leads.filter(l => l.estado === 'Nuevo').length,
-    enSeguimiento: leads.filter(l => l.estado === 'En seguimiento').length,
+    enSeguimiento: leads.filter(l => ['Contactado', 'Interesado', 'Calificado'].includes(l.estado)).length,
     convertidos: leads.filter(l => l.estado === 'Convertido').length,
-    descartados: leads.filter(l => l.estado === 'Descartado').length,
+    descartados: leads.filter(l => ['No_Interesado', 'Perdido'].includes(l.estado)).length,
     clientes: leads.filter(l => l.esCliente).length,
     calientes: leads.filter(l => l.esCaliente).length,
     inactivos: leads.filter(l => l.esInactivo).length,

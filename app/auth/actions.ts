@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 import { createClient } from '@/lib/supabase/server'
 
-import { buildErrorState, buildSuccessState, initialAuthState, type AuthFormState } from './state'
+import { buildErrorState, buildSuccessState, buildLoginSuccessState, initialAuthState, type AuthFormState } from './state'
 
 type Credentials = {
   email: string
@@ -57,8 +57,8 @@ export async function signInAction(_: AuthFormState, formData: FormData): Promis
     return buildErrorState(error.message)
   }
 
-  redirect('/dashboard')
-  return initialAuthState
+  // Retornar estado de éxito para que el cliente maneje la animación y redirect
+  return buildLoginSuccessState()
 }
 
 export async function resetPasswordAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {

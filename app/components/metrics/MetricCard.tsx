@@ -98,48 +98,47 @@ export function MetricCard({
   const progressPercentage = percentage ?? (typeof value === 'number' && maxValue > 0 ? (value / maxValue) * 100 : 0);
 
   return (
-    <div className="group rounded-lg border border-white/10 bg-white/[0.02] p-3 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300">
+    <div className="group rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm p-5 hover:border-white/20 hover:from-white/[0.08] hover:to-white/[0.04] transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          {icon && <span className="text-base">{icon}</span>}
-          <span className="text-xs text-white/60">{title}</span>
+      <div className="flex items-start justify-between mb-3 relative">
+        <div className="flex items-center gap-2.5">
+          {icon && <span className="text-xl">{icon}</span>}
+          <span className="text-sm font-medium text-white/70">{title}</span>
         </div>
-        <span className={`text-xs font-medium ${colors.text}`}>
-          {percentage !== undefined ? `${percentage}%` : value}
-        </span>
       </div>
+
+      {/* Value */}
+      {loading ? (
+        <div className="h-10 w-3/4 bg-white/10 rounded-lg animate-pulse mb-3" />
+      ) : (
+        <div className={`text-3xl font-bold ${colors.text} mb-3 tracking-tight relative`}>
+          {percentage !== undefined ? `${percentage}%` : value}
+        </div>
+      )}
 
       {/* Progress Bar */}
       {showProgress && (
-        <div className="mb-2">
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div className="mb-3 relative">
+          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
             <div
-              className={`h-full ${colors.bg} rounded-full transition-all duration-500 ease-out`}
+              className={`h-full ${colors.bg} rounded-full transition-all duration-500 ease-out shadow-lg`}
               style={{ width: `${Math.min(progressPercentage, 100)}%` }}
             />
           </div>
         </div>
       )}
 
-      {/* Value */}
-      {loading ? (
-        <div className="h-8 w-3/4 bg-white/10 rounded-lg animate-pulse mb-2" />
-      ) : (
-        <span className={`text-xs font-medium ${colors.text}`}>
-          {percentage !== undefined ? `${percentage}%` : value}
-        </span>
-      )}
-
       {/* Footer */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between relative">
         {finalDescription && (
-          <p className="text-[10px] text-white/40">{finalDescription}</p>
+          <p className="text-xs text-white/50 font-medium">{finalDescription}</p>
         )}
         
         {trend && (
-          <div className={`flex items-center gap-1 text-[10px] ${trend.isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
-            <span>{trend.isPositive ? '↗' : '↘'}</span>
+          <div className={`flex items-center gap-1.5 text-xs font-semibold ${trend.isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+            <span className="text-sm">{trend.isPositive ? '↗' : '↘'}</span>
             <span>{Math.abs(trend.value)}%</span>
           </div>
         )}

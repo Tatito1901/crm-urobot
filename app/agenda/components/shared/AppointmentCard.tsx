@@ -9,6 +9,7 @@
 
 import React, { useState } from 'react';
 import type { Appointment } from '@/types/agenda';
+import { AppointmentTooltip } from './AppointmentTooltip';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -19,7 +20,7 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   appointment,
   onClick,
 }) => {
-  const [, setShowActions] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Formatear hora
   const startTime = appointment.start.toPlainTime().toString().slice(0, 5);
@@ -82,8 +83,8 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
         min-h-[30px]
       `}
       onClick={() => onClick?.(appointment)}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
     >
       {/* Diseño compacto para citas cortas (<=30 min) */}
       {isShortAppointment ? (
@@ -138,35 +139,12 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
         </>
       )}
 
-      {/* Tooltip hover con más info */}
-      <div className="absolute left-full ml-2 top-0 z-50 hidden group-hover:block pointer-events-none">
-        <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-xl p-3 min-w-[220px] text-xs">
-          <div className="font-bold text-white mb-2 text-sm">{appointment.paciente}</div>
-          <div className="space-y-1.5 text-slate-300">
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400 font-medium">Hora:</span>
-              <span className="font-medium">{startTime} - {endTime}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400 font-medium">Sede:</span>
-              <span>{appointment.sede}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400 font-medium">Tipo:</span>
-              <span>{appointment.tipo.replace(/_/g, ' ')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400 font-medium">Duración:</span>
-              <span>{appointment.duracionMinutos} min</span>
-            </div>
-            {appointment.motivoConsulta && (
-              <div className="text-slate-400 text-[10px] mt-2 pt-2 border-t border-slate-700 italic">
-                {appointment.motivoConsulta.slice(0, 80)}{appointment.motivoConsulta.length > 80 ? '...' : ''}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Tooltip elegante en hover */}
+      <AppointmentTooltip
+        appointment={appointment}
+        isVisible={showTooltip}
+        position="right"
+      />
     </div>
   );
 };

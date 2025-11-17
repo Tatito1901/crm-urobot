@@ -8,31 +8,10 @@
 'use client';
 
 import React from 'react';
+import { Filter } from 'lucide-react';
 import { useAgendaState } from '../../hooks/useAgendaState';
-
-const ESTADOS = [
-  { value: 'Programada', label: 'Programada', color: 'blue-600' },
-  { value: 'Confirmada', label: 'Confirmada', color: 'emerald-600' },
-  { value: 'Completada', label: 'Completada', color: 'slate' },
-  { value: 'Cancelada', label: 'Cancelada', color: 'red-600' },
-  { value: 'Reagendada', label: 'Reagendada', color: 'amber-500' },
-];
-
-const TIPOS_CONSULTA = [
-  { value: 'primera_vez', label: 'Primera vez' },
-  { value: 'subsecuente', label: 'Subsecuente' },
-  { value: 'control_post_op', label: 'Control post-op' },
-  { value: 'urgencia', label: 'Urgencia' },
-  { value: 'procedimiento_menor', label: 'Procedimiento menor' },
-  { value: 'valoracion_prequirurgica', label: 'Valoración pre-quirúrgica' },
-  { value: 'teleconsulta', label: 'Teleconsulta' },
-];
-
-const PRIORIDADES = [
-  { value: 'normal', label: 'Normal', color: 'slate' },
-  { value: 'alta', label: 'Alta', color: 'amber-500' },
-  { value: 'urgente', label: 'Urgente', color: 'red-600' },
-];
+import { FilterButton } from '../shared/FilterButton';
+import { ESTADOS, TIPOS_CONSULTA, PRIORIDADES, SEDES } from '../../lib/constants';
 
 export const FiltersPanel: React.FC = () => {
   const {
@@ -87,22 +66,15 @@ export const FiltersPanel: React.FC = () => {
     (onlyPendingConfirmation ? 1 : 0);
 
   return (
-    <div className="bg-slate-900/50 border-b border-slate-800 p-4 space-y-4">
-      {/* Header */}
+    <div className="bg-slate-900/50 border-b border-slate-800 p-3 md:p-4 space-y-3 md:space-y-4">
+      {/* Header - mejorado */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-            />
-          </svg>
-          <h3 className="text-sm font-semibold text-slate-300">
+          <Filter className="h-4 w-4 md:h-5 md:w-5 text-blue-400" />
+          <h3 className="text-sm font-semibold text-slate-200">
             Filtros
             {activeFiltersCount > 0 && (
-              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">
+              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium">
                 {activeFiltersCount}
               </span>
             )}
@@ -112,34 +84,27 @@ export const FiltersPanel: React.FC = () => {
         {activeFiltersCount > 0 && (
           <button
             onClick={resetFilters}
-            className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+            className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium"
           >
-            Limpiar filtros
+            Limpiar todo
           </button>
         )}
       </div>
 
-      {/* Grid de filtros */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Sede */}
+      {/* Grid de filtros - optimizado para mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Sede - usando FilterButton */}
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-2">Sede</label>
           <div className="flex gap-2">
-            {(['ALL', 'POLANCO', 'SATELITE'] as const).map((sede) => (
-              <button
-                key={sede}
-                onClick={() => setSelectedSede(sede)}
-                className={`
-                  flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                  ${
-                    selectedSede === sede
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                  }
-                `}
-              >
-                {sede === 'ALL' ? 'Todas' : sede}
-              </button>
+            {SEDES.map((sede) => (
+              <FilterButton
+                key={sede.value}
+                label={sede.label}
+                selected={selectedSede === sede.value}
+                onClick={() => setSelectedSede(sede.value)}
+                fullWidth
+              />
             ))}
           </div>
         </div>
@@ -171,84 +136,55 @@ export const FiltersPanel: React.FC = () => {
           </div>
         </div>
 
-        {/* Estados */}
+        {/* Estados - simplificado */}
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-2">Estado</label>
           <div className="flex flex-wrap gap-1.5">
-            {ESTADOS.map((estado) => (
-              <button
+            {ESTADOS.slice(0, 5).map((estado) => (
+              <FilterButton
                 key={estado.value}
+                label={estado.label}
+                selected={selectedEstados.includes(estado.value)}
                 onClick={() => toggleEstado(estado.value)}
-                className={`
-                  px-2.5 py-1 rounded-lg text-xs font-medium transition-all
-                  ${
-                    selectedEstados.includes(estado.value)
-                      ? estado.color === 'blue-600'
-                        ? 'bg-blue-600 text-white'
-                        : estado.color === 'emerald-600'
-                        ? 'bg-emerald-600 text-white'
-                        : estado.color === 'red-600'
-                        ? 'bg-red-600 text-white'
-                        : estado.color === 'amber-500'
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-slate-500 text-white'
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                  }
-                `}
-              >
-                {estado.label}
-              </button>
+                variant="colored"
+                color={estado.color}
+                size="sm"
+              />
             ))}
           </div>
         </div>
 
-        {/* Prioridad */}
+        {/* Prioridad - simplificado */}
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-2">Prioridad</label>
           <div className="flex gap-2">
             {PRIORIDADES.map((prioridad) => (
-              <button
+              <FilterButton
                 key={prioridad.value}
+                label={prioridad.label}
+                selected={selectedPrioridades.includes(prioridad.value)}
                 onClick={() => togglePrioridad(prioridad.value)}
-                className={`
-                  flex-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all
-                  ${
-                    selectedPrioridades.includes(prioridad.value)
-                      ? prioridad.color === 'red-600'
-                        ? 'bg-red-600 text-white'
-                        : prioridad.color === 'amber-500'
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-slate-500 text-white'
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                  }
-                `}
-              >
-                {prioridad.label}
-              </button>
+                variant="colored"
+                color={prioridad.color}
+                fullWidth
+                size="sm"
+              />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Tipo de consulta */}
+      {/* Tipo de consulta - optimizado */}
       <div>
         <label className="block text-xs font-medium text-slate-400 mb-2">Tipo de consulta</label>
         <div className="flex flex-wrap gap-1.5">
           {TIPOS_CONSULTA.map((tipo) => (
-            <button
+            <FilterButton
               key={tipo.value}
+              label={tipo.label}
+              selected={selectedTipos.includes(tipo.value)}
               onClick={() => toggleTipo(tipo.value)}
-              className={`
-                px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                ${
-                  selectedTipos.includes(tipo.value)
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                }
-              `}
-            >
-              {tipo.label}
-            </button>
+            />
           ))}
         </div>
       </div>

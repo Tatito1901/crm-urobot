@@ -1,17 +1,19 @@
+// ✅ Estados EXACTOS de la BD (consultas.estado_cita CHECK constraint)
 export const CONSULTA_ESTADOS = ['Programada', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada', 'No Asistió'] as const;
 export const CONSULTA_SEDES = ['POLANCO', 'SATELITE'] as const;
 
 export type ConsultaEstado = (typeof CONSULTA_ESTADOS)[number];
 export type ConsultaSede = (typeof CONSULTA_SEDES)[number];
 
+// ✅ Interface adaptado EXACTAMENTE a lo que existe en Supabase
 export interface Consulta {
   id: string;
   uuid: string;
   paciente: string;
   pacienteId: string | null;
   sede: ConsultaSede;
-  tipo: string;
-  estado: ConsultaEstado;
+  tipo: string; // tipo_cita en BD
+  estado: ConsultaEstado; // estado_cita en BD
   
   // Sistema de confirmación completo
   estadoConfirmacion: 'Pendiente' | 'Confirmada' | 'No Confirmada';

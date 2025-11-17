@@ -156,9 +156,9 @@ export default function DashboardPage() {
           </button>
         }
       >
-        <div className="flex flex-col gap-2 sm:gap-2 lg:gap-2 min-h-0">
+        <div className="flex flex-col gap-6 sm:gap-6 lg:gap-8 min-h-0">
           {/* Métricas principales */}
-          <section className="grid gap-3 grid-cols-1 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
+          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5 lg:gap-6">
             {metrics.map((metric) => (
               <MetricCard
                 key={metric.title}
@@ -206,33 +206,33 @@ export default function DashboardPage() {
           </div>
 
           {activeTab === 'actividad' ? (
-            <section className="grid gap-5 lg:gap-6 lg:grid-cols-2 min-h-0">
+            <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
               {/* Leads recientes */}
-              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden">
+              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-4 relative">
+                <CardHeader className="pb-5 pt-6 px-6 relative">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg font-semibold text-white tracking-tight">
+                    <div className="space-y-1.5">
+                      <CardTitle className="text-xl font-semibold text-white tracking-tight">
                         Leads Recientes {loadingLeads && <span className="text-sm text-blue-400">↻</span>}
                       </CardTitle>
-                      <CardDescription className="text-slate-400">Últimos contactos ingresados</CardDescription>
+                      <CardDescription className="text-sm text-slate-400">Últimos contactos ingresados</CardDescription>
                     </div>
                     <Badge label={`${leads.length} totales`} variant="outline" />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
+                <CardContent className="space-y-3 px-6 pb-6 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-3">
                   {recentLeads.length === 0 ? (
-                    <p className="text-center text-sm text-slate-400 py-8">No hay leads registrados</p>
+                    <p className="text-center text-sm text-slate-400 py-12">No hay leads registrados</p>
                   ) : (
                     recentLeads.map((lead, idx) => (
                       <div
                         key={lead.id}
-                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-3.5 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
+                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <div className="flex-1 space-y-1">
-                          <p className="font-medium text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{lead.nombre}</p>
+                        <div className="flex-1 space-y-1.5">
+                          <p className="font-semibold text-base text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{lead.nombre}</p>
                           <p className="text-xs text-slate-400 font-mono">
                             {formatDate(lead.primerContacto)} <span className="text-slate-500">·</span> {lead.fuente}
                           </p>
@@ -245,31 +245,31 @@ export default function DashboardPage() {
               </Card>
 
               {/* Consultas próximas */}
-              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden">
+              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-4 relative">
+                <CardHeader className="pb-5 pt-6 px-6 relative">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg font-semibold text-white tracking-tight">
+                    <div className="space-y-1.5">
+                      <CardTitle className="text-xl font-semibold text-white tracking-tight">
                         Consultas Próximas {loadingConsultas && <span className="text-sm text-blue-400">↻</span>}
                       </CardTitle>
-                      <CardDescription className="text-slate-400">Agenda de ambas sedes</CardDescription>
+                      <CardDescription className="text-sm text-slate-400">Agenda de ambas sedes</CardDescription>
                     </div>
                     <Badge label={`${upcomingConsultas.length} próximas`} variant="outline" />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
+                <CardContent className="space-y-3 px-6 pb-6 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-3">
                   {upcomingConsultas.length === 0 ? (
-                    <p className="text-center text-sm text-slate-400 py-8">No hay consultas programadas</p>
+                    <p className="text-center text-sm text-slate-400 py-12">No hay consultas programadas</p>
                   ) : (
                     upcomingConsultas.map((consulta, idx) => (
                       <div
                         key={consulta.id}
-                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-3.5 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
+                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <div className="flex-1 space-y-1">
-                          <p className="font-medium text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{consulta.paciente}</p>
+                        <div className="flex-1 space-y-1.5">
+                          <p className="font-semibold text-base text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{consulta.paciente}</p>
                           <p className="text-xs text-slate-400 font-mono">
                             {formatDate(consulta.fecha)} <span className="text-slate-500">·</span> {consulta.sede}
                           </p>
@@ -282,15 +282,15 @@ export default function DashboardPage() {
               </Card>
             </section>
           ) : (
-            <section className="grid gap-5 lg:gap-6 lg:grid-cols-2 min-h-0">
+            <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
               {/* Gráfico de leads por estado */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden">
+              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-3 relative">
+                <CardHeader className="pb-4 pt-6 px-6 relative">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg font-semibold text-white tracking-tight">Leads por Estado</CardTitle>
-                      <CardDescription className="text-slate-400">Distribución del funnel de conversión</CardDescription>
+                    <div className="space-y-1.5">
+                      <CardTitle className="text-xl font-semibold text-white tracking-tight">Leads por Estado</CardTitle>
+                      <CardDescription className="text-sm text-slate-400">Distribución del funnel de conversión</CardDescription>
                     </div>
                     {/* Métricas rápidas */}
                     {leadsStats.total > 0 && (
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4 px-6 pb-6">
                   {leadsChartData.every((d) => d.value === 0) ? (
                     <EmptyState
                       title="Sin datos"
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                     />
                   ) : (
                     <>
-                      <BarChart data={leadsChartData} height={220} />
+                      <BarChart data={leadsChartData} height={260} />
                       <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
                         {leadsChartData.map((item) => (
                           <div key={item.label} className="flex items-center gap-2">
@@ -351,13 +351,15 @@ export default function DashboardPage() {
               </Card>
 
               {/* Gráfico de consultas por sede */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden">
+              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-4 relative">
-                  <CardTitle className="text-lg font-semibold text-white tracking-tight">Consultas por Sede</CardTitle>
-                  <CardDescription className="text-slate-400">Próximas 4 semanas</CardDescription>
+                <CardHeader className="pb-5 pt-6 px-6 relative">
+                  <div className="space-y-1.5">
+                    <CardTitle className="text-xl font-semibold text-white tracking-tight">Consultas por Sede</CardTitle>
+                    <CardDescription className="text-sm text-slate-400">Próximas 4 semanas</CardDescription>
+                  </div>
                 </CardHeader>
-                <CardContent className="flex justify-center py-4">
+                <CardContent className="flex justify-center py-6 px-6">
                   {sedesChartData.every((d) => d.value === 0) ? (
                     <EmptyState
                       title="Sin consultas"
@@ -366,8 +368,8 @@ export default function DashboardPage() {
                   ) : (
                     <DonutChart
                       data={sedesChartData}
-                      size={200}
-                      thickness={35}
+                      size={240}
+                      thickness={40}
                       centerText={dm ? (dm.polancoFuturas + dm.sateliteFuturas).toString() : '0'}
                       centerSubtext="Total"
                     />

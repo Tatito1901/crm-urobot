@@ -16,6 +16,7 @@ import {
   isConsultaSede,
 } from '@/types/consultas'
 import type { Tables } from '@/types/database'
+import { mapConsultaFromDB, enrichConsulta } from '@/lib/mappers'
 
 const supabase = createClient()
 

@@ -69,18 +69,18 @@ export const TimeGrid = React.memo(function TimeGrid({
   const slotHeight = 60;
 
   return (
-    <div className="flex-1 overflow-auto bg-slate-900 p-1 md:p-2">
+    <div className="flex-1 overflow-auto bg-slate-900 p-1 md:p-2 scroll-smooth">
       <div
         className={`grid ${
-          mode === 'day' ? 'grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
+          mode === 'day' ? 'grid-cols-[50px_1fr] sm:grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[50px_repeat(7,1fr)] sm:grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
         } min-h-full gap-0.5 md:gap-1 rounded-lg overflow-hidden`}
       >
-        {/* Columna de horas - más compacta en móvil */}
-        <div className="border-r border-slate-700/70 sticky left-0 bg-slate-900/90 z-10 backdrop-blur-sm">
+        {/* Columna de horas - optimizada para todos los tamaños */}
+        <div className="border-r border-slate-700/70 sticky left-0 bg-slate-900/95 z-10 backdrop-blur-sm">
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="flex items-start justify-end pr-2 md:pr-3 pt-1.5 text-xs md:text-sm font-medium text-slate-400 border-b border-slate-700/40"
+              className="flex items-start justify-end pr-1.5 sm:pr-2 md:pr-3 pt-1.5 text-[10px] sm:text-xs md:text-sm font-medium text-slate-400 border-b border-slate-700/40"
               style={{ height: `${slotHeight}px` }}
             >
               <span className="tabular-nums">{time}</span>
@@ -102,30 +102,32 @@ export const TimeGrid = React.memo(function TimeGrid({
           return (
             <div
               key={dayIndex}
-              className={`relative border-r border-slate-700/50 last:border-r-0 rounded-sm ${
+              className={`relative border-r border-slate-700/50 last:border-r-0 rounded-sm transition-colors ${
                 hasWorkingHours ? 'bg-slate-900/30' : 'bg-[#0b0f16]'
               }`}
               role="gridcell"
+              aria-label={`${date.toLocaleDateString('es-MX')}`}
             >
-              {/* Grid de slots de tiempo */}
+              {/* Grid de slots de tiempo - con hover mejorado */}
               {timeSlots.map((time) => (
                 <div
                   key={`${dayIndex}-${time}`}
-                  className="border-b border-slate-700/30 hover:bg-blue-900/5 transition-colors cursor-pointer"
+                  className="border-b border-slate-700/30 hover:bg-blue-500/5 hover:border-blue-500/20 transition-colors cursor-pointer group"
                   style={{ height: `${slotHeight}px` }}
                   data-time={time}
                   data-date={date.toISOString().split('T')[0]}
+                  title={`${time} - ${date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}`}
                 />
               ))}
               
-              {/* Citas posicionadas absolutamente */}
+              {/* Citas posicionadas - optimizadas */}
               {positionedAppointments.map((apt) => (
                 <div
                   key={apt.id}
-                  className="absolute inset-x-0 px-1 py-0.5"
+                  className="absolute inset-x-0 px-0.5 sm:px-1 py-0.5"
                   style={{
                     top: `${apt.top}px`,
-                    height: `${apt.height - 2}px`, // -2px para pequeño espaciado
+                    height: `${Math.max(apt.height - 2, 30)}px`, // Mínimo 30px para mejor click en mobile
                     left: `${apt.left}%`,
                     width: `${apt.width}%`,
                     zIndex: apt.zIndex,

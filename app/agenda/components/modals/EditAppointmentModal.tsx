@@ -29,15 +29,6 @@ const TIPOS_CONSULTA = [
   { value: 'teleconsulta', label: 'Teleconsulta' },
 ];
 
-const DURACIONES = [
-  { value: 15, label: '15 minutos' },
-  { value: 30, label: '30 minutos' },
-  { value: 45, label: '45 minutos' },
-  { value: 60, label: '1 hora' },
-  { value: 90, label: '1 hora 30 min' },
-  { value: 120, label: '2 horas' },
-];
-
 export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   appointment,
   isOpen,
@@ -45,13 +36,8 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   onUpdate,
 }) => {
   const [formData, setFormData] = useState({
-    patientId: '',
-    patientName: '',
     tipo: 'primera_vez',
     motivoConsulta: '',
-    duracionMinutos: 45,
-    sede: 'POLANCO' as 'POLANCO' | 'SATELITE',
-    modalidad: 'presencial' as 'presencial' | 'teleconsulta' | 'hibrida',
     prioridad: 'normal' as 'normal' | 'alta' | 'urgente',
     notasInternas: '',
   });
@@ -63,13 +49,8 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   useEffect(() => {
     if (appointment && isOpen) {
       setFormData({
-        patientId: appointment.pacienteId,
-        patientName: appointment.paciente,
         tipo: appointment.tipo,
         motivoConsulta: appointment.motivoConsulta || '',
-        duracionMinutos: appointment.duracionMinutos,
-        sede: appointment.sede,
-        modalidad: appointment.modalidad,
         prioridad: appointment.prioridad,
         notasInternas: appointment.notasInternas || '',
       });
@@ -95,9 +76,6 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
       const updates: Partial<Appointment> = {
         tipo: formData.tipo,
         motivoConsulta: formData.motivoConsulta,
-        duracionMinutos: formData.duracionMinutos,
-        sede: formData.sede,
-        modalidad: formData.modalidad,
         prioridad: formData.prioridad,
         notasInternas: formData.notasInternas,
       };
@@ -133,26 +111,30 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Editar Cita" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Información de fecha/hora (no editable) */}
-        <div className="rounded-xl bg-blue-500/10 border border-blue-500/30 p-4">
-          <div className="flex items-center gap-2 text-blue-400">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
+        {/* Información de la cita (solo lectura) */}
+        <div className="rounded-lg bg-slate-800/30 border border-slate-700 p-4">
+          <h3 className="text-sm font-medium text-slate-300 mb-3">Información de la cita</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="font-medium">{formattedDate}</p>
-              <p className="text-sm">
-                {startTime} - {endTime} • {appointment.sede}
-              </p>
+              <p className="text-xs text-slate-500 mb-1">Fecha y hora</p>
+              <p className="text-slate-200 font-medium">{formattedDate}</p>
+              <p className="text-slate-400 text-xs">{startTime} - {endTime}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500 mb-1">Sede</p>
+              <p className="text-slate-200 font-medium">{appointment.sede}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500 mb-1">Duración</p>
+              <p className="text-slate-200 font-medium">{appointment.duracionMinutos} minutos</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500 mb-1">Modalidad</p>
+              <p className="text-slate-200 font-medium capitalize">{appointment.modalidad}</p>
             </div>
           </div>
-          <p className="text-xs text-slate-400 mt-2">
-            💡 Para cambiar fecha/hora, cancela y crea una nueva cita
+          <p className="text-xs text-slate-500 mt-3">
+            💡 Para cambiar fecha, hora, sede, duración o modalidad, cancela y crea una nueva cita
           </p>
         </div>
 
@@ -196,42 +178,8 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
             onChange={(e) => setFormData({ ...formData, motivoConsulta: e.target.value })}
             placeholder="Ej: Evaluación de próstata, dolor abdominal, etc."
             rows={3}
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
+            className="w-full px-4 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
           />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          {/* Duración */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Duración</label>
-            <select
-              value={formData.duracionMinutos}
-              onChange={(e) => setFormData({ ...formData, duracionMinutos: parseInt(e.target.value) })}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
-            >
-              {DURACIONES.map((dur) => (
-                <option key={dur.value} value={dur.value}>
-                  {dur.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Modalidad */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Modalidad</label>
-            <select
-              value={formData.modalidad}
-              onChange={(e) =>
-                setFormData({ ...formData, modalidad: e.target.value as 'presencial' | 'teleconsulta' | 'hibrida' })
-              }
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
-            >
-              <option value="presencial">Presencial</option>
-              <option value="teleconsulta">Teleconsulta</option>
-              <option value="hibrida">Híbrida</option>
-            </select>
-          </div>
         </div>
 
         {/* Prioridad */}
@@ -250,7 +198,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
                   setFormData({ ...formData, prioridad: priority.value as 'normal' | 'alta' | 'urgente' })
                 }
                 className={`
-                  flex-1 px-4 py-2.5 rounded-xl border transition-all
+                  flex-1 px-4 py-2.5 rounded-lg border transition-all
                   ${
                     formData.prioridad === priority.value
                       ? priority.color === 'red'
@@ -276,31 +224,31 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
             onChange={(e) => setFormData({ ...formData, notasInternas: e.target.value })}
             placeholder="Notas privadas para el equipo médico..."
             rows={2}
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
+            className="w-full px-4 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
           />
         </div>
 
         {/* Error de submit */}
         {submitError && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4">
+          <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3">
             <p className="text-sm text-red-400">{submitError}</p>
           </div>
         )}
 
         {/* Botones */}
-        <div className="flex gap-3 pt-4 border-t border-slate-800">
+        <div className="flex gap-2.5 pt-4 border-t border-slate-700">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-5 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 px-6 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex-1 px-5 py-2.5 rounded-lg bg-blue-600 border border-blue-700 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
           </button>

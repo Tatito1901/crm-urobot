@@ -1,6 +1,19 @@
-export const LEAD_ESTADOS = ['Nuevo', 'En seguimiento', 'Convertido', 'Descartado'] as const;
+// ✅ Estados exactos de la base de datos (consultas.estado CHECK constraint)
+export const LEAD_ESTADOS = [
+  'Nuevo',
+  'Contactado',
+  'Interesado',
+  'Calificado',
+  'Convertido',
+  'No_Interesado',
+  'Perdido'
+] as const;
 
 export type LeadEstado = (typeof LEAD_ESTADOS)[number];
+
+// Temperaturas de lead (de BD)
+export const LEAD_TEMPERATURAS = ['Frio', 'Tibio', 'Caliente'] as const;
+export type LeadTemperatura = (typeof LEAD_TEMPERATURAS)[number];
 
 export interface Lead {
   id: string;
@@ -12,8 +25,15 @@ export interface Lead {
   fuente: string;
   ultimaInteraccion?: string | null;
   
+  // Campos de BD que faltaban
+  temperatura: LeadTemperatura;
+  puntuacionLead: number; // 0-100
+  canalMarketing?: string | null;
+  
   // Métricas de engagement
   totalInteracciones: number;
+  totalMensajesEnviados: number;
+  totalMensajesRecibidos: number;
   diasDesdeContacto: number;
   diasDesdeUltimaInteraccion: number | null;
   

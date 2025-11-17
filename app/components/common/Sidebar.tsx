@@ -17,7 +17,7 @@ const navItems: readonly NavItem[] = [
   { label: "Pacientes", href: "/pacientes" },
   { label: "Consultas", href: "/consultas" },
   { label: "Confirmaciones", href: "/confirmaciones" },
-  { label: "Métricas", href: "/metricas" },
+  { label: "Estadísticas", href: "/estadisticas" },
 ];
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });
