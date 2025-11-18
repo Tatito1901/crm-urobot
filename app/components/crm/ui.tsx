@@ -33,18 +33,56 @@ export function Badge({
   );
 }
 
-export function StatCard({ title, value, hint }: { title: string; value: string; hint?: string }) {
+export function StatCard({
+  title,
+  value,
+  hint,
+  alert
+}: {
+  title: string;
+  value: string;
+  hint?: string;
+  alert?: string;
+}) {
+  const hasAlert = !!alert;
+
   return (
-    <Card className="bg-white/[0.03]">
+    <Card className={cn(
+      "transition-all duration-300",
+      hasAlert
+        ? "bg-red-500/10 border-red-500/30 ring-1 ring-red-500/20 shadow-lg shadow-red-500/10"
+        : "bg-white/[0.03]"
+    )}>
       <CardHeader className="space-y-3 pb-2">
-        <CardDescription className="text-[0.68rem] uppercase tracking-[0.28em] text-white/50">
+        <CardDescription className={cn(
+          "text-[0.68rem] uppercase tracking-[0.28em]",
+          hasAlert ? "text-red-300/80" : "text-white/50"
+        )}>
           {title}
         </CardDescription>
-        <CardTitle className="text-2xl font-semibold text-white sm:text-3xl">{value}</CardTitle>
+        <CardTitle className={cn(
+          "text-2xl font-semibold sm:text-3xl",
+          hasAlert ? "text-red-300" : "text-white"
+        )}>
+          {value}
+        </CardTitle>
       </CardHeader>
-      {hint && (
-        <CardContent className="pt-0">
-          <p className="text-xs text-white/50">{hint}</p>
+      {(hint || alert) && (
+        <CardContent className="pt-0 space-y-2">
+          {hint && (
+            <p className={cn(
+              "text-xs",
+              hasAlert ? "text-white/60" : "text-white/50"
+            )}>
+              {hint}
+            </p>
+          )}
+          {alert && (
+            <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-red-500/20 border border-red-500/30">
+              <span className="text-red-400 text-xs">⚠</span>
+              <p className="text-xs text-red-300 font-medium">{alert}</p>
+            </div>
+          )}
         </CardContent>
       )}
     </Card>

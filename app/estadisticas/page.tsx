@@ -216,40 +216,41 @@ export default function EstadisticasPage({
     await Promise.all([refetchMetrics(), refetchLeads(), refetchConsultas()]);
   };
 
-  // 📊 Métricas principales
+  // 📊 Métricas principales - Reorganizadas por prioridad
   const metricsCards = useMemo(() => {
     if (!dm) return [];
-    
+
+    // Calcular alertas
+    const tasaBaja = dm.tasaConversion < 25;
+    const pendientesAltos = dm.pendientesConfirmacion > 5;
+
     return [
       {
-        title: 'Leads totales',
-        value: dm.leadsTotal.toLocaleString('es-MX'),
-        hint: `${dm.leadsConvertidos} convertidos (${dm.tasaConversion}%)`,
+        title: '🔴 Pendientes confirmación',
+        value: dm.pendientesConfirmacion.toLocaleString('es-MX'),
+        hint: `Consultas de hoy: ${dm.consultasHoy}`,
+        alert: pendientesAltos ? 'Requiere atención inmediata' : undefined,
       },
       {
-        title: 'Pacientes activos',
-        value: dm.pacientesActivos.toLocaleString('es-MX'),
-        hint: `Total: ${dm.totalPacientes.toLocaleString('es-MX')} pacientes`,
+        title: '🎯 Tasa de conversión',
+        value: `${dm.tasaConversion}%`,
+        hint: `${dm.leadsConvertidos} de ${dm.leadsTotal} leads convertidos`,
+        alert: tasaBaja ? 'Por debajo del objetivo (35%)' : undefined,
       },
       {
-        title: 'Consultas futuras',
+        title: '📅 Consultas futuras',
         value: dm.consultasFuturas.toLocaleString('es-MX'),
         hint: `Polanco ${dm.polancoFuturas} · Satélite ${dm.sateliteFuturas}`,
       },
       {
-        title: 'Pendientes confirmación',
-        value: dm.pendientesConfirmacion.toLocaleString('es-MX'),
-        hint: `Consultas de hoy: ${dm.consultasHoy}`,
+        title: '📊 Leads',
+        value: dm.leadsTotal.toLocaleString('es-MX'),
+        hint: `Este mes: ${dm.leadsMes} · Convertidos: ${dm.leadsConvertidos}`,
       },
       {
-        title: 'Tasa de conversión',
-        value: `${dm.tasaConversion}%`,
-        hint: `Meta: 35% · ${dm.leadsConvertidos} leads convertidos`,
-      },
-      {
-        title: 'Leads este mes',
-        value: dm.leadsMes.toLocaleString('es-MX'),
-        hint: 'Contactos adquiridos en el mes actual',
+        title: '👥 Pacientes activos',
+        value: dm.pacientesActivos.toLocaleString('es-MX'),
+        hint: `Total: ${dm.totalPacientes.toLocaleString('es-MX')} pacientes`,
       },
     ];
   }, [dm]);
@@ -422,7 +423,7 @@ export default function EstadisticasPage({
     { label: 'Otros', value: stats.otrosLeads, color: '#64748b' },
   ], [stats]);
 
-  // 📱 NUEVAS MÉTRICAS: Análisis de Mensajería
+  // 📱 Análisis de Mensajería - Simplificado
   const mensajeriaStats = useMemo(() => {
     const leadsPeriodo = leads.filter(l => {
       const now = new Date();
@@ -435,7 +436,7 @@ export default function EstadisticasPage({
     });
 
     // Personas únicas que enviaron mensaje
-    const personasConMensajes = leadsPeriodo.filter(l => 
+    const personasConMensajes = leadsPeriodo.filter(l =>
       (l.totalMensajesRecibidos && l.totalMensajesRecibidos > 0) ||
       (l.totalInteracciones && l.totalInteracciones > 0)
     ).length;
@@ -446,13 +447,8 @@ export default function EstadisticasPage({
     const totalInteracciones = leadsPeriodo.reduce((sum, l) => sum + (l.totalInteracciones || 0), 0);
 
     // Promedio de mensajes por persona
-    const promedioMensajes = personasConMensajes > 0 
-      ? Math.round((totalMensajesEnviados + totalMensajesRecibidos) / personasConMensajes) 
-      : 0;
-
-    // Tasa de respuesta
-    const tasaRespuesta = totalMensajesRecibidos > 0 
-      ? Math.round((totalMensajesEnviados / totalMensajesRecibidos) * 100) 
+    const promedioMensajes = personasConMensajes > 0
+      ? Math.round((totalMensajesEnviados + totalMensajesRecibidos) / personasConMensajes)
       : 0;
 
     return {
@@ -461,7 +457,6 @@ export default function EstadisticasPage({
       totalMensajesRecibidos,
       totalInteracciones,
       promedioMensajes,
-      tasaRespuesta,
     };
   }, [leads, periodo]);
 
@@ -513,6 +508,52 @@ export default function EstadisticasPage({
       .map(([canal, cantidad]) => ({ label: canal, value: cantidad }))
       .sort((a, b) => b.value - a.value);
   }, [consultas, periodo]);
+
+  // 📈 KPIs Clave - Calculados automáticamente
+  const kpisCalculados = useMemo(() => {
+    if (loadingConsultas || !dm) {
+      return {
+        eficienciaConfirmacion: 0,
+        tasaCancelacion: 0,
+        showRate: 0,
+        consultasPorPaciente: 0,
+      };
+    }
+
+    const totalConsultas = consultas.length;
+    const confirmadas = consultas.filter(c => c.estado === 'Confirmada' || c.confirmadoPaciente).length;
+    const pendientes = consultas.filter(c => c.estado === 'Programada' && !c.confirmadoPaciente).length;
+    const canceladas = consultas.filter(c => c.estado === 'Cancelada').length;
+    const completadas = consultas.filter(c => c.estado === 'Completada').length;
+    const programadas = consultas.filter(c => c.estado === 'Programada' || c.estado === 'Confirmada').length;
+
+    // Eficiencia de confirmación: % de consultas confirmadas del total de programadas
+    const eficienciaConfirmacion = (confirmadas + pendientes) > 0
+      ? Math.round((confirmadas / (confirmadas + pendientes)) * 100)
+      : 0;
+
+    // Tasa de cancelación
+    const tasaCancelacion = totalConsultas > 0
+      ? Math.round((canceladas / totalConsultas) * 100)
+      : 0;
+
+    // Show rate: % de consultas completadas vs programadas
+    const showRate = programadas > 0
+      ? Math.round((completadas / (completadas + canceladas + programadas)) * 100)
+      : 0;
+
+    // Consultas por paciente activo
+    const consultasPorPaciente = dm.pacientesActivos > 0
+      ? (totalConsultas / dm.pacientesActivos).toFixed(1)
+      : '0';
+
+    return {
+      eficienciaConfirmacion,
+      tasaCancelacion,
+      showRate,
+      consultasPorPaciente,
+    };
+  }, [consultas, loadingConsultas, dm]);
 
   // 🌡️ Distribución por temperatura de leads
   const temperaturaStats = useMemo(() => {
@@ -710,15 +751,103 @@ export default function EstadisticasPage({
         </section>
         )}
 
-        {/* NUEVA SECCIÓN: Análisis de Mensajería */}
+        {/* KPIs Clave - Calculados Automáticamente */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-400" />
+            <span>KPIs de Rendimiento</span>
+          </h2>
+
+          <div className={styles.grid.stats}>
+            {/* Eficiencia de confirmación */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                  <span>Eficiencia Confirmación</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Consultas confirmadas vs pendientes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-3xl sm:text-4xl font-bold ${kpisCalculados.eficienciaConfirmacion >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {kpisCalculados.eficienciaConfirmacion}%
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {kpisCalculados.eficienciaConfirmacion >= 70 ? '✓ Óptimo' : '⚠ Mejorable'}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasa de cancelación */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">⊗</span>
+                  <span>Tasa Cancelación</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">% de consultas canceladas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-3xl sm:text-4xl font-bold ${kpisCalculados.tasaCancelacion <= 15 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {kpisCalculados.tasaCancelacion}%
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {kpisCalculados.tasaCancelacion <= 15 ? '✓ Bajo control' : '⚠ Requiere atención'}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Show rate */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">✓</span>
+                  <span>Show Rate</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Asistencia efectiva</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-3xl sm:text-4xl font-bold ${kpisCalculados.showRate >= 80 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {kpisCalculados.showRate}%
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  Pacientes que asisten
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Consultas por paciente */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">📊</span>
+                  <span>Consultas/Paciente</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Frecuencia promedio</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-blue-400">
+                  {kpisCalculados.consultasPorPaciente}
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  Visitas por paciente activo
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        )}
+
+        {/* Análisis de Mensajería - Simplificado */}
         {(seccionActiva === 'resumen' || seccionActiva === 'mensajeria') && (
         <section className={styles.spacing.section}>
           <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
             <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
-            <span>Análisis de Mensajería</span>
+            <span>Engagement de Mensajería</span>
           </h2>
 
-          <div className={styles.grid.stats}>
+          <div className={styles.grid.cols3}>
             {/* Personas que enviaron mensajes */}
             <Card className={styles.card.base}>
               <CardHeader className={styles.card.header}>
@@ -726,12 +855,12 @@ export default function EstadisticasPage({
                   <Users className="h-5 w-5 inline mr-2 text-blue-400" />
                   Personas Activas
                 </CardTitle>
-                <CardDescription className={styles.text.subtitle}>Enviaron mensajes</CardDescription>
+                <CardDescription className={styles.text.subtitle}>Con conversaciones</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className={`${styles.text.statValue} text-blue-400`}>{mensajeriaStats.personasConMensajes}</div>
                 <div className={`${styles.text.statHint} mt-3`}>
-                  {mensajeriaStats.totalInteracciones} interacciones totales
+                  {mensajeriaStats.totalInteracciones.toLocaleString()} interacciones totales
                 </div>
               </CardContent>
             </Card>
@@ -740,17 +869,17 @@ export default function EstadisticasPage({
             <Card className="bg-slate-800/30 border-slate-700">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
-                  <span className="text-lg">📨</span>
-                  <span>Mensajes</span>
+                  <span className="text-lg">💬</span>
+                  <span>Volumen Total</span>
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-slate-400">Enviados y recibidos</CardDescription>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Comunicación bidireccional</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl sm:text-4xl font-bold text-emerald-400">
                   {(mensajeriaStats.totalMensajesEnviados + mensajeriaStats.totalMensajesRecibidos).toLocaleString()}
                 </div>
                 <div className="mt-2 text-xs sm:text-sm text-slate-400">
-                  📤 {mensajeriaStats.totalMensajesEnviados} enviados • 📥 {mensajeriaStats.totalMensajesRecibidos} recibidos
+                  ↗ {mensajeriaStats.totalMensajesEnviados.toLocaleString()} enviados • ↙ {mensajeriaStats.totalMensajesRecibidos.toLocaleString()} recibidos
                 </div>
               </CardContent>
             </Card>
@@ -759,32 +888,15 @@ export default function EstadisticasPage({
             <Card className="bg-slate-800/30 border-slate-700">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
-                  <span className="text-lg">📊</span>
-                  <span>Promedio</span>
+                  <span className="text-lg">📈</span>
+                  <span>Engagement Promedio</span>
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-slate-400">Mensajes por persona</CardDescription>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Mensajes por lead</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl sm:text-4xl font-bold text-purple-400">{mensajeriaStats.promedioMensajes}</div>
                 <div className="mt-2 text-xs sm:text-sm text-slate-400">
-                  Engagement promedio
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tasa de respuesta */}
-            <Card className="bg-slate-800/30 border-slate-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
-                  <span className="text-lg">⚡</span>
-                  <span>Tasa de Respuesta</span>
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-slate-400">Respuestas vs recibidos</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl sm:text-4xl font-bold text-amber-400">{mensajeriaStats.tasaRespuesta}%</div>
-                <div className="mt-2 text-xs sm:text-sm text-slate-400">
-                  Velocidad de atención
+                  Calidad de interacción
                 </div>
               </CardContent>
             </Card>
@@ -908,64 +1020,6 @@ export default function EstadisticasPage({
         </section>
         )}
 
-        {/* Sección: Canales de Adquisición (Original) */}
-        {(seccionActiva === 'resumen' || seccionActiva === 'canales') && (
-        <section>
-          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
-            <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
-            <span className="truncate">Canales de Adquisición (Resumen)</span>
-          </h2>
-
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2">
-            <Card className="bg-slate-800/30 border-slate-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-base text-white">Distribución por Canal</CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-slate-400">Origen de los contactos</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {stats.totalLeads === 0 ? (
-                  <p className="text-center text-slate-400 py-12 text-sm">No hay leads en este periodo</p>
-                ) : (
-                  <div className="flex justify-center py-2">
-                    <DonutChart
-                      data={canalesData}
-                      size={180}
-                      thickness={30}
-                      centerText={stats.totalLeads.toString()}
-                      centerSubtext="Leads"
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/30 border-slate-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-base text-white">Detalle de Canales</CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-slate-400">Cantidad y porcentaje</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 sm:space-y-3">
-                  {canalesData.map((canal) => (
-                    <div key={canal.label} className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-slate-900/50">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0" style={{ backgroundColor: canal.color }} />
-                        <span className="text-xs sm:text-sm font-medium text-slate-300">{canal.label}</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-base sm:text-lg font-bold text-white">{canal.value}</span>
-                        <span className="text-[10px] sm:text-xs text-slate-400 ml-1 sm:ml-2">
-                          ({stats.totalLeads > 0 ? Math.round((canal.value / stats.totalLeads) * 100) : 0}%)
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-        )}
 
         {/* Sección: Confirmaciones */}
         {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
@@ -981,49 +1035,6 @@ export default function EstadisticasPage({
         </section>
         )}
 
-        {/* Información del sistema */}
-        {seccionActiva === 'resumen' && (
-        <Card className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 border-blue-600/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
-              <span>Integración CRM-UROBOT</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2">
-              <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg bg-slate-900/30">
-                <span className="text-emerald-400 text-sm sm:text-base">●</span>
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-white">Datos en tiempo real</p>
-                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">Sincronización con Supabase via SWR</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg bg-slate-900/30">
-                <span className="text-emerald-400 text-sm sm:text-base">●</span>
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-white">Workflows n8n activos</p>
-                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">Automatización de procesos</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg bg-slate-900/30">
-                <span className="text-blue-400 text-sm sm:text-base">ⓘ</span>
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-white">Filtrado por periodo</p>
-                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">Análisis histórico personalizable</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg bg-slate-900/30">
-                <span className="text-purple-400 text-sm sm:text-base">✓</span>
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-white">Caché inteligente</p>
-                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1">RPC → Vista → Cálculo manual</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        )}
       </div>
     </PageShell>
   );
