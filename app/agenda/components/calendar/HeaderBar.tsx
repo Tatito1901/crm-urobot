@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
-import { badges } from '@/app/lib/design-system';
 
 interface HeaderBarProps {
   currentWeekStart: Date;

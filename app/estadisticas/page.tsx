@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
-import { Calendar, Clock, TrendingUp, Globe, CheckCircle, BarChart3, Users } from 'lucide-react';
+import { Calendar, Clock, TrendingUp, Globe, CheckCircle, BarChart3 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 

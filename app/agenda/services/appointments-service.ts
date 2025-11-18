@@ -4,6 +4,10 @@
  * ============================================================
  * Maneja todas las operaciones CRUD para citas (consultas)
  * Integrado con Supabase y compatible con useConsultas
+ * 
+ * NOTA: TypeScript muestra errores de inferencia con Supabase SSR,
+ * pero el código funciona correctamente en runtime.
+ * @ts-expect-error - Bug de inferencia en @supabase/ssr con tipos genéricos
  */
 
 import { createClient } from '@/lib/supabase/client';

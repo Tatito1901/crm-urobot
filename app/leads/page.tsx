@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { ContentLoader, TableContentSkeleton } from '@/app/components/common/ContentLoader';
 import { Pagination } from '@/app/components/common/Pagination';
 import { typography, spacing, cards } from '@/app/lib/design-system';
-import { InfoTooltip, WrapTooltip } from '@/app/components/common/InfoTooltip';
+import { WrapTooltip } from '@/app/components/common/InfoTooltip';
 import { GLOSARIO } from '@/app/lib/glosario-medico';
 import { TableHeaders, MainTitle, QuickGuide, StatsTooltips, FilterTooltips } from '@/app/components/leads/LeadsTooltips';
 

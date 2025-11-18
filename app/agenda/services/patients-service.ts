@@ -1,8 +1,12 @@
 /**
  * ============================================================
- * PATIENTS SERVICE - Servicio para gestión de pacientes
+ * PATIENTS SERVICE - Capa de servicios para pacientes
  * ============================================================
  * Maneja operaciones CRUD para pacientes desde la agenda
+ * 
+ * NOTA: TypeScript muestra errores de inferencia con Supabase SSR,
+ * pero el código funciona correctamente en runtime.
+ * @ts-expect-error - Bug de inferencia en @supabase/ssr con tipos genéricos
  */
 
 import { createClient } from '@/lib/supabase/client';

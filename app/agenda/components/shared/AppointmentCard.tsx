@@ -24,7 +24,6 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
   // Formatear hora
   const startTime = appointment.start.toPlainTime().toString().slice(0, 5);
-  const endTime = appointment.end.toPlainTime().toString().slice(0, 5);
   
   // Determinar nivel de detalle según duración
   const isShortAppointment = appointment.duracionMinutos <= 30;

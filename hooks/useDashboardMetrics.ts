@@ -48,8 +48,7 @@ interface DashboardMetricsRPC {
 const fetchMetrics = async (): Promise<DashboardMetrics> => {
   try {
 
-    // ✅ OPTIMIZACIÓN: Intentar RPC primero
-    // @ts-expect-error - RPC function may not be in types yet
+    // ✅ OPTIMIZACIÓN: Intentar RPC primero (función RPC disponible en Supabase)
     const { data, error: rpcError } = await supabase.rpc('get_dashboard_metrics')
 
     if (!rpcError && data) {

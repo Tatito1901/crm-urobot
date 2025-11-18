@@ -12,17 +12,19 @@ import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
 
-// ✅ Singleton instance
+// ✅ Singleton instance - Tipado explícitamente
 let client: SupabaseClient<Database> | null = null;
 
 /**
  * Obtiene o crea el cliente de Supabase (singleton)
  * Solo se crea una vez durante todo el ciclo de vida de la app
+ * 
+ * NOTA: Retorno tipado explícitamente para mejor inferencia de TypeScript
  */
-export const createClient = (): SupabaseClient<Database> => {
+export function createClient(): SupabaseClient<Database> {
   if (!client) {
     if (!supabaseUrl || !supabaseKey) {
       throw new Error(
@@ -30,8 +32,12 @@ export const createClient = (): SupabaseClient<Database> => {
       );
     }
 
-    client = createBrowserClient<Database>(supabaseUrl, supabaseKey);
+    // Crear cliente con tipo explícito
+    client = createBrowserClient<Database>(
+      supabaseUrl,
+      supabaseKey
+    ) as SupabaseClient<Database>;
   }
 
   return client;
-};
+}

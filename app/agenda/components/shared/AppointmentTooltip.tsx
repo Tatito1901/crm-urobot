@@ -12,7 +12,7 @@ import { Clock, MapPin, User, Calendar, Phone, Mail, FileText } from 'lucide-rea
 import type { Appointment } from '@/types/agenda';
 import { StatusBadge } from './StatusBadge';
 import { SedeBadge } from './SedeBadge';
-import type { EstadoConsulta, Sede } from '../../lib/constants';
+import type { EstadoConsulta } from '../../lib/constants';
 
 interface AppointmentTooltipProps {
   appointment: Appointment;

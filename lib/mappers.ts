@@ -11,7 +11,7 @@
  * ============================================================
  */
 
-import type { Database } from '@/types/supabase';
+import type { Database } from '@/types/database';
 import type { Consulta } from '@/types/consultas';
 import type { Lead } from '@/types/leads';
 import type { Paciente } from '@/types/pacientes';

@@ -19,7 +19,7 @@ import { StatusBadge } from '../shared/StatusBadge';
 import { SedeBadge } from '../shared/SedeBadge';
 import { FilterButton } from '../shared/FilterButton';
 import { SEDES, getSedeConfig } from '../../lib/constants';
-import type { EstadoConsulta, Sede } from '../../lib/constants';
+import type { EstadoConsulta } from '../../lib/constants';
 
 interface SidebarProps {
   selectedDate: Date;

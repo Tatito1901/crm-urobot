@@ -123,6 +123,7 @@ const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number 
       paciente_id,
       nombre_completo,
       telefono,
+      telefono_mx10,
       email,
       fecha_registro,
       fuente_original,

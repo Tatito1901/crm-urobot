@@ -13,11 +13,11 @@ import {
   Edit2, X, Check, AlertCircle, ExternalLink, MessageSquare 
 } from 'lucide-react';
 import { Modal } from '../shared/Modal';
-import { formatTimeRange, formatLongDate, getStatusConfig } from '../../lib/agenda-utils';
+import { formatTimeRange, formatLongDate } from '../../lib/agenda-utils';
 import { StatusBadge } from '../shared/StatusBadge';
 import { SedeBadge } from '../shared/SedeBadge';
 import type { Appointment } from '@/types/agenda';
-import type { EstadoConsulta, Sede } from '../../lib/constants';
+import type { EstadoConsulta } from '../../lib/constants';
 
 interface ServiceResponse<T = void> {
   success: boolean;
@@ -49,22 +49,6 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
   const [isConfirming, setIsConfirming] = useState(false);
 
   if (!appointment) return null;
-
-  const statusConfig = getStatusConfig(appointment.estado);
-
-  // Color por sede - tonos profesionales
-  const getSedeColor = () => {
-    switch (appointment.sede) {
-      case 'POLANCO':
-        return { bg: 'bg-slate-800/50', border: 'border-blue-600/40', text: 'text-blue-300', accent: 'bg-blue-600' };
-      case 'SATELITE':
-        return { bg: 'bg-slate-800/50', border: 'border-emerald-600/40', text: 'text-emerald-300', accent: 'bg-emerald-600' };
-      default:
-        return { bg: 'bg-slate-800/50', border: 'border-slate-600/40', text: 'text-slate-300', accent: 'bg-slate-600' };
-    }
-  };
-  
-  const sedeColor = getSedeColor();
 
   const handleCancel = async () => {
     if (!cancelReason.trim()) {

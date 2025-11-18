@@ -30,7 +30,7 @@ export default function PacientesPage() {
   }, []), 300);
 
   // ✅ Datos reales de Supabase con estadísticas y métricas
-  const { pacientes, loading, error, refetch, stats, metricas } = usePacientes();
+  const { pacientes, loading, error, refetch, stats } = usePacientes();
 
   // ✅ OPTIMIZACIÓN: Callbacks memoizados
   const handlePacienteClick = useCallback((pacienteId: string) => {
