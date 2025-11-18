@@ -4,11 +4,11 @@
  * ============================================================
  * ESTADÍSTICAS UNIFICADAS - Análisis completo del CRM
  * ============================================================
- * Combina métricas, tendencias y análisis detallado
+ * Dashboard interactivo con sidebar de navegación
  * Adaptado a flujos de UROBOT y datos disponibles en Supabase
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo, use } from 'react';
 import dynamicImport from 'next/dynamic';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { StatCard } from '@/app/components/crm/ui';
@@ -16,9 +16,158 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
-import { Calendar, Clock, TrendingUp, Globe, CheckCircle, BarChart3 } from 'lucide-react';
+import { 
+  Calendar, 
+  Clock, 
+  TrendingUp, 
+  Globe, 
+  CheckCircle, 
+  BarChart3,
+  MessageSquare,
+  Users,
+  Target,
+  Activity,
+  ChevronRight
+} from 'lucide-react';
+
+// Estilos unificados para consistencia
+const styles = {
+  card: {
+    base: 'bg-slate-800/30 border-slate-700/50 backdrop-blur-sm',
+    header: 'pb-4',
+    content: 'space-y-4',
+  },
+  text: {
+    title: 'text-base sm:text-lg font-semibold text-white',
+    subtitle: 'text-xs sm:text-sm text-slate-400',
+    sectionTitle: 'text-xl sm:text-2xl font-bold text-white',
+    statValue: 'text-3xl sm:text-4xl lg:text-5xl font-bold',
+    statLabel: 'text-xs sm:text-sm font-medium text-slate-300',
+    statHint: 'text-[10px] sm:text-xs text-slate-400',
+  },
+  spacing: {
+    section: 'space-y-4 sm:space-y-6',
+    card: 'p-4 sm:p-6',
+    cardCompact: 'p-3 sm:p-4',
+  },
+  grid: {
+    stats: 'grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    cols2: 'grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2',
+    cols3: 'grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+  },
+};
 
 export const dynamic = 'force-dynamic';
+
+// Secciones de estadísticas
+type SeccionId = 'resumen' | 'funnel' | 'mensajeria' | 'canales' | 'consultas' | 'leads' | 'operativo';
+
+interface Seccion {
+  id: SeccionId;
+  label: string;
+  icon: React.ElementType;
+  description: string;
+  color: string;
+}
+
+const SECCIONES: Seccion[] = [
+  {
+    id: 'resumen',
+    label: 'Resumen General',
+    icon: BarChart3,
+    description: 'Vista global de todas las métricas',
+    color: 'blue'
+  },
+  {
+    id: 'funnel',
+    label: 'Funnel de Conversión',
+    icon: TrendingUp,
+    description: 'Lead → Paciente → Consulta',
+    color: 'emerald'
+  },
+  {
+    id: 'mensajeria',
+    label: 'Análisis de Mensajería',
+    icon: MessageSquare,
+    description: 'Engagement y conversaciones',
+    color: 'purple'
+  },
+  {
+    id: 'canales',
+    label: 'Canales Marketing',
+    icon: Target,
+    description: 'ROI por canal',
+    color: 'amber'
+  },
+  {
+    id: 'consultas',
+    label: 'Performance Consultas',
+    icon: Calendar,
+    description: 'Agendamiento',
+    color: 'cyan'
+  },
+  {
+    id: 'leads',
+    label: 'Análisis de Leads',
+    icon: Users,
+    description: 'Temperatura',
+    color: 'pink'
+  },
+  {
+    id: 'operativo',
+    label: 'Operativo Real-time',
+    icon: Activity,
+    description: 'En tiempo real',
+    color: 'red'
+  },
+];
+
+// Componente de botón de sección memoizado
+const SeccionButton = memo(({ 
+  seccion, 
+  isActive, 
+  onClick 
+}: { 
+  seccion: Seccion; 
+  isActive: boolean; 
+  onClick: () => void;
+}) => {
+  const colorClasses = {
+    blue: isActive ? 'bg-blue-500/20 border-blue-500/40 text-blue-300' : 'hover:bg-blue-500/10 hover:border-blue-500/20',
+    emerald: isActive ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'hover:bg-emerald-500/10 hover:border-emerald-500/20',
+    purple: isActive ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'hover:bg-purple-500/10 hover:border-purple-500/20',
+    amber: isActive ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' : 'hover:bg-amber-500/10 hover:border-amber-500/20',
+    cyan: isActive ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' : 'hover:bg-cyan-500/10 hover:border-cyan-500/20',
+    pink: isActive ? 'bg-pink-500/20 border-pink-500/40 text-pink-300' : 'hover:bg-pink-500/10 hover:border-pink-500/20',
+    red: isActive ? 'bg-red-500/20 border-red-500/40 text-red-300' : 'hover:bg-red-500/10 hover:border-red-500/20',
+  };
+
+  const Icon = seccion.icon;
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg border transition-all ${
+        isActive 
+          ? `${colorClasses[seccion.color as keyof typeof colorClasses]} shadow-lg scale-[1.02]` 
+          : `border-white/10 text-white/60 ${colorClasses[seccion.color as keyof typeof colorClasses]}`
+      }`}
+    >
+      <Icon className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isActive ? '' : 'text-white/40'}`} />
+      <div className="flex-1 text-left min-w-0">
+        <p className={`text-xs sm:text-sm font-medium truncate ${isActive ? '' : 'text-white/70'}`}>
+          {seccion.label}
+        </p>
+        <p className="text-[10px] sm:text-xs text-white/40 truncate hidden sm:block">
+          {seccion.description}
+        </p>
+      </div>
+      <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform ${isActive ? 'rotate-90' : ''}`} />
+    </button>
+  );
+});
+
+SeccionButton.displayName = 'SeccionButton';
 
 // Lazy load de gráficos
 const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart').then(mod => ({ default: mod.BarChart })), {
@@ -49,7 +198,14 @@ const ComparisonBars = dynamicImport(
 
 type Periodo = 'mes_actual' | 'ultimos_3_meses' | 'ultimos_6_meses' | 'todo';
 
-export default function EstadisticasPage() {
+export default function EstadisticasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ seccion?: string }>;
+}) {
+  // Next.js 15: unwrap searchParams con React.use()
+  const params = use(searchParams);
+  const seccionActiva = (params.seccion as SeccionId) || 'resumen';
   const [periodo, setPeriodo] = useState<Periodo>('mes_actual');
   
   const { metrics: dm, loading: loadingMetrics, refetch: refetchMetrics } = useDashboardMetrics();
@@ -266,11 +422,135 @@ export default function EstadisticasPage() {
     { label: 'Otros', value: stats.otrosLeads, color: '#64748b' },
   ], [stats]);
 
+  // 📱 NUEVAS MÉTRICAS: Análisis de Mensajería
+  const mensajeriaStats = useMemo(() => {
+    const leadsPeriodo = leads.filter(l => {
+      const now = new Date();
+      const startDate = periodo === 'mes_actual' ? new Date(now.getFullYear(), now.getMonth(), 1) :
+                       periodo === 'ultimos_3_meses' ? new Date(now.getFullYear(), now.getMonth() - 3, 1) :
+                       periodo === 'ultimos_6_meses' ? new Date(now.getFullYear(), now.getMonth() - 6, 1) :
+                       new Date(2000, 0, 1);
+      const fecha = new Date(l.primerContacto);
+      return fecha >= startDate;
+    });
+
+    // Personas únicas que enviaron mensaje
+    const personasConMensajes = leadsPeriodo.filter(l => 
+      (l.totalMensajesRecibidos && l.totalMensajesRecibidos > 0) ||
+      (l.totalInteracciones && l.totalInteracciones > 0)
+    ).length;
+
+    // Total de mensajes enviados y recibidos
+    const totalMensajesEnviados = leadsPeriodo.reduce((sum, l) => sum + (l.totalMensajesEnviados || 0), 0);
+    const totalMensajesRecibidos = leadsPeriodo.reduce((sum, l) => sum + (l.totalMensajesRecibidos || 0), 0);
+    const totalInteracciones = leadsPeriodo.reduce((sum, l) => sum + (l.totalInteracciones || 0), 0);
+
+    // Promedio de mensajes por persona
+    const promedioMensajes = personasConMensajes > 0 
+      ? Math.round((totalMensajesEnviados + totalMensajesRecibidos) / personasConMensajes) 
+      : 0;
+
+    // Tasa de respuesta
+    const tasaRespuesta = totalMensajesRecibidos > 0 
+      ? Math.round((totalMensajesEnviados / totalMensajesRecibidos) * 100) 
+      : 0;
+
+    return {
+      personasConMensajes,
+      totalMensajesEnviados,
+      totalMensajesRecibidos,
+      totalInteracciones,
+      promedioMensajes,
+      tasaRespuesta,
+    };
+  }, [leads, periodo]);
+
+  // 📊 Análisis por Canal de Marketing
+  const canalMarketingStats = useMemo(() => {
+    const leadsPeriodo = leads.filter(l => {
+      const now = new Date();
+      const startDate = periodo === 'mes_actual' ? new Date(now.getFullYear(), now.getMonth(), 1) :
+                       periodo === 'ultimos_3_meses' ? new Date(now.getFullYear(), now.getMonth() - 3, 1) :
+                       periodo === 'ultimos_6_meses' ? new Date(now.getFullYear(), now.getMonth() - 6, 1) :
+                       new Date(2000, 0, 1);
+      const fecha = new Date(l.primerContacto);
+      return fecha >= startDate;
+    });
+
+    // Agrupar por canal de marketing
+    const canales: Record<string, number> = {};
+    leadsPeriodo.forEach(l => {
+      const canal = l.canalMarketing || 'Otro';
+      canales[canal] = (canales[canal] || 0) + 1;
+    });
+
+    // Convertir a array ordenado
+    return Object.entries(canales)
+      .map(([canal, cantidad]) => ({ canal, cantidad }))
+      .sort((a, b) => b.cantidad - a.cantidad);
+  }, [leads, periodo]);
+
+  // 🏥 Consultas agendadas por canal
+  const consultasPorCanal = useMemo(() => {
+    const consultasPeriodo = consultas.filter(c => {
+      const now = new Date();
+      const startDate = periodo === 'mes_actual' ? new Date(now.getFullYear(), now.getMonth(), 1) :
+                       periodo === 'ultimos_3_meses' ? new Date(now.getFullYear(), now.getMonth() - 3, 1) :
+                       periodo === 'ultimos_6_meses' ? new Date(now.getFullYear(), now.getMonth() - 6, 1) :
+                       new Date(2000, 0, 1);
+      const fecha = new Date(c.fecha);
+      return fecha >= startDate;
+    });
+
+    // Agrupar por canal de origen
+    const canales: Record<string, number> = {};
+    consultasPeriodo.forEach(c => {
+      const canal = c.canalOrigen || 'WhatsApp';
+      canales[canal] = (canales[canal] || 0) + 1;
+    });
+
+    return Object.entries(canales)
+      .map(([canal, cantidad]) => ({ label: canal, value: cantidad }))
+      .sort((a, b) => b.value - a.value);
+  }, [consultas, periodo]);
+
+  // 🌡️ Distribución por temperatura de leads
+  const temperaturaStats = useMemo(() => {
+    const leadsPeriodo = leads.filter(l => {
+      const now = new Date();
+      const startDate = periodo === 'mes_actual' ? new Date(now.getFullYear(), now.getMonth(), 1) :
+                       periodo === 'ultimos_3_meses' ? new Date(now.getFullYear(), now.getMonth() - 3, 1) :
+                       periodo === 'ultimos_6_meses' ? new Date(now.getFullYear(), now.getMonth() - 6, 1) :
+                       new Date(2000, 0, 1);
+      const fecha = new Date(l.primerContacto);
+      return fecha >= startDate;
+    });
+
+    const calientes = leadsPeriodo.filter(l => l.temperatura === 'Caliente').length;
+    const tibios = leadsPeriodo.filter(l => l.temperatura === 'Tibio').length;
+    const frios = leadsPeriodo.filter(l => l.temperatura === 'Frio').length;
+
+    return [
+      { label: 'Calientes', value: calientes, color: '#ef4444' },
+      { label: 'Tibios', value: tibios, color: '#f59e0b' },
+      { label: 'Fríos', value: frios, color: '#3b82f6' },
+    ];
+  }, [leads, periodo]);
+
+  // Determinar qué secciones mostrar
+  const mostrarSeccion = (seccion: SeccionId) => {
+    return seccionActiva === 'resumen' || seccionActiva === seccion;
+  };
+
+  // Determinar título según sección
+  const seccionInfo = SECCIONES.find(s => s.id === seccionActiva);
+  const tituloSeccion = seccionInfo?.label || 'Estadísticas y Métricas';
+
   return (
     <PageShell
       accent
       eyebrow="Inteligencia Operativa"
-      title="Estadísticas y Métricas"
+      title={tituloSeccion}
       description="Análisis completo del consultorio con datos en tiempo real desde Supabase"
       headerSlot={
         <button
@@ -285,30 +565,36 @@ export default function EstadisticasPage() {
         </button>
       }
     >
+      {/* Contenido sin sidebar duplicada - ya está en la Sidebar principal */}
       <div className="space-y-6">
-        {/* Métricas principales - Responsive optimizado */}
+        {/* Métricas principales - Solo mostrar en resumen o cuando corresponda */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
+          <>
         {loadingMetrics ? (
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className={styles.grid.stats}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-28 animate-pulse rounded-lg bg-slate-800/30" />
+              <div key={i} className="h-32 sm:h-36 animate-pulse rounded-xl bg-slate-800/30" />
             ))}
           </div>
         ) : (
-          <section className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3">
+          <section className={styles.grid.stats}>
             {metricsCards.map((metric) => (
               <StatCard key={metric.title} title={metric.title} value={metric.value} hint={metric.hint} />
             ))}
           </section>
         )}
+        </>
+        )}
 
-        {/* Selector de periodo - Responsive optimizado */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-slate-700">
-          <span className="text-xs sm:text-sm font-medium text-slate-300 flex items-center gap-2 flex-shrink-0">
-            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Filtrar por periodo:</span>
-            <span className="sm:hidden">Periodo:</span>
-          </span>
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+        {/* Selector de periodo - Unificado */}
+        <Card className={styles.card.base}>
+          <CardContent className="py-4 sm:py-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <span className={`${styles.text.statLabel} flex items-center gap-2 flex-shrink-0`}>
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
+                <span>Periodo:</span>
+              </span>
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
             {[
               { value: 'mes_actual', label: 'Mes actual' },
               { value: 'ultimos_3_meses', label: '3 meses' },
@@ -327,16 +613,19 @@ export default function EstadisticasPage() {
                 {p.label}
               </button>
             ))}
-          </div>
-        </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Sección: Tendencias de Crecimiento */}
-        <section>
-          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
+        {(seccionActiva === 'resumen' || seccionActiva === 'funnel') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
             <span>Tendencias de Crecimiento</span>
           </h2>
-          <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2">
+          <div className={styles.grid.cols2}>
             <GrowthChart 
               title="Evolución de Leads (últimos 6 meses)" 
               data={leadTrend} 
@@ -347,18 +636,20 @@ export default function EstadisticasPage() {
             />
           </div>
         </section>
+        )}
 
         {/* Sección: Análisis de Citas */}
-        <section>
-          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 flex-shrink-0" />
+        {(seccionActiva === 'resumen' || seccionActiva === 'consultas') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400 flex-shrink-0" />
             <span className="truncate">
               Análisis de Citas
-              <span className="hidden sm:inline"> ({periodo === 'mes_actual' ? 'Mes Actual' : periodo === 'ultimos_3_meses' ? 'Últimos 3 Meses' : periodo === 'ultimos_6_meses' ? 'Últimos 6 Meses' : 'Todo el Tiempo'})</span>
+              <span className="hidden sm:inline text-lg text-slate-400"> ({periodo === 'mes_actual' ? 'Mes Actual' : periodo === 'ultimos_3_meses' ? 'Últimos 3 Meses' : periodo === 'ultimos_6_meses' ? 'Últimos 6 Meses' : 'Todo el Tiempo'})</span>
             </span>
           </h2>
 
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-4">
+          <div className={`${styles.grid.cols3} mb-5 sm:mb-6`}>
             {/* Total de citas */}
             <Card className="bg-slate-800/30 border-slate-700">
               <CardHeader className="pb-3">
@@ -388,16 +679,16 @@ export default function EstadisticasPage() {
             </Card>
 
             {/* Completadas */}
-            <Card className="bg-slate-800/30 border-slate-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-base text-white">Citas Completadas</CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-slate-400">Consultas finalizadas</CardDescription>
+            <Card className={styles.card.base}>
+              <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${styles.card.header}`}>
+                <CardTitle className={styles.text.title}>Canceladas</CardTitle>
+                <span className="text-2xl sm:text-3xl">⊗</span>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl sm:text-4xl font-bold text-slate-300">{stats.completadas}</div>
-                <div className="mt-2 text-xs sm:text-sm text-slate-400">
-                  Servicios médicos prestados
-                </div>
+                <div className={`${styles.text.statValue} text-red-400`}>{stats.canceladas}</div>
+                <p className={`${styles.text.statHint} mt-2`}>
+                  {stats.totalCitas > 0 ? ((stats.canceladas / stats.totalCitas) * 100).toFixed(1) : 0}% del total
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -417,12 +708,212 @@ export default function EstadisticasPage() {
             </CardContent>
           </Card>
         </section>
+        )}
 
-        {/* Sección: Canales de Adquisición */}
+        {/* NUEVA SECCIÓN: Análisis de Mensajería */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'mensajeria') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
+            <span>Análisis de Mensajería</span>
+          </h2>
+
+          <div className={styles.grid.stats}>
+            {/* Personas que enviaron mensajes */}
+            <Card className={styles.card.base}>
+              <CardHeader className={styles.card.header}>
+                <CardTitle className={styles.text.title}>
+                  <Users className="h-5 w-5 inline mr-2 text-blue-400" />
+                  Personas Activas
+                </CardTitle>
+                <CardDescription className={styles.text.subtitle}>Enviaron mensajes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`${styles.text.statValue} text-blue-400`}>{mensajeriaStats.personasConMensajes}</div>
+                <div className={`${styles.text.statHint} mt-3`}>
+                  {mensajeriaStats.totalInteracciones} interacciones totales
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total de mensajes */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">📨</span>
+                  <span>Mensajes</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Enviados y recibidos</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-emerald-400">
+                  {(mensajeriaStats.totalMensajesEnviados + mensajeriaStats.totalMensajesRecibidos).toLocaleString()}
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  📤 {mensajeriaStats.totalMensajesEnviados} enviados • 📥 {mensajeriaStats.totalMensajesRecibidos} recibidos
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Promedio por persona */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">📊</span>
+                  <span>Promedio</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Mensajes por persona</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-purple-400">{mensajeriaStats.promedioMensajes}</div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  Engagement promedio
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasa de respuesta */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">⚡</span>
+                  <span>Tasa de Respuesta</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Respuestas vs recibidos</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-amber-400">{mensajeriaStats.tasaRespuesta}%</div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  Velocidad de atención
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        )}
+
+        {/* NUEVA SECCIÓN: Canales de Marketing */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'canales' || seccionActiva === 'leads') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <Target className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
+            <span>Canales de Marketing</span>
+          </h2>
+
+          <div className={styles.grid.cols2}>
+            {/* Lista de canales */}
+            <Card className={styles.card.base}>
+              <CardHeader className={styles.card.header}>
+                <CardTitle className={styles.text.title}>De dónde vienen los leads</CardTitle>
+                <CardDescription className={styles.text.subtitle}>Por canal de marketing</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 sm:space-y-3">
+                  {canalMarketingStats.length === 0 ? (
+                    <p className="text-center text-slate-400 py-8 text-sm">No hay datos en este periodo</p>
+                  ) : (
+                    canalMarketingStats.map((item, index) => (
+                      <div key={item.canal} className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-slate-900/50 border border-white/5">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className="text-lg">{
+                            index === 0 ? '🥇' :
+                            index === 1 ? '🥈' :
+                            index === 2 ? '🥉' : '📍'
+                          }</span>
+                          <span className="text-xs sm:text-sm font-medium text-slate-300">{item.canal}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-base sm:text-lg font-bold text-white">{item.cantidad}</span>
+                          <span className="text-[10px] sm:text-xs text-slate-400 ml-1 sm:ml-2">leads</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Temperatura de leads */}
+            <Card className={styles.card.base}>
+              <CardHeader className={styles.card.header}>
+                <CardTitle className={styles.text.title}>Temperatura de Leads</CardTitle>
+                <CardDescription className={styles.text.subtitle}>Clasificación por interés</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 sm:space-y-3">
+                  {temperaturaStats.map((temp) => {
+                    const total = temperaturaStats.reduce((sum, t) => sum + t.value, 0);
+                    const porcentaje = total > 0 ? Math.round((temp.value / total) * 100) : 0;
+                    return (
+                      <div key={temp.label} className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs sm:text-sm font-medium text-slate-300">{temp.label}</span>
+                          <span className="text-sm sm:text-base font-bold text-white">{temp.value}</span>
+                        </div>
+                        <div className="h-2 bg-slate-900/50 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ 
+                              width: `${porcentaje}%`,
+                              backgroundColor: temp.color
+                            }}
+                          />
+                        </div>
+                        <div className="text-[10px] sm:text-xs text-slate-400">{porcentaje}% del total</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        )}
+
+        {/* NUEVA SECCIÓN: Consultas Agendadas por Canal */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'consultas' || seccionActiva === 'canales') && (
+        <section>
+          <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <span className="text-xl sm:text-2xl">📅</span>
+            <span>Agendamiento por Canal</span>
+          </h2>
+
+          <Card className="bg-slate-800/30 border-slate-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm sm:text-base text-white">De dónde se agendaron las consultas</CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-slate-400">Canal de origen de cada cita</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {consultasPorCanal.length === 0 ? (
+                  <p className="text-center text-slate-400 py-8 text-sm col-span-full">No hay consultas en este periodo</p>
+                ) : (
+                  consultasPorCanal.map((item) => (
+                    <div key={item.label} className="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-gradient-to-br from-slate-900/50 to-slate-800/30 border border-white/5">
+                      <div>
+                        <p className="text-xs sm:text-sm text-slate-400 mb-1">{item.label}</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-white">{item.value}</p>
+                      </div>
+                      <span className="text-3xl sm:text-4xl">
+                        {item.label.includes('WhatsApp') ? '📱' :
+                         item.label.includes('Web') ? '🌐' :
+                         item.label.includes('Teléfono') ? '📞' : '📋'}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+        )}
+
+        {/* Sección: Canales de Adquisición (Original) */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'canales') && (
         <section>
           <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
             <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
-            <span className="truncate">Canales de Adquisición</span>
+            <span className="truncate">Canales de Adquisición (Resumen)</span>
           </h2>
 
           <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2">
@@ -474,8 +965,10 @@ export default function EstadisticasPage() {
             </Card>
           </div>
         </section>
+        )}
 
         {/* Sección: Confirmaciones */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
         <section>
           <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
             <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
@@ -486,8 +979,10 @@ export default function EstadisticasPage() {
             items={confirmStatus} 
           />
         </section>
+        )}
 
         {/* Información del sistema */}
+        {seccionActiva === 'resumen' && (
         <Card className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 border-blue-600/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
@@ -528,6 +1023,7 @@ export default function EstadisticasPage() {
             </div>
           </CardContent>
         </Card>
+        )}
       </div>
     </PageShell>
   );

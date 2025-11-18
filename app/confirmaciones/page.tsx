@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, memo, useCallback } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
@@ -13,6 +13,53 @@ type TipoFilter = 'ALL' | '48h' | '24h' | '3h' | 'confirmacion_inicial';
 type RangoFilter = 'ultimos_7' | 'ultimos_30' | 'todos';
 
 export const dynamic = 'force-dynamic';
+
+// Configuración de tipos de recordatorio con metadata
+const TIPO_CONFIG = {
+  confirmacion_inicial: { label: 'Confirmación inicial', icon: '📧', color: 'blue' },
+  '48h': { label: '48 horas antes', icon: '⏰', color: 'purple' },
+  '24h': { label: '24 horas antes', icon: '⏱️', color: 'emerald' },
+  '3h': { label: '3 horas antes', icon: '🔔', color: 'amber' },
+} as const;
+
+const ESTADO_COLORS = {
+  pendiente: 'border-amber-400/60 bg-amber-500/15 text-amber-300',
+  enviado: 'border-emerald-400/60 bg-emerald-500/15 text-emerald-300',
+  error: 'border-red-400/60 bg-red-500/15 text-red-300',
+} as const;
+
+// ✅ Componente memoizado para tarjetas de estadísticas
+interface StatCardProps {
+  label: string;
+  value: number;
+  description: string;
+  icon: string;
+  color: 'blue' | 'emerald' | 'red' | 'amber';
+}
+
+const StatCard = memo(({ label, value, description, icon, color }: StatCardProps) => {
+  const colorClasses = {
+    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-300',
+    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
+    red: 'bg-red-500/10 border-red-500/20 text-red-300',
+    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-300',
+  };
+
+  return (
+    <div className={`rounded-xl border p-4 sm:p-5 transition-all hover:scale-105 ${colorClasses[color]}`}>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1">
+          <p className="text-xs sm:text-sm text-white/60 font-medium mb-1">{label}</p>
+          <p className="text-3xl sm:text-4xl font-bold mb-1">{value}</p>
+          <p className="text-[10px] sm:text-xs text-white/50">{description}</p>
+        </div>
+        <span className="text-3xl sm:text-4xl">{icon}</span>
+      </div>
+    </div>
+  );
+});
+
+StatCard.displayName = 'StatCard';
 
 export default function ConfirmacionesPage() {
   const [search, setSearch] = useState('');
@@ -99,154 +146,158 @@ export default function ConfirmacionesPage() {
       eyebrow="Orquestación n8n"
       title="Confirmaciones y recordatorios"
       description="Automatización de follow-ups multicanal para reducir no-shows y asegurar la agenda del día."
-      headerSlot={
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <Card className={cards.base}>
-            <CardHeader className={spacing.cardHeader}>
-              <CardTitle className={typography.label}>Buscar</CardTitle>
-              <CardDescription className={typography.metadataSmall}>
-                Paciente o consulta
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center gap-3 pt-0">
-              <span className="text-white/40 text-xl">🔍</span>
-              <input
-                value={inputValue}
-                onChange={(event) => {
-                  setInputValue(event.target.value);
-                  debouncedSearch(event.target.value);
-                }}
-                placeholder="Buscar..."
-                className="w-full bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
-              />
-            </CardContent>
-          </Card>
+    >
+      {/* Estadísticas mejoradas */}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+        <StatCard
+          label="Pendientes"
+          value={stats.pendientes}
+          description="Aguardando confirmación"
+          icon="⏳"
+          color="amber"
+        />
+        <StatCard
+          label="Enviados"
+          value={stats.enviados}
+          description="Recordatorios completados"
+          icon="✅"
+          color="emerald"
+        />
+        <StatCard
+          label="Errores"
+          value={stats.errores}
+          description="Requieren revisión"
+          icon="⚠️"
+          color="red"
+        />
+      </section>
 
-          <Card className={cards.base}>
-            <CardHeader className={spacing.cardHeader}>
-              <CardTitle className={typography.label}>Tipo</CardTitle>
-              <CardDescription className={typography.metadataSmall}>
-                Filtrar recordatorio
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
+      {/* Filtros mejorados */}
+      <Card className={cards.base}>
+        <CardHeader className={spacing.cardHeader}>
+          <CardTitle className="text-base sm:text-lg font-semibold text-white">Filtros de búsqueda</CardTitle>
+          <CardDescription className="text-xs sm:text-sm text-white/60">Personaliza la vista de recordatorios</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Búsqueda */}
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-lg">🔍</span>
+            <input
+              value={inputValue}
+              onChange={(event) => {
+                setInputValue(event.target.value);
+                debouncedSearch(event.target.value);
+              }}
+              placeholder="Buscar por paciente o consulta..."
+              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
+            />
+          </div>
+
+          {/* Grid de filtros */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Tipo de recordatorio */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-white/60 flex items-center gap-1">
+                <span>📋</span> Tipo de recordatorio
+              </label>
               <select
                 value={tipoFiltro}
                 onChange={(e) => setTipoFiltro(e.target.value as TipoFilter)}
-                className={filters.select}
+                className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all cursor-pointer"
               >
-                <option value="ALL">Todos los tipos</option>
-                <option value="48h">48 horas</option>
-                <option value="24h">24 horas</option>
-                <option value="3h">3 horas</option>
-                <option value="confirmacion_inicial">Confirmación inicial</option>
+                <option value="ALL" className="bg-gray-900">Todos los tipos</option>
+                <option value="confirmacion_inicial" className="bg-gray-900">📧 Confirmación inicial</option>
+                <option value="48h" className="bg-gray-900">⏰ 48 horas antes</option>
+                <option value="24h" className="bg-gray-900">⏱️ 24 horas antes</option>
+                <option value="3h" className="bg-gray-900">🔔 3 horas antes</option>
               </select>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className={cards.base}>
-            <CardHeader className={spacing.cardHeader}>
-              <CardTitle className={typography.label}>Rango</CardTitle>
-              <CardDescription className={typography.metadataSmall}>
-                Período de tiempo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
+            {/* Rango de tiempo */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-white/60 flex items-center gap-1">
+                <span>📅</span> Período de tiempo
+              </label>
               <select
                 value={rangoFiltro}
                 onChange={(e) => setRangoFiltro(e.target.value as RangoFilter)}
-                className={filters.select}
+                className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all cursor-pointer"
               >
-                <option value="ultimos_7">Últimos 7 días</option>
-                <option value="ultimos_30">Últimos 30 días</option>
-                <option value="todos">Todos</option>
+                <option value="ultimos_7" className="bg-gray-900">Últimos 7 días</option>
+                <option value="ultimos_30" className="bg-gray-900">Últimos 30 días</option>
+                <option value="todos" className="bg-gray-900">Todos</option>
               </select>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className={cards.base}>
-            <CardHeader className={spacing.cardHeader}>
-              <CardTitle className={typography.label}>Vista</CardTitle>
-              <CardDescription className={typography.metadataSmall}>
-                Agrupar por consulta
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <label className="flex items-center gap-2 cursor-pointer">
+            {/* Vista agrupada */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-white/60 flex items-center gap-1">
+                <span>👁️</span> Vista
+              </label>
+              <label className="flex items-center gap-3 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-all">
                 <input
                   type="checkbox"
                   checked={soloUltimo}
                   onChange={(e) => setSoloUltimo(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/20 bg-white/5"
+                  className="h-5 w-5 rounded border-white/20 bg-white/5 text-blue-500 cursor-pointer"
                 />
-                <span className="text-sm text-white/80">Solo último</span>
+                <span className="text-sm text-white/80 font-medium">Solo último</span>
               </label>
-            </CardContent>
-          </Card>
-        </div>
-      }
-    >
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <Card className={cards.base}>
-          <CardHeader className={spacing.cardHeader}>
-            <CardTitle className={typography.cardTitleSmall}>Pendientes</CardTitle>
-            <CardDescription className={typography.cardDescription}>Aguardando confirmación</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className={typography.metricLarge}>{stats.pendientes}</p>
-          </CardContent>
-        </Card>
-        <Card className={cards.base}>
-          <CardHeader className={spacing.cardHeader}>
-            <CardTitle className={typography.cardTitleSmall}>Enviados</CardTitle>
-            <CardDescription className={typography.cardDescription}>Recordatorios completados</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className={typography.metricLarge}>{stats.enviados}</p>
-          </CardContent>
-        </Card>
-        <Card className={cards.base}>
-          <CardHeader className={spacing.cardHeader}>
-            <CardTitle className={typography.cardTitleSmall}>Errores</CardTitle>
-            <CardDescription className={typography.cardDescription}>Requieren revisión</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className={typography.metricLarge}>{stats.errores}</p>
-          </CardContent>
-        </Card>
-      </section>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
+
+      {/* Tabla de recordatorios */}
       <Card className={cards.base}>
         <CardHeader className={spacing.cardHeader}>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex-1">
-              <CardTitle className={typography.cardTitle}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-base sm:text-lg font-semibold text-white mb-1">
                 Detalle de confirmaciones {loading && '(cargando...)'}
               </CardTitle>
-              <CardDescription className={typography.cardDescription}>
+              <CardDescription className="text-xs sm:text-sm text-white/60">
                 {error 
                   ? `Error: ${error.message}` 
                   : 'Flujos automatizados por paciente desde n8n'
                 }
               </CardDescription>
             </div>
-            <button
-              onClick={() => refresh()}
-              disabled={loading}
-              className="rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-            >
-              ↻
-            </button>
-            <div className="text-right ml-4">
-              <p className={typography.metricMedium}>{filtered.length}</p>
-              <p className={typography.metadataSmall}>
-                {recordatorios.length !== filtered.length && `de ${recordatorios.length} total`}
-                {soloUltimo && ' (último por consulta)'}
-              </p>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => refresh()}
+                disabled={loading}
+                className="rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                ↻
+              </button>
+              <div className="flex flex-col items-end">
+                <p className="text-2xl sm:text-3xl font-bold text-white">{filtered.length}</p>
+                <p className="text-[10px] sm:text-xs text-white/50">
+                  {recordatorios.length !== filtered.length && `de ${recordatorios.length} total`}
+                  {soloUltimo && ' (último)'}
+                </p>
+              </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 space-y-4">
+          {/* Info adicional */}
+          <div className="flex flex-wrap items-center gap-2 text-xs text-white/60 pb-2 border-b border-white/10">
+            <span className="flex items-center gap-1">
+              <span>📊</span>
+              <span className="hidden sm:inline">Mostrando</span>
+              <span className="font-semibold text-white">{filtered.length}</span>
+              <span className="hidden sm:inline">recordatorios</span>
+            </span>
+            {tipoFiltro !== 'ALL' && (
+              <span className="px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300">
+                {tipoFiltro.replace(/_/g, ' ')}
+              </span>
+            )}
+          </div>
+          
           <DataTable
             headers={[
               { key: 'programado', label: 'Programado' },
@@ -262,25 +313,54 @@ export default function ConfirmacionesPage() {
                 .map((recordatorio) => ({
                 id: recordatorio.id,
                 programado: (
-                  <div className="flex flex-col gap-1">
-                    <span className={`${typography.body} font-medium`}>{formatDate(recordatorio.programado_para, { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  <div className="flex flex-col gap-0.5 sm:gap-1 min-w-[120px] sm:min-w-[140px]">
+                    <span className="font-medium text-white text-[10px] sm:text-xs leading-tight">
+                      {formatDate(recordatorio.programado_para, { dateStyle: 'short', timeStyle: 'short' })}
+                    </span>
                     {recordatorio.enviado_en && (
-                      <span className={typography.metadataSmall}>Enviado: {formatDate(recordatorio.enviado_en, { dateStyle: 'short', timeStyle: 'short' })}</span>
+                      <span className="text-[9px] sm:text-[10px] text-white/50">
+                        Enviado: {formatDate(recordatorio.enviado_en, { dateStyle: 'short', timeStyle: 'short' })}
+                      </span>
                     )}
                   </div>
                 ),
                 paciente: (
-                  <div className="flex flex-col gap-1">
-                    <span className={`${typography.body} font-medium`}>{recordatorio.paciente?.nombre_completo || 'Sin paciente'}</span>
-                    <span className={typography.metadataSmall}>{recordatorio.consulta?.sede || ''}</span>
+                  <div className="flex flex-col gap-0.5 sm:gap-1 min-w-[140px] sm:min-w-[180px]">
+                    <span className="font-medium text-white text-xs sm:text-sm leading-tight">
+                      {recordatorio.paciente?.nombre_completo || 'Sin paciente'}
+                    </span>
+                    <span className="text-[9px] sm:text-[10px] text-white/40 uppercase tracking-wide">
+                      {recordatorio.consulta?.sede || ''}
+                    </span>
                   </div>
                 ),
-                consulta: <span className="font-semibold text-white">{recordatorio.consulta?.consulta_id || 'N/A'}</span>,
-                tipo: <Badge label={recordatorio.tipo.replace(/_/g, ' ')} />,
-                estado: <Badge label={recordatorio.estado || 'pendiente'} tone={STATE_COLORS[recordatorio.estado || 'pendiente']} />,
-                canal: <Badge label={recordatorio.canal || 'whatsapp'} />,
+                consulta: (
+                  <span className="font-semibold text-white text-xs sm:text-sm">
+                    {recordatorio.consulta?.consulta_id || 'N/A'}
+                  </span>
+                ),
+                tipo: (
+                  <div className="flex justify-center sm:justify-start">
+                    <Badge label={recordatorio.tipo.replace(/_/g, ' ')} />
+                  </div>
+                ),
+                estado: (
+                  <div className="flex justify-center sm:justify-start">
+                    <Badge label={recordatorio.estado || 'pendiente'} tone={ESTADO_COLORS[recordatorio.estado as keyof typeof ESTADO_COLORS] || ESTADO_COLORS.pendiente} />
+                  </div>
+                ),
+                canal: (
+                  <div className="flex justify-center sm:justify-start">
+                    <Badge label={recordatorio.canal || 'whatsapp'} />
+                  </div>
+                ),
               })), [filtered])}
-            empty={filtered.length === 0 ? 'No hay recordatorios para mostrar.' : 'Sin resultados.'}
+            empty={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay recordatorios registrados aún.'}
+            mobileConfig={{
+              primary: 'paciente',
+              secondary: 'programado',
+              metadata: ['tipo', 'estado', 'canal']
+            }}
           />
         </CardContent>
       </Card>

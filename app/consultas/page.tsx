@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, memo } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
@@ -18,6 +18,94 @@ const SEDE_COLORS: Record<'POLANCO' | 'SATELITE', string> = {
   POLANCO: 'border border-fuchsia-400/60 bg-fuchsia-500/15 text-fuchsia-100',
   SATELITE: 'border border-cyan-400/60 bg-cyan-500/15 text-cyan-100',
 };
+
+// ✅ OPTIMIZACIÓN: Componente memoizado para tarjetas de estadísticas
+interface StatCardProps {
+  label: string;
+  value: number;
+  color: 'white' | 'blue' | 'emerald' | 'purple' | 'amber';
+  icon: string;
+  className?: string;
+}
+
+const StatCard = memo(({ label, value, color, icon, className = '' }: StatCardProps) => {
+  const colorClasses = {
+    white: 'bg-white/5 border-white/20 text-white',
+    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-300',
+    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
+    purple: 'bg-purple-500/10 border-purple-500/20 text-purple-300',
+    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-300',
+  };
+
+  return (
+    <div className={`rounded-xl border p-3 sm:p-4 transition-all hover:scale-105 ${colorClasses[color]} ${className}`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs sm:text-sm text-white/60 font-medium">{label}</span>
+        <span className="text-lg sm:text-xl">{icon}</span>
+      </div>
+      <div className="text-2xl sm:text-3xl font-bold">{value}</div>
+    </div>
+  );
+});
+
+StatCard.displayName = 'StatCard';
+
+// ✅ OPTIMIZACIÓN: Helper para crear filas de tabla optimizadas
+const createConsultaRow = (consulta: Consulta) => ({
+  id: consulta.id,
+  paciente: (
+    <div className="flex flex-col gap-1 min-w-[140px] sm:min-w-[180px]">
+      <span className="font-medium text-white text-xs sm:text-sm leading-tight">{consulta.paciente}</span>
+      <span className="text-[9px] sm:text-[10px] text-white/40 uppercase tracking-wide">{consulta.tipo.replace('_', ' ')}</span>
+    </div>
+  ),
+  sede: (
+    <div className="flex justify-center sm:justify-start">
+      <Badge label={consulta.sede} tone={SEDE_COLORS[consulta.sede]} />
+    </div>
+  ),
+  estado: (
+    <div className="flex justify-center sm:justify-start">
+      <Badge label={consulta.estado} tone={STATE_COLORS[consulta.estado]} />
+    </div>
+  ),
+  fecha: (
+    <div className="flex flex-col gap-0.5 sm:gap-1 text-xs sm:text-sm min-w-[100px] sm:min-w-[120px]">
+      <span className="text-white/80 font-medium text-[10px] sm:text-xs">
+        {formatDate(consulta.fechaConsulta)}
+      </span>
+      <span className="text-white/50 text-[9px] sm:text-[10px]">
+        {consulta.horaConsulta.slice(0, 5)} · {consulta.duracionMinutos}min
+      </span>
+    </div>
+  ),
+  confirmada: (
+    <div className="flex items-center justify-center">
+      {consulta.confirmadoPaciente ? (
+        <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-emerald-500/15 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-emerald-300 border border-emerald-500/30 shadow-sm">
+          <span className="text-sm sm:text-base">✓</span>
+          <span className="hidden sm:inline">Sí</span>
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-white/5 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-white/40 border border-white/10">
+          <span className="text-sm sm:text-base">○</span>
+          <span className="hidden sm:inline">No</span>
+        </span>
+      )}
+    </div>
+  ),
+  detalle: (
+    <div className="flex flex-col gap-0.5 sm:gap-1 text-xs sm:text-sm max-w-[150px] sm:max-w-[200px]">
+      <span className="text-white/70 line-clamp-2 text-[10px] sm:text-xs leading-tight">
+        {consulta.motivoConsulta || 'Sin motivo registrado'}
+      </span>
+      <span className="text-white/50 text-[9px] sm:text-[10px] flex items-center gap-1">
+        <span>📱</span>
+        <span className="truncate">{consulta.canalOrigen || 'WhatsApp'}</span>
+      </span>
+    </div>
+  ),
+});
 
 export default function ConsultasPage() {
   const [search, setSearch] = useState('');
@@ -56,8 +144,8 @@ export default function ConsultasPage() {
     });
   }, [search, consultas, sedeFilter]);
 
-  // ✅ OPTIMIZACIÓN: Paginación
-  const itemsPerPage = 50;
+  // ✅ OPTIMIZACIÓN: Paginación adaptativa según viewport
+  const itemsPerPage = 30;
   const paginatedConsultas = useMemo(() => {
     const start = currentPage * itemsPerPage;
     const end = start + itemsPerPage;
@@ -69,17 +157,13 @@ export default function ConsultasPage() {
     setCurrentPage(0);
   }, []);
   
-  // Calcular consultas futuras para las métricas de confirmación
-  const consultasFuturas = useMemo(() => {
-    return consultas.filter(c => c.horasHastaConsulta !== null && c.horasHastaConsulta > 0);
-  }, [consultas]);
 
   return (
     <PageShell
       accent
       eyebrow="Consultas"
-      title="Agenda centralizada"
-      description="Controla el pipeline de citas: KPIs operativos y detalle por paciente."
+      title="Agenda de consultas"
+      description="Listado completo de consultas programadas con información esencial de cada cita."
       headerSlot={
         <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
@@ -126,318 +210,67 @@ export default function ConsultasPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-0 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-white/10">
-            <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs text-white/70">
-              <span className="rounded-full bg-white/5 px-3 py-1">
-                Total:
-                <span className="ml-1 font-semibold text-white">{stats.total}</span>
-              </span>
-              <span className="rounded-full bg-blue-500/10 px-3 py-1">
-                Programadas:
-                <span className="ml-1 font-semibold text-blue-300">{stats.programadas}</span>
-              </span>
-              <span className="rounded-full bg-emerald-500/10 px-3 py-1">
-                Confirmadas:
-                <span className="ml-1 font-semibold text-emerald-300">{stats.confirmadas}</span>
-              </span>
-              <span className="rounded-full bg-purple-500/10 px-3 py-1">
-                Hoy:
-                <span className="ml-1 font-semibold text-purple-300">{stats.hoy}</span>
-              </span>
-              <span className="rounded-full bg-amber-500/10 px-3 py-1">
-                Esta semana:
-                <span className="ml-1 font-semibold text-amber-300">{stats.semana}</span>
-              </span>
+          {/* Sección de estadísticas y filtros mejorada */}
+          <div className="space-y-4">
+            {/* Estadísticas en grid responsivo */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+              <StatCard
+                label="Total"
+                value={stats.total}
+                color="white"
+                icon="📊"
+              />
+              <StatCard
+                label="Programadas"
+                value={stats.programadas}
+                color="blue"
+                icon="📅"
+              />
+              <StatCard
+                label="Confirmadas"
+                value={stats.confirmadas}
+                color="emerald"
+                icon="✓"
+              />
+              <StatCard
+                label="Hoy"
+                value={stats.hoy}
+                color="purple"
+                icon="🕐"
+              />
+              <StatCard
+                label="Esta semana"
+                value={stats.semana}
+                color="amber"
+                icon="📆"
+                className="col-span-2 sm:col-span-1"
+              />
             </div>
-            <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs">
+            
+            {/* Filtros de sede */}
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs text-white/50 flex items-center min-h-[36px]">Filtrar por sede:</span>
               {[
-                { key: 'all' as const, label: 'Todas' },
-                { key: 'POLANCO' as const, label: 'Polanco' },
-                { key: 'SATELITE' as const, label: 'Satélite' },
+                { key: 'all' as const, label: 'Todas', icon: '🏢' },
+                { key: 'POLANCO' as const, label: 'Polanco', icon: '🏥' },
+                { key: 'SATELITE' as const, label: 'Satélite', icon: '🏨' },
               ].map((option) => (
                 <button
                   key={option.key}
                   type="button"
                   onClick={() => handleSedeFilterChange(option.key)}
-                  className={`rounded-full px-3 py-1 border text-xs sm:text-[11px] transition-all duration-200 min-h-[32px] ${
+                  className={`rounded-lg px-4 py-2 border text-sm font-medium transition-all duration-200 min-h-[36px] flex items-center gap-2 ${
                     sedeFilter === option.key
-                      ? 'bg-white/15 border-white/40 text-white shadow-sm'
+                      ? 'bg-white/15 border-white/40 text-white shadow-lg scale-105'
                       : 'border-white/10 text-white/60 hover:border-white/30 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  {option.label}
+                  <span>{option.icon}</span>
+                  <span className="hidden sm:inline">{option.label}</span>
+                  <span className="sm:hidden">{option.label.slice(0, 3)}</span>
+                  {sedeFilter === option.key && <span className="text-xs opacity-60">({filteredConsultas.length})</span>}
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Alertas de Confirmación Urgentes */}
-          {metricas.confirmaciones.requierenAtencion > 0 && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">⚠️</span>
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-amber-300 mb-1">
-                    {metricas.confirmaciones.requierenAtencion} {metricas.confirmaciones.requierenAtencion === 1 ? 'consulta requiere' : 'consultas requieren'} confirmación urgente
-                  </h3>
-                  <p className="text-xs text-white/60">
-                    Consultas en las próximas 48 horas sin confirmar. Envía recordatorios cuanto antes.
-                  </p>
-                  {metricas.confirmaciones.vencidas > 0 && (
-                    <p className="text-xs text-amber-400 mt-2">
-                      🔴 {metricas.confirmaciones.vencidas} con fecha límite vencida
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Métricas de Confirmación */}
-          <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-            <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-              <span>🔔</span> Estado de confirmaciones
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/60">Confirmadas</span>
-                  <span className="text-xs font-medium text-emerald-400">{metricas.confirmaciones.confirmadas}</span>
-                </div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${consultasFuturas.length > 0 ? (metricas.confirmaciones.confirmadas / consultasFuturas.length) * 100 : 0}%` }}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/60">Pendientes</span>
-                  <span className="text-xs font-medium text-blue-400">{metricas.confirmaciones.pendientes}</span>
-                </div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                    style={{ width: `${consultasFuturas.length > 0 ? (metricas.confirmaciones.pendientes / consultasFuturas.length) * 100 : 0}%` }}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/60">Urgentes</span>
-                  <span className="text-xs font-medium text-amber-400">{metricas.confirmaciones.requierenAtencion}</span>
-                </div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                    style={{ width: `${consultasFuturas.length > 0 ? (metricas.confirmaciones.requierenAtencion / consultasFuturas.length) * 100 : 0}%` }}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/60">Vencidas</span>
-                  <span className="text-xs font-medium text-red-400">{metricas.confirmaciones.vencidas}</span>
-                </div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-red-500 rounded-full transition-all duration-500"
-                    style={{ width: `${consultasFuturas.length > 0 ? (metricas.confirmaciones.vencidas / consultasFuturas.length) * 100 : 0}%` }}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/60">No confirm</span>
-                  <span className="text-xs font-medium text-white/70">{metricas.confirmaciones.noConfirmadas}</span>
-                </div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-white/30 rounded-full transition-all duration-500"
-                    style={{ width: `${consultasFuturas.length > 0 ? (metricas.confirmaciones.noConfirmadas / consultasFuturas.length) * 100 : 0}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Recordatorios */}
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <p className="text-xs text-white/60 mb-2">Recordatorios enviados:</p>
-              <div className="flex items-center gap-4 text-xs">
-                <div>
-                  <span className="text-white/60">Inicial: </span>
-                  <span className="font-medium text-blue-400">{metricas.recordatorios.inicialEnviado}</span>
-                </div>
-                <div>
-                  <span className="text-white/60">48h: </span>
-                  <span className="font-medium text-purple-400">{metricas.recordatorios.rem48h}</span>
-                </div>
-                <div>
-                  <span className="text-white/60">24h: </span>
-                  <span className="font-medium text-emerald-400">{metricas.recordatorios.rem24h}</span>
-                </div>
-                <div>
-                  <span className="text-white/60">3h: </span>
-                  <span className="font-medium text-amber-400">{metricas.recordatorios.rem3h}</span>
-                </div>
-                {metricas.recordatorios.sinEnviar > 0 && (
-                  <div>
-                    <span className="text-white/60">Sin enviar: </span>
-                    <span className="font-medium text-red-400">{metricas.recordatorios.sinEnviar}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Métricas Operativas - Específicas de Consultas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pb-4 border-b border-white/10">
-            {/* Tasa de Confirmación */}
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-white/60">Tasa de confirmación</span>
-                <span className="text-xs text-emerald-400 font-medium">{metricas.tasaConfirmacion}%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${metricas.tasaConfirmacion}%` }}
-                  />
-                </div>
-              </div>
-              <p className="text-[10px] text-white/40 mt-1.5">
-                {stats.confirmadas} de {stats.total} consultas
-              </p>
-            </div>
-
-            {/* Tasa de Asistencia */}
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-white/60">Tasa de asistencia</span>
-                <span className="text-xs text-blue-400 font-medium">{metricas.tasaAsistencia}%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                    style={{ width: `${metricas.tasaAsistencia}%` }}
-                  />
-                </div>
-              </div>
-              <p className="text-[10px] text-white/40 mt-1.5">
-                {stats.completadas} asistieron
-              </p>
-            </div>
-
-            {/* Duración Promedio */}
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-white/60">Duración promedio</span>
-                <span className="text-xs text-purple-400 font-medium">{metricas.promedioDuracion} min</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min((metricas.promedioDuracion / 60) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
-              <p className="text-[10px] text-white/40 mt-1.5">
-                Por consulta
-              </p>
-            </div>
-
-            {/* Tasa de Cancelación */}
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-white/60">Tasa de cancelación</span>
-                <span className="text-xs text-amber-400 font-medium">{metricas.tasaCancelacion}%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                    style={{ width: `${metricas.tasaCancelacion}%` }}
-                  />
-                </div>
-              </div>
-              <p className="text-[10px] text-white/40 mt-1.5">
-                {stats.canceladas} canceladas
-              </p>
-            </div>
-          </div>
-
-          {/* Distribución por Sede y Tipo */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {/* Distribución por Sede */}
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-              <h3 className="text-sm font-medium text-white mb-3">Distribución por sede</h3>
-              <div className="space-y-3">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60">Polanco</span>
-                    <span className="text-xs font-medium text-fuchsia-400">{metricas.porSede.polanco}</span>
-                  </div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-fuchsia-500 rounded-full transition-all duration-500"
-                      style={{ width: `${stats.total > 0 ? (metricas.porSede.polanco / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60">Satélite</span>
-                    <span className="text-xs font-medium text-cyan-400">{metricas.porSede.satelite}</span>
-                  </div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-cyan-500 rounded-full transition-all duration-500"
-                      style={{ width: `${stats.total > 0 ? (metricas.porSede.satelite / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tipo de Consulta */}
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-              <h3 className="text-sm font-medium text-white mb-3">Tipo de consulta</h3>
-              <div className="space-y-3">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60">Primera vez</span>
-                    <span className="text-xs font-medium text-blue-400">{metricas.primeraVez}</span>
-                  </div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                      style={{ width: `${stats.total > 0 ? (metricas.primeraVez / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60">Seguimiento</span>
-                    <span className="text-xs font-medium text-emerald-400">{metricas.seguimiento}</span>
-                  </div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                      style={{ width: `${stats.total > 0 ? (metricas.seguimiento / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -463,63 +296,32 @@ export default function ConsultasPage() {
                 { key: 'sede', label: 'Sede' },
                 { key: 'estado', label: 'Estado' },
                 { key: 'fecha', label: 'Fecha y hora' },
+                { key: 'confirmada', label: 'Confirmada' },
                 { key: 'detalle', label: 'Detalle' },
               ]}
-              rows={paginatedConsultas.map((consulta: Consulta) => ({
-                id: consulta.id,
-                paciente: (
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium text-white">{consulta.paciente}</span>
-                    <span className="text-xs text-white/40">{consulta.tipo}</span>
-                  </div>
-                ),
-                sede: (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge label={consulta.sede} tone={SEDE_COLORS[consulta.sede]} />
-                    {consulta.confirmadoPaciente && (
-                      <span className="text-[10px] font-medium text-emerald-300">✓ Confirmado</span>
-                    )}
-                  </div>
-                ),
-                estado: <Badge label={consulta.estado} tone={STATE_COLORS[consulta.estado]} />,
-                fecha: (
-                  <div className="flex flex-col gap-1 text-xs">
-                    <span className="text-white/70">
-                      {formatDate(consulta.fechaConsulta)}
-                    </span>
-                    <span className="text-white/50">
-                      {consulta.horaConsulta} · {consulta.duracionMinutos}min
-                    </span>
-                  </div>
-                ),
-                detalle: (
-                  <div className="flex flex-col gap-1 text-xs">
-                    <span className="text-white/70">
-                      {consulta.motivoConsulta || 'Sin motivo registrado'}
-                    </span>
-                    <span className="text-white/50">
-                      {consulta.canalOrigen || 'WhatsApp'}
-                    </span>
-                  </div>
-                ),
-              }))}
+              rows={paginatedConsultas.map(createConsultaRow)}
               empty={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay consultas registradas aún.'}
               mobileConfig={{
                 primary: 'paciente',
                 secondary: 'fecha',
-                metadata: ['sede', 'estado']
+                metadata: ['sede', 'estado', 'confirmada']
               }}
             />
             
-            {/* Paginación */}
+            {/* Paginación mejorada */}
             {filteredConsultas.length > itemsPerPage && (
               <div className="mt-6 pt-6 border-t border-white/10">
-                <Pagination
-                  currentPage={currentPage}
-                  totalItems={filteredConsultas.length}
-                  itemsPerPage={itemsPerPage}
-                  onPageChange={setCurrentPage}
-                />
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <p className="text-xs sm:text-sm text-white/60">
+                    Mostrando <span className="font-semibold text-white">{currentPage * itemsPerPage + 1}</span> - <span className="font-semibold text-white">{Math.min((currentPage + 1) * itemsPerPage, filteredConsultas.length)}</span> de <span className="font-semibold text-white">{filteredConsultas.length}</span> consultas
+                  </p>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalItems={filteredConsultas.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
               </div>
             )}
           </ContentLoader>
