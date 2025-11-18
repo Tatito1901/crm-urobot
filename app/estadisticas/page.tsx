@@ -511,11 +511,6 @@ export default function EstadisticasPage({
     ];
   }, [leads, periodo]);
 
-  // Determinar qué secciones mostrar
-  const mostrarSeccion = (seccion: SeccionId) => {
-    return seccionActiva === 'resumen' || seccionActiva === seccion;
-  };
-
   // Determinar título según sección
   const seccionInfo = SECCIONES.find(s => s.id === seccionActiva);
   const tituloSeccion = seccionInfo?.label || 'Estadísticas y Métricas';
