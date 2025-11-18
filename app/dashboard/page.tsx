@@ -208,7 +208,7 @@ export default function DashboardPage() {
           {activeTab === 'actividad' ? (
             <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
               {/* Leads recientes */}
-              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
+              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <CardHeader className="pb-5 pt-6 px-6 relative">
                   <div className="flex items-center justify-between">
@@ -245,7 +245,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Consultas próximas */}
-              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
+              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <CardHeader className="pb-5 pt-6 px-6 relative">
                   <div className="flex items-center justify-between">
@@ -284,7 +284,7 @@ export default function DashboardPage() {
           ) : (
             <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
               {/* Gráfico de leads por estado */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
+              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <CardHeader className="pb-4 pt-6 px-6 relative">
                   <div className="flex items-start justify-between">
@@ -351,7 +351,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Gráfico de consultas por sede */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 overflow-hidden rounded-2xl">
+              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <CardHeader className="pb-5 pt-6 px-6 relative">
                   <div className="space-y-1.5">

@@ -16,12 +16,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
-import { 
-  Calendar, 
-  Clock, 
-  TrendingUp, 
-  Globe, 
-  CheckCircle, 
+import { typography, spacing, cards, layouts } from '@/app/lib/design-system';
+import {
+  Calendar,
+  Clock,
+  TrendingUp,
+  Globe,
+  CheckCircle,
   BarChart3,
   MessageSquare,
   Users,
@@ -29,33 +30,6 @@ import {
   Activity,
   ChevronRight
 } from 'lucide-react';
-
-// Estilos unificados para consistencia
-const styles = {
-  card: {
-    base: 'bg-slate-800/30 border-slate-700/50 backdrop-blur-sm',
-    header: 'pb-4',
-    content: 'space-y-4',
-  },
-  text: {
-    title: 'text-base sm:text-lg font-semibold text-white',
-    subtitle: 'text-xs sm:text-sm text-slate-400',
-    sectionTitle: 'text-xl sm:text-2xl font-bold text-white',
-    statValue: 'text-3xl sm:text-4xl lg:text-5xl font-bold',
-    statLabel: 'text-xs sm:text-sm font-medium text-slate-300',
-    statHint: 'text-[10px] sm:text-xs text-slate-400',
-  },
-  spacing: {
-    section: 'space-y-4 sm:space-y-6',
-    card: 'p-4 sm:p-6',
-    cardCompact: 'p-3 sm:p-4',
-  },
-  grid: {
-    stats: 'grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-    cols2: 'grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2',
-    cols3: 'grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-  },
-};
 
 export const dynamic = 'force-dynamic';
 
@@ -537,11 +511,6 @@ export default function EstadisticasPage({
     ];
   }, [leads, periodo]);
 
-  // Determinar qué secciones mostrar
-  const mostrarSeccion = (seccion: SeccionId) => {
-    return seccionActiva === 'resumen' || seccionActiva === seccion;
-  };
-
   // Determinar título según sección
   const seccionInfo = SECCIONES.find(s => s.id === seccionActiva);
   const tituloSeccion = seccionInfo?.label || 'Estadísticas y Métricas';
@@ -556,7 +525,7 @@ export default function EstadisticasPage({
         <button
           onClick={handleRefresh}
           disabled={loadingMetrics || loadingLeads || loadingConsultas}
-          className="group flex items-center justify-center gap-2 rounded-lg bg-blue-600/20 px-4 py-3 sm:px-5 sm:py-2.5 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] sm:min-h-0"
+          className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600/20 to-blue-500/20 px-4 py-3 sm:px-5 sm:py-2.5 text-sm font-medium text-blue-200 backdrop-blur-sm border border-blue-500/20 hover:from-blue-600/30 hover:to-blue-500/30 hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 min-h-[44px] sm:min-h-0 touch-target"
         >
           <span className="transition-transform group-hover:rotate-180 duration-500">
             {(loadingMetrics || loadingLeads || loadingConsultas) ? '⟳' : '↻'}
@@ -571,13 +540,13 @@ export default function EstadisticasPage({
         {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
           <>
         {loadingMetrics ? (
-          <div className={styles.grid.stats}>
+          <div className={layouts.gridCols4}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-32 sm:h-36 animate-pulse rounded-xl bg-slate-800/30" />
+              <div key={i} className="h-32 sm:h-36 animate-pulse rounded-xl bg-white/5" />
             ))}
           </div>
         ) : (
-          <section className={styles.grid.stats}>
+          <section className={layouts.gridCols4}>
             {metricsCards.map((metric) => (
               <StatCard key={metric.title} title={metric.title} value={metric.value} hint={metric.hint} />
             ))}
@@ -587,10 +556,10 @@ export default function EstadisticasPage({
         )}
 
         {/* Selector de periodo - Unificado */}
-        <Card className={styles.card.base}>
+        <Card className={cards.base}>
           <CardContent className="py-4 sm:py-5">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <span className={`${styles.text.statLabel} flex items-center gap-2 flex-shrink-0`}>
+              <span className={`${typography.label} flex items-center gap-2 flex-shrink-0`}>
                 <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                 <span>Periodo:</span>
               </span>
@@ -620,12 +589,12 @@ export default function EstadisticasPage({
 
         {/* Sección: Tendencias de Crecimiento */}
         {(seccionActiva === 'resumen' || seccionActiva === 'funnel') && (
-        <section className={styles.spacing.section}>
-          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+        <section className={spacing.spaceLg}>
+          <h2 className={`${typography.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
             <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
             <span>Tendencias de Crecimiento</span>
           </h2>
-          <div className={styles.grid.cols2}>
+          <div className={layouts.gridCols2}>
             <GrowthChart 
               title="Evolución de Leads (últimos 6 meses)" 
               data={leadTrend} 
@@ -640,8 +609,8 @@ export default function EstadisticasPage({
 
         {/* Sección: Análisis de Citas */}
         {(seccionActiva === 'resumen' || seccionActiva === 'consultas') && (
-        <section className={styles.spacing.section}>
-          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+        <section className={spacing.spaceLg}>
+          <h2 className={`${typography.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
             <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400 flex-shrink-0" />
             <span className="truncate">
               Análisis de Citas
@@ -649,9 +618,9 @@ export default function EstadisticasPage({
             </span>
           </h2>
 
-          <div className={`${styles.grid.cols3} mb-5 sm:mb-6`}>
+          <div className={`${layouts.gridCols3} mb-5 sm:mb-6`}>
             {/* Total de citas */}
-            <Card className="bg-slate-800/30 border-slate-700">
+            <Card className={cards.base}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white">Total de Citas</CardTitle>
                 <CardDescription className="text-xs sm:text-sm text-slate-400">Todas las citas del periodo</CardDescription>
@@ -665,7 +634,7 @@ export default function EstadisticasPage({
             </Card>
 
             {/* Tasa de conversión del periodo */}
-            <Card className="bg-slate-800/30 border-slate-700">
+            <Card className={cards.base}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white">Tasa de Conversión</CardTitle>
                 <CardDescription className="text-xs sm:text-sm text-slate-400">Leads → Pacientes</CardDescription>
@@ -679,14 +648,14 @@ export default function EstadisticasPage({
             </Card>
 
             {/* Completadas */}
-            <Card className={styles.card.base}>
-              <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${styles.card.header}`}>
-                <CardTitle className={styles.text.title}>Canceladas</CardTitle>
+            <Card className={cards.base}>
+              <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${spacing.cardHeader}`}>
+                <CardTitle className={typography.cardTitle}>Canceladas</CardTitle>
                 <span className="text-2xl sm:text-3xl">⊗</span>
               </CardHeader>
               <CardContent>
-                <div className={`${styles.text.statValue} text-red-400`}>{stats.canceladas}</div>
-                <p className={`${styles.text.statHint} mt-2`}>
+                <div className={`${typography.metricLarge} text-red-400`}>{stats.canceladas}</div>
+                <p className={`${typography.metadata} mt-2`}>
                   {stats.totalCitas > 0 ? ((stats.canceladas / stats.totalCitas) * 100).toFixed(1) : 0}% del total
                 </p>
               </CardContent>
@@ -694,7 +663,7 @@ export default function EstadisticasPage({
           </div>
 
           {/* Gráfico de distribución de citas */}
-          <Card className="bg-slate-800/30 border-slate-700">
+          <Card className={cards.base}>
             <CardHeader>
               <CardTitle className="text-base text-white">Distribución de Citas por Estado</CardTitle>
               <CardDescription className="text-slate-400">Análisis del flujo completo</CardDescription>
@@ -712,32 +681,32 @@ export default function EstadisticasPage({
 
         {/* NUEVA SECCIÓN: Análisis de Mensajería */}
         {(seccionActiva === 'resumen' || seccionActiva === 'mensajeria') && (
-        <section className={styles.spacing.section}>
-          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+        <section className={spacing.spaceLg}>
+          <h2 className={`${typography.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
             <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
             <span>Análisis de Mensajería</span>
           </h2>
 
-          <div className={styles.grid.stats}>
+          <div className={layouts.gridCols4}>
             {/* Personas que enviaron mensajes */}
-            <Card className={styles.card.base}>
-              <CardHeader className={styles.card.header}>
-                <CardTitle className={styles.text.title}>
+            <Card className={cards.base}>
+              <CardHeader className={spacing.cardHeader}>
+                <CardTitle className={typography.cardTitle}>
                   <Users className="h-5 w-5 inline mr-2 text-blue-400" />
                   Personas Activas
                 </CardTitle>
-                <CardDescription className={styles.text.subtitle}>Enviaron mensajes</CardDescription>
+                <CardDescription className={typography.cardDescription}>Enviaron mensajes</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className={`${styles.text.statValue} text-blue-400`}>{mensajeriaStats.personasConMensajes}</div>
-                <div className={`${styles.text.statHint} mt-3`}>
+                <div className={`${typography.metricLarge} text-blue-400`}>{mensajeriaStats.personasConMensajes}</div>
+                <div className={`${typography.metadata} mt-3`}>
                   {mensajeriaStats.totalInteracciones} interacciones totales
                 </div>
               </CardContent>
             </Card>
 
             {/* Total de mensajes */}
-            <Card className="bg-slate-800/30 border-slate-700">
+            <Card className={cards.base}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
                   <span className="text-lg">📨</span>
@@ -756,7 +725,7 @@ export default function EstadisticasPage({
             </Card>
 
             {/* Promedio por persona */}
-            <Card className="bg-slate-800/30 border-slate-700">
+            <Card className={cards.base}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
                   <span className="text-lg">📊</span>
@@ -773,7 +742,7 @@ export default function EstadisticasPage({
             </Card>
 
             {/* Tasa de respuesta */}
-            <Card className="bg-slate-800/30 border-slate-700">
+            <Card className={cards.base}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
                   <span className="text-lg">⚡</span>
@@ -794,18 +763,18 @@ export default function EstadisticasPage({
 
         {/* NUEVA SECCIÓN: Canales de Marketing */}
         {(seccionActiva === 'resumen' || seccionActiva === 'canales' || seccionActiva === 'leads') && (
-        <section className={styles.spacing.section}>
-          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+        <section className={spacing.spaceLg}>
+          <h2 className={`${typography.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
             <Target className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
             <span>Canales de Marketing</span>
           </h2>
 
-          <div className={styles.grid.cols2}>
+          <div className={layouts.gridCols2}>
             {/* Lista de canales */}
-            <Card className={styles.card.base}>
-              <CardHeader className={styles.card.header}>
-                <CardTitle className={styles.text.title}>De dónde vienen los leads</CardTitle>
-                <CardDescription className={styles.text.subtitle}>Por canal de marketing</CardDescription>
+            <Card className={cards.base}>
+              <CardHeader className={spacing.cardHeader}>
+                <CardTitle className={typography.cardTitle}>De dónde vienen los leads</CardTitle>
+                <CardDescription className={typography.cardDescription}>Por canal de marketing</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 sm:space-y-3">
@@ -834,10 +803,10 @@ export default function EstadisticasPage({
             </Card>
 
             {/* Temperatura de leads */}
-            <Card className={styles.card.base}>
-              <CardHeader className={styles.card.header}>
-                <CardTitle className={styles.text.title}>Temperatura de Leads</CardTitle>
-                <CardDescription className={styles.text.subtitle}>Clasificación por interés</CardDescription>
+            <Card className={cards.base}>
+              <CardHeader className={spacing.cardHeader}>
+                <CardTitle className={typography.cardTitle}>Temperatura de Leads</CardTitle>
+                <CardDescription className={typography.cardDescription}>Clasificación por interés</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 sm:space-y-3">
@@ -878,7 +847,7 @@ export default function EstadisticasPage({
             <span>Agendamiento por Canal</span>
           </h2>
 
-          <Card className="bg-slate-800/30 border-slate-700">
+          <Card className={cards.base}>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm sm:text-base text-white">De dónde se agendaron las consultas</CardTitle>
               <CardDescription className="text-xs sm:text-sm text-slate-400">Canal de origen de cada cita</CardDescription>
@@ -917,7 +886,7 @@ export default function EstadisticasPage({
           </h2>
 
           <div className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2">
-            <Card className="bg-slate-800/30 border-slate-700">
+            <Card className={cards.base}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white">Distribución por Canal</CardTitle>
                 <CardDescription className="text-xs sm:text-sm text-slate-400">Origen de los contactos</CardDescription>
@@ -939,7 +908,7 @@ export default function EstadisticasPage({
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-800/30 border-slate-700">
+            <Card className={cards.base}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm sm:text-base text-white">Detalle de Canales</CardTitle>
                 <CardDescription className="text-xs sm:text-sm text-slate-400">Cantidad y porcentaje</CardDescription>
