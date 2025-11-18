@@ -116,7 +116,7 @@ export function mapConsultaToDB(consulta: Partial<Consulta>): Partial<ConsultaDB
     calendar_link: consulta.calendarLink,
     cancelado_por: consulta.canceladoPor,
     motivo_cancelacion: consulta.motivoCancelacion,
-    canal_origen: consulta.canalOrigen,
+    canal_origen: consulta.canalOrigen ?? undefined,
   };
 }
 
@@ -139,7 +139,7 @@ export function mapLeadFromDB(raw: LeadDB): Partial<Lead> {
     // Campos de BD (anteriormente faltantes)
     temperatura: raw.temperatura as Lead['temperatura'],
     puntuacionLead: raw.puntuacion_lead,
-    canalMarketing: raw.canal_marketing || undefined,
+    canalMarketing: (raw.canal_marketing || undefined) as Lead['canalMarketing'],
     
     // Métricas de engagement
     totalInteracciones: raw.total_interacciones,

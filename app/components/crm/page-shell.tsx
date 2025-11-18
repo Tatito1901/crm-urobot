@@ -12,7 +12,7 @@ import { cn } from "@/app/lib/utils";
 
 interface PageShellProps {
   eyebrow: string;
-  title: string;
+  title: string | ReactNode;
   description?: string;
   headerSlot?: ReactNode;
   children: ReactNode;

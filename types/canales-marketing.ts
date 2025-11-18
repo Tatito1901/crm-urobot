@@ -1,0 +1,78 @@
+/**
+ * ============================================================
+ * CANALES DE MARKETING - Orígenes de Leads
+ * ============================================================
+ * Definición de canales consistente con la base de datos
+ */
+
+export const CANALES_MARKETING = [
+  'Facebook Ads',
+  'Google Ads',
+  'Instagram Ads',
+  'Orgánico',
+  'Referido',
+  'WhatsApp Directo',
+  'Otro'
+] as const;
+
+export type CanalMarketing = typeof CANALES_MARKETING[number];
+
+/**
+ * Colores para cada canal (para badges y visualización)
+ */
+export const CANAL_COLORS: Record<CanalMarketing, { bg: string; text: string; border: string; icon: string }> = {
+  'Facebook Ads': {
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-300',
+    border: 'border-blue-500/30',
+    icon: '📘'
+  },
+  'Google Ads': {
+    bg: 'bg-red-500/10',
+    text: 'text-red-300',
+    border: 'border-red-500/30',
+    icon: '🔍'
+  },
+  'Instagram Ads': {
+    bg: 'bg-pink-500/10',
+    text: 'text-pink-300',
+    border: 'border-pink-500/30',
+    icon: '📸'
+  },
+  'Orgánico': {
+    bg: 'bg-green-500/10',
+    text: 'text-green-300',
+    border: 'border-green-500/30',
+    icon: '🌱'
+  },
+  'Referido': {
+    bg: 'bg-purple-500/10',
+    text: 'text-purple-300',
+    border: 'border-purple-500/30',
+    icon: '👥'
+  },
+  'WhatsApp Directo': {
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-300',
+    border: 'border-emerald-500/30',
+    icon: '💬'
+  },
+  'Otro': {
+    bg: 'bg-slate-500/10',
+    text: 'text-slate-300',
+    border: 'border-slate-500/30',
+    icon: '📌'
+  }
+};
+
+/**
+ * Valida si un string es un canal de marketing válido
+ */
+export function isCanalMarketing(value: unknown): value is CanalMarketing {
+  return typeof value === 'string' && (CANALES_MARKETING as readonly string[]).includes(value);
+}
+
+/**
+ * Obtiene el canal por defecto si no existe
+ */
+export const DEFAULT_CANAL: CanalMarketing = 'Otro';

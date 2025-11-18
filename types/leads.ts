@@ -1,3 +1,5 @@
+import type { CanalMarketing } from './canales-marketing';
+
 // ✅ Estados exactos de la base de datos (consultas.estado CHECK constraint)
 export const LEAD_ESTADOS = [
   'Nuevo',
@@ -28,7 +30,7 @@ export interface Lead {
   // Campos de BD que faltaban
   temperatura: LeadTemperatura;
   puntuacionLead: number; // 0-100
-  canalMarketing?: string | null;
+  canalMarketing?: CanalMarketing | null;
   
   // Métricas de engagement
   totalInteracciones: number;

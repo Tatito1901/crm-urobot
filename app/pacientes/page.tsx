@@ -12,9 +12,8 @@ import { usePacientes } from '@/hooks/usePacientes';
 import { ContentLoader, TableContentSkeleton } from '@/app/components/common/ContentLoader';
 import { Pagination } from '@/app/components/common/Pagination';
 import { typography, spacing, cards, inputs } from '@/app/lib/design-system';
-import { MetricCard } from '@/app/components/metrics/MetricCard';
-import { MetricGrid } from '@/app/components/metrics/MetricGrid';
-import { DistributionCard } from '@/app/components/metrics/DistributionCard';
+import { Button } from '@/components/ui/button';
+import { HelpIcon } from '@/app/components/common/InfoTooltip';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,9 +85,9 @@ export default function PacientesPage() {
   return (
     <PageShell
       accent
-      eyebrow="Pacientes"
-      title="Carpeta clínica activa"
-      description="Historial de consultas, datos de contacto y estado general de cada paciente."
+      eyebrow="Gestión de pacientes"
+      title="Carpeta clínica"
+      description="Historial completo de pacientes con su actividad, estado actual y última consulta registrada."
       headerSlot={
         <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
@@ -137,25 +136,21 @@ export default function PacientesPage() {
         <CardContent className="pt-0 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-white/10">
             <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs text-white/70">
-              <span className="rounded-full bg-white/5 px-3 py-1">
-                Total:
-                <span className="ml-1 font-semibold text-white">{stats.total}</span>
+              <span className="rounded-full bg-white/5 px-3 py-1 flex items-center gap-1.5">
+                <span>Total:</span>
+                <span className="font-semibold text-white">{stats.total}</span>
               </span>
-              <span className="rounded-full bg-emerald-500/10 px-3 py-1">
-                Activos:
-                <span className="ml-1 font-semibold text-emerald-300">{stats.activos}</span>
+              <span className="rounded-full bg-emerald-500/10 px-3 py-1 border border-emerald-500/20 flex items-center gap-1.5">
+                <span>✓ Activos:</span>
+                <span className="font-semibold text-emerald-300">{stats.activos}</span>
               </span>
-              <span className="rounded-full bg-blue-500/10 px-3 py-1">
-                Recientes:
-                <span className="ml-1 font-semibold text-blue-300">{stats.recientes}</span>
+              <span className="rounded-full bg-blue-500/10 px-3 py-1 border border-blue-500/20 flex items-center gap-1.5">
+                <span>🆕 Nuevos:</span>
+                <span className="font-semibold text-blue-300">{stats.recientes}</span>
               </span>
-              <span className="rounded-full bg-purple-500/10 px-3 py-1">
-                Con consultas:
-                <span className="ml-1 font-semibold text-purple-300">{stats.conConsultas}</span>
-              </span>
-              <span className="rounded-full bg-amber-500/10 px-3 py-1">
-                Requieren atención:
-                <span className="ml-1 font-semibold text-amber-300">{stats.requierenAtencion}</span>
+              <span className="rounded-full bg-amber-500/10 px-3 py-1 border border-amber-500/20 flex items-center gap-1.5">
+                <span>⚠️ Atención:</span>
+                <span className="font-semibold text-amber-300">{stats.requierenAtencion}</span>
               </span>
             </div>
             <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs">
@@ -180,109 +175,6 @@ export default function PacientesPage() {
             </div>
           </div>
           
-          {/* Alerta de pacientes en riesgo */}
-          {metricas.enRiesgo > 0 && (
-            <MetricGrid
-              alert={{
-                type: 'warning',
-                message: `${metricas.enRiesgo} ${metricas.enRiesgo === 1 ? 'paciente requiere' : 'pacientes requieren'} atención: 180+ días sin consulta. Considera programar seguimiento o campaña de reactivación.`
-              }}
-            >
-              <></>
-            </MetricGrid>
-          )}
-
-          {/* Métricas Avanzadas - Específicas de Pacientes */}
-          <MetricGrid
-            title="Métricas de gestión de pacientes"
-            icon="👥"
-            description="Indicadores clave para decisiones estratégicas"
-            columns={4}
-          >
-            <MetricCard
-              title="Tasa de retención"
-              value={stats.total > 0 ? Math.round((stats.total * metricas.tasaRetencion) / 100) : 0}
-              percentage={metricas.tasaRetencion}
-              color="emerald"
-              icon="🔄"
-              description={`${stats.total > 0 ? Math.round((stats.total * metricas.tasaRetencion) / 100) : 0} con 2+ consultas`}
-            />
-            <MetricCard
-              title="Pacientes frecuentes"
-              value={metricas.pacientesFrecuentes}
-              percentage={stats.total > 0 ? Math.round((metricas.pacientesFrecuentes / stats.total) * 100) : 0}
-              color="purple"
-              icon="⭐"
-              description="5+ consultas registradas"
-            />
-            <MetricCard
-              title="Datos completos"
-              value={metricas.conDatosCompletos}
-              percentage={stats.total > 0 ? Math.round((metricas.conDatosCompletos / stats.total) * 100) : 0}
-              color="blue"
-              icon="📧"
-              description="Email + teléfono verificados"
-            />
-            <MetricCard
-              title="En riesgo"
-              value={metricas.enRiesgo}
-              percentage={stats.total > 0 ? Math.round((metricas.enRiesgo / stats.total) * 100) : 0}
-              color="amber"
-              icon="⚠️"
-              description="180+ días sin consulta"
-            />
-          </MetricGrid>
-
-          {/* Distribución por Fuente y Métricas del Mes */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <DistributionCard
-              title="Distribución por fuente de origen"
-              icon="📍"
-              total={stats.total}
-              items={[
-                { label: 'WhatsApp', value: metricas.porFuente.whatsapp, color: 'emerald', icon: '💬' },
-                { label: 'Referidos', value: metricas.porFuente.referido, color: 'blue', icon: '👥' },
-                { label: 'Web', value: metricas.porFuente.web, color: 'purple', icon: '🌐' },
-                { label: 'Otros', value: metricas.porFuente.otros, color: 'white', icon: '📋' },
-              ]}
-              footer={[
-                { label: 'Nuevos mes', value: metricas.nuevosMes, color: 'text-blue-400' },
-                { label: 'Recurrentes', value: metricas.recurrentesMes, color: 'text-emerald-400' },
-                { label: 'Sin email', value: metricas.sinEmail, color: 'text-amber-400' },
-              ]}
-            />
-            
-            {/* Métricas adicionales */}
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
-              <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-                <span>📊</span> Insights adicionales
-              </h3>
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-white/[0.03] hover:bg-white/[0.05] transition-all">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-white/70">Pacientes con consultas</span>
-                    <span className="text-sm font-semibold text-emerald-400">{stats.conConsultas}</span>
-                  </div>
-                  <p className="text-[10px] text-white/50">Han tenido al menos una consulta</p>
-                </div>
-                <div className="p-3 rounded-lg bg-white/[0.03] hover:bg-white/[0.05] transition-all">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-white/70">Pacientes sin consultas</span>
-                    <span className="text-sm font-semibold text-amber-400">{stats.sinConsultas}</span>
-                  </div>
-                  <p className="text-[10px] text-white/50">Registrados pero sin actividad</p>
-                </div>
-                <div className="p-3 rounded-lg bg-white/[0.03] hover:bg-white/[0.05] transition-all">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-white/70">Requieren atención</span>
-                    <span className="text-sm font-semibold text-purple-400">{stats.requierenAtencion}</span>
-                  </div>
-                  <p className="text-[10px] text-white/50">90+ días sin consulta y activos</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
           <ContentLoader
             loading={loading}
             error={error}
@@ -301,11 +193,51 @@ export default function PacientesPage() {
           >
             <DataTable
               headers={[
-                { key: 'nombre', label: 'Paciente' },
-                { key: 'actividad', label: 'Actividad' },
-                { key: 'estado', label: 'Estado' },
-                { key: 'ultimaConsulta', label: 'Última consulta' },
-                { key: 'acciones', label: 'Acciones' },
+                { 
+                  key: 'nombre', 
+                  label: (
+                    <div className="flex items-center gap-1.5">
+                      <span>Paciente</span>
+                      <HelpIcon content="Nombre completo y teléfono de contacto" side="bottom" />
+                    </div>
+                  )
+                },
+                { 
+                  key: 'actividad', 
+                  label: (
+                    <div className="flex items-center gap-1.5">
+                      <span>Actividad</span>
+                      <HelpIcon content="Número total de consultas registradas" side="bottom" />
+                    </div>
+                  )
+                },
+                { 
+                  key: 'estado', 
+                  label: (
+                    <div className="flex items-center gap-1.5">
+                      <span>Estado</span>
+                      <HelpIcon content="Activo: paciente con consultas recientes | Inactivo: sin actividad prolongada" side="bottom" />
+                    </div>
+                  )
+                },
+                { 
+                  key: 'ultimaConsulta', 
+                  label: (
+                    <div className="flex items-center gap-1.5">
+                      <span>Última consulta</span>
+                      <HelpIcon content="Fecha de la consulta más reciente y días transcurridos" side="bottom" />
+                    </div>
+                  )
+                },
+                { 
+                  key: 'acciones', 
+                  label: (
+                    <div className="flex items-center gap-1.5">
+                      <span>Acciones</span>
+                      <HelpIcon content="Ver historial completo, agendar nueva consulta o contactar al paciente" side="bottom" />
+                    </div>
+                  )
+                },
               ]}
               rows={paginatedPacientesFiltered.map((paciente: Paciente) => ({
                 id: paciente.id,
@@ -351,15 +283,27 @@ export default function PacientesPage() {
                 ),
                 acciones: (
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePacienteClick(paciente.id);
                       }}
-                      className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors border border-white/10"
                     >
                       Ver historial
-                    </button>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`https://wa.me/52${paciente.telefono}`, '_blank');
+                      }}
+                      title="Contactar por WhatsApp"
+                    >
+                      💬
+                    </Button>
                   </div>
                 ),
               }))}

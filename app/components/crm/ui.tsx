@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge as ShadcnBadge, type BadgeProps as ShadcnBadgeProps } from "@/components/ui/badge";
+import { Badge as ShadcnBadge } from "@/components/ui/badge";
 
 export function Badge({
   label,
@@ -17,7 +17,7 @@ export function Badge({
   variant = "default",
   className,
   ...props
-}: { label: string; tone?: string } & ShadcnBadgeProps) {
+}: { label: string; tone?: string } & React.ComponentProps<typeof ShadcnBadge>) {
   return (
     <ShadcnBadge
       variant={variant}
@@ -51,7 +51,7 @@ export function StatCard({ title, value, hint }: { title: string; value: string;
   );
 }
 
-type DataTableHeader = { key: string; label: string; align?: "left" | "right" };
+type DataTableHeader = { key: string; label: React.ReactNode; align?: "left" | "right" };
 
 /**
  * ✅ QUICK WIN #4: Configuración mobile optimizada
