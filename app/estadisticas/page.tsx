@@ -16,18 +16,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
-import { 
-  Calendar, 
-  Clock, 
-  TrendingUp, 
-  Globe, 
-  CheckCircle, 
+import { useRecordatorios } from '@/hooks/useRecordatorios';
+import { useEscalamientos } from '@/hooks/useEscalamientos';
+import { useConversaciones } from '@/hooks/useConversaciones';
+import {
+  Calendar,
+  Clock,
+  TrendingUp,
+  Globe,
+  CheckCircle,
   BarChart3,
   MessageSquare,
   Users,
   Target,
   Activity,
-  ChevronRight
+  ChevronRight,
+  Bell,
+  AlertTriangle,
+  Smile,
+  Meh,
+  Frown
 } from 'lucide-react';
 
 // Estilos unificados para consistencia
@@ -211,9 +219,19 @@ export default function EstadisticasPage({
   const { metrics: dm, loading: loadingMetrics, refetch: refetchMetrics } = useDashboardMetrics();
   const { leads, loading: loadingLeads, refetch: refetchLeads } = useLeads();
   const { consultas, loading: loadingConsultas, refetch: refetchConsultas } = useConsultas();
+  const { recordatorios, loading: loadingRecordatorios, refresh: refetchRecordatorios } = useRecordatorios();
+  const { escalamientos, loading: loadingEscalamientos, refetch: refetchEscalamientos } = useEscalamientos();
+  const { conversaciones, loading: loadingConversaciones, refetch: refetchConversaciones } = useConversaciones();
 
   const handleRefresh = async () => {
-    await Promise.all([refetchMetrics(), refetchLeads(), refetchConsultas()]);
+    await Promise.all([
+      refetchMetrics(),
+      refetchLeads(),
+      refetchConsultas(),
+      refetchRecordatorios(),
+      refetchEscalamientos(),
+      refetchConversaciones()
+    ]);
   };
 
   // 📊 Métricas principales - Reorganizadas por prioridad
@@ -578,6 +596,136 @@ export default function EstadisticasPage({
     ];
   }, [leads, periodo]);
 
+  // 📨 Análisis de Recordatorios
+  const recordatoriosStats = useMemo(() => {
+    if (loadingRecordatorios) {
+      return {
+        totalEnviados: 0,
+        tasaEntrega: 0,
+        tasaLectura: 0,
+        tasaRespuesta: 0,
+        tiempoPromedioRespuesta: 0,
+      };
+    }
+
+    const totalEnviados = recordatorios.filter(r => r.estado === 'Enviado').length;
+    const entregados = recordatorios.filter(r => r.entregado).length;
+    const leidos = recordatorios.filter(r => r.leido).length;
+    const respondidos = recordatorios.filter(r => r.respondido).length;
+
+    const tasaEntrega = totalEnviados > 0 ? Math.round((entregados / totalEnviados) * 100) : 0;
+    const tasaLectura = entregados > 0 ? Math.round((leidos / entregados) * 100) : 0;
+    const tasaRespuesta = leidos > 0 ? Math.round((respondidos / leidos) * 100) : 0;
+
+    return {
+      totalEnviados,
+      tasaEntrega,
+      tasaLectura,
+      tasaRespuesta,
+      entregados,
+      leidos,
+      respondidos,
+    };
+  }, [recordatorios, loadingRecordatorios]);
+
+  // 🚨 Análisis de Escalamientos
+  const escalamientosStats = useMemo(() => {
+    if (loadingEscalamientos) {
+      return {
+        totalEscalamientos: 0,
+        pendientes: 0,
+        resueltos: 0,
+        tiempoPromedioResolucion: 0,
+        motivosPrincipales: [],
+        porPrioridad: { alta: 0, media: 0, baja: 0 },
+      };
+    }
+
+    const total = escalamientos.length;
+    const pendientes = escalamientos.filter(e => e.estado === 'Pendiente' || e.estado === 'En Proceso').length;
+    const resueltos = escalamientos.filter(e => e.estado === 'Resuelto').length;
+
+    // Calcular tiempo promedio de resolución
+    const escalamientosResueltos = escalamientos.filter(e => e.estado === 'Resuelto' && e.resuelto_en);
+    const tiemposResolucion = escalamientosResueltos.map(e => {
+      const creado = new Date(e.created_at);
+      const resuelto = new Date(e.resuelto_en!);
+      return (resuelto.getTime() - creado.getTime()) / (1000 * 60 * 60); // horas
+    });
+    const tiempoPromedioResolucion = tiemposResolucion.length > 0
+      ? Math.round(tiemposResolucion.reduce((a, b) => a + b, 0) / tiemposResolucion.length)
+      : 0;
+
+    // Motivos principales
+    const motivosCount: Record<string, number> = {};
+    escalamientos.forEach(e => {
+      motivosCount[e.motivo] = (motivosCount[e.motivo] || 0) + 1;
+    });
+    const motivosPrincipales = Object.entries(motivosCount)
+      .map(([motivo, count]) => ({ motivo, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Por prioridad
+    const alta = escalamientos.filter(e => e.prioridad === 'Alta').length;
+    const media = escalamientos.filter(e => e.prioridad === 'Media').length;
+    const baja = escalamientos.filter(e => e.prioridad === 'Baja').length;
+
+    return {
+      totalEscalamientos: total,
+      pendientes,
+      resueltos,
+      tiempoPromedioResolucion,
+      motivosPrincipales,
+      porPrioridad: { alta, media, baja },
+    };
+  }, [escalamientos, loadingEscalamientos]);
+
+  // 💬 Análisis de Sentimiento
+  const sentimientoStats = useMemo(() => {
+    if (loadingConversaciones) {
+      return {
+        positivos: 0,
+        neutrales: 0,
+        negativos: 0,
+        intencionesComunes: [],
+        tiempoPromedioRespuesta: 0,
+      };
+    }
+
+    const positivos = conversaciones.filter(c => c.sentimiento === 'positivo').length;
+    const neutrales = conversaciones.filter(c => c.sentimiento === 'neutral').length;
+    const negativos = conversaciones.filter(c => c.sentimiento === 'negativo').length;
+
+    // Intenciones más comunes
+    const intencionesCount: Record<string, number> = {};
+    conversaciones.forEach(c => {
+      if (c.intencion) {
+        intencionesCount[c.intencion] = (intencionesCount[c.intencion] || 0) + 1;
+      }
+    });
+    const intencionesComunes = Object.entries(intencionesCount)
+      .map(([intencion, count]) => ({ intencion, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Tiempo promedio de respuesta (solo para mensajes del bot)
+    const mensajesBot = conversaciones.filter(c => c.es_bot && c.tiempo_respuesta_segundos);
+    const tiempoPromedioRespuesta = mensajesBot.length > 0
+      ? Math.round(
+          mensajesBot.reduce((sum, c) => sum + (c.tiempo_respuesta_segundos || 0), 0) / mensajesBot.length
+        )
+      : 0;
+
+    return {
+      positivos,
+      neutrales,
+      negativos,
+      intencionesComunes,
+      tiempoPromedioRespuesta,
+    };
+  }, [conversaciones, loadingConversaciones]);
+
   // Determinar qué secciones mostrar
   const mostrarSeccion = (seccion: SeccionId) => {
     return seccionActiva === 'resumen' || seccionActiva === seccion;
@@ -596,13 +744,13 @@ export default function EstadisticasPage({
       headerSlot={
         <button
           onClick={handleRefresh}
-          disabled={loadingMetrics || loadingLeads || loadingConsultas}
+          disabled={loadingMetrics || loadingLeads || loadingConsultas || loadingRecordatorios || loadingEscalamientos || loadingConversaciones}
           className="group flex items-center justify-center gap-2 rounded-lg bg-blue-600/20 px-4 py-3 sm:px-5 sm:py-2.5 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] sm:min-h-0"
         >
           <span className="transition-transform group-hover:rotate-180 duration-500">
-            {(loadingMetrics || loadingLeads || loadingConsultas) ? '⟳' : '↻'}
+            {(loadingMetrics || loadingLeads || loadingConsultas || loadingRecordatorios || loadingEscalamientos || loadingConversaciones) ? '⟳' : '↻'}
           </span>
-          <span>{(loadingMetrics || loadingLeads || loadingConsultas) ? 'Actualizando...' : 'Actualizar'}</span>
+          <span>{(loadingMetrics || loadingLeads || loadingConsultas || loadingRecordatorios || loadingEscalamientos || loadingConversaciones) ? 'Actualizando...' : 'Actualizar'}</span>
         </button>
       }
     >
@@ -1020,6 +1168,303 @@ export default function EstadisticasPage({
         </section>
         )}
 
+
+        {/* Análisis de Recordatorios */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
+            <span>Efectividad de Recordatorios</span>
+          </h2>
+
+          <div className={styles.grid.stats}>
+            {/* Total enviados */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">📨</span>
+                  <span>Enviados</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Total de recordatorios</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-blue-400">
+                  {recordatoriosStats.totalEnviados}
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {recordatoriosStats.entregados} entregados
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasa de entrega */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                  <span>Tasa Entrega</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">% entregados exitosamente</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-3xl sm:text-4xl font-bold ${recordatoriosStats.tasaEntrega >= 90 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {recordatoriosStats.tasaEntrega}%
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {recordatoriosStats.tasaEntrega >= 90 ? '✓ Excelente' : '⚠ Revisar configuración'}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasa de lectura */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">👁️</span>
+                  <span>Tasa Lectura</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">% leídos por pacientes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-3xl sm:text-4xl font-bold ${recordatoriosStats.tasaLectura >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {recordatoriosStats.tasaLectura}%
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {recordatoriosStats.leidos} pacientes leyeron
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasa de respuesta */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">💬</span>
+                  <span>Engagement</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">% que responden</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-purple-400">
+                  {recordatoriosStats.tasaRespuesta}%
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {recordatoriosStats.respondidos} interacciones
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        )}
+
+        {/* Gestión de Escalamientos */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-amber-400" />
+            <span>Escalamientos y Soporte</span>
+          </h2>
+
+          <div className={styles.grid.stats}>
+            {/* Total escalamientos */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <span className="text-lg">🚨</span>
+                  <span>Total Escalamientos</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Casos escalados</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-amber-400">
+                  {escalamientosStats.totalEscalamientos}
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {escalamientosStats.pendientes} pendientes
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tiempo promedio resolución */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
+                  <span>Tiempo Resolución</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Promedio en horas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-3xl sm:text-4xl font-bold ${escalamientosStats.tiempoPromedioResolucion <= 24 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {escalamientosStats.tiempoPromedioResolucion}h
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {escalamientosStats.resueltos} resueltos
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Por prioridad */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white">Distribución por Prioridad</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs sm:text-sm text-red-400">🔴 Alta</span>
+                    <span className="text-sm sm:text-base font-bold text-white">{escalamientosStats.porPrioridad.alta}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs sm:text-sm text-amber-400">🟡 Media</span>
+                    <span className="text-sm sm:text-base font-bold text-white">{escalamientosStats.porPrioridad.media}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs sm:text-sm text-blue-400">🔵 Baja</span>
+                    <span className="text-sm sm:text-base font-bold text-white">{escalamientosStats.porPrioridad.baja}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Motivos principales */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white">Top 3 Motivos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {escalamientosStats.motivosPrincipales.slice(0, 3).map((item, index) => (
+                    <div key={item.motivo} className="flex items-center justify-between">
+                      <span className="text-xs sm:text-sm text-slate-300 truncate flex-1 mr-2">
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'} {item.motivo}
+                      </span>
+                      <span className="text-sm font-bold text-white">{item.count}</span>
+                    </div>
+                  ))}
+                  {escalamientosStats.motivosPrincipales.length === 0 && (
+                    <p className="text-xs text-slate-400">Sin escalamientos recientes</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        )}
+
+        {/* Análisis de Sentimiento */}
+        {(seccionActiva === 'resumen' || seccionActiva === 'mensajeria') && (
+        <section className={styles.spacing.section}>
+          <h2 className={`${styles.text.sectionTitle} mb-4 sm:mb-6 flex items-center gap-3`}>
+            <Smile className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-400" />
+            <span>Análisis de Satisfacción</span>
+          </h2>
+
+          <div className={styles.grid.stats}>
+            {/* Sentimiento positivo */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <Smile className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                  <span>Positivos</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Conversaciones satisfactorias</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-emerald-400">
+                  {sentimientoStats.positivos}
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {sentimientoStats.positivos + sentimientoStats.neutrales + sentimientoStats.negativos > 0
+                    ? Math.round((sentimientoStats.positivos / (sentimientoStats.positivos + sentimientoStats.neutrales + sentimientoStats.negativos)) * 100)
+                    : 0}% del total
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Sentimiento neutral */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <Meh className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400" />
+                  <span>Neutrales</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Sin sentimiento marcado</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-slate-400">
+                  {sentimientoStats.neutrales}
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  Mayoría informativas
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Sentimiento negativo */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <Frown className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+                  <span>Negativos</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Requieren atención</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl sm:text-4xl font-bold text-red-400">
+                  {sentimientoStats.negativos}
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {sentimientoStats.positivos + sentimientoStats.neutrales + sentimientoStats.negativos > 0
+                    ? Math.round((sentimientoStats.negativos / (sentimientoStats.positivos + sentimientoStats.neutrales + sentimientoStats.negativos)) * 100)
+                    : 0}% del total
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tiempo promedio respuesta */}
+            <Card className="bg-slate-800/30 border-slate-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base text-white flex items-center gap-2">
+                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
+                  <span>Tiempo Respuesta</span>
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-400">Promedio del bot (segundos)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-3xl sm:text-4xl font-bold ${sentimientoStats.tiempoPromedioRespuesta <= 3 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {sentimientoStats.tiempoPromedioRespuesta}s
+                </div>
+                <div className="mt-2 text-xs sm:text-sm text-slate-400">
+                  {sentimientoStats.tiempoPromedioRespuesta <= 3 ? '⚡ Muy rápido' : '⚠ Optimizable'}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Intenciones comunes */}
+          {sentimientoStats.intencionesComunes.length > 0 && (
+          <Card className="bg-slate-800/30 border-slate-700 mt-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm sm:text-base text-white">Intenciones Más Frecuentes</CardTitle>
+              <CardDescription className="text-xs sm:text-sm text-slate-400">Qué preguntan los pacientes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {sentimientoStats.intencionesComunes.slice(0, 5).map((item, index) => (
+                  <div key={item.intencion} className="flex items-center justify-between p-2 rounded bg-slate-900/50">
+                    <span className="text-xs sm:text-sm text-slate-300 truncate flex-1 mr-2">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '📌'} {item.intencion}
+                    </span>
+                    <span className="text-sm font-bold text-white">{item.count}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          )}
+        </section>
+        )}
 
         {/* Sección: Confirmaciones */}
         {(seccionActiva === 'resumen' || seccionActiva === 'operativo') && (
