@@ -9,7 +9,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid, Activity, Clock } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
 
@@ -30,11 +30,15 @@ export const HeaderBar = React.memo(function HeaderBar({
 }: HeaderBarProps) {
   const weekRange = formatWeekRangeMX(currentWeekStart);
   const [showViewMenu, setShowViewMenu] = useState(false);
+  const [showHourMenu, setShowHourMenu] = useState(false);
   const viewMenuRef = useRef<HTMLDivElement>(null);
+  const hourMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     viewMode,
     setViewMode,
+    hourRange,
+    setHourRange,
     searchQuery,
     setSearchQuery,
     showFilters,
@@ -45,11 +49,14 @@ export const HeaderBar = React.memo(function HeaderBar({
     selectedPrioridades,
   } = useAgendaState();
 
-  // Cerrar menú al hacer clic fuera
+  // Cerrar menús al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (viewMenuRef.current && !viewMenuRef.current.contains(event.target as Node)) {
         setShowViewMenu(false);
+      }
+      if (hourMenuRef.current && !hourMenuRef.current.contains(event.target as Node)) {
+        setShowHourMenu(false);
       }
     };
 
@@ -57,10 +64,21 @@ export const HeaderBar = React.memo(function HeaderBar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const goToThisWeek = () => {
+  const goToToday = () => {
     const today = new Date();
     const thisWeek = startOfWeek(today);
     onWeekChange(thisWeek);
+    
+    // Auto-scroll en TimeGrid si existe
+    setTimeout(() => {
+      const timeGrid = document.querySelector('[data-time-grid]');
+      if (timeGrid) {
+        const currentTimeLine = timeGrid.querySelector('[data-current-time]');
+        if (currentTimeLine) {
+          currentTimeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }, 200);
   };
 
   const goToPreviousWeek = () => {
@@ -76,10 +94,18 @@ export const HeaderBar = React.memo(function HeaderBar({
     { value: 'day', label: 'Día', icon: Grid },
     { value: 'month', label: 'Mes', icon: Calendar },
     { value: 'list', label: 'Lista', icon: List },
+    { value: 'heatmap', label: 'Heatmap', icon: Activity },
+  ] as const;
+  
+  const hourRangeOptions = [
+    { value: 'business', label: '7 AM - 9 PM', description: 'Horario laboral' },
+    { value: 'extended', label: '6 AM - 10 PM', description: 'Horario extendido' },
+    { value: 'full', label: '24 horas', description: 'Día completo' },
   ] as const;
 
   const currentView = viewOptions.find((v) => v.value === viewMode) || viewOptions[0];
   const ViewIcon = currentView.icon;
+  const currentHourRange = hourRangeOptions.find((h) => h.value === hourRange) || hourRangeOptions[0];
 
   const activeFiltersCount =
     (selectedSede !== 'ALL' ? 1 : 0) +
@@ -101,8 +127,9 @@ export const HeaderBar = React.memo(function HeaderBar({
             <span className="hidden md:inline">Volver</span>
           </Link>
           <button
-            onClick={goToThisWeek}
-            className="px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+            onClick={goToToday}
+            className="px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold border-2 border-emerald-500/40 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-500/60 transition-all text-emerald-400 hover:scale-105 active:scale-95"
+            title="Ir al día de hoy"
           >
             Hoy
           </button>
@@ -170,6 +197,57 @@ export const HeaderBar = React.memo(function HeaderBar({
             )}
           </button>
 
+          {/* Selector de rango de horas - Solo visible en vistas week/day */}
+          {(viewMode === 'week' || viewMode === 'day') && (
+            <div className="relative" ref={hourMenuRef}>
+              <button
+                onClick={() => setShowHourMenu(!showHourMenu)}
+                className="flex items-center gap-1 md:gap-2 px-2 py-2 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+                title={currentHourRange.description}
+              >
+                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                <span className="hidden lg:inline text-xs">{currentHourRange.label}</span>
+                <ChevronDown className="h-3 w-3 md:h-3.5 md:w-3.5" />
+              </button>
+
+              {/* Dropdown de rango de horas */}
+              {showHourMenu && (
+                <div className="absolute right-0 mt-2 w-48 rounded-lg bg-slate-800 border border-slate-700 shadow-2xl z-[100] overflow-hidden">
+                  {hourRangeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setHourRange(option.value);
+                        setShowHourMenu(false);
+                      }}
+                      className={`w-full flex flex-col gap-0.5 px-4 py-2.5 text-left transition-colors ${
+                        hourRange === option.value
+                          ? 'bg-blue-500/10 text-blue-400'
+                          : 'text-slate-300 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <span className="text-sm font-medium">{option.label}</span>
+                      <span className="text-xs text-slate-400">{option.description}</span>
+                      {hourRange === option.value && (
+                        <svg
+                          className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
           {/* Selector de vista - más compacto */}
           <div className="relative" ref={viewMenuRef}>
             <button
@@ -183,7 +261,7 @@ export const HeaderBar = React.memo(function HeaderBar({
 
             {/* Dropdown de vistas */}
             {showViewMenu && (
-              <div className="absolute right-0 mt-2 w-48 rounded-lg bg-slate-800 border border-slate-700 shadow-2xl z-50 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-48 rounded-lg bg-slate-800 border border-slate-700 shadow-2xl z-[100] overflow-hidden">
                 {viewOptions.map((option) => {
                   const Icon = option.icon;
                   return (
@@ -192,6 +270,8 @@ export const HeaderBar = React.memo(function HeaderBar({
                       onClick={() => {
                         setViewMode(option.value);
                         setShowViewMenu(false);
+                        // Al cambiar de vista, volver a enfocar hoy
+                        setTimeout(() => goToToday(), 100);
                       }}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                         viewMode === option.value

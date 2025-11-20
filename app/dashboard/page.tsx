@@ -147,7 +147,7 @@ export default function DashboardPage() {
           <button
             onClick={handleRefresh}
             disabled={loadingMetrics || loadingLeads || loadingConsultas}
-            className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600/20 to-blue-500/20 px-4 py-3 sm:px-5 sm:py-2.5 text-sm font-medium text-blue-200 backdrop-blur-sm border border-blue-500/20 hover:from-blue-600/30 hover:to-blue-500/30 hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 min-h-[44px] sm:min-h-0"
+            className="group flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600/20 to-blue-500/20 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-medium text-blue-200 backdrop-blur-sm border border-blue-500/20 hover:from-blue-600/30 hover:to-blue-500/30 hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 min-h-[36px] sm:min-h-0"
           >
             <span className="transition-transform group-hover:rotate-180 duration-500">
               {(loadingMetrics || loadingLeads || loadingConsultas) ? '⟳' : '↻'}
@@ -156,9 +156,9 @@ export default function DashboardPage() {
           </button>
         }
       >
-        <div className="flex flex-col gap-6 sm:gap-6 lg:gap-8 min-h-0">
+        <div className="flex flex-col gap-3 sm:gap-3 lg:gap-3 min-h-0 flex-1">
           {/* Métricas principales */}
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5 lg:gap-6">
+          <section className="grid gap-3 grid-cols-1 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-5 lg:gap-3 shrink-0">
             {metrics.map((metric) => (
               <MetricCard
                 key={metric.title}
@@ -173,7 +173,7 @@ export default function DashboardPage() {
 
           {/* Tabs sección secundaria */}
           <div
-            className="inline-flex w-full flex-wrap items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1 text-xs sm:text-sm"
+            className="inline-flex w-full items-center gap-1 rounded-lg border border-white/10 bg-white/[0.03] p-1 text-xs shrink-0"
             role="tablist"
             aria-label="Secciones del dashboard"
           >
@@ -182,7 +182,7 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('actividad')}
               role="tab"
               aria-selected={activeTab === 'actividad'}
-              className={`flex-1 min-w-[120px] rounded-lg px-3 py-1.5 text-center font-medium transition-all duration-200 ${
+              className={`flex-1 rounded-md px-3 py-1.5 text-center font-medium transition-all duration-200 ${
                 activeTab === 'actividad'
                   ? 'bg-white/15 text-white shadow-sm shadow-blue-500/30'
                   : 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -195,7 +195,7 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('graficas')}
               role="tab"
               aria-selected={activeTab === 'graficas'}
-              className={`flex-1 min-w-[120px] rounded-lg px-3 py-1.5 text-center font-medium transition-all duration-200 ${
+              className={`flex-1 rounded-md px-3 py-1.5 text-center font-medium transition-all duration-200 ${
                 activeTab === 'graficas'
                   ? 'bg-white/15 text-white shadow-sm shadow-blue-500/30'
                   : 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -206,33 +206,33 @@ export default function DashboardPage() {
           </div>
 
           {activeTab === 'actividad' ? (
-            <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
+            <section className="grid gap-3 lg:gap-3 lg:grid-cols-2 min-h-0 flex-1">
               {/* Leads recientes */}
               <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-5 pt-6 px-6 relative">
+                <CardHeader className="pb-3 pt-4 px-5 relative shrink-0">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-1.5">
-                      <CardTitle className="text-xl font-semibold text-white tracking-tight">
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg font-semibold text-white tracking-tight">
                         Leads Recientes {loadingLeads && <span className="text-sm text-blue-400">↻</span>}
                       </CardTitle>
-                      <CardDescription className="text-sm text-slate-400">Últimos contactos ingresados</CardDescription>
+                      <CardDescription className="text-xs text-slate-400">Últimos contactos ingresados</CardDescription>
                     </div>
                     <Badge label={`${leads.length} totales`} variant="outline" />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3 px-6 pb-6 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-3">
+                <CardContent className="space-y-2 px-5 pb-4 relative flex-1 min-h-0 overflow-y-auto">
                   {recentLeads.length === 0 ? (
-                    <p className="text-center text-sm text-slate-400 py-12">No hay leads registrados</p>
+                    <p className="text-center text-xs text-slate-400 py-4">No hay leads registrados</p>
                   ) : (
                     recentLeads.map((lead, idx) => (
                       <div
                         key={lead.id}
-                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
+                        className="group/item flex items-center justify-between rounded-lg border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-3 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <div className="flex-1 space-y-1.5">
-                          <p className="font-semibold text-base text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{lead.nombre}</p>
+                        <div className="flex-1 space-y-0.5">
+                          <p className="font-semibold text-sm text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{lead.nombre}</p>
                           <p className="text-xs text-slate-400 font-mono">
                             {formatDate(lead.primerContacto)} <span className="text-slate-500">·</span> {lead.fuente}
                           </p>
@@ -247,29 +247,29 @@ export default function DashboardPage() {
               {/* Consultas próximas */}
               <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-5 pt-6 px-6 relative">
+                <CardHeader className="pb-3 pt-4 px-5 relative shrink-0">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-1.5">
-                      <CardTitle className="text-xl font-semibold text-white tracking-tight">
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg font-semibold text-white tracking-tight">
                         Consultas Próximas {loadingConsultas && <span className="text-sm text-blue-400">↻</span>}
                       </CardTitle>
-                      <CardDescription className="text-sm text-slate-400">Agenda de ambas sedes</CardDescription>
+                      <CardDescription className="text-xs text-slate-400">Agenda de ambas sedes</CardDescription>
                     </div>
                     <Badge label={`${upcomingConsultas.length} próximas`} variant="outline" />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3 px-6 pb-6 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-3">
+                <CardContent className="space-y-2 px-5 pb-4 relative flex-1 min-h-0 overflow-y-auto">
                   {upcomingConsultas.length === 0 ? (
-                    <p className="text-center text-sm text-slate-400 py-12">No hay consultas programadas</p>
+                    <p className="text-center text-xs text-slate-400 py-4">No hay consultas programadas</p>
                   ) : (
                     upcomingConsultas.map((consulta, idx) => (
                       <div
                         key={consulta.id}
-                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
+                        className="group/item flex items-center justify-between rounded-lg border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-3 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <div className="flex-1 space-y-1.5">
-                          <p className="font-semibold text-base text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{consulta.paciente}</p>
+                        <div className="flex-1 space-y-0.5">
+                          <p className="font-semibold text-sm text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{consulta.paciente}</p>
                           <p className="text-xs text-slate-400 font-mono">
                             {formatDate(consulta.fecha)} <span className="text-slate-500">·</span> {consulta.sede}
                           </p>
@@ -282,19 +282,19 @@ export default function DashboardPage() {
               </Card>
             </section>
           ) : (
-            <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
+            <section className="grid gap-3 lg:gap-3 lg:grid-cols-2 min-h-0 flex-1">
               {/* Gráfico de leads por estado */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
+              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-4 pt-6 px-6 relative">
+                <CardHeader className="pb-3 pt-4 px-5 relative shrink-0">
                   <div className="flex items-start justify-between">
-                    <div className="space-y-1.5">
-                      <CardTitle className="text-xl font-semibold text-white tracking-tight">Leads por Estado</CardTitle>
-                      <CardDescription className="text-sm text-slate-400">Distribución del funnel de conversión</CardDescription>
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg font-semibold text-white tracking-tight">Leads por Estado</CardTitle>
+                      <CardDescription className="text-xs text-slate-400">Distribución del funnel de conversión</CardDescription>
                     </div>
                     {/* Métricas rápidas */}
                     {leadsStats.total > 0 && (
-                      <div className="text-right space-y-1">
+                      <div className="text-right space-y-0.5">
                         <div className="text-xs text-slate-400">Tasa conversión</div>
                         <div className={`text-lg font-bold ${
                           leadsStats.tasaConversion >= 30
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 px-6 pb-6">
+                <CardContent className="space-y-3 px-5 pb-4 flex-1 flex flex-col">
                   {leadsChartData.every((d) => d.value === 0) ? (
                     <EmptyState
                       title="Sin datos"
@@ -317,12 +317,12 @@ export default function DashboardPage() {
                     />
                   ) : (
                     <>
-                      <BarChart data={leadsChartData} height={260} />
-                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+                      <BarChart data={leadsChartData} height={180} />
+                      <div className="grid grid-cols-2 gap-1.5 text-[10px] text-slate-300">
                         {leadsChartData.map((item) => (
-                          <div key={item.label} className="flex items-center gap-2">
+                          <div key={item.label} className="flex items-center gap-1.5">
                             <span
-                              className="h-2 w-2 rounded-full"
+                              className="h-1.5 w-1.5 rounded-full"
                               style={{ backgroundColor: item.color }}
                               aria-hidden
                             />
@@ -332,17 +332,17 @@ export default function DashboardPage() {
                       </div>
                       {/* Resumen de métricas */}
                       <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10">
-                        <div className="text-center p-2 rounded-lg bg-white/5">
-                          <div className="text-xs text-slate-400">Total</div>
-                          <div className="text-lg font-bold text-white">{leadsStats.total}</div>
+                        <div className="text-center p-1.5 rounded-lg bg-white/5">
+                          <div className="text-[10px] text-slate-400">Total</div>
+                          <div className="text-base font-bold text-white">{leadsStats.total}</div>
                         </div>
-                        <div className="text-center p-2 rounded-lg bg-emerald-500/10">
-                          <div className="text-xs text-emerald-400">Convertidos</div>
-                          <div className="text-lg font-bold text-emerald-300">{leadsStats.convertidos}</div>
+                        <div className="text-center p-1.5 rounded-lg bg-emerald-500/10">
+                          <div className="text-[10px] text-emerald-400">Convertidos</div>
+                          <div className="text-base font-bold text-emerald-300">{leadsStats.convertidos}</div>
                         </div>
-                        <div className="text-center p-2 rounded-lg bg-blue-500/10">
-                          <div className="text-xs text-blue-400">En Proceso</div>
-                          <div className="text-lg font-bold text-blue-300">{leadsStats.enProceso}</div>
+                        <div className="text-center p-1.5 rounded-lg bg-blue-500/10">
+                          <div className="text-[10px] text-blue-400">En Proceso</div>
+                          <div className="text-base font-bold text-blue-300">{leadsStats.enProceso}</div>
                         </div>
                       </div>
                     </>
@@ -351,15 +351,15 @@ export default function DashboardPage() {
               </Card>
 
               {/* Gráfico de consultas por sede */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
+              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-5 pt-6 px-6 relative">
-                  <div className="space-y-1.5">
-                    <CardTitle className="text-xl font-semibold text-white tracking-tight">Consultas por Sede</CardTitle>
-                    <CardDescription className="text-sm text-slate-400">Próximas 4 semanas</CardDescription>
+                <CardHeader className="pb-3 pt-4 px-5 relative shrink-0">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg font-semibold text-white tracking-tight">Consultas por Sede</CardTitle>
+                    <CardDescription className="text-xs text-slate-400">Próximas 4 semanas</CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="flex justify-center py-6 px-6">
+                <CardContent className="flex justify-center items-center py-4 px-5 flex-1">
                   {sedesChartData.every((d) => d.value === 0) ? (
                     <EmptyState
                       title="Sin consultas"
@@ -368,8 +368,8 @@ export default function DashboardPage() {
                   ) : (
                     <DonutChart
                       data={sedesChartData}
-                      size={240}
-                      thickness={40}
+                      size={180}
+                      thickness={32}
                       centerText={dm ? (dm.polancoFuturas + dm.sateliteFuturas).toString() : '0'}
                       centerSubtext="Total"
                     />

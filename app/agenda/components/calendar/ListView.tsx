@@ -7,7 +7,8 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
+import { Temporal } from '@js-temporal/polyfill';
 import { formatTimeRange, getStatusConfig } from '../../lib/agenda-utils';
 import type { Appointment } from '@/types/agenda';
 
@@ -22,6 +23,9 @@ export const ListView: React.FC<ListViewProps> = ({
   onAppointmentClick,
   dateRange,
 }) => {
+  const todayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   // Agrupar citas por fecha
   const groupedAppointments = useMemo(() => {
     const groups: { [key: string]: Appointment[] } = {};
@@ -45,6 +49,21 @@ export const ListView: React.FC<ListViewProps> = ({
   }, [appointments]);
 
   const sortedDates = Object.keys(groupedAppointments).sort();
+  
+  // Obtener fecha de hoy en formato string
+  const todayStr = Temporal.Now.plainDateISO('America/Mexico_City').toString();
+  const hasTodayAppointments = sortedDates.includes(todayStr);
+  
+  // Auto-scroll al día de hoy
+  useEffect(() => {
+    if (hasTodayAppointments && todayRef.current && containerRef.current) {
+      const timer = setTimeout(() => {
+        todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [hasTodayAppointments, sortedDates.join(',')]);
 
   if (appointments.length === 0) {
     return (
@@ -72,7 +91,7 @@ export const ListView: React.FC<ListViewProps> = ({
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6 space-y-6">
+    <div ref={containerRef} className="h-full overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scroll-smooth">
       {sortedDates.map((dateStr) => {
         const appointments = groupedAppointments[dateStr];
         const firstApt = appointments[0];
@@ -99,10 +118,17 @@ export const ListView: React.FC<ListViewProps> = ({
           monthNames[date.month - 1]
         } de ${date.year}`;
 
+        // Verificar si es hoy
+        const isToday = dateStr === todayStr;
+        
         return (
-          <div key={dateStr}>
+          <div 
+            key={dateStr} 
+            ref={isToday ? todayRef : null}
+            className={isToday ? 'scroll-mt-4' : ''}
+          >
             {/* Header de fecha */}
-            <div className="flex items-center gap-3 mb-3">
+            <div className={`flex items-center gap-3 mb-3 ${isToday ? 'bg-gradient-to-r from-emerald-500/10 to-transparent -mx-4 px-4 py-2 rounded-lg' : ''}`}>
               <h3 className="text-sm font-semibold text-slate-300">{dateLabel}</h3>
               <div className="flex-1 h-px bg-slate-800" />
               <span className="text-xs text-slate-500">{appointments.length} consultas</span>

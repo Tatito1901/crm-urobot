@@ -149,3 +149,61 @@ export function generateTimeSlots(startHour: number, endHour: number): string[] 
 
   return slots;
 }
+
+/**
+ * Genera slots de tiempo cada 30 minutos estilo Google Calendar
+ */
+export function generateTimeSlotsDetailed(startHour: number, endHour: number): Array<{
+  time: string;
+  hour: number;
+  minute: number;
+  isHourStart: boolean;
+}> {
+  const slots: Array<{
+    time: string;
+    hour: number;
+    minute: number;
+    isHourStart: boolean;
+  }> = [];
+
+  for (let hour = startHour; hour < endHour; hour++) {
+    // Slot a las :00 (inicio de hora)
+    const hourStr = String(hour).padStart(2, '0');
+    slots.push({
+      time: `${hourStr}:00`,
+      hour,
+      minute: 0,
+      isHourStart: true,
+    });
+    
+    // Slot a las :30
+    slots.push({
+      time: `${hourStr}:30`,
+      hour,
+      minute: 30,
+      isHourStart: false,
+    });
+  }
+
+  return slots;
+}
+
+/**
+ * Formatea hora en formato 12h (AM/PM) estilo Google Calendar
+ */
+export function formatHour12(hour: number): string {
+  if (hour === 0) return '12 AM';
+  if (hour === 12) return '12 PM';
+  if (hour < 12) return `${hour} AM`;
+  return `${hour - 12} PM`;
+}
+
+/**
+ * Formatea hora en formato compacto para grid
+ */
+export function formatHourCompact(hour: number): string {
+  if (hour === 0) return '12a';
+  if (hour === 12) return '12p';
+  if (hour < 12) return `${hour}a`;
+  return `${hour - 12}p`;
+}

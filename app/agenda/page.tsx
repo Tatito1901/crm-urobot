@@ -30,6 +30,7 @@ import {
 
 // Lazy load de componentes pesados (reduce bundle inicial)
 const ListView = lazy(() => import('./components/calendar/ListView').then(m => ({ default: m.ListView })));
+const HeatmapView = lazy(() => import('./components/calendar/HeatmapView').then(m => ({ default: m.HeatmapView })));
 const FiltersPanel = lazy(() => import('./components/calendar/FiltersPanel').then(m => ({ default: m.FiltersPanel })));
 const MiniMonth = lazy(() => import('./components/calendar/MiniMonth').then(m => ({ default: m.MiniMonth })));
 const CreateAppointmentModal = lazy(() => import('./components/modals/CreateAppointmentModal').then(m => ({ default: m.CreateAppointmentModal })));
@@ -105,16 +106,18 @@ function consultaToAppointment(consulta: Consulta): Appointment {
 }
 
 export default function AgendaPage() {
-  // Estado: fecha seleccionada (default: hoy)
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  // Estado: fecha seleccionada (SIEMPRE iniciar en HOY)
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
 
-  // Estado: inicio de la semana actual
+  // Estado: inicio de la semana actual (SIEMPRE iniciar en semana de HOY)
   const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date()));
   const [monthViewCurrent, setMonthViewCurrent] = useState(() => new Date());
 
   // Estado global de agenda
   const {
     viewMode,
+    hourRange,
+    getHourBounds,
     searchQuery,
     selectedSede,
     selectedEstados,
@@ -132,6 +135,9 @@ export default function AgendaPage() {
     closeEditModal,
     openEditModal,
   } = useAgendaState();
+  
+  // Obtener rango de horas dinámico
+  const { startHour, endHour } = getHourBounds();
 
   // Cargar consultas
   const { consultas, refetch } = useConsultas();
@@ -139,16 +145,30 @@ export default function AgendaPage() {
   // Convertir consultas a appointments (memoizado para evitar recálculos)
   const appointments = useMemo(() => consultas.map(consultaToAppointment), [consultas]);
 
-  // Cuando se selecciona una fecha en el mini-calendario, ir a esa semana
+  // Cuando se selecciona una fecha en el mini-calendario, ir a esa semana y cambiar modo si es necesario
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
     setCurrentWeekStart(startOfWeek(date));
+    
+    // Si cambia de semana, asegurar vista semanal
+    const state = useAgendaState.getState();
+    if (state.viewMode === 'list' || state.viewMode === 'month') {
+      state.setViewMode('week');
+    }
   }, []);
 
   const handleMonthChange = useCallback((date: Date) => {
     setMonthViewCurrent(date);
     setSelectedDate(date);
     setCurrentWeekStart(startOfWeek(date));
+    
+    // Scroll suave al cambiar de mes
+    setTimeout(() => {
+      const monthView = document.querySelector('[data-month-view]');
+      if (monthView) {
+        monthView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }, []);
 
   // Filtrar consultas según filtros activos
@@ -362,7 +382,11 @@ export default function AgendaPage() {
 
           {/* Área del calendario o lista */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {viewMode === 'list' ? (
+            {viewMode === 'heatmap' ? (
+              <Suspense fallback={<ModalLoader />}>
+                <HeatmapView monthsToShow={6} />
+              </Suspense>
+            ) : viewMode === 'list' ? (
               <Suspense fallback={<ModalLoader />}>
                 <ListView
                   appointments={filteredAppointments}
@@ -393,12 +417,12 @@ export default function AgendaPage() {
                 {/* Header de días (sticky) */}
                 <DaysHeader weekStart={calendarBaseDate} mode={timeGridMode} />
 
-                {/* Grid de tiempo (scrollable) con citas */}
+                {/* Grid de tiempo (scrollable) con citas - Horario dinámico */}
                 <TimeGrid 
                   weekStart={calendarBaseDate} 
                   appointments={filteredAppointments}
-                  startHour={0} 
-                  endHour={24}
+                  startHour={startHour} 
+                  endHour={endHour}
                   mode={timeGridMode}
                   onAppointmentClick={(apt) => {
                     const state = useAgendaState.getState();

@@ -12,8 +12,13 @@ import type { Appointment, TimeSlot } from '@/types/agenda';
 
 interface AgendaState {
   // ========== VISTA ==========
-  viewMode: 'week' | 'day' | 'month' | 'list';
-  setViewMode: (mode: 'week' | 'day' | 'month' | 'list') => void;
+  viewMode: 'week' | 'day' | 'month' | 'list' | 'heatmap';
+  setViewMode: (mode: 'week' | 'day' | 'month' | 'list' | 'heatmap') => void;
+  
+  // ========== CONFIGURACIÓN DE HORARIO ==========
+  hourRange: 'business' | 'extended' | 'full'; // business: 7-21, extended: 6-22, full: 0-24
+  setHourRange: (range: 'business' | 'extended' | 'full') => void;
+  getHourBounds: () => { startHour: number; endHour: number };
 
   // ========== FECHA Y RANGO ==========
   selectedDate: Temporal.PlainDate;
@@ -74,6 +79,7 @@ interface AgendaState {
 export const useAgendaState = create<AgendaState>((set, get) => ({
   // ========== ESTADO INICIAL ==========
   viewMode: 'week',
+  hourRange: 'business', // Horario laboral por defecto
   selectedDate: Temporal.Now.plainDateISO('America/Mexico_City'),
   dateRange: getWeekRange(Temporal.Now.plainDateISO('America/Mexico_City')),
   selectedSede: 'ALL',
@@ -102,6 +108,23 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
         ? getDayRange(selectedDate)
         : getMonthRange(selectedDate);
     set({ dateRange: newRange });
+  },
+  
+  // ========== ACCIONES DE HORARIO ==========
+  setHourRange: (range) => set({ hourRange: range }),
+  
+  getHourBounds: () => {
+    const { hourRange } = get();
+    switch (hourRange) {
+      case 'business':
+        return { startHour: 7, endHour: 21 }; // 7 AM - 9 PM
+      case 'extended':
+        return { startHour: 6, endHour: 22 }; // 6 AM - 10 PM
+      case 'full':
+        return { startHour: 0, endHour: 24 }; // Día completo
+      default:
+        return { startHour: 7, endHour: 21 };
+    }
   },
 
   // ========== ACCIONES DE FECHA ==========
