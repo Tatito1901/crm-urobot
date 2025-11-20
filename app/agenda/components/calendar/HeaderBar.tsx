@@ -9,9 +9,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid, Activity, Settings, Menu } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
+import { ViewDensityToggle } from './ViewDensityToggle';
+import { ColorPicker } from '../customization/ColorPicker';
+import { ThemeToggle } from '../shared/ThemeToggle';
 
 interface HeaderBarProps {
   currentWeekStart: Date;
@@ -19,6 +22,8 @@ interface HeaderBarProps {
   totalAppointments?: number;
   pendingConfirmation?: number;
   todayAppointments?: number;
+  onToggleSidebar?: () => void;
+  sidebarCollapsed?: boolean;
 }
 
 export const HeaderBar = React.memo(function HeaderBar({
@@ -27,10 +32,14 @@ export const HeaderBar = React.memo(function HeaderBar({
   totalAppointments = 0,
   pendingConfirmation = 0,
   todayAppointments = 0,
+  onToggleSidebar,
+  sidebarCollapsed = false,
 }: HeaderBarProps) {
   const weekRange = formatWeekRangeMX(currentWeekStart);
   const [showViewMenu, setShowViewMenu] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const viewMenuRef = useRef<HTMLDivElement>(null);
+  const settingsMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     viewMode,
@@ -45,11 +54,14 @@ export const HeaderBar = React.memo(function HeaderBar({
     selectedPrioridades,
   } = useAgendaState();
 
-  // Cerrar menú al hacer clic fuera
+  // Cerrar menús al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (viewMenuRef.current && !viewMenuRef.current.contains(event.target as Node)) {
         setShowViewMenu(false);
+      }
+      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target as Node)) {
+        setShowSettingsMenu(false);
       }
     };
 
@@ -76,6 +88,7 @@ export const HeaderBar = React.memo(function HeaderBar({
     { value: 'day', label: 'Día', icon: Grid },
     { value: 'month', label: 'Mes', icon: Calendar },
     { value: 'list', label: 'Lista', icon: List },
+    { value: 'heatmap', label: 'Mapa Ocupación', icon: Activity },
   ] as const;
 
   const currentView = viewOptions.find((v) => v.value === viewMode) || viewOptions[0];
@@ -90,9 +103,20 @@ export const HeaderBar = React.memo(function HeaderBar({
   return (
     <header className="border-b border-slate-800/60 bg-slate-900/40">
       {/* Barra principal - mejorada para mobile */}
-      <div className="min-h-[70px] md:h-[80px] px-3 md:px-6 flex items-center justify-between gap-2 py-2 md:py-0">
-        {/* Controles de navegación izquierda */}
-        <div className="flex items-center gap-2 md:gap-4">
+      <div className="px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 md:gap-4 border-b border-slate-800/40">
+        {/* Navegación izquierda */}
+        <div className="flex items-center gap-1.5 md:gap-3">
+          {/* Toggle sidebar - estilo Google Calendar */}
+          {onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              className="hidden lg:inline-flex items-center justify-center p-2 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-300"
+              title={sidebarCollapsed ? 'Mostrar sidebar' : 'Ocultar sidebar'}
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/70 px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-slate-100 hover:bg-slate-800/80 hover:border-slate-500 transition-colors"
@@ -130,22 +154,22 @@ export const HeaderBar = React.memo(function HeaderBar({
 
         {/* Acciones derecha */}
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Buscador global - más compacto en móvil */}
-          <div className="relative flex-1 max-w-[120px] sm:max-w-[200px] md:max-w-xs">
-            <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 h-3 w-3 md:h-4 md:w-4 text-slate-400" />
+          {/* Buscador global - PRIORIDAD */}
+          <div className="relative flex-1 max-w-[140px] sm:max-w-[220px] md:max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar..."
-              className="w-full pl-7 md:pl-10 pr-7 md:pr-10 py-1.5 md:py-2 text-xs md:text-sm border border-slate-700 rounded-lg bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-9 pr-9 py-2 text-sm border border-slate-700 rounded-lg bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
               >
-                <svg className="h-3 w-3 md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -217,6 +241,45 @@ export const HeaderBar = React.memo(function HeaderBar({
                     </button>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          {/* Menú de configuración - NUEVO */}
+          <div className="relative" ref={settingsMenuRef}>
+            <button
+              onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+              className="flex items-center justify-center p-2 border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+              title="Configuración"
+              aria-label="Configuración"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+
+            {/* Dropdown de configuración */}
+            {showSettingsMenu && (
+              <div className="absolute right-0 mt-2 w-64 rounded-lg bg-slate-800 border border-slate-700 shadow-2xl z-50 p-3 space-y-3">
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Configuración
+                </div>
+                
+                {/* Tema */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-300">Tema</span>
+                  <ThemeToggle />
+                </div>
+
+                {/* Densidad de vista */}
+                <div className="pt-2 border-t border-slate-700">
+                  <span className="text-sm text-slate-300 block mb-2">Densidad</span>
+                  <ViewDensityToggle />
+                </div>
+
+                {/* Colores de sedes */}
+                <div className="pt-2 border-t border-slate-700">
+                  <span className="text-sm text-slate-300 block mb-2">Colores</span>
+                  <ColorPicker />
+                </div>
               </div>
             )}
           </div>

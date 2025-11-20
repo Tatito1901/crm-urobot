@@ -7,10 +7,11 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
-import { addDays, generateTimeSlots } from '@/lib/date-utils';
+import React, { useMemo, useEffect, useRef } from 'react';
+import { addDays, generateTimeSlots, isToday } from '@/lib/date-utils';
 import { AppointmentCard } from '../shared/AppointmentCard';
 import { positionAppointmentsForDay, getDayOfWeek } from '../../lib/appointment-positioning';
+import { useAgendaState } from '../../hooks/useAgendaState';
 import type { Appointment } from '@/types/agenda';
 
 interface TimeGridProps {
@@ -22,6 +23,13 @@ interface TimeGridProps {
   onAppointmentClick?: (appointment: Appointment) => void;
 }
 
+// Altura de slot por hora según densidad - OPTIMIZADO para vista sin scroll
+const DENSITY_HEIGHTS = {
+  compact: 32,      // Reducido de 40 → 32 (20% más compacto)
+  comfortable: 50,  // Reducido de 60 → 50
+  spacious: 70,     // Reducido de 80 → 70
+} as const;
+
 export const TimeGrid = React.memo(function TimeGrid({ 
   weekStart, 
   appointments = [],
@@ -30,6 +38,19 @@ export const TimeGrid = React.memo(function TimeGrid({
   mode = 'week',
   onAppointmentClick,
 }: TimeGridProps) {
+  const { viewDensity } = useAgendaState();
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [currentTime, setCurrentTime] = React.useState(new Date());
+  
+  // Actualizar hora actual cada minuto
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Actualizar cada minuto
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   // Memoizar slots para evitar regeneración en cada render
   const timeSlots = useMemo(() => generateTimeSlots(startHour, endHour), [startHour, endHour]);
   const days =
@@ -42,6 +63,9 @@ export const TimeGrid = React.memo(function TimeGrid({
     const day = date.getDay();
     return day >= 1 && day <= 5;
   };
+  
+  // Altura de slot según densidad
+  const slotHeight = DENSITY_HEIGHTS[viewDensity];
 
   // Agrupar y posicionar citas por día (optimizado)
   const appointmentsByDay = useMemo(() => {
@@ -65,22 +89,41 @@ export const TimeGrid = React.memo(function TimeGrid({
     return grouped;
   }, [appointments, weekStart, mode]);
 
-  // Altura de slot por hora (más espacio que antes al dividir por hora completa)
-  const slotHeight = 60;
+  // Auto-scroll al día actual cuando se monta el componente o cambia la densidad
+  useEffect(() => {
+    if (!gridRef.current) return;
+    
+    const todayColumnIndex = days.findIndex(day => isToday(day));
+    if (todayColumnIndex === -1) return;
+    
+    // Calcular hora actual
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Si estamos en horario de trabajo (8am - 6pm), scroll a hora actual
+    if (currentHour >= 8 && currentHour <= 18) {
+      const targetScrollPosition = (currentHour - startHour) * slotHeight - 100;
+      gridRef.current.scrollTop = Math.max(0, targetScrollPosition);
+    } else {
+      // Fuera de horario, scroll al inicio del día laboral (8am)
+      const targetScrollPosition = (8 - startHour) * slotHeight;
+      gridRef.current.scrollTop = Math.max(0, targetScrollPosition);
+    }
+  }, [days, startHour, slotHeight, viewDensity]);
 
   return (
-    <div className="flex-1 overflow-auto bg-slate-900 p-1 md:p-2 scroll-smooth">
+    <div ref={gridRef} className="flex-1 overflow-auto bg-slate-900 p-0.5 scroll-smooth">
       <div
         className={`grid ${
-          mode === 'day' ? 'grid-cols-[50px_1fr] sm:grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[50px_repeat(7,1fr)] sm:grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
-        } min-h-full gap-0.5 md:gap-1 rounded-lg overflow-hidden`}
+          mode === 'day' ? 'grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
+        } min-h-full gap-0.5 rounded-lg overflow-hidden`}
       >
         {/* Columna de horas - optimizada para todos los tamaños */}
         <div className="border-r border-slate-700/70 sticky left-0 bg-slate-900/95 z-10 backdrop-blur-sm">
           {timeSlots.map((time) => (
             <div
               key={time}
-              className="flex items-start justify-end pr-1.5 sm:pr-2 md:pr-3 pt-1.5 text-[10px] sm:text-xs md:text-sm font-medium text-slate-400 border-b border-slate-700/40"
+              className="flex items-start justify-end pr-2 pt-0.5 text-[10px] md:text-xs font-medium text-slate-400 border-b border-slate-700/30"
               style={{ height: `${slotHeight}px` }}
             >
               <span className="tabular-nums">{time}</span>
@@ -99,11 +142,23 @@ export const TimeGrid = React.memo(function TimeGrid({
             slotHeight
           );
 
+          const isTodayDate = isToday(date);
+          
+          // Calcular posición de línea de hora actual
+          const currentHour = currentTime.getHours();
+          const currentMinute = currentTime.getMinutes();
+          const currentTimePosition = ((currentHour - startHour) * slotHeight) + ((currentMinute / 60) * slotHeight);
+          const showCurrentTimeLine = isTodayDate && currentHour >= startHour && currentHour < endHour;
+          
           return (
             <div
               key={dayIndex}
               className={`relative border-r border-slate-700/50 last:border-r-0 rounded-sm transition-colors ${
-                hasWorkingHours ? 'bg-slate-900/30' : 'bg-[#0b0f16]'
+                isTodayDate 
+                  ? 'bg-blue-900/10 border-blue-500/30' 
+                  : hasWorkingHours 
+                  ? 'bg-slate-900/30' 
+                  : 'bg-[#0b0f16]'
               }`}
               role="gridcell"
               aria-label={`${date.toLocaleDateString('es-MX')}`}
@@ -139,6 +194,19 @@ export const TimeGrid = React.memo(function TimeGrid({
                   />
                 </div>
               ))}
+              
+              {/* Línea indicadora de hora actual (solo en día de hoy) */}
+              {showCurrentTimeLine && (
+                <div 
+                  className="absolute left-0 right-0 z-30 pointer-events-none"
+                  style={{ top: `${currentTimePosition}px` }}
+                >
+                  {/* Circulo indicador */}
+                  <div className="absolute -left-1 -top-1.5 w-3 h-3 bg-red-500 rounded-full shadow-lg shadow-red-500/50 animate-pulse" />
+                  {/* Línea */}
+                  <div className="w-full h-0.5 bg-red-500 shadow-lg shadow-red-500/30" />
+                </div>
+              )}
             </div>
           );
         })}

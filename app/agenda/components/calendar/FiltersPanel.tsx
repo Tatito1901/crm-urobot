@@ -66,15 +66,15 @@ export const FiltersPanel: React.FC = () => {
     (onlyPendingConfirmation ? 1 : 0);
 
   return (
-    <div className="bg-slate-900/50 border-b border-slate-800 p-3 md:p-4 space-y-3 md:space-y-4">
-      {/* Header - mejorado */}
+    <div className="bg-slate-900/40 border-b border-slate-800/50 px-4 py-3 space-y-3">
+      {/* Header - más compacto */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 md:h-5 md:w-5 text-blue-400" />
+          <Filter className="h-4 w-4 text-blue-400" />
           <h3 className="text-sm font-semibold text-slate-200">
             Filtros
             {activeFiltersCount > 0 && (
-              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium">
+              <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium">
                 {activeFiltersCount}
               </span>
             )}

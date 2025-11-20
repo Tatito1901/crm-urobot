@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 interface MetricCardProps {
   title: string;
   value: number | string;
@@ -80,7 +82,7 @@ const colorClasses = {
   },
 };
 
-export function MetricCard({
+export const MetricCard = memo(function MetricCard({
   title,
   value,
   percentage,
@@ -145,4 +147,4 @@ export function MetricCard({
       </div>
     </div>
   );
-}
+});

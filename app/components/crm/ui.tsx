@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo } from "react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge as ShadcnBadge } from "@/components/ui/badge";
 
-export function Badge({
+export const Badge = memo(function Badge({
   label,
   tone,
   variant = "default",
@@ -31,9 +31,9 @@ export function Badge({
       {label}
     </ShadcnBadge>
   );
-}
+});
 
-export function StatCard({ title, value, hint }: { title: string; value: string; hint?: string }) {
+export const StatCard = memo(function StatCard({ title, value, hint }: { title: string; value: string; hint?: string }) {
   return (
     <Card className="bg-white/[0.03]">
       <CardHeader className="space-y-3 pb-2">
@@ -49,7 +49,7 @@ export function StatCard({ title, value, hint }: { title: string; value: string;
       )}
     </Card>
   );
-}
+});
 
 type DataTableHeader = { key: string; label: React.ReactNode; align?: "left" | "right" };
 

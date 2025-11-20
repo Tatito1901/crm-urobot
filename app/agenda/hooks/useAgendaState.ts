@@ -12,8 +12,10 @@ import type { Appointment, TimeSlot } from '@/types/agenda';
 
 interface AgendaState {
   // ========== VISTA ==========
-  viewMode: 'week' | 'day' | 'month' | 'list';
-  setViewMode: (mode: 'week' | 'day' | 'month' | 'list') => void;
+  viewMode: 'week' | 'day' | 'month' | 'list' | 'heatmap';
+  setViewMode: (mode: 'week' | 'day' | 'month' | 'list' | 'heatmap') => void;
+  viewDensity: 'compact' | 'comfortable' | 'spacious';
+  setViewDensity: (density: 'compact' | 'comfortable' | 'spacious') => void;
 
   // ========== FECHA Y RANGO ==========
   selectedDate: Temporal.PlainDate;
@@ -74,6 +76,7 @@ interface AgendaState {
 export const useAgendaState = create<AgendaState>((set, get) => ({
   // ========== ESTADO INICIAL ==========
   viewMode: 'week',
+  viewDensity: 'comfortable',
   selectedDate: Temporal.Now.plainDateISO('America/Mexico_City'),
   dateRange: getWeekRange(Temporal.Now.plainDateISO('America/Mexico_City')),
   selectedSede: 'ALL',
@@ -103,6 +106,8 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
         : getMonthRange(selectedDate);
     set({ dateRange: newRange });
   },
+
+  setViewDensity: (density) => set({ viewDensity: density }),
 
   // ========== ACCIONES DE FECHA ==========
   setSelectedDate: (date) => {

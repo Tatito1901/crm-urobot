@@ -10,6 +10,8 @@
 import React, { useState } from 'react';
 import type { Appointment } from '@/types/agenda';
 import { AppointmentTooltip } from './AppointmentTooltip';
+import { ResponsiveText } from './ResponsiveText';
+import { useAppointmentColor } from '../../hooks/useColorPreferences';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -21,6 +23,9 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   onClick,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  
+  // Obtener color personalizado para esta cita
+  const customColor = useAppointmentColor(appointment.sede);
 
   // Formatear hora
   const startTime = appointment.start.toPlainTime().toString().slice(0, 5);
@@ -28,18 +33,6 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   // Determinar nivel de detalle según duración
   const isShortAppointment = appointment.duracionMinutos <= 30;
   const isLongAppointment = appointment.duracionMinutos > 60;
-
-  // Determinar color del borde según sede (estilo Google Calendar)
-  const getSedeColor = () => {
-    switch (appointment.sede) {
-      case 'POLANCO':
-        return 'border-l-blue-500 bg-blue-500/5';
-      case 'SATELITE':
-        return 'border-l-emerald-500 bg-emerald-500/5';
-      default:
-        return 'border-l-slate-500 bg-slate-500/5';
-    }
-  };
 
   // Determinar badge de estado
   const getEstadoBadge = () => {
@@ -64,23 +57,21 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
     <div
       className={`
         relative group h-full
-        bg-slate-900/90
-        backdrop-blur-sm
-        border border-slate-700/60 border-l-[4px]
-        ${getSedeColor()}
-        rounded-md
-        ${isShortAppointment ? 'px-1.5 py-1' : 'px-2.5 py-2'}
+        border-l-[3px] rounded-md
+        ${isShortAppointment ? 'px-2 py-1' : 'px-2.5 py-1.5'}
         cursor-pointer
         transition-all duration-150
-        hover:bg-slate-800/95
-        hover:border-slate-600/80
-        hover:shadow-lg hover:shadow-black/60
-        hover:scale-[1.01]
+        hover:shadow-md hover:shadow-black/40
+        hover:brightness-110
         flex flex-col
         ${isShortAppointment ? 'justify-center' : 'justify-start'}
         overflow-hidden
-        min-h-[30px]
+        min-h-[28px]
       `}
+      style={{
+        borderLeftColor: customColor,
+        backgroundColor: `${customColor}25`, // 25% opacity - más visible
+      }}
       onClick={() => onClick?.(appointment)}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
@@ -119,13 +110,15 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
             </div>
           </div>
 
-          {/* Paciente - prominente */}
+          {/* Paciente - prominente con texto escalable */}
           <div className="flex-1 min-h-0 mb-1">
-            <p className={`${
-              isLongAppointment ? 'text-sm' : 'text-sm'
-            } font-bold text-white leading-tight group-hover:text-blue-200 transition-colors line-clamp-2`}>
-              {appointment.paciente}
-            </p>
+            <ResponsiveText
+              text={appointment.paciente}
+              maxLines={isLongAppointment ? 2 : 1}
+              minSize={10}
+              maxSize={14}
+              className="font-bold text-white leading-tight group-hover:text-blue-200 transition-colors"
+            />
           </div>
 
           {/* Footer: Sede + Duración (solo para citas largas) */}

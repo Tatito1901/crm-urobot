@@ -7,8 +7,10 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { formatTimeRange, getStatusConfig } from '../../lib/agenda-utils';
+import { useAgendaState } from '../../hooks/useAgendaState';
+import { useAppointmentColor } from '../../hooks/useColorPreferences';
 import type { Appointment } from '@/types/agenda';
 
 interface ListViewProps {
@@ -22,6 +24,10 @@ export const ListView: React.FC<ListViewProps> = ({
   onAppointmentClick,
   dateRange,
 }) => {
+  const { viewDensity } = useAgendaState();
+  const listRef = useRef<HTMLDivElement>(null);
+  const todayRef = useRef<HTMLDivElement>(null);
+  
   // Agrupar citas por fecha
   const groupedAppointments = useMemo(() => {
     const groups: { [key: string]: Appointment[] } = {};
@@ -45,6 +51,26 @@ export const ListView: React.FC<ListViewProps> = ({
   }, [appointments]);
 
   const sortedDates = Object.keys(groupedAppointments).sort();
+  
+  // Auto-scroll al día actual cuando se monta
+  useEffect(() => {
+    if (todayRef.current && listRef.current) {
+      todayRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+  
+  // Clases según densidad
+  const densityClasses = {
+    compact: 'p-3 space-y-1',
+    comfortable: 'p-4 space-y-2',
+    spacious: 'p-5 space-y-3',
+  };
+  
+  const cardDensityClasses = {
+    compact: 'text-xs',
+    comfortable: 'text-sm',
+    spacious: 'text-base',
+  };
 
   if (appointments.length === 0) {
     return (
@@ -72,7 +98,7 @@ export const ListView: React.FC<ListViewProps> = ({
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6 space-y-6">
+    <div ref={listRef} className={`h-full overflow-y-auto ${viewDensity === 'compact' ? 'p-4 space-y-4' : viewDensity === 'comfortable' ? 'p-6 space-y-6' : 'p-8 space-y-8'}`}>
       {sortedDates.map((dateStr) => {
         const appointments = groupedAppointments[dateStr];
         const firstApt = appointments[0];
@@ -98,56 +124,55 @@ export const ListView: React.FC<ListViewProps> = ({
         const dateLabel = `${dayNames[date.dayOfWeek % 7]}, ${date.day} de ${
           monthNames[date.month - 1]
         } de ${date.year}`;
+        
+        // Verificar si es hoy
+        const today = new Date();
+        const isToday = date.year === today.getFullYear() && 
+                       date.month === (today.getMonth() + 1) && 
+                       date.day === today.getDate();
 
         return (
-          <div key={dateStr}>
+          <div key={dateStr} ref={isToday ? todayRef : null}>
             {/* Header de fecha */}
-            <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-sm font-semibold text-slate-300">{dateLabel}</h3>
-              <div className="flex-1 h-px bg-slate-800" />
-              <span className="text-xs text-slate-500">{appointments.length} consultas</span>
+            <div className={`flex items-center gap-3 ${viewDensity === 'compact' ? 'mb-2' : viewDensity === 'comfortable' ? 'mb-3' : 'mb-4'}`}>
+              <h3 className={`font-semibold ${isToday ? 'text-blue-400' : 'text-slate-300'} ${viewDensity === 'compact' ? 'text-xs' : viewDensity === 'comfortable' ? 'text-sm' : 'text-base'}`}>
+                {isToday && '🔵 '}
+                {dateLabel}
+              </h3>
+              <div className={`flex-1 h-px ${isToday ? 'bg-blue-500/30' : 'bg-slate-800'}`} />
+              <span className={`text-slate-500 ${viewDensity === 'compact' ? 'text-[10px]' : 'text-xs'}`}>
+                {appointments.length} consulta{appointments.length !== 1 ? 's' : ''}
+              </span>
             </div>
 
             {/* Lista de citas */}
-            <div className="space-y-2">
+            <div className={viewDensity === 'compact' ? 'space-y-1.5' : viewDensity === 'comfortable' ? 'space-y-2' : 'space-y-3'}>
               {appointments.map((apt) => {
                 const status = getStatusConfig(apt.estado);
+                const paddingClass = viewDensity === 'compact' ? 'p-3' : viewDensity === 'comfortable' ? 'p-4' : 'p-5';
+                // Obtener color personalizado
+                const customColor = useAppointmentColor(apt.sede);
 
                 return (
                   <button
                     key={apt.id}
                     onClick={() => onAppointmentClick(apt)}
-                    className="w-full text-left p-4 rounded-lg bg-slate-900/80 border border-slate-700/70 shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group"
+                    className={`w-full text-left ${paddingClass} rounded-lg bg-slate-900/80 border-l-4 border-r border-t border-b border-slate-700/70 shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group`}
+                    style={{
+                      borderLeftColor: customColor,
+                      backgroundColor: `${customColor}08`, // 8% opacity
+                    }}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className={`flex items-start ${viewDensity === 'compact' ? 'gap-2' : viewDensity === 'comfortable' ? 'gap-4' : 'gap-5'}`}>
                       {/* Hora */}
-                      <div className="flex-shrink-0 w-24">
-                        <p className="text-sm font-semibold text-slate-200">
+                      <div className={`flex-shrink-0 ${viewDensity === 'compact' ? 'w-16' : viewDensity === 'comfortable' ? 'w-24' : 'w-28'}`}>
+                        <p className={`font-semibold text-slate-200 ${viewDensity === 'compact' ? 'text-xs' : viewDensity === 'comfortable' ? 'text-sm' : 'text-base'}`}>
                           {formatTimeRange(apt.start, apt.end).split(' - ')[0]}
                         </p>
-                        <p className="text-xs text-slate-400">{apt.duracionMinutos} min</p>
+                        <p className={`text-slate-400 ${viewDensity === 'compact' ? 'text-[10px]' : 'text-xs'}`}>
+                          {apt.duracionMinutos} min
+                        </p>
                       </div>
-
-                      {/* Indicador de color por tipo/prioridad */}
-                      <div
-                        className={`w-1 rounded-full self-stretch ${
-                          apt.prioridad === 'urgente'
-                            ? 'bg-red-600'
-                            : apt.prioridad === 'alta'
-                            ? 'bg-amber-500'
-                            : apt.tipo === 'primera_vez'
-                            ? 'bg-blue-600'
-                            : apt.tipo === 'subsecuente'
-                            ? 'bg-blue-500'
-                            : apt.tipo === 'control_post_op'
-                            ? 'bg-emerald-600'
-                            : apt.tipo === 'urgencia'
-                            ? 'bg-red-600'
-                            : apt.tipo === 'teleconsulta'
-                            ? 'bg-cyan-600'
-                            : 'bg-slate-500'
-                        }`}
-                      />
 
                       {/* Información principal */}
                       <div className="flex-1 min-w-0">

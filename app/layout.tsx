@@ -45,8 +45,26 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
+        {/* Script anti-FOUC para next-themes - debe estar antes de cualquier otra cosa */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('urobot-theme') || 'dark';
+                const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                const activeTheme = theme === 'system' ? systemTheme : theme;
+                if (activeTheme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+        
         {/* DNS Prefetch y Preconnect para mejorar tiempo de carga */}
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -57,7 +75,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${geistSans.variable} ${roboto.variable} antialiased bg-[#03060f] text-white`}>
+      <body className={`${geistSans.variable} ${roboto.variable} antialiased bg-white dark:bg-[#03060f] text-slate-900 dark:text-white transition-colors`}>
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

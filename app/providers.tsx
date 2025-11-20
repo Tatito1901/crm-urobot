@@ -3,6 +3,7 @@
 import { ReactNode } from 'react'
 import { SWRConfig } from 'swr'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { ThemeProvider } from '@/components/providers/theme-provider'
 
 const swrConfig = {
   // ✅ Configuración optimizada para reducir llamadas a API
@@ -32,10 +33,12 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <SWRConfig value={swrConfig}>
-      <TooltipProvider delayDuration={200}>
-        {children}
-      </TooltipProvider>
-    </SWRConfig>
+    <ThemeProvider>
+      <SWRConfig value={swrConfig}>
+        <TooltipProvider delayDuration={200}>
+          {children}
+        </TooltipProvider>
+      </SWRConfig>
+    </ThemeProvider>
   )
 }

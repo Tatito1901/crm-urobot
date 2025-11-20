@@ -1,26 +1,20 @@
 'use client';
 
-import { useMemo, useState, memo, useCallback } from 'react';
+import { useMemo, useState, memo } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
+import { formatDate } from '@/app/lib/crm-data';
 import { useRecordatorios } from '@/hooks/useRecordatorios';
-import { typography, spacing, cards, filters } from '@/app/lib/design-system';
+import { spacing, cards } from '@/app/lib/design-system';
 
 type TipoFilter = 'ALL' | '48h' | '24h' | '3h' | 'confirmacion_inicial';
 type RangoFilter = 'ultimos_7' | 'ultimos_30' | 'todos';
 
 export const dynamic = 'force-dynamic';
 
-// Configuración de tipos de recordatorio con metadata
-const TIPO_CONFIG = {
-  confirmacion_inicial: { label: 'Confirmación inicial', icon: '📧', color: 'blue' },
-  '48h': { label: '48 horas antes', icon: '⏰', color: 'purple' },
-  '24h': { label: '24 horas antes', icon: '⏱️', color: 'emerald' },
-  '3h': { label: '3 horas antes', icon: '🔔', color: 'amber' },
-} as const;
+// Configuración de estados para badges
 
 const ESTADO_COLORS = {
   pendiente: 'border-amber-400/60 bg-amber-500/15 text-amber-300',

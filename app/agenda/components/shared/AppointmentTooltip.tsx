@@ -30,7 +30,7 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
 
   useEffect(() => {
     if (isVisible) {
-      const timer = setTimeout(() => setShow(true), 300); // Delay para evitar flickering
+      const timer = setTimeout(() => setShow(true), 150); // Delay reducido
       return () => clearTimeout(timer);
     } else {
       setShow(false);

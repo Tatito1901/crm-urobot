@@ -64,37 +64,24 @@ export const Sidebar = React.memo(function Sidebar({
   // Configuración eliminada - ahora usa constantes centralizadas
 
   return (
-    <aside className="w-[320px] h-full border-r-2 border-slate-700/50 bg-gradient-to-b from-slate-900/60 to-slate-950/60 backdrop-blur-sm flex flex-col shadow-xl shadow-black/20">
-      {/* Header */}
-      <div className="px-4 py-4 border-b border-slate-800/40">
-        <div className="flex items-center justify-between mb-3">
+    <aside className="w-[280px] h-full border-r border-slate-700/40 bg-slate-900/40 backdrop-blur-sm flex flex-col">
+      {/* Header - más compacto */}
+      <div className="px-4 py-3.5 border-b border-slate-800/40">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-blue-400" />
-            <h2 className={`${typography.sectionTitle} text-lg`}>Agenda Médica</h2>
+            <Calendar className="h-4 w-4 text-blue-400" />
+            <h2 className="text-base font-semibold text-slate-100">Agenda</h2>
           </div>
           {onCreateAppointment && (
             <button
               onClick={onCreateAppointment}
-              className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 transition-colors"
+              className="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 transition-colors"
               title="Nueva cita"
+              aria-label="Nueva cita"
             >
               <Plus className="h-4 w-4" />
             </button>
           )}
-        </div>
-
-        {/* Filtro de sedes - optimizado */}
-        <div className="flex gap-2">
-          {SEDES.map((sede) => (
-            <FilterButton
-              key={sede.value}
-              label={sede.label}
-              selected={selectedSede === sede.value}
-              onClick={() => setSelectedSede(sede.value)}
-              fullWidth
-              size="md"
-            />
-          ))}
         </div>
       </div>
 

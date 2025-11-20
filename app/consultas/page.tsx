@@ -119,8 +119,8 @@ export default function ConsultasPage() {
     setCurrentPage(0);
   }, []), 300);
 
-  // ✅ Datos reales de Supabase con estadísticas y métricas
-  const { consultas, loading, error, refetch, stats, metricas } = useConsultas();
+  // ✅ Datos reales de Supabase con estadísticas
+  const { consultas, loading, error, refetch, stats } = useConsultas();
 
   // ✅ OPTIMIZACIÓN: Filtrado eficiente con memoización
   const filteredConsultas = useMemo(() => {
