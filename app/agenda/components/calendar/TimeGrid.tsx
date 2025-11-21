@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useMemo, useEffect, useRef } from 'react';
-import { addDays, generateTimeSlots, isToday } from '@/lib/date-utils';
+import { addDays, generateTimeSlotsDetailed, formatHour12, isToday } from '@/lib/date-utils';
 import { AppointmentCard } from '../shared/AppointmentCard';
 import { positionAppointmentsForDay, getDayOfWeek } from '../../lib/appointment-positioning';
 import { useAgendaState } from '../../hooks/useAgendaState';
@@ -23,12 +23,11 @@ interface TimeGridProps {
   onAppointmentClick?: (appointment: Appointment) => void;
 }
 
-// Altura de slot por hora según densidad - OPTIMIZADO para vista sin scroll
-const DENSITY_HEIGHTS = {
-  compact: 32,      // Reducido de 40 → 32 (20% más compacto)
-  comfortable: 50,  // Reducido de 60 → 50
-  spacious: 70,     // Reducido de 80 → 70
-} as const;
+// Función auxiliar fuera del componente para evitar recreación
+const isWorkingDay = (date: Date) => {
+  const day = date.getDay();
+  return day >= 1 && day <= 5;
+};
 
 export const TimeGrid = React.memo(function TimeGrid({ 
   weekStart, 
@@ -38,34 +37,40 @@ export const TimeGrid = React.memo(function TimeGrid({
   mode = 'week',
   onAppointmentClick,
 }: TimeGridProps) {
-  const { viewDensity } = useAgendaState();
-  const gridRef = useRef<HTMLDivElement>(null);
-  const [currentTime, setCurrentTime] = React.useState(new Date());
+  const containerRef = useRef<HTMLDivElement>(null);
+  const currentTimeRef = useRef<HTMLDivElement>(null);
   
-  // Actualizar hora actual cada minuto
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Actualizar cada minuto
-    
-    return () => clearInterval(interval);
-  }, []);
-  
-  // Memoizar slots para evitar regeneración en cada render
-  const timeSlots = useMemo(() => generateTimeSlots(startHour, endHour), [startHour, endHour]);
+  // Memoizar slots detallados (cada 30 min) para evitar regeneración
+  const timeSlots = useMemo(() => generateTimeSlotsDetailed(startHour, endHour), [startHour, endHour]);
   const days =
     mode === 'day'
       ? [weekStart]
       : Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Determinar si un día tiene horario laboral
-  const isWorkingDay = (date: Date) => {
-    const day = date.getDay();
-    return day >= 1 && day <= 5;
-  };
+  // Calcular posición actual del tiempo en tiempo real
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTimePosition = (currentHour - startHour) * 60 + currentMinute;
+  const showCurrentTimeLine = days.some(day => isToday(day));
   
-  // Altura de slot según densidad
-  const slotHeight = DENSITY_HEIGHTS[viewDensity];
+  // Auto-scroll a la hora actual al cargar
+  useEffect(() => {
+    if (!showCurrentTimeLine || !containerRef.current || !currentTimeRef.current) return;
+    
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      const currentLine = currentTimeRef.current;
+      if (!container || !currentLine) return;
+      
+      container.scrollTo({
+        top: Math.max(0, currentLine.offsetTop - container.clientHeight / 3),
+        behavior: 'smooth'
+      });
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [showCurrentTimeLine]);
 
   // Agrupar y posicionar citas por día (optimizado)
   const appointmentsByDay = useMemo(() => {
@@ -89,46 +94,43 @@ export const TimeGrid = React.memo(function TimeGrid({
     return grouped;
   }, [appointments, weekStart, mode]);
 
-  // Auto-scroll al día actual cuando se monta el componente o cambia la densidad
-  useEffect(() => {
-    if (!gridRef.current) return;
-    
-    const todayColumnIndex = days.findIndex(day => isToday(day));
-    if (todayColumnIndex === -1) return;
-    
-    // Calcular hora actual
-    const now = new Date();
-    const currentHour = now.getHours();
-    
-    // Si estamos en horario de trabajo (8am - 6pm), scroll a hora actual
-    if (currentHour >= 8 && currentHour <= 18) {
-      const targetScrollPosition = (currentHour - startHour) * slotHeight - 100;
-      gridRef.current.scrollTop = Math.max(0, targetScrollPosition);
-    } else {
-      // Fuera de horario, scroll al inicio del día laboral (8am)
-      const targetScrollPosition = (8 - startHour) * slotHeight;
-      gridRef.current.scrollTop = Math.max(0, targetScrollPosition);
-    }
-  }, [days, startHour, slotHeight, viewDensity]);
+  // Altura optimizada: 48px por hora = 24px por slot de 30min (estilo Google Calendar)
+  const slotHeightPerHour = 48;
+  const slotHeight = slotHeightPerHour / 2; // 24px por slot de 30 minutos
 
   return (
-    <div ref={gridRef} className="flex-1 overflow-auto bg-slate-900 p-0.5 scroll-smooth">
+    <div 
+      ref={containerRef}
+      data-time-grid
+      className="flex-1 overflow-auto bg-[#121212] scroll-smooth custom-scrollbar"
+    >
       <div
         className={`grid ${
           mode === 'day' ? 'grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
-        } min-h-full gap-0.5 rounded-lg overflow-hidden`}
+        } min-h-full gap-0 border-t border-slate-800/40 bg-[#121212]`}
       >
-        {/* Columna de horas - optimizada para todos los tamaños */}
-        <div className="border-r border-slate-700/70 sticky left-0 bg-slate-900/95 z-10 backdrop-blur-sm">
-          {timeSlots.map((time) => (
-            <div
-              key={time}
-              className="flex items-start justify-end pr-2 pt-0.5 text-[10px] md:text-xs font-medium text-slate-400 border-b border-slate-700/30"
-              style={{ height: `${slotHeight}px` }}
-            >
-              <span className="tabular-nums">{time}</span>
-            </div>
-          ))}
+        {/* Columna de horas - Solo horas completas */}
+        <div className="border-r border-slate-800/40 sticky left-0 bg-[#121212] z-10 translate-y-[-10px]">
+          {timeSlots.map((slot) => {
+            // Calcular hora 12h
+            const hour12 = slot.hour > 12 ? slot.hour - 12 : slot.hour === 0 ? 12 : slot.hour;
+            const ampm = slot.hour >= 12 ? 'PM' : 'AM';
+            
+            // Solo renderizar etiqueta en horas en punto
+            if (!slot.isHourStart) return <div key={slot.time} style={{ height: `${slotHeight}px` }} />;
+
+            return (
+              <div
+                key={slot.time}
+                className="flex flex-col items-end justify-start pr-3 relative"
+                style={{ height: `${slotHeightPerHour}px` }}
+              >
+                <span className="text-[10px] font-medium text-slate-400 tabular-nums leading-none translate-y-[50%]">
+                  {hour12} {ampm}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         {/* Columnas por día - renderizado optimizado */}
@@ -139,7 +141,7 @@ export const TimeGrid = React.memo(function TimeGrid({
             dayAppointments,
             dayIndex,
             startHour,
-            slotHeight
+            slotHeightPerHour // Pasar altura por hora completa
           );
 
           const isTodayDate = isToday(date);
@@ -153,36 +155,62 @@ export const TimeGrid = React.memo(function TimeGrid({
           return (
             <div
               key={dayIndex}
-              className={`relative border-r border-slate-700/50 last:border-r-0 rounded-sm transition-colors ${
-                isTodayDate 
-                  ? 'bg-blue-900/10 border-blue-500/30' 
-                  : hasWorkingHours 
-                  ? 'bg-slate-900/30' 
-                  : 'bg-[#0b0f16]'
+              className={`relative border-r border-slate-800/40 last:border-r-0 transition-colors ${
+                hasWorkingHours ? 'bg-transparent' : 'bg-slate-900/10'
               }`}
               role="gridcell"
               aria-label={`${date.toLocaleDateString('es-MX')}`}
             >
-              {/* Grid de slots de tiempo - con hover mejorado */}
-              {timeSlots.map((time) => (
-                <div
-                  key={`${dayIndex}-${time}`}
-                  className="border-b border-slate-700/30 hover:bg-blue-500/5 hover:border-blue-500/20 transition-colors cursor-pointer group"
-                  style={{ height: `${slotHeight}px` }}
-                  data-time={time}
-                  data-date={date.toISOString().split('T')[0]}
-                  title={`${time} - ${date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}`}
-                />
-              ))}
+              {/* Grid de líneas de tiempo - Solo líneas visibles en horas completas */}
+              {timeSlots.map((slot, slotIndex) => {
+                // Solo renderizar borde en horas completas
+                if (!slot.isHourStart) {
+                   return (
+                    <div
+                      key={`${dayIndex}-${slot.time}`}
+                      className="relative"
+                      style={{ height: `${slotHeight}px` }}
+                    />
+                   );
+                }
+                
+                return (
+                  <div
+                    key={`${dayIndex}-${slot.time}`}
+                    className="border-t border-slate-800/40 w-full relative group"
+                    style={{ height: `${slotHeightPerHour}px` }} // Altura doble para cubrir la hora completa
+                  >
+                    {/* Indicador hover sutil */}
+                    <div className="hidden group-hover:block absolute left-0 top-0 w-full h-full bg-slate-800/10 z-0 pointer-events-none" />
+                  </div>
+                );
+              })}
               
-              {/* Citas posicionadas - optimizadas */}
+              {/* Línea indicadora de hora actual - solo en día de hoy */}
+              {isToday(date) && (
+                <div
+                  ref={dayIndex === 0 ? currentTimeRef : null}
+                  data-current-time
+                  className="absolute inset-x-0 z-30 pointer-events-none"
+                  style={{ 
+                    top: `${((currentHour - startHour) * slotHeightPerHour) + (currentMinute * slotHeightPerHour / 60)}px` 
+                  }}
+                >
+                  {/* Círculo indicador */}
+                  <div className="absolute -left-[5px] -top-[5px] w-2.5 h-2.5 rounded-full bg-[#ea4335] shadow-sm" />
+                  {/* Línea */}
+                  <div className="h-[2px] bg-[#ea4335] w-full shadow-sm" />
+                </div>
+              )}
+              
+              {/* Citas posicionadas - usar valores calculados por positionAppointmentsForDay */}
               {positionedAppointments.map((apt) => (
                 <div
                   key={apt.id}
                   className="absolute inset-x-0 px-0.5 sm:px-1 py-0.5"
                   style={{
                     top: `${apt.top}px`,
-                    height: `${Math.max(apt.height - 2, 30)}px`, // Mínimo 30px para mejor click en mobile
+                    height: `${Math.max(apt.height - 2, 28)}px`, // Mínimo 28px para mejor click
                     left: `${apt.left}%`,
                     width: `${apt.width}%`,
                     zIndex: apt.zIndex,

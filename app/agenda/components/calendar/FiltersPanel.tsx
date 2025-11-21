@@ -33,28 +33,8 @@ export const FiltersPanel: React.FC = () => {
 
   if (!showFilters) return null;
 
-  const toggleEstado = (estado: string) => {
-    setSelectedEstados(
-      selectedEstados.includes(estado)
-        ? selectedEstados.filter((e) => e !== estado)
-        : [...selectedEstados, estado]
-    );
-  };
-
-  const toggleTipo = (tipo: string) => {
-    setSelectedTipos(
-      selectedTipos.includes(tipo)
-        ? selectedTipos.filter((t) => t !== tipo)
-        : [...selectedTipos, tipo]
-    );
-  };
-
-  const togglePrioridad = (prioridad: string) => {
-    setSelectedPrioridades(
-      selectedPrioridades.includes(prioridad)
-        ? selectedPrioridades.filter((p) => p !== prioridad)
-        : [...selectedPrioridades, prioridad]
-    );
+  const toggleItem = (current: string[], item: string, setter: (items: string[]) => void) => {
+    setter(current.includes(item) ? current.filter(i => i !== item) : [...current, item]);
   };
 
   const activeFiltersCount =
@@ -66,8 +46,8 @@ export const FiltersPanel: React.FC = () => {
     (onlyPendingConfirmation ? 1 : 0);
 
   return (
-    <div className="bg-slate-900/40 border-b border-slate-800/50 px-4 py-3 space-y-3">
-      {/* Header - más compacto */}
+    <div className="bg-gradient-to-b from-slate-900/70 to-slate-900/50 border-b border-slate-700/40 p-4 md:p-5 space-y-4 backdrop-blur-sm">
+      {/* Header - mejorado */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-blue-400" />
@@ -145,7 +125,7 @@ export const FiltersPanel: React.FC = () => {
                 key={estado.value}
                 label={estado.label}
                 selected={selectedEstados.includes(estado.value)}
-                onClick={() => toggleEstado(estado.value)}
+                onClick={() => toggleItem(selectedEstados, estado.value, setSelectedEstados)}
                 variant="colored"
                 color={estado.color}
                 size="sm"
@@ -163,7 +143,7 @@ export const FiltersPanel: React.FC = () => {
                 key={prioridad.value}
                 label={prioridad.label}
                 selected={selectedPrioridades.includes(prioridad.value)}
-                onClick={() => togglePrioridad(prioridad.value)}
+                onClick={() => toggleItem(selectedPrioridades, prioridad.value, setSelectedPrioridades)}
                 variant="colored"
                 color={prioridad.color}
                 fullWidth
@@ -183,7 +163,7 @@ export const FiltersPanel: React.FC = () => {
               key={tipo.value}
               label={tipo.label}
               selected={selectedTipos.includes(tipo.value)}
-              onClick={() => toggleTipo(tipo.value)}
+              onClick={() => toggleItem(selectedTipos, tipo.value, setSelectedTipos)}
             />
           ))}
         </div>

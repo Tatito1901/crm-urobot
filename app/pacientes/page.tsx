@@ -1,21 +1,79 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
-import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
-import type { Paciente } from '@/types/pacientes';
 import { usePacientes } from '@/hooks/usePacientes';
-import { ContentLoader, TableContentSkeleton } from '@/app/components/common/ContentLoader';
+import { ContentLoader } from '@/app/components/common/ContentLoader';
+import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { Pagination } from '@/app/components/common/Pagination';
 import { typography, spacing, cards, inputs } from '@/app/lib/design-system';
-import { Button } from '@/components/ui/button';
-import { HelpIcon } from '@/app/components/common/InfoTooltip';
+import { Users, UserCheck, UserPlus, AlertCircle } from 'lucide-react';
+import { PacientesTable } from './components/PacientesTable';
 
-export const dynamic = 'force-dynamic';
+// Componente de métricas visuales consistente con Leads/Dashboard
+const PacientesMetrics = memo(({ stats, loading }: { stats: any, loading: boolean }) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-24 bg-slate-800/50 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="bg-slate-900/40 border border-slate-700/40 rounded-lg p-4 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+          <Users className="w-12 h-12 text-slate-400" />
+        </div>
+        <div>
+          <div className="text-xs text-slate-400 mb-1 font-medium">Total Pacientes</div>
+          <div className="text-2xl font-bold text-slate-100">{stats.total}</div>
+        </div>
+        <div className="text-[10px] text-slate-500 mt-2">Historial completo</div>
+      </div>
+
+      <div className="bg-slate-900/40 border border-emerald-500/20 rounded-lg p-4 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+          <UserCheck className="w-12 h-12 text-emerald-400" />
+        </div>
+        <div>
+          <div className="text-xs text-emerald-300 mb-1 font-medium">Activos</div>
+          <div className="text-2xl font-bold text-emerald-100">{stats.activos}</div>
+        </div>
+        <div className="text-[10px] text-slate-500 mt-2">Con consultas recientes</div>
+      </div>
+
+      <div className="bg-slate-900/40 border border-blue-500/20 rounded-lg p-4 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+          <UserPlus className="w-12 h-12 text-blue-400" />
+        </div>
+        <div>
+          <div className="text-xs text-blue-300 mb-1 font-medium">Recientes</div>
+          <div className="text-2xl font-bold text-slate-100">{stats.recientes}</div>
+        </div>
+        <div className="text-[10px] text-slate-500 mt-2">Registrados este mes</div>
+      </div>
+
+      <div className="bg-slate-900/40 border border-amber-500/20 rounded-lg p-4 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+          <AlertCircle className="w-12 h-12 text-amber-400" />
+        </div>
+        <div>
+          <div className="text-xs text-amber-300 mb-1 font-medium">Atención</div>
+          <div className="text-2xl font-bold text-amber-100">{stats.requierenAtencion}</div>
+        </div>
+        <div className="text-[10px] text-slate-500 mt-2">Sin seguimiento reciente</div>
+      </div>
+    </div>
+  );
+});
+PacientesMetrics.displayName = 'PacientesMetrics';
 
 export default function PacientesPage() {
   const [search, setSearch] = useState('');
@@ -31,11 +89,6 @@ export default function PacientesPage() {
 
   // ✅ Datos reales de Supabase con estadísticas y métricas
   const { pacientes, loading, error, refetch, stats } = usePacientes();
-
-  // ✅ OPTIMIZACIÓN: Callbacks memoizados
-  const handlePacienteClick = useCallback((pacienteId: string) => {
-    router.push(`/pacientes/${pacienteId}`);
-  }, [router]);
 
   const handlePacienteHover = useCallback((pacienteId: string) => {
     router.prefetch(`/pacientes/${pacienteId}`);
@@ -85,6 +138,7 @@ export default function PacientesPage() {
   return (
     <PageShell
       accent
+      fullWidth
       eyebrow="Gestión de pacientes"
       title="Carpeta clínica"
       description="Historial completo de pacientes con su actividad, estado actual y última consulta registrada."
@@ -110,71 +164,83 @@ export default function PacientesPage() {
         </Card>
       }
     >
-      <Card className={cards.base}>
-        <CardHeader className={spacing.cardHeader}>
+      {/* Métricas Clave */}
+      <PacientesMetrics stats={stats} loading={loading} />
+
+      <Card className={`${cards.base} overflow-hidden`}>
+        <CardHeader className={`${spacing.cardHeader} border-b border-slate-800/50 bg-slate-900/20`}>
           <div className="flex items-center justify-between gap-4">
             <div>
               <CardTitle className={typography.cardTitle}>
-                Carpeta clínica
+                Base de Pacientes
               </CardTitle>
               <CardDescription className={typography.cardDescription}>
                 {error 
                   ? `Error: ${error.message}` 
-                  : 'Historial completo de pacientes registrados'
+                  : 'Listado maestro de pacientes registrados'
                 }
               </CardDescription>
             </div>
-            <button
-              onClick={() => refetch()}
-              disabled={loading}
-              className="rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-            >
-              ↻
-            </button>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-white/10">
-            <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs text-white/70">
-              <span className="rounded-full bg-white/5 px-3 py-1 flex items-center gap-1.5">
-                <span>Total:</span>
-                <span className="font-semibold text-white">{stats.total}</span>
-              </span>
-              <span className="rounded-full bg-emerald-500/10 px-3 py-1 border border-emerald-500/20 flex items-center gap-1.5">
-                <span>✓ Activos:</span>
-                <span className="font-semibold text-emerald-300">{stats.activos}</span>
-              </span>
-              <span className="rounded-full bg-blue-500/10 px-3 py-1 border border-blue-500/20 flex items-center gap-1.5">
-                <span>🆕 Nuevos:</span>
-                <span className="font-semibold text-blue-300">{stats.recientes}</span>
-              </span>
-              <span className="rounded-full bg-amber-500/10 px-3 py-1 border border-amber-500/20 flex items-center gap-1.5">
-                <span>⚠️ Atención:</span>
-                <span className="font-semibold text-amber-300">{stats.requierenAtencion}</span>
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2 text-[11px] sm:text-xs">
-              {[
-                { key: 'all' as const, label: 'Todos' },
-                { key: 'Activo' as const, label: 'Activos' },
-                { key: 'Inactivo' as const, label: 'Inactivos' },
-              ].map((option) => (
-                <button
-                  key={option.key}
-                  type="button"
-                  onClick={() => handleEstadoFilterChange(option.key)}
-                  className={`rounded-full px-3 py-1 border text-xs sm:text-[11px] transition-all duration-200 min-h-[32px] ${
-                    estadoFilter === option.key
-                      ? 'bg-white/15 border-white/40 text-white shadow-sm'
-                      : 'border-white/10 text-white/60 hover:border-white/30 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+            <div className="flex items-center gap-3">
+              {/* Filtros de estado */}
+              <div className="hidden sm:flex bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
+                {[
+                  { key: 'all' as const, label: 'Todos' },
+                  { key: 'Activo' as const, label: 'Activos' },
+                  { key: 'Inactivo' as const, label: 'Inactivos' },
+                ].map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    onClick={() => handleEstadoFilterChange(option.key)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                      estadoFilter === option.key
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => refetch()}
+                disabled={loading}
+                className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all disabled:opacity-50"
+                title="Recargar datos"
+              >
+                <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
             </div>
           </div>
           
+          {/* Filtros móviles */}
+          <div className="flex sm:hidden mt-3 bg-slate-800/50 rounded-lg p-1 border border-slate-700/50 w-full">
+            {[
+              { key: 'all' as const, label: 'Todos' },
+              { key: 'Activo' as const, label: 'Activos' },
+              { key: 'Inactivo' as const, label: 'Inactivos' },
+            ].map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => handleEstadoFilterChange(option.key)}
+                className={`flex-1 px-2 py-1 text-xs font-medium rounded-md transition-all ${
+                  estadoFilter === option.key
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0">
           <ContentLoader
             loading={loading}
             error={error}
@@ -184,137 +250,22 @@ export default function PacientesPage() {
             skeleton={<TableContentSkeleton rows={8} />}
             emptyState={
               <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                <p className="text-4xl sm:text-5xl">👥</p>
+                <div className="bg-slate-800/50 p-4 rounded-full mb-2">
+                  <Users className="w-8 h-8 text-slate-500" />
+                </div>
                 <p className={typography.body}>
-                  {search ? 'No se encontraron pacientes' : 'No hay pacientes registrados'}
+                  {search ? 'No se encontraron pacientes con ese criterio' : 'No hay pacientes registrados'}
                 </p>
               </div>
             }
           >
-            <DataTable
-              headers={[
-                { 
-                  key: 'nombre', 
-                  label: (
-                    <div className="flex items-center gap-1.5">
-                      <span>Paciente</span>
-                      <HelpIcon content="Nombre completo y teléfono de contacto" side="bottom" />
-                    </div>
-                  )
-                },
-                { 
-                  key: 'actividad', 
-                  label: (
-                    <div className="flex items-center gap-1.5">
-                      <span>Actividad</span>
-                      <HelpIcon content="Número total de consultas registradas" side="bottom" />
-                    </div>
-                  )
-                },
-                { 
-                  key: 'estado', 
-                  label: (
-                    <div className="flex items-center gap-1.5">
-                      <span>Estado</span>
-                      <HelpIcon content="Activo: paciente con consultas recientes | Inactivo: sin actividad prolongada" side="bottom" />
-                    </div>
-                  )
-                },
-                { 
-                  key: 'ultimaConsulta', 
-                  label: (
-                    <div className="flex items-center gap-1.5">
-                      <span>Última consulta</span>
-                      <HelpIcon content="Fecha de la consulta más reciente y días transcurridos" side="bottom" />
-                    </div>
-                  )
-                },
-                { 
-                  key: 'acciones', 
-                  label: (
-                    <div className="flex items-center gap-1.5">
-                      <span>Acciones</span>
-                      <HelpIcon content="Ver historial completo, agendar nueva consulta o contactar al paciente" side="bottom" />
-                    </div>
-                  )
-                },
-              ]}
-              rows={paginatedPacientesFiltered.map((paciente: Paciente) => ({
-                id: paciente.id,
-                nombre: (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-white">{paciente.nombre}</span>
-                      {paciente.esReciente && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
-                          Nuevo
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-white/40">{paciente.telefono}</span>
-                  </div>
-                ),
-                actividad: (
-                  <div className="flex flex-col gap-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white/70">
-                        {paciente.totalConsultas} {paciente.totalConsultas === 1 ? 'consulta' : 'consultas'}
-                      </span>
-                      {paciente.requiereAtencion && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                          Atención
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ),
-                estado: <Badge label={paciente.estado} tone={STATE_COLORS[paciente.estado]} />,
-                ultimaConsulta: (
-                  <div className="flex flex-col gap-1 text-xs">
-                    <span className="text-white/70">
-                      {paciente.ultimaConsulta ? formatDate(paciente.ultimaConsulta) : 'Sin consulta previa'}
-                    </span>
-                    {paciente.diasDesdeUltimaConsulta !== null && (
-                      <span className="text-white/50">
-                        Hace {paciente.diasDesdeUltimaConsulta}d
-                      </span>
-                    )}
-                  </div>
-                ),
-                acciones: (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePacienteClick(paciente.id);
-                      }}
-                    >
-                      Ver historial
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(`https://wa.me/52${paciente.telefono}`, '_blank');
-                      }}
-                      title="Contactar por WhatsApp"
-                    >
-                      💬
-                    </Button>
-                  </div>
-                ),
-              }))}
-              empty={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay pacientes registrados aún.'}
-              mobileConfig={{
-                primary: 'nombre',
-                secondary: 'actividad',
-                metadata: ['estado', 'ultimaConsulta']
-              }}
-              onRowHover={(rowId) => handlePacienteHover(rowId)}
-            />
+            <div className="border-t border-slate-800/50">
+              <PacientesTable
+                pacientes={paginatedPacientesFiltered}
+                emptyMessage={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay pacientes registrados aún.'}
+                onHover={handlePacienteHover}
+              />
+            </div>
             
             {/* Paginación */}
             {filteredByEstado.length > itemsPerPage && (

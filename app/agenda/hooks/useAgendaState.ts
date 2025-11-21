@@ -14,8 +14,14 @@ interface AgendaState {
   // ========== VISTA ==========
   viewMode: 'week' | 'day' | 'month' | 'list' | 'heatmap';
   setViewMode: (mode: 'week' | 'day' | 'month' | 'list' | 'heatmap') => void;
-  viewDensity: 'compact' | 'comfortable' | 'spacious';
-  setViewDensity: (density: 'compact' | 'comfortable' | 'spacious') => void;
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
+  setIsSidebarOpen: (isOpen: boolean) => void;
+  
+  // ========== CONFIGURACIÓN DE HORARIO ==========
+  hourRange: 'business' | 'extended' | 'full'; // business: 7-21, extended: 6-22, full: 0-24
+  setHourRange: (range: 'business' | 'extended' | 'full') => void;
+  getHourBounds: () => { startHour: number; endHour: number };
 
   // ========== FECHA Y RANGO ==========
   selectedDate: Temporal.PlainDate;
@@ -39,6 +45,12 @@ interface AgendaState {
   setOnlyPendingConfirmation: (value: boolean) => void;
   showFilters: boolean;
   setShowFilters: (value: boolean) => void;
+
+  // ========== CONFIGURACIÓN DE SEDES (COLORES Y VISIBILIDAD) ==========
+  sedeColors: Record<string, string>;
+  setSedeColor: (sede: string, color: string) => void;
+  visibleSedes: Record<string, boolean>;
+  toggleSedeVisibility: (sede: string) => void;
 
   // ========== SELECCIÓN ==========
   selectedAppointment: Appointment | null;
@@ -76,7 +88,8 @@ interface AgendaState {
 export const useAgendaState = create<AgendaState>((set, get) => ({
   // ========== ESTADO INICIAL ==========
   viewMode: 'week',
-  viewDensity: 'comfortable',
+  isSidebarOpen: false,
+  hourRange: 'full', // Vista de 24 horas por defecto
   selectedDate: Temporal.Now.plainDateISO('America/Mexico_City'),
   dateRange: getWeekRange(Temporal.Now.plainDateISO('America/Mexico_City')),
   selectedSede: 'ALL',
@@ -93,6 +106,29 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
   isCreateModalOpen: false,
   isEditModalOpen: false,
 
+  // Colores iniciales (Tailwind classes mapeadas a hex o clases directas)
+  // Usamos clases de Tailwind para consistencia, pero el picker podría usar hex
+  sedeColors: {
+    'POLANCO': 'bg-blue-600',
+    'SATELITE': 'bg-emerald-600',
+  },
+  visibleSedes: {
+    'POLANCO': true,
+    'SATELITE': true,
+  },
+
+  // ========== ACCIONES DE SEDES ==========
+  setSedeColor: (sede, color) => 
+    set((state) => ({ sedeColors: { ...state.sedeColors, [sede]: color } })),
+  
+  toggleSedeVisibility: (sede) =>
+    set((state) => ({ 
+      visibleSedes: { 
+        ...state.visibleSedes, 
+        [sede]: !state.visibleSedes[sede] 
+      } 
+    })),
+
   // ========== ACCIONES DE VISTA ==========
   setViewMode: (mode) => {
     set({ viewMode: mode });
@@ -107,7 +143,25 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
     set({ dateRange: newRange });
   },
 
-  setViewDensity: (density) => set({ viewDensity: density }),
+  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  setIsSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
+  
+  // ========== ACCIONES DE HORARIO ==========
+  setHourRange: (range) => set({ hourRange: range }),
+  
+  getHourBounds: () => {
+    const { hourRange } = get();
+    switch (hourRange) {
+      case 'business':
+        return { startHour: 7, endHour: 21 }; // 7 AM - 9 PM
+      case 'extended':
+        return { startHour: 6, endHour: 22 }; // 6 AM - 10 PM
+      case 'full':
+        return { startHour: 0, endHour: 24 }; // Día completo
+      default:
+        return { startHour: 7, endHour: 21 };
+    }
+  },
 
   // ========== ACCIONES DE FECHA ==========
   setSelectedDate: (date) => {

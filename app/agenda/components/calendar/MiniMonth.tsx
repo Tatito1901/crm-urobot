@@ -10,6 +10,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getMonthMatrix, getMonthName, isSameDay, isToday, addMonths } from '@/lib/date-utils';
+import { useOccupancyHeatmap, getOccupancyColors } from '../../hooks/useOccupancyHeatmap';
 
 interface MiniMonthProps {
   selectedDate: Date;
@@ -19,6 +20,7 @@ interface MiniMonthProps {
 }
 
 export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSelect, currentMonth, onMonthChange }: MiniMonthProps) {
+  const { getOccupancyForDate } = useOccupancyHeatmap();
   const matrix = getMonthMatrix(currentMonth.getFullYear(), currentMonth.getMonth());
   const dayAbbreviations = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
@@ -71,21 +73,30 @@ export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSel
             const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
             const isCurrentDay = isToday(date);
             const isSelected = isSameDay(date, selectedDate);
+            const occupancy = getOccupancyForDate(date);
+            const colors = getOccupancyColors(occupancy.level);
 
             return (
               <button
                 key={`${weekIndex}-${dayIndex}`}
                 onClick={() => onDateSelect(date)}
                 className={`
-                  aspect-square flex items-center justify-center rounded-full text-xs transition-colors
-                  ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-200'}
-                  ${isCurrentDay ? 'bg-emerald-500 text-white font-bold' : ''}
-                  ${isSelected && !isCurrentDay ? 'bg-slate-700' : ''}
-                  ${!isCurrentDay && !isSelected ? 'hover:bg-slate-800/60' : ''}
+                  relative aspect-square flex items-center justify-center rounded-full text-[11px] font-medium transition-all group
+                  ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-300'}
+                  ${isCurrentDay ? 'bg-blue-600 text-white shadow-sm shadow-blue-900/20' : ''}
+                  ${isSelected && !isCurrentDay ? 'bg-blue-500/20 text-blue-200' : ''}
+                  ${!isCurrentDay && !isSelected ? 'hover:bg-slate-800' : ''}
                 `}
                 aria-current={isCurrentDay ? 'date' : undefined}
+                title={occupancy.count > 0 ? `${occupancy.count} citas` : ''}
               >
                 {date.getDate()}
+                {/* Indicador de ocupación (solo para días con citas) */}
+                {occupancy.count > 0 && isCurrentMonth && !isCurrentDay && !isSelected && (
+                  <div 
+                    className={`absolute bottom-1 w-1 h-1 rounded-full ${colors.indicator} opacity-70 group-hover:opacity-100`}
+                  />
+                )}
               </button>
             );
           })

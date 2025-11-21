@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 
@@ -23,19 +23,20 @@ const navItems: readonly NavItem[] = [
 // Subsecciones de estadísticas
 interface EstadisticaSeccion {
   id: string;
+  href: string;
   label: string;
   icon: string;
   color: string;
 }
 
 const estadisticasSecciones: EstadisticaSeccion[] = [
-  { id: 'resumen', label: 'Resumen General', icon: '📊', color: 'blue' },
-  { id: 'funnel', label: 'Funnel Conversión', icon: '📈', color: 'emerald' },
-  { id: 'mensajeria', label: 'Mensajería', icon: '💬', color: 'purple' },
-  { id: 'canales', label: 'Canales Marketing', icon: '🎯', color: 'amber' },
-  { id: 'consultas', label: 'Performance', icon: '📅', color: 'cyan' },
-  { id: 'leads', label: 'Análisis Leads', icon: '👥', color: 'pink' },
-  { id: 'operativo', label: 'Real-time', icon: '⚡', color: 'red' },
+  { id: 'resumen', href: '/estadisticas', label: 'Resumen General', icon: '📊', color: 'blue' },
+  { id: 'funnel', href: '/estadisticas/funnel', label: 'Funnel Conversión', icon: '📈', color: 'emerald' },
+  { id: 'mensajeria', href: '/estadisticas/mensajeria', label: 'Mensajería', icon: '💬', color: 'purple' },
+  { id: 'canales', href: '/estadisticas/canales', label: 'Canales Marketing', icon: '🎯', color: 'amber' },
+  { id: 'consultas', href: '/estadisticas/performance', label: 'Performance', icon: '📅', color: 'cyan' },
+  { id: 'leads', href: '/estadisticas/leads', label: 'Análisis Leads', icon: '👥', color: 'pink' },
+  { id: 'operativo', href: '/estadisticas/realtime', label: 'Real-time', icon: '⚡', color: 'red' },
 ];
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });
@@ -47,11 +48,10 @@ export function Sidebar() {
   const today = useMemo(() => DATE_FORMATTER.format(new Date()), []);
   
   const isEstadisticas = pathname === '/estadisticas' || pathname?.startsWith('/estadisticas/');
-  const seccionActiva = searchParams?.get('seccion') || 'resumen';
-
-  const handleSeccionClick = (seccionId: string) => {
-    router.push(`/estadisticas?seccion=${seccionId}`);
-  };
+  
+  // Determinar sección activa basada en el path
+  const seccionActiva = estadisticasSecciones.find(s => s.href === pathname)?.id || 
+                        (pathname === '/estadisticas' ? 'resumen' : '');
 
   return (
     <>
@@ -93,7 +93,7 @@ export function Sidebar() {
                 </div>
                 <ul className="flex flex-col gap-1.5 text-sm">
                   {estadisticasSecciones.map((seccion) => {
-                    const isActive = seccionActiva === seccion.id;
+                    const isActive = pathname === seccion.href;
                     const colorClass = {
                       blue: 'border-blue-500/40 bg-blue-500/15 text-blue-300',
                       emerald: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300',
@@ -106,8 +106,8 @@ export function Sidebar() {
 
                     return (
                       <li key={seccion.id}>
-                        <button
-                          onClick={() => handleSeccionClick(seccion.id)}
+                        <Link
+                          href={seccion.href}
                           className={cn(
                             "w-full group flex items-center gap-2.5 rounded-xl border px-3 py-2.5 font-medium transition-all text-left",
                             "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
@@ -121,7 +121,7 @@ export function Sidebar() {
                           {isActive && (
                             <span className="ml-auto text-xs">✓</span>
                           )}
-                        </button>
+                        </Link>
                       </li>
                     );
                   })}

@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useMemo, useEffect, useRef } from 'react';
+import { Temporal } from '@js-temporal/polyfill';
 import { formatTimeRange, getStatusConfig } from '../../lib/agenda-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
 import { useAppointmentColor } from '../../hooks/useColorPreferences';
@@ -24,9 +25,8 @@ export const ListView: React.FC<ListViewProps> = ({
   onAppointmentClick,
   dateRange,
 }) => {
-  const { viewDensity } = useAgendaState();
-  const listRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Agrupar citas por fecha
   const groupedAppointments = useMemo(() => {
@@ -52,25 +52,20 @@ export const ListView: React.FC<ListViewProps> = ({
 
   const sortedDates = Object.keys(groupedAppointments).sort();
   
-  // Auto-scroll al día actual cuando se monta
+  // Obtener fecha de hoy en formato string
+  const todayStr = Temporal.Now.plainDateISO('America/Mexico_City').toString();
+  const hasTodayAppointments = sortedDates.includes(todayStr);
+  
+  // Auto-scroll al día de hoy
   useEffect(() => {
-    if (todayRef.current && listRef.current) {
-      todayRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (hasTodayAppointments && todayRef.current && containerRef.current) {
+      const timer = setTimeout(() => {
+        todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
-  }, []);
-  
-  // Clases según densidad
-  const densityClasses = {
-    compact: 'p-3 space-y-1',
-    comfortable: 'p-4 space-y-2',
-    spacious: 'p-5 space-y-3',
-  };
-  
-  const cardDensityClasses = {
-    compact: 'text-xs',
-    comfortable: 'text-sm',
-    spacious: 'text-base',
-  };
+  }, [hasTodayAppointments, sortedDates.join(',')]);
 
   if (appointments.length === 0) {
     return (
@@ -98,7 +93,7 @@ export const ListView: React.FC<ListViewProps> = ({
   }
 
   return (
-    <div ref={listRef} className={`h-full overflow-y-auto ${viewDensity === 'compact' ? 'p-4 space-y-4' : viewDensity === 'comfortable' ? 'p-6 space-y-6' : 'p-8 space-y-8'}`}>
+    <div ref={containerRef} className="h-full overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scroll-smooth">
       {sortedDates.map((dateStr) => {
         const appointments = groupedAppointments[dateStr];
         const firstApt = appointments[0];
@@ -131,18 +126,20 @@ export const ListView: React.FC<ListViewProps> = ({
                        date.month === (today.getMonth() + 1) && 
                        date.day === today.getDate();
 
+        // Verificar si es hoy
+        const isToday = dateStr === todayStr;
+        
         return (
-          <div key={dateStr} ref={isToday ? todayRef : null}>
+          <div 
+            key={dateStr} 
+            ref={isToday ? todayRef : null}
+            className={isToday ? 'scroll-mt-4' : ''}
+          >
             {/* Header de fecha */}
-            <div className={`flex items-center gap-3 ${viewDensity === 'compact' ? 'mb-2' : viewDensity === 'comfortable' ? 'mb-3' : 'mb-4'}`}>
-              <h3 className={`font-semibold ${isToday ? 'text-blue-400' : 'text-slate-300'} ${viewDensity === 'compact' ? 'text-xs' : viewDensity === 'comfortable' ? 'text-sm' : 'text-base'}`}>
-                {isToday && '🔵 '}
-                {dateLabel}
-              </h3>
-              <div className={`flex-1 h-px ${isToday ? 'bg-blue-500/30' : 'bg-slate-800'}`} />
-              <span className={`text-slate-500 ${viewDensity === 'compact' ? 'text-[10px]' : 'text-xs'}`}>
-                {appointments.length} consulta{appointments.length !== 1 ? 's' : ''}
-              </span>
+            <div className={`flex items-center gap-3 mb-3 ${isToday ? 'bg-gradient-to-r from-emerald-500/10 to-transparent -mx-4 px-4 py-2 rounded-lg' : ''}`}>
+              <h3 className="text-sm font-semibold text-slate-300">{dateLabel}</h3>
+              <div className="flex-1 h-px bg-slate-800" />
+              <span className="text-xs text-slate-500">{appointments.length} consultas</span>
             </div>
 
             {/* Lista de citas */}

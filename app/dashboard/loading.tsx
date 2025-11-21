@@ -5,8 +5,7 @@
  * Evita FOUC y layout shifts durante SSR/navegación
  */
 
-import { MetricCardSkeleton } from '@/app/components/common/SkeletonLoader';
-import { CardSkeleton, ListItemSkeleton } from '@/app/components/common/ContentLoader';
+import { MetricCardSkeleton, CardSkeleton, ListItemSkeleton } from '@/app/components/common/SkeletonLoader';
 
 export default function DashboardLoading() {
   return (

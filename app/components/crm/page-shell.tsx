@@ -8,7 +8,7 @@
 
 import { ReactNode } from "react";
 
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface PageShellProps {
   eyebrow: string;
@@ -19,6 +19,7 @@ interface PageShellProps {
   accent?: boolean;
   className?: string;
   compact?: boolean;
+  fullWidth?: boolean;
 }
 
 export function PageShell({
@@ -29,24 +30,28 @@ export function PageShell({
   children,
   accent = false,
   compact = false,
+  fullWidth = false,
   className,
 }: PageShellProps) {
   const layoutClasses = compact
-    ? "relative mx-auto flex max-w-6xl flex-col gap-4 px-4 pb-10 pt-6 sm:gap-5 sm:px-6 sm:pb-12 sm:pt-6 md:gap-5 lg:px-6 lg:pt-8 lg:pb-10"
-    : "relative mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-20 pt-6 sm:gap-8 sm:px-6 sm:pb-24 sm:pt-8 md:gap-10 lg:pt-8 lg:pb-20";
+    ? "relative flex w-full flex-col gap-3 px-6 py-3 sm:gap-3 sm:px-8 sm:py-4 md:gap-3 lg:px-12 lg:py-4 xl:px-16"
+    : cn(
+        "relative mx-auto flex w-full flex-col gap-6 px-6 pb-20 pt-8 sm:gap-8 sm:px-8 sm:pb-24 sm:pt-10 md:gap-10 lg:px-12 lg:pt-12 lg:pb-20 xl:px-16",
+        fullWidth ? "max-w-[1600px]" : "max-w-6xl"
+      );
 
   const headerClasses = cn(
     "flex flex-col",
-    compact ? "gap-3" : "gap-4",
+    compact ? "gap-2" : "gap-4",
     headerSlot ? "lg:flex-row lg:items-end lg:justify-between" : ""
   );
 
-  const titleBlockClasses = compact ? "space-y-1.5" : "space-y-2";
+  const titleBlockClasses = compact ? "space-y-1" : "space-y-2";
 
   return (
     <div
       className={cn(
-        "relative min-h-screen overflow-hidden bg-urobot text-white",
+        "relative h-screen overflow-hidden bg-urobot text-white flex flex-col",
         className
       )}
     >
@@ -55,12 +60,21 @@ export function PageShell({
           <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/40 blur-[180px]" />
         </div>
       )}
-      <div className={layoutClasses}>
+      <div className={cn(layoutClasses, "flex-1 min-h-0 overflow-y-auto")}>
         <header className={headerClasses}>
           <div className={titleBlockClasses}>
-            <p className="text-xs uppercase tracking-[0.3em] text-blue-200/60">{eyebrow}</p>
-            <h1 className="text-2xl font-semibold text-white sm:text-3xl">{title}</h1>
-            {description && <p className="text-sm text-white/60">{description}</p>}
+            <p className={cn(
+              "uppercase tracking-[0.3em] text-blue-200/60",
+              compact ? "text-[10px]" : "text-xs"
+            )}>{eyebrow}</p>
+            <h1 className={cn(
+              "font-semibold text-white",
+              compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
+            )}>{title}</h1>
+            {description && <p className={cn(
+              "text-white/60",
+              compact ? "text-xs" : "text-sm"
+            )}>{description}</p>}
           </div>
           {headerSlot && (
             <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end lg:w-auto">

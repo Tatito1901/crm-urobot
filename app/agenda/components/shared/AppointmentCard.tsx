@@ -10,8 +10,7 @@
 import React, { useState } from 'react';
 import type { Appointment } from '@/types/agenda';
 import { AppointmentTooltip } from './AppointmentTooltip';
-import { ResponsiveText } from './ResponsiveText';
-import { useAppointmentColor } from '../../hooks/useColorPreferences';
+import { useAgendaState } from '../../hooks/useAgendaState';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -23,120 +22,116 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   onClick,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
-  
-  // Obtener color personalizado para esta cita
-  const customColor = useAppointmentColor(appointment.sede);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+  const { sedeColors } = useAgendaState();
+
+  // Obtener color dinámico de la sede o usar fallback
+  const bgColorClass = sedeColors[appointment.sede] || 
+    (appointment.sede === 'POLANCO' ? 'bg-blue-600' : 'bg-emerald-600');
 
   // Formatear hora
   const startTime = appointment.start.toPlainTime().toString().slice(0, 5);
+  const endTime = appointment.end.toPlainTime().toString().slice(0, 5);
   
   // Determinar nivel de detalle según duración
   const isShortAppointment = appointment.duracionMinutos <= 30;
-  const isLongAppointment = appointment.duracionMinutos > 60;
 
   // Determinar badge de estado
   const getEstadoBadge = () => {
     switch (appointment.estado) {
       case 'Confirmada':
-        return { icon: '✓', color: 'text-emerald-400' };
+        return { icon: '✓' };
       case 'Cancelada':
-        return { icon: '✕', color: 'text-red-400' };
+        return { icon: '✕' };
       case 'Reagendada':
-        return { icon: '↻', color: 'text-amber-400' };
+        return { icon: '↻' };
       default:
         return null;
     }
   };
 
-  // Determinar si puede confirmar
-  const canConfirm = appointment.estado === 'Programada' && !appointment.confirmadoPaciente;
-
   const estadoBadge = getEstadoBadge();
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipPos({ x: rect.right, y: rect.top });
+    setShowTooltip(true);
+  };
 
   return (
     <div
       className={`
-        relative group h-full
-        border-l-[3px] rounded-md
-        ${isShortAppointment ? 'px-2 py-1' : 'px-2.5 py-1.5'}
+        relative group h-full w-full
+        rounded-md
+        px-2 py-1
         cursor-pointer
         transition-all duration-150
-        hover:shadow-md hover:shadow-black/40
-        hover:brightness-110
+        hover:brightness-110 hover:shadow-md hover:scale-[1.02] hover:z-10
         flex flex-col
         ${isShortAppointment ? 'justify-center' : 'justify-start'}
         overflow-hidden
-        min-h-[28px]
+        shadow-sm
+        ${bgColorClass} text-white
+        border border-white/10
       `}
       style={{
         borderLeftColor: customColor,
         backgroundColor: `${customColor}25`, // 25% opacity - más visible
       }}
       onClick={() => onClick?.(appointment)}
-      onMouseEnter={() => setShowTooltip(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setShowTooltip(false)}
     >
       {/* Diseño compacto para citas cortas (<=30 min) */}
       {isShortAppointment ? (
-        <div className="flex items-center justify-between gap-1">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-white truncate leading-tight">
-              {startTime} {appointment.paciente}
-            </p>
-          </div>
-          {estadoBadge && (
-            <div className={`text-[10px] ${estadoBadge.color} font-bold flex-shrink-0`}>
-              {estadoBadge.icon}
-            </div>
-          )}
+        <div className="flex items-center gap-1.5 w-full overflow-hidden">
+          <span className="text-[10px] font-medium opacity-90 whitespace-nowrap">
+            {startTime}
+          </span>
+          <span className="text-[11px] font-semibold truncate flex-1 leading-none">
+            {appointment.paciente}
+          </span>
         </div>
       ) : (
-        /* Diseño normal para citas medianas/largas (>30 min) */
-        <>
-          {/* Header: Hora + Badge estado */}
-          <div className="flex items-center justify-between gap-1.5 mb-1.5">
-            <div className="text-xs font-semibold text-slate-300">
-              {startTime}
-            </div>
-            <div className="flex items-center gap-1">
-              {estadoBadge && (
-                <div className={`text-xs ${estadoBadge.color} font-bold`}>
-                  {estadoBadge.icon}
-                </div>
-              )}
-              {canConfirm && (
-                <div className="w-2 h-2 rounded-full bg-amber-400" title="Pendiente confirmación" />
-              )}
-            </div>
+        /* Diseño normal */
+        <div className="flex flex-col h-full w-full min-h-0 gap-0.5">
+          {/* Título: Paciente (Prominente) */}
+          <div className="font-semibold text-xs leading-tight truncate shrink-0">
+            {appointment.paciente}
           </div>
-
-          {/* Paciente - prominente con texto escalable */}
-          <div className="flex-1 min-h-0 mb-1">
-            <ResponsiveText
-              text={appointment.paciente}
-              maxLines={isLongAppointment ? 2 : 1}
-              minSize={10}
-              maxSize={14}
-              className="font-bold text-white leading-tight group-hover:text-blue-200 transition-colors"
-            />
+          
+          {/* Fila inferior: Hora */}
+          <div className="flex items-center gap-2 shrink-0 min-h-0">
+            <span className="text-[10px] font-medium opacity-80 leading-none whitespace-nowrap">
+              {startTime} - {endTime}
+            </span>
+            
+            {/* Iconos sutiles */}
+            {estadoBadge && (
+              <span className="text-[9px] opacity-70 ml-auto">
+                {estadoBadge.icon}
+              </span>
+            )}
           </div>
-
-          {/* Footer: Sede + Duración (solo para citas largas) */}
-          {isLongAppointment && (
-            <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-700/40">
-              <span className="truncate font-medium">{appointment.sede}</span>
-              <span className="flex-shrink-0">{appointment.duracionMinutos}min</span>
-            </div>
+          
+          {/* Información extra solo para citas muy largas (>60 min) */}
+          {appointment.duracionMinutos > 60 && appointment.tipo && (
+             <div className="mt-auto pt-1 opacity-60 truncate text-[10px] font-medium">
+               {appointment.tipo.replace(/_/g, ' ')}
+             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Tooltip elegante en hover */}
-      <AppointmentTooltip
-        appointment={appointment}
-        isVisible={showTooltip}
-        position="right"
-      />
+      {tooltipPos && (
+        <AppointmentTooltip
+          appointment={appointment}
+          isVisible={showTooltip}
+          x={tooltipPos.x}
+          y={tooltipPos.y}
+        />
+      )}
     </div>
   );
 };

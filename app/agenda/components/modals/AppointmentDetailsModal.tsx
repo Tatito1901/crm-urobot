@@ -3,6 +3,7 @@
  * APPOINTMENT DETAILS MODAL - Modal de detalles de cita
  * ============================================================
  * Muestra información completa de una cita con opciones de edición
+ * Diseño optimizado estilo Google Calendar / Linear
  */
 
 'use client';
@@ -10,7 +11,8 @@
 import React, { useState } from 'react';
 import { 
   Calendar, Clock, MapPin, User, Phone, Mail, FileText, 
-  Edit2, X, Check, AlertCircle, ExternalLink, MessageSquare 
+  Edit2, X, Check, AlertCircle, ExternalLink, MessageSquare,
+  Trash2, MessageCircle, CalendarCheck, ShieldAlert, Send
 } from 'lucide-react';
 import { Modal } from '../shared/Modal';
 import { formatTimeRange, formatLongDate } from '../../lib/agenda-utils';
@@ -18,6 +20,7 @@ import { StatusBadge } from '../shared/StatusBadge';
 import { SedeBadge } from '../shared/SedeBadge';
 import type { Appointment } from '@/types/agenda';
 import type { EstadoConsulta } from '../../lib/constants';
+import { cn } from '@/lib/utils';
 
 interface ServiceResponse<T = void> {
   success: boolean;
@@ -95,327 +98,297 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
       .toUpperCase();
   };
 
+  // Calcular tiempo relativo
+  const getRelativeTime = () => {
+    const now = new Date();
+    const start = new Date(appointment.start.toString());
+    const diffMs = start.getTime() - now.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+    if (diffMs < 0) return 'Pasada';
+    if (diffDays === 0) return `En ${diffHours} horas`;
+    if (diffDays === 1) return 'Mañana';
+    return `En ${diffDays} días`;
+  };
+
+  const isCancelled = appointment.estado === 'Cancelada';
+  const isCompleted = appointment.estado === 'Completada';
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="lg">
-      <div className="space-y-5">
-        {/* Header profesional */}
-        <div className="bg-slate-900/50 border-b border-slate-700 -mx-6 -mt-6 px-6 py-5">
-          <div className="flex items-start gap-4">
-            {/* Avatar corporativo */}
-            <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg">
-              <span className="text-xl font-bold text-white">
+      <div className="relative">
+        {/* Toolbar Superior (Acciones) */}
+        <div className="absolute top-0 right-0 flex items-center gap-1 z-10">
+          {!isCancelled && onEdit && (
+            <button
+              onClick={() => {
+                onEdit(appointment);
+                onClose();
+              }}
+              className="p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              title="Editar cita"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
+          )}
+          {!isCancelled && (
+            <button
+              onClick={() => setShowCancelDialog(true)}
+              className="p-2 rounded-md text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
+              title="Cancelar cita"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            title="Cerrar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="space-y-6 pr-8">
+          {/* Header: Título y Estado */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              {/* Avatar / Iniciales */}
+              <div className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-lg",
+                isCancelled ? "bg-slate-700 text-slate-400" : "bg-blue-600 text-white shadow-blue-500/20"
+              )}>
                 {getInitials(appointment.paciente)}
-              </span>
-            </div>
-            
-            {/* Información principal */}
-            <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold text-white mb-2.5">
-                {appointment.paciente}
-              </h2>
-              
-              {/* Badges profesionales */}
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <StatusBadge 
-                  estado={appointment.estado as EstadoConsulta} 
-                  size="md" 
-                  showIcon={true}
-                />
-                {!appointment.confirmadoPaciente && appointment.estado !== 'Cancelada' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-600/20 border border-amber-600/30 text-amber-300 font-medium text-xs">
-                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
-                    Sin confirmar
-                  </span>
-                )}
-                {appointment.prioridad !== 'normal' && (
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border font-medium text-xs ${
-                    appointment.prioridad === 'urgente'
-                      ? 'bg-red-600/20 border-red-600/30 text-red-300'
-                      : 'bg-orange-600/20 border-orange-600/30 text-orange-300'
-                  }`}>
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    {appointment.prioridad === 'urgente' ? 'Urgente' : 'Alta'}
-                  </span>
-                )}
               </div>
               
-              {/* Información de fecha/hora limpia */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded bg-slate-800/50 border border-slate-700">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                  <span className="text-xs font-medium text-slate-300">
-                    {formatLongDate(appointment.start)}
+              <div>
+                <h2 className={cn(
+                  "text-xl font-bold",
+                  isCancelled ? "text-slate-400 line-through" : "text-white"
+                )}>
+                  {appointment.paciente}
+                </h2>
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <span className="capitalize">{appointment.tipo}</span>
+                  <span>•</span>
+                  <span className={cn(
+                    "font-medium",
+                    getRelativeTime() === 'Pasada' ? "text-slate-500" : "text-emerald-400"
+                  )}>
+                    {getRelativeTime()}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded bg-slate-800/50 border border-slate-700">
-                  <Clock className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                  <span className="text-xs font-semibold text-white">
-                    {formatTimeRange(appointment.start, appointment.end)}
-                  </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge 
+                estado={appointment.estado as EstadoConsulta} 
+                size="sm" 
+                showIcon={true}
+              />
+              <SedeBadge sede={appointment.sede} size="sm" />
+              
+              {/* Badge Confirmación */}
+              {appointment.confirmadoPaciente ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                  <Check className="w-3 h-3" />
+                  Confirmada
+                </span>
+              ) : !isCancelled && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium">
+                  <AlertCircle className="w-3 h-3" />
+                  Pendiente
+                </span>
+              )}
+
+              {/* Prioridad */}
+              {appointment.prioridad !== 'normal' && (
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-medium",
+                  appointment.prioridad === 'urgente' 
+                    ? "bg-red-500/10 border-red-500/20 text-red-400" 
+                    : "bg-orange-500/10 border-orange-500/20 text-orange-400"
+                )}>
+                  <ShieldAlert className="w-3 h-3" />
+                  {appointment.prioridad.toUpperCase()}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Body: Información Estructurada (Grid con iconos laterales) */}
+          <div className="grid gap-6">
+            
+            {/* Fecha y Hora */}
+            <div className="flex gap-4 group">
+              <div className="w-8 flex justify-center pt-0.5">
+                <Clock className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-medium text-base">
+                  {formatLongDate(appointment.start)}
+                </p>
+                <p className="text-slate-400 text-sm">
+                  {formatTimeRange(appointment.start, appointment.end)} ({appointment.duracionMinutos} min)
+                </p>
+                {appointment.calendarLink && (
+                  <a 
+                    href={appointment.calendarLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 mt-2 text-xs text-blue-400 hover:text-blue-300 hover:underline"
+                  >
+                    Ver en Google Calendar <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* Contacto */}
+            {(appointment.telefono || appointment.email) && (
+              <div className="flex gap-4 group">
+                <div className="w-8 flex justify-center pt-0.5">
+                  <Phone className="w-5 h-5 text-slate-400 group-hover:text-emerald-400 transition-colors" />
                 </div>
-                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded bg-slate-800/50 border border-slate-700">
-                  <MapPin className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                  {(appointment.sede === 'POLANCO' || appointment.sede === 'SATELITE') && (
-                    <SedeBadge sede={appointment.sede} size="sm" showIcon={false} />
+                <div className="flex-1 space-y-3">
+                  <div className="flex flex-wrap gap-3">
+                    {appointment.telefono && (
+                      <>
+                        <a
+                          href={`https://wa.me/${appointment.telefono.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 rounded-md bg-emerald-600/10 border border-emerald-600/20 text-emerald-400 hover:bg-emerald-600/20 transition-colors text-sm font-medium"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          WhatsApp
+                        </a>
+                        <a
+                          href={`tel:${appointment.telefono}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-medium"
+                        >
+                          <Phone className="w-4 h-4" />
+                          Llamar
+                        </a>
+                      </>
+                    )}
+                    {appointment.email && (
+                      <a
+                        href={`mailto:${appointment.email}`}
+                        className="flex items-center gap-2 px-3 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-medium"
+                      >
+                        <Mail className="w-4 h-4" />
+                        Email
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Detalles y Motivo */}
+            {(appointment.motivoConsulta || appointment.notasInternas) && (
+              <div className="flex gap-4 group">
+                <div className="w-8 flex justify-center pt-0.5">
+                  <FileText className="w-5 h-5 text-slate-400 group-hover:text-purple-400 transition-colors" />
+                </div>
+                <div className="flex-1 space-y-4">
+                  {appointment.motivoConsulta && (
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Motivo</h4>
+                      <p className="text-slate-200 text-sm leading-relaxed bg-slate-800/30 p-3 rounded-lg border border-slate-800">
+                        {appointment.motivoConsulta}
+                      </p>
+                    </div>
+                  )}
+                  {appointment.notasInternas && (
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Notas Internas</h4>
+                      <div className="text-slate-300 text-sm bg-yellow-500/5 border border-yellow-500/10 p-3 rounded-lg flex gap-3">
+                        <AlertCircle className="w-4 h-4 text-yellow-500/50 flex-shrink-0 mt-0.5" />
+                        {appointment.notasInternas}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-        {/* Grid de información - diseño corporativo */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="rounded-lg bg-slate-800/50 p-3.5 border border-slate-700 hover:border-slate-600 transition-colors">
-            <div className="flex items-start gap-2.5">
-              <User className="h-4 w-4 text-slate-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-medium text-slate-500 mb-1">Tipo de consulta</p>
-                <p className="text-sm font-semibold text-white capitalize">{appointment.tipo.replace(/_/g, ' ')}</p>
+            )}
+
+            {/* Estado de Cancelación */}
+            {isCancelled && (
+              <div className="flex gap-4">
+                <div className="w-8 flex justify-center pt-0.5">
+                  <X className="w-5 h-5 text-red-500" />
+                </div>
+                <div className="flex-1 bg-red-500/5 border border-red-500/10 rounded-lg p-3">
+                  <h4 className="text-sm font-medium text-red-400 mb-1">Cita Cancelada</h4>
+                  {appointment.motivoCancelacion && (
+                    <p className="text-red-300/80 text-sm">{appointment.motivoCancelacion}</p>
+                  )}
+                  {appointment.canceladoPor && (
+                    <p className="text-red-300/60 text-xs mt-2">
+                      Cancelado por: <span className="capitalize">{appointment.canceladoPor}</span>
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="rounded-lg bg-slate-800/50 p-3.5 border border-slate-700 hover:border-slate-600 transition-colors">
-            <div className="flex items-start gap-2.5">
-              <FileText className="h-4 w-4 text-slate-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-medium text-slate-500 mb-1">Modalidad</p>
-                <p className="text-sm font-semibold text-white capitalize">{appointment.modalidad}</p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-lg bg-slate-800/50 p-3.5 border border-slate-700 hover:border-slate-600 transition-colors">
-            <div className="flex items-start gap-2.5">
-              <Clock className="h-4 w-4 text-slate-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-medium text-slate-500 mb-1">Duración</p>
-                <p className="text-sm font-semibold text-white">{appointment.duracionMinutos} minutos</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Acciones de contacto - diseño corporativo */}
-        {(appointment.telefono || appointment.email) && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {appointment.telefono && (
-              <a
-                href={`tel:${appointment.telefono}`}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-blue-600 hover:text-white transition-colors"
+        {/* Acciones Principales (Footer Sticky) */}
+        {!showCancelDialog && !isCancelled && !isCompleted && (
+          <div className="mt-8 pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+             {!appointment.confirmadoPaciente && onConfirm && (
+              <button
+                onClick={handleConfirm}
+                disabled={isConfirming}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Phone className="h-4 w-4" />
-                <span className="text-sm font-medium">Llamar</span>
-              </a>
-            )}
-            {appointment.telefono && (
-              <a
-                href={`https://wa.me/${appointment.telefono?.replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-blue-600 hover:text-white transition-colors"
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span className="text-sm font-medium">WhatsApp</span>
-              </a>
-            )}
-            {appointment.email && (
-              <a
-                href={`mailto:${appointment.email}`}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-blue-600 hover:text-white transition-colors"
-              >
-                <Mail className="h-4 w-4" />
-                <span className="text-sm font-medium">Email</span>
-              </a>
-            )}
+                <Check className="w-4 h-4" />
+                {isConfirming ? 'Confirmando...' : 'Confirmar Cita'}
+              </button>
+             )}
+             <button
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-lg bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 border border-slate-700 active:scale-95 transition-all"
+             >
+              Cerrar
+             </button>
           </div>
         )}
 
-        {/* Detalles adicionales */}
-        {(appointment.motivoConsulta || appointment.notasInternas || appointment.modalidad !== 'presencial') && (
-          <div className="rounded-lg bg-slate-800/30 border border-slate-700/50 p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Detalles Adicionales
+        {/* Diálogo de Cancelación (Overlay) */}
+        {showCancelDialog && (
+          <div className="mt-6 bg-slate-900/50 border border-red-500/20 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
+            <h3 className="text-red-400 font-medium flex items-center gap-2 mb-3">
+              <Trash2 className="w-4 h-4" />
+              Confirmar Cancelación
             </h3>
-
-            {appointment.modalidad !== 'presencial' && (
-              <div>
-                <p className="text-xs text-slate-400 mb-1">Modalidad</p>
-                <p className="text-sm text-slate-200 capitalize">{appointment.modalidad}</p>
-              </div>
-            )}
-            
-            {appointment.motivoConsulta && (
-              <div>
-                <p className="text-xs text-slate-400 mb-1">Motivo de consulta</p>
-                <p className="text-sm text-slate-200">{appointment.motivoConsulta}</p>
-              </div>
-            )}
-
-            {appointment.notasInternas && (
-              <div>
-                <p className="text-xs text-slate-400 mb-1">Notas internas</p>
-                <p className="text-sm text-slate-300 bg-slate-900/50 p-2.5 rounded border border-slate-700/30">
-                  {appointment.notasInternas}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Confirmación (si está confirmada) */}
-        {appointment.confirmadoPaciente && appointment.confirmadoEn && (
-          <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-3">
-            <div className="flex items-center gap-2 text-sm text-emerald-400">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="font-medium">Confirmada el {new Date(appointment.confirmadoEn).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Google Calendar */}
-        {appointment.calendarLink && (
-          <a
-            href={appointment.calendarLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-800 hover:border-blue-600 hover:text-white transition-colors"
-          >
-            <Calendar className="h-4 w-4" />
-            <span className="text-sm font-medium">Ver en Google Calendar</span>
-            <ExternalLink className="h-3.5 w-3.5 text-slate-500" />
-          </a>
-        )}
-
-        {/* Información de cancelación (si aplica) */}
-        {appointment.estado === 'Cancelada' && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-4">
-            <div className="flex items-start gap-3">
-              <svg className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <div className="flex-1 space-y-2">
-                <h3 className="text-sm font-semibold text-red-400">Cita Cancelada</h3>
-                {appointment.motivoCancelacion && (
-                  <div>
-                    <p className="text-xs text-slate-400">Motivo</p>
-                    <p className="text-sm text-slate-300">{appointment.motivoCancelacion}</p>
-                  </div>
-                )}
-                {appointment.canceladoPor && (
-                  <div>
-                    <p className="text-xs text-slate-400">Cancelado por</p>
-                    <p className="text-sm text-slate-300 capitalize">{appointment.canceladoPor}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Diálogo de cancelación */}
-        {showCancelDialog ? (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4">
-            <h3 className="text-lg font-semibold text-red-400 mb-3">Cancelar Cita</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">
-                  Motivo de cancelación <span className="text-red-400">*</span>
-                </label>
-                <textarea
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Ej: Solicitado por paciente, reagendamiento..."
-                  rows={3}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-none"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setShowCancelDialog(false);
-                    setCancelReason('');
-                  }}
-                  disabled={isCancelling}
-                  className="flex-1 px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50"
-                >
-                  Volver
-                </button>
-                <button
-                  onClick={handleCancel}
-                  disabled={isCancelling || !cancelReason.trim()}
-                  className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isCancelling ? 'Cancelando...' : 'Confirmar Cancelación'}
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* Botones de acción - diseño corporativo */
-          <div className="space-y-3 pt-4 border-t border-slate-700">
-            {/* Acciones rápidas - solo si no está cancelada */}
-            {appointment.estado !== 'Cancelada' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {/* Confirmar cita */}
-                {!appointment.confirmadoPaciente && onConfirm && (
-                  <button
-                    onClick={handleConfirm}
-                    disabled={isConfirming}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 border border-blue-700 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                  >
-                    <Check className="h-4 w-4" />
-                    <span>{isConfirming ? 'Confirmando...' : 'Confirmar Cita'}</span>
-                  </button>
-                )}
-
-                {/* Editar cita */}
-                {onEdit && (
-                  <button
-                    onClick={() => {
-                      onEdit(appointment);
-                      onClose();
-                    }}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-slate-700 border border-slate-600 text-slate-200 hover:bg-slate-600 hover:border-slate-500 transition-colors font-medium"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    <span>Editar Cita</span>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Botones principales */}
-            <div className="flex flex-col sm:flex-row gap-2.5">
-              {appointment.estado !== 'Cancelada' ? (
-                <>
-                  <button
-                    onClick={() => setShowCancelDialog(true)}
-                    className="flex-1 px-5 py-2.5 rounded-lg border border-red-700 bg-red-900/20 text-red-300 hover:bg-red-900/30 hover:border-red-600 transition-colors font-medium"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <X className="h-4 w-4" />
-                      <span>Cancelar Cita</span>
-                    </div>
-                  </button>
-                  <button
-                    onClick={onClose}
-                    className="flex-1 px-5 py-2.5 rounded-lg bg-slate-700 border border-slate-600 text-slate-200 hover:bg-slate-600 transition-colors font-medium"
-                  >
-                    Cerrar
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={onClose}
-                  className="w-full px-5 py-2.5 rounded-lg bg-slate-700 border border-slate-600 text-slate-200 hover:bg-slate-600 transition-colors font-medium"
-                >
-                  Cerrar
-                </button>
-              )}
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Indica el motivo de la cancelación..."
+              className="w-full bg-slate-950 border border-slate-700 rounded-md p-3 text-sm text-white placeholder-slate-500 focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 outline-none resize-none h-24 mb-3"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowCancelDialog(false)}
+                disabled={isCancelling}
+                className="px-3 py-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 text-sm transition-colors"
+              >
+                Volver
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={isCancelling || !cancelReason.trim()}
+                className="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-500 shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {isCancelling ? 'Cancelando...' : 'Cancelar Cita'}
+              </button>
             </div>
           </div>
         )}

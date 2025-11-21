@@ -110,57 +110,59 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Editar Cita" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Información de la cita (solo lectura) */}
-        <div className="rounded-lg bg-slate-800/30 border border-slate-700 p-4">
-          <h3 className="text-sm font-medium text-slate-300 mb-3">Información de la cita</h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="rounded-md bg-slate-800/20 border border-slate-700/50 p-3.5">
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Información de la cita</h3>
+          <div className="grid grid-cols-2 gap-2.5 text-sm">
             <div>
-              <p className="text-xs text-slate-500 mb-1">Fecha y hora</p>
-              <p className="text-slate-200 font-medium">{formattedDate}</p>
+              <p className="text-xs text-slate-500 font-medium mb-1">Fecha y hora</p>
+              <p className="text-slate-200 font-semibold text-sm">{formattedDate}</p>
               <p className="text-slate-400 text-xs">{startTime} - {endTime}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-1">Sede</p>
-              <p className="text-slate-200 font-medium">{appointment.sede}</p>
+              <p className="text-xs text-slate-500 font-medium mb-1">Sede</p>
+              <p className="text-slate-200 font-semibold text-sm">{appointment.sede}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-1">Duración</p>
-              <p className="text-slate-200 font-medium">{appointment.duracionMinutos} minutos</p>
+              <p className="text-xs text-slate-500 font-medium mb-1">Duración</p>
+              <p className="text-slate-200 font-semibold text-sm">{appointment.duracionMinutos} min</p>
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-1">Modalidad</p>
-              <p className="text-slate-200 font-medium capitalize">{appointment.modalidad}</p>
+              <p className="text-xs text-slate-500 font-medium mb-1">Modalidad</p>
+              <p className="text-slate-200 font-semibold text-sm capitalize">{appointment.modalidad}</p>
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-3">
-            💡 Para cambiar fecha, hora, sede, duración o modalidad, cancela y crea una nueva cita
+          <p className="text-xs text-slate-500 mt-3 flex items-center gap-1.5">
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Para cambiar fecha, hora, sede o duración, cancela y crea una nueva cita
           </p>
         </div>
 
         {/* Información del paciente (no editable) */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Paciente</label>
-          <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700">
-            <p className="text-sm text-slate-200 font-medium">{appointment.paciente}</p>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Paciente</label>
+          <div className="p-3 rounded-md bg-slate-800/20 border border-slate-700/50">
+            <p className="text-sm text-slate-200 font-semibold">{appointment.paciente}</p>
             {appointment.telefono && (
-              <p className="text-xs text-slate-400 mt-1">{appointment.telefono}</p>
+              <p className="text-xs text-slate-500 mt-1">{appointment.telefono}</p>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            💡 No se puede cambiar el paciente de una cita existente
+          <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5">
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            No se puede cambiar el paciente de una cita existente
           </p>
         </div>
 
         {/* Tipo de consulta */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
             Tipo de consulta <span className="text-red-400">*</span>
           </label>
           <select
             value={formData.tipo}
             onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
+            className="w-full px-3.5 py-2.5 rounded-md bg-[#0f1115] border border-slate-700 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500/20 transition-colors"
           >
             {TIPOS_CONSULTA.map((tipo) => (
               <option key={tipo.value} value={tipo.value}>
@@ -172,20 +174,20 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
 
         {/* Motivo de consulta */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Motivo de la consulta</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Motivo de la consulta</label>
           <textarea
             value={formData.motivoConsulta}
             onChange={(e) => setFormData({ ...formData, motivoConsulta: e.target.value })}
             placeholder="Ej: Evaluación de próstata, dolor abdominal, etc."
             rows={3}
-            className="w-full px-4 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
+            className="w-full px-3.5 py-2.5 rounded-md bg-[#0f1115] border border-slate-700 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500/20 resize-none transition-colors"
           />
         </div>
 
         {/* Prioridad */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Prioridad</label>
-          <div className="flex gap-3">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Prioridad</label>
+          <div className="flex gap-2">
             {[
               { value: 'normal', label: 'Normal', color: 'slate' },
               { value: 'alta', label: 'Alta', color: 'amber' },
@@ -198,15 +200,15 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
                   setFormData({ ...formData, prioridad: priority.value as 'normal' | 'alta' | 'urgente' })
                 }
                 className={`
-                  flex-1 px-4 py-2.5 rounded-lg border transition-all
+                  flex-1 px-3 py-2 rounded-md border text-sm font-medium transition-all
                   ${
                     formData.prioridad === priority.value
                       ? priority.color === 'red'
-                        ? 'bg-red-600/10 border-red-600 text-red-400'
+                        ? 'bg-red-500/10 border-red-500/50 text-red-400'
                         : priority.color === 'amber'
-                        ? 'bg-amber-500/10 border-amber-500 text-amber-500'
-                        : 'bg-slate-500/10 border-slate-500 text-slate-300'
-                      : 'bg-slate-800/30 border-slate-700 text-slate-400 hover:border-slate-600'
+                        ? 'bg-amber-500/10 border-amber-500/50 text-amber-500'
+                        : 'bg-slate-700/50 border-slate-600 text-slate-200'
+                      : 'bg-transparent border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-400'
                   }
                 `}
               >
@@ -218,37 +220,40 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
 
         {/* Notas internas */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Notas internas (opcional)</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Notas internas (opcional)</label>
           <textarea
             value={formData.notasInternas}
             onChange={(e) => setFormData({ ...formData, notasInternas: e.target.value })}
             placeholder="Notas privadas para el equipo médico..."
             rows={2}
-            className="w-full px-4 py-2.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
+            className="w-full px-3.5 py-2.5 rounded-md bg-[#0f1115] border border-slate-700 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500/20 resize-none transition-colors"
           />
         </div>
 
         {/* Error de submit */}
         {submitError && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3">
-            <p className="text-sm text-red-400">{submitError}</p>
+          <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3.5 flex items-start gap-3">
+            <svg className="h-5 w-5 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-red-400 font-medium">{submitError}</p>
           </div>
         )}
 
         {/* Botones */}
-        <div className="flex gap-2.5 pt-4 border-t border-slate-700">
+        <div className="flex gap-3 pt-5 border-t border-slate-800">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 px-5 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex-1 px-4 py-2.5 rounded-md border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 px-5 py-2.5 rounded-lg bg-blue-600 border border-blue-700 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex-1 px-4 py-2.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
           </button>

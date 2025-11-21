@@ -6,7 +6,7 @@
 
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { TableContentSkeleton, CardSkeleton } from '@/app/components/common/ContentLoader';
+import { TableContentSkeleton, CardSkeleton } from '@/app/components/common/SkeletonLoader';
 
 export default function ConfirmacionesLoading() {
   return (

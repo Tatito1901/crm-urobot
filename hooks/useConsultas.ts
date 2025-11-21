@@ -6,6 +6,7 @@
  * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
+import { useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -199,6 +200,7 @@ const fetchConsultas = async (): Promise<{ consultas: Consulta[], count: number 
  * - Caché de 5 minutos (menos requests duplicados con 2 usuarios)
  * - Retry automático en caso de error de red
  * - Mantiene datos previos mientras recarga (sin parpadeos)
+ * - ✅ REALTIME: Se suscribe a cambios en la tabla 'consultas'
  */
 export function useConsultas(): UseConsultasReturn {
   const { data, error, isLoading, mutate } = useSWR(
@@ -230,7 +232,31 @@ export function useConsultas(): UseConsultasReturn {
     }
   )
 
+  // ✅ Suscripción Realtime a tabla 'consultas'
+  useEffect(() => {
+    const channel = supabase
+      .channel('consultas-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'consultas',
+        },
+        (payload) => {
+          console.log('🔔 Cambio detectado en consultas:', payload.eventType)
+          mutate() // Revalida los datos sin recargar página
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [mutate])
+
   const consultas = data?.consultas || []
+
   const now = new Date()
   const hoyStr = now.toISOString().split('T')[0]
   const semanaDespues = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)

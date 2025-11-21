@@ -1,59 +1,18 @@
 'use client';
 
-import { useMemo, useState, memo } from 'react';
+import { useMemo, useState } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
-import { Badge, DataTable } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatDate } from '@/app/lib/crm-data';
 import { useRecordatorios } from '@/hooks/useRecordatorios';
 import { spacing, cards } from '@/app/lib/design-system';
+import { Pagination } from '@/app/components/common/Pagination';
+import { Search, Filter, Calendar, CheckCircle2 } from 'lucide-react';
+import { ConfirmacionesTable } from './components/ConfirmacionesTable';
+import { ConfirmacionesMetrics } from './components/ConfirmacionesMetrics';
 
 type TipoFilter = 'ALL' | '48h' | '24h' | '3h' | 'confirmacion_inicial';
 type RangoFilter = 'ultimos_7' | 'ultimos_30' | 'todos';
-
-export const dynamic = 'force-dynamic';
-
-// Configuración de estados para badges
-
-const ESTADO_COLORS = {
-  pendiente: 'border-amber-400/60 bg-amber-500/15 text-amber-300',
-  enviado: 'border-emerald-400/60 bg-emerald-500/15 text-emerald-300',
-  error: 'border-red-400/60 bg-red-500/15 text-red-300',
-} as const;
-
-// ✅ Componente memoizado para tarjetas de estadísticas
-interface StatCardProps {
-  label: string;
-  value: number;
-  description: string;
-  icon: string;
-  color: 'blue' | 'emerald' | 'red' | 'amber';
-}
-
-const StatCard = memo(({ label, value, description, icon, color }: StatCardProps) => {
-  const colorClasses = {
-    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-300',
-    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300',
-    red: 'bg-red-500/10 border-red-500/20 text-red-300',
-    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-300',
-  };
-
-  return (
-    <div className={`rounded-xl border p-4 sm:p-5 transition-all hover:scale-105 ${colorClasses[color]}`}>
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <p className="text-xs sm:text-sm text-white/60 font-medium mb-1">{label}</p>
-          <p className="text-3xl sm:text-4xl font-bold mb-1">{value}</p>
-          <p className="text-[10px] sm:text-xs text-white/50">{description}</p>
-        </div>
-        <span className="text-3xl sm:text-4xl">{icon}</span>
-      </div>
-    </div>
-  );
-});
-
-StatCard.displayName = 'StatCard';
 
 export default function ConfirmacionesPage() {
   const [search, setSearch] = useState('');
@@ -61,10 +20,13 @@ export default function ConfirmacionesPage() {
   const [tipoFiltro, setTipoFiltro] = useState<TipoFilter>('ALL');
   const [rangoFiltro, setRangoFiltro] = useState<RangoFilter>('ultimos_30');
   const [soloUltimo, setSoloUltimo] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 50;
 
   // ✅ OPTIMIZACIÓN: Debounce para búsqueda (300ms)
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setSearch(value);
+    setCurrentPage(0); // Resetear página al buscar
   }, 300);
 
   // ✅ Datos reales de Supabase
@@ -124,6 +86,16 @@ export default function ConfirmacionesPage() {
     return result;
   }, [search, recordatorios, tipoFiltro, rangoFiltro, soloUltimo]);
 
+  // ✅ Lógica de Paginación
+  const paginatedData = useMemo(() => {
+    const start = currentPage * itemsPerPage;
+    const end = start + itemsPerPage;
+    // Ordenar antes de paginar para consistencia
+    return [...filtered]
+      .sort((a, b) => new Date(b.programado_para).getTime() - new Date(a.programado_para).getTime())
+      .slice(start, end);
+  }, [filtered, currentPage, itemsPerPage]);
+
   // Calcular estadísticas en una sola pasada
   const stats = useMemo(() => {
     return filtered.reduce((acc, item) => {
@@ -137,227 +109,155 @@ export default function ConfirmacionesPage() {
   return (
     <PageShell
       accent
+      fullWidth
       eyebrow="Orquestación n8n"
       title="Confirmaciones y recordatorios"
       description="Automatización de follow-ups multicanal para reducir no-shows y asegurar la agenda del día."
     >
-      {/* Estadísticas mejoradas */}
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-        <StatCard
-          label="Pendientes"
-          value={stats.pendientes}
-          description="Aguardando confirmación"
-          icon="⏳"
-          color="amber"
-        />
-        <StatCard
-          label="Enviados"
-          value={stats.enviados}
-          description="Recordatorios completados"
-          icon="✅"
-          color="emerald"
-        />
-        <StatCard
-          label="Errores"
-          value={stats.errores}
-          description="Requieren revisión"
-          icon="⚠️"
-          color="red"
-        />
-      </section>
+      {/* Estadísticas mejoradas y consistentes */}
+      <ConfirmacionesMetrics stats={stats} />
 
-      {/* Filtros mejorados */}
-      <Card className={cards.base}>
-        <CardHeader className={spacing.cardHeader}>
-          <CardTitle className="text-base sm:text-lg font-semibold text-white">Filtros de búsqueda</CardTitle>
-          <CardDescription className="text-xs sm:text-sm text-white/60">Personaliza la vista de recordatorios</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Búsqueda */}
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-lg">🔍</span>
-            <input
-              value={inputValue}
-              onChange={(event) => {
-                setInputValue(event.target.value);
-                debouncedSearch(event.target.value);
-              }}
-              placeholder="Buscar por paciente o consulta..."
-              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
-            />
-          </div>
-
-          {/* Grid de filtros */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Tipo de recordatorio */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-white/60 flex items-center gap-1">
-                <span>📋</span> Tipo de recordatorio
-              </label>
-              <select
-                value={tipoFiltro}
-                onChange={(e) => setTipoFiltro(e.target.value as TipoFilter)}
-                className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all cursor-pointer"
-              >
-                <option value="ALL" className="bg-gray-900">Todos los tipos</option>
-                <option value="confirmacion_inicial" className="bg-gray-900">📧 Confirmación inicial</option>
-                <option value="48h" className="bg-gray-900">⏰ 48 horas antes</option>
-                <option value="24h" className="bg-gray-900">⏱️ 24 horas antes</option>
-                <option value="3h" className="bg-gray-900">🔔 3 horas antes</option>
-              </select>
-            </div>
-
-            {/* Rango de tiempo */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-white/60 flex items-center gap-1">
-                <span>📅</span> Período de tiempo
-              </label>
-              <select
-                value={rangoFiltro}
-                onChange={(e) => setRangoFiltro(e.target.value as RangoFilter)}
-                className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all cursor-pointer"
-              >
-                <option value="ultimos_7" className="bg-gray-900">Últimos 7 días</option>
-                <option value="ultimos_30" className="bg-gray-900">Últimos 30 días</option>
-                <option value="todos" className="bg-gray-900">Todos</option>
-              </select>
-            </div>
-
-            {/* Vista agrupada */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-white/60 flex items-center gap-1">
-                <span>👁️</span> Vista
-              </label>
-              <label className="flex items-center gap-3 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-all">
-                <input
-                  type="checkbox"
-                  checked={soloUltimo}
-                  onChange={(e) => setSoloUltimo(e.target.checked)}
-                  className="h-5 w-5 rounded border-white/20 bg-white/5 text-blue-500 cursor-pointer"
-                />
-                <span className="text-sm text-white/80 font-medium">Solo último</span>
-              </label>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-
-      {/* Tabla de recordatorios */}
-      <Card className={cards.base}>
-        <CardHeader className={spacing.cardHeader}>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-base sm:text-lg font-semibold text-white mb-1">
-                Detalle de confirmaciones {loading && '(cargando...)'}
+      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+        {/* Panel Lateral de Filtros (Sticky en desktop) */}
+        <div className="space-y-6">
+          <Card className={`${cards.base} lg:sticky lg:top-6`}>
+            <CardHeader className={spacing.cardHeader}>
+              <CardTitle className="text-sm font-semibold text-white flex items-center gap-2">
+                <Filter className="w-4 h-4 text-blue-400" />
+                Filtros
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm text-white/60">
-                {error 
-                  ? `Error: ${error.message}` 
-                  : 'Flujos automatizados por paciente desde n8n'
-                }
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <button
-                onClick={() => refresh()}
-                disabled={loading}
-                className="rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 disabled:opacity-50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              >
-                ↻
-              </button>
-              <div className="flex flex-col items-end">
-                <p className="text-2xl sm:text-3xl font-bold text-white">{filtered.length}</p>
-                <p className="text-[10px] sm:text-xs text-white/50">
-                  {recordatorios.length !== filtered.length && `de ${recordatorios.length} total`}
-                  {soloUltimo && ' (último)'}
-                </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Búsqueda */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Búsqueda rápida</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+                  <input
+                    value={inputValue}
+                    onChange={(event) => {
+                      setInputValue(event.target.value);
+                      debouncedSearch(event.target.value);
+                    }}
+                    placeholder="Paciente o consulta..."
+                    className="w-full pl-9 pr-3 py-2 bg-slate-950/50 border border-slate-800 rounded-md text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0 space-y-4">
-          {/* Info adicional */}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-white/60 pb-2 border-b border-white/10">
-            <span className="flex items-center gap-1">
-              <span>📊</span>
-              <span className="hidden sm:inline">Mostrando</span>
-              <span className="font-semibold text-white">{filtered.length}</span>
-              <span className="hidden sm:inline">recordatorios</span>
-            </span>
-            {tipoFiltro !== 'ALL' && (
-              <span className="px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300">
-                {tipoFiltro.replace(/_/g, ' ')}
-              </span>
-            )}
-          </div>
-          
-          <DataTable
-            headers={[
-              { key: 'programado', label: 'Programado' },
-              { key: 'paciente', label: 'Paciente' },
-              { key: 'consulta', label: 'Consulta' },
-              { key: 'tipo', label: 'Tipo' },
-              { key: 'estado', label: 'Estado' },
-              { key: 'canal', label: 'Canal' },
-            ]}
-            rows={useMemo(() =>
-              [...filtered]
-                .sort((a, b) => new Date(b.programado_para).getTime() - new Date(a.programado_para).getTime())
-                .map((recordatorio) => ({
-                id: recordatorio.id,
-                programado: (
-                  <div className="flex flex-col gap-0.5 sm:gap-1 min-w-[120px] sm:min-w-[140px]">
-                    <span className="font-medium text-white text-[10px] sm:text-xs leading-tight">
-                      {formatDate(recordatorio.programado_para, { dateStyle: 'short', timeStyle: 'short' })}
-                    </span>
-                    {recordatorio.enviado_en && (
-                      <span className="text-[9px] sm:text-[10px] text-white/50">
-                        Enviado: {formatDate(recordatorio.enviado_en, { dateStyle: 'short', timeStyle: 'short' })}
-                      </span>
-                    )}
+
+              {/* Tipo */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400">Tipo de recordatorio</label>
+                <select
+                  value={tipoFiltro}
+                  onChange={(e) => {
+                    setTipoFiltro(e.target.value as TipoFilter);
+                    setCurrentPage(0);
+                  }}
+                  className="w-full px-3 py-2 bg-slate-950/50 border border-slate-800 rounded-md text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                >
+                  <option value="ALL">Todos los tipos</option>
+                  <option value="confirmacion_inicial">Confirmación inicial</option>
+                  <option value="48h">48 horas antes</option>
+                  <option value="24h">24 horas antes</option>
+                  <option value="3h">3 horas antes</option>
+                </select>
+              </div>
+
+              {/* Rango */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" /> Período
+                </label>
+                <div className="grid grid-cols-1 gap-1">
+                  {[
+                    { value: 'ultimos_7', label: '7 días' },
+                    { value: 'ultimos_30', label: '30 días' },
+                    { value: 'todos', label: 'Historico' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setRangoFiltro(opt.value as RangoFilter);
+                        setCurrentPage(0);
+                      }}
+                      className={`px-3 py-1.5 text-xs text-left rounded-md transition-colors ${
+                        rangoFiltro === opt.value
+                          ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
+                          : 'text-slate-400 hover:bg-slate-800/50'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Agrupación */}
+              <div className="pt-4 border-t border-slate-800/50">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${soloUltimo ? 'bg-blue-500 border-blue-500' : 'border-slate-600 group-hover:border-slate-500'}`}>
+                    {soloUltimo && <CheckCircle2 className="w-3 h-3 text-white" />}
                   </div>
-                ),
-                paciente: (
-                  <div className="flex flex-col gap-0.5 sm:gap-1 min-w-[140px] sm:min-w-[180px]">
-                    <span className="font-medium text-white text-xs sm:text-sm leading-tight">
-                      {recordatorio.paciente?.nombre_completo || 'Sin paciente'}
-                    </span>
-                    <span className="text-[9px] sm:text-[10px] text-white/40 uppercase tracking-wide">
-                      {recordatorio.consulta?.sede || ''}
-                    </span>
-                  </div>
-                ),
-                consulta: (
-                  <span className="font-semibold text-white text-xs sm:text-sm">
-                    {recordatorio.consulta?.consulta_id || 'N/A'}
-                  </span>
-                ),
-                tipo: (
-                  <div className="flex justify-center sm:justify-start">
-                    <Badge label={recordatorio.tipo.replace(/_/g, ' ')} />
-                  </div>
-                ),
-                estado: (
-                  <div className="flex justify-center sm:justify-start">
-                    <Badge label={recordatorio.estado || 'pendiente'} tone={ESTADO_COLORS[recordatorio.estado as keyof typeof ESTADO_COLORS] || ESTADO_COLORS.pendiente} />
-                  </div>
-                ),
-                canal: (
-                  <div className="flex justify-center sm:justify-start">
-                    <Badge label={recordatorio.canal || 'whatsapp'} />
-                  </div>
-                ),
-              })), [filtered])}
-            empty={search ? 'Sin coincidencias para el criterio aplicado.' : 'No hay recordatorios registrados aún.'}
-            mobileConfig={{
-              primary: 'paciente',
-              secondary: 'programado',
-              metadata: ['tipo', 'estado', 'canal']
-            }}
-          />
-        </CardContent>
-      </Card>
+                  <input
+                    type="checkbox"
+                    checked={soloUltimo}
+                    onChange={(e) => {
+                      setSoloUltimo(e.target.checked);
+                      setCurrentPage(0);
+                    }}
+                    className="hidden"
+                  />
+                  <span className="text-xs text-slate-300 group-hover:text-white transition-colors">Ver solo último envío</span>
+                </label>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabla Principal */}
+        <div className="min-w-0">
+          <Card className={cards.base}>
+            <CardHeader className={spacing.cardHeader}>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="text-sm font-semibold text-white">
+                    Historial de envíos
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-400">
+                    {filtered.length} registros encontrados
+                  </CardDescription>
+                </div>
+                <button
+                  onClick={() => refresh()}
+                  disabled={loading}
+                  className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all disabled:opacity-50"
+                >
+                  <div className={loading ? 'animate-spin' : ''}>↻</div>
+                </button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ConfirmacionesTable 
+                recordatorios={paginatedData}
+                emptyMessage={search ? 'Sin coincidencias.' : 'No hay recordatorios.'}
+              />
+              
+              {/* Paginación */}
+              {filtered.length > itemsPerPage && (
+                <div className="border-t border-slate-800/50 p-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalItems={filtered.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </PageShell>
   );
 }

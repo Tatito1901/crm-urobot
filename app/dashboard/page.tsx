@@ -2,123 +2,140 @@
 
 import { useMemo, useState } from 'react';
 import dynamicImport from 'next/dynamic';
+import { Users, Activity, UserCheck, Calendar, Clock } from 'lucide-react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
 import { Badge } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useStats } from '@/hooks/useStats';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { EmptyState } from '@/app/components/common/SkeletonLoader';
 
-export const dynamic = 'force-dynamic';
-
-// Lazy load de gráficos pesados para mejorar rendimiento mobile
+// Lazy load de gráficos pesados para mejorar rendimiento mobile y reducir TBT (Total Blocking Time)
 const DonutChart = dynamicImport(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
-  loading: () => <div className="h-[200px] animate-pulse bg-white/5 rounded-xl" />,
+  loading: () => <div className="h-[200px] animate-pulse bg-slate-800/50 rounded-xl" />,
   ssr: false,
 });
 
 const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart').then(mod => ({ default: mod.BarChart })), {
-  loading: () => <div className="h-[250px] animate-pulse bg-white/5 rounded-xl" />,
+  loading: () => <div className="h-[250px] animate-pulse bg-slate-800/50 rounded-xl" />,
   ssr: false,
 });
 
 export default function DashboardPage() {
-  // ✅ Datos reales de Supabase
-  const { metrics: dm, loading: loadingMetrics, refetch: refetchMetrics } = useDashboardMetrics();
+  // ✅ Datos reales centralizados desde useStats
+  const { kpi, consultasPorSede, loading: loadingStats, refresh: refreshStats } = useStats();
+  
+  // Hooks específicos para listas detalladas
   const { leads, loading: loadingLeads, refetch: refetchLeads } = useLeads();
   const { consultas, loading: loadingConsultas, refetch: refetchConsultas } = useConsultas();
 
   const [activeTab, setActiveTab] = useState<'actividad' | 'graficas'>('actividad');
 
   const handleRefresh = async () => {
-    await Promise.all([refetchMetrics(), refetchLeads(), refetchConsultas()]);
+    await Promise.all([refreshStats(), refetchLeads(), refetchConsultas()]);
   };
 
-  // Métricas para MVP
-  const metrics = dm ? [
+  // Métricas adaptadas desde useStats (KPI) - Memoizado para evitar recreación en re-renders
+  const metrics = useMemo(() => [
     {
       title: 'Leads totales',
-      value: dm.leadsTotal.toLocaleString('es-MX'),
-      subtitle: `${dm.leadsConvertidos} convertidos`,
+      value: kpi.totalLeads.toLocaleString('es-MX'),
+      subtitle: `${kpi.leadsNuevosMes} nuevos este mes`,
       color: 'blue' as const,
+      icon: <Users className="h-4 w-4" />,
     },
     {
       title: 'Tasa de conversión',
-      value: `${dm.tasaConversion}%`,
-      subtitle: 'Meta: 35%',
-      color: 'blue' as const,
+      value: `${kpi.tasaConversion}%`,
+      subtitle: 'Leads a Pacientes',
+      color: 'emerald' as const,
+      icon: <Activity className="h-4 w-4" />,
     },
     {
       title: 'Pacientes activos',
-      value: dm.pacientesActivos.toLocaleString('es-MX'),
-      subtitle: `Total: ${dm.totalPacientes}`,
-      color: 'blue' as const,
+      value: kpi.totalPacientes.toLocaleString('es-MX'),
+      subtitle: `+${kpi.pacientesNuevosMes} mes actual`,
+      color: 'purple' as const,
+      icon: <UserCheck className="h-4 w-4" />,
     },
     {
-      title: 'Consultas futuras',
-      value: dm.consultasFuturas.toLocaleString('es-MX'),
-      subtitle: `Hoy: ${dm.consultasHoy}`,
-      color: 'blue' as const,
+      title: 'Consultas del mes',
+      value: kpi.consultasMes.toLocaleString('es-MX'),
+      subtitle: `${kpi.consultasConfirmadasMes} confirmadas`,
+      color: 'amber' as const,
+      icon: <Calendar className="h-4 w-4" />,
     },
     {
-      title: 'Pendientes confirmación',
-      value: dm.pendientesConfirmacion.toLocaleString('es-MX'),
-      subtitle: 'Requieren seguimiento',
-      color: 'blue' as const,
+      title: 'Tasa de asistencia',
+      value: `${kpi.tasaAsistencia}%`,
+      subtitle: 'Citas completadas',
+      color: 'red' as const,
+      icon: <Clock className="h-4 w-4" />,
     },
-  ] : [];
+  ], [kpi]);
 
-  // Datos para gráfico de dona (consultas por sede)
-  const sedesChartData = useMemo(() => dm ? [
-    { label: 'Polanco', value: dm.polancoFuturas, color: '#3b82f6' },
-    { label: 'Satélite', value: dm.sateliteFuturas, color: '#60a5fa' },
-  ] : [], [dm]);
+  // Adaptador para gráfico de dona (consultas por sede)
+  const sedesChartData = useMemo(() => consultasPorSede.map(sede => ({
+    label: sede.name,
+    value: sede.value,
+    color: sede.fill || '#3b82f6'
+  })), [consultasPorSede]);
 
   // Datos para gráfico de barras (leads por estado) - Optimizado
   const leadsChartData = useMemo(() => {
-    const estados = {
+    const contadores = {
       Nuevo: 0,
-      'En seguimiento': 0,
+      Seguimiento: 0,
       Convertido: 0,
       Descartado: 0,
     };
 
+    const estadosSeguimiento = ['Contactado', 'Interesado', 'Calificado'];
+    const estadosDescartado = ['No_Interesado', 'Perdido'];
+
     leads.forEach((lead) => {
-      if (lead.estado in estados) {
-        estados[lead.estado as keyof typeof estados]++;
-      }
+      if (lead.estado === 'Nuevo') contadores.Nuevo++;
+      else if (lead.estado === 'Convertido') contadores.Convertido++;
+      else if (estadosSeguimiento.includes(lead.estado)) contadores.Seguimiento++;
+      else if (estadosDescartado.includes(lead.estado)) contadores.Descartado++;
     });
 
     return [
-      { label: 'Nuevo', value: estados.Nuevo, color: '#3b82f6' },
-      { label: 'Seguimiento', value: estados['En seguimiento'], color: '#8b5cf6' },
-      { label: 'Convertido', value: estados.Convertido, color: '#10b981' },
-      { label: 'Descartado', value: estados.Descartado, color: '#64748b' },
+      { label: 'Nuevo', value: contadores.Nuevo, color: '#3b82f6' },
+      { label: 'Seguimiento', value: contadores.Seguimiento, color: '#8b5cf6' },
+      { label: 'Convertido', value: contadores.Convertido, color: '#10b981' },
+      { label: 'Descartado', value: contadores.Descartado, color: '#64748b' },
     ];
   }, [leads]);
 
   // Métricas de leads calculadas
   const leadsStats = useMemo(() => {
     const total = leads.length;
-    const convertidos = leads.filter(l => l.estado === 'Convertido').length;
-    const enProceso = leads.filter(l => ['Nuevo', 'En seguimiento'].includes(l.estado)).length;
-    const tasaConversion = total > 0 ? Math.round((convertidos / total) * 100) : 0;
-    
+    if (total === 0) return { total: 0, convertidos: 0, enProceso: 0, tasaConversion: 0 };
+
+    let convertidos = 0;
+    let enProceso = 0;
+
+    // Estados que consideramos "En proceso"
+    const estadosEnProceso = ['Nuevo', 'Contactado', 'Interesado', 'Calificado'];
+
+    // Single pass loop
+    for (const l of leads) {
+      if (l.estado === 'Convertido') convertidos++;
+      else if (estadosEnProceso.includes(l.estado)) enProceso++;
+    }
+
+    const tasaConversion = Math.round((convertidos / total) * 100);
     return { total, convertidos, enProceso, tasaConversion };
   }, [leads]);
 
-  // Datos para MVP - optimizado con useMemo
+  // Datos para MVP - optimizado con useMemo y slice temprano
   const recentLeads = useMemo(() => {
+    // Evitar sort de todo el array si es muy grande, idealmente esto debería venir ordenado del backend
+    // Como viene de useLeads (SWR), asumimos que puede no estar ordenado por fecha reciente
     return [...leads]
       .sort((a, b) => new Date(b.primerContacto).getTime() - new Date(a.primerContacto).getTime())
       .slice(0, 5);
@@ -132,8 +149,7 @@ export default function DashboardPage() {
       .slice(0, 5);
   }, [consultas]);
 
-  // ✅ OPTIMIZACIÓN: Sin loading state separado, usar Suspense
-  // El loading.tsx de Next.js maneja el estado inicial
+  const isLoadingAny = loadingStats || loadingLeads || loadingConsultas;
 
   return (
     <ErrorBoundary>
@@ -146,19 +162,19 @@ export default function DashboardPage() {
         headerSlot={
           <button
             onClick={handleRefresh}
-            disabled={loadingMetrics || loadingLeads || loadingConsultas}
-            className="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600/20 to-blue-500/20 px-4 py-3 sm:px-5 sm:py-2.5 text-sm font-medium text-blue-200 backdrop-blur-sm border border-blue-500/20 hover:from-blue-600/30 hover:to-blue-500/30 hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 min-h-[44px] sm:min-h-0"
+            disabled={isLoadingAny}
+            className="group flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600/20 to-blue-500/20 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-medium text-blue-200 backdrop-blur-sm border border-blue-500/20 hover:from-blue-600/30 hover:to-blue-500/30 hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 min-h-[36px] sm:min-h-0"
           >
             <span className="transition-transform group-hover:rotate-180 duration-500">
-              {(loadingMetrics || loadingLeads || loadingConsultas) ? '⟳' : '↻'}
+              {isLoadingAny ? '⟳' : '↻'}
             </span>
-            <span>{(loadingMetrics || loadingLeads || loadingConsultas) ? 'Actualizando...' : 'Actualizar'}</span>
+            <span>{isLoadingAny ? 'Actualizando...' : 'Actualizar'}</span>
           </button>
         }
       >
-        <div className="flex flex-col gap-6 sm:gap-6 lg:gap-8 min-h-0">
+        <div className="flex flex-col gap-3 sm:gap-4">
           {/* Métricas principales */}
-          <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5 lg:gap-6">
+          <section className="grid gap-3 grid-cols-1 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-5 lg:gap-3">
             {metrics.map((metric) => (
               <MetricCard
                 key={metric.title}
@@ -166,26 +182,20 @@ export default function DashboardPage() {
                 value={metric.value}
                 subtitle={metric.subtitle}
                 color={metric.color}
-                loading={loadingMetrics && !dm}
+                loading={loadingStats}
               />
             ))}
           </section>
 
           {/* Tabs sección secundaria */}
-          <div
-            className="inline-flex w-full flex-wrap items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1 text-xs sm:text-sm"
-            role="tablist"
-            aria-label="Secciones del dashboard"
-          >
+          <div className="mb-6 flex items-center gap-8 border-b border-slate-800">
             <button
               type="button"
               onClick={() => setActiveTab('actividad')}
-              role="tab"
-              aria-selected={activeTab === 'actividad'}
-              className={`flex-1 min-w-[120px] rounded-lg px-3 py-1.5 text-center font-medium transition-all duration-200 ${
+              className={`relative pb-3 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'actividad'
-                  ? 'bg-white/15 text-white shadow-sm shadow-blue-500/30'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  ? 'text-blue-400 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-blue-500'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Actividad reciente
@@ -193,12 +203,10 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setActiveTab('graficas')}
-              role="tab"
-              aria-selected={activeTab === 'graficas'}
-              className={`flex-1 min-w-[120px] rounded-lg px-3 py-1.5 text-center font-medium transition-all duration-200 ${
+              className={`relative pb-3 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'graficas'
-                  ? 'bg-white/15 text-white shadow-sm shadow-blue-500/30'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  ? 'text-blue-400 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-blue-500'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Gráficas
@@ -206,110 +214,119 @@ export default function DashboardPage() {
           </div>
 
           {activeTab === 'actividad' ? (
-            <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
+            <section className="grid gap-6 lg:grid-cols-2">
               {/* Leads recientes */}
-              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-5 pt-6 px-6 relative">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1.5">
-                      <CardTitle className="text-xl font-semibold text-white tracking-tight">
-                        Leads Recientes {loadingLeads && <span className="text-sm text-blue-400">↻</span>}
-                      </CardTitle>
-                      <CardDescription className="text-sm text-slate-400">Últimos contactos ingresados</CardDescription>
-                    </div>
-                    <Badge label={`${leads.length} totales`} variant="outline" />
+              <div className="flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-white">
+                      Leads Recientes {loadingLeads && <span className="ml-2 animate-spin text-blue-500">↻</span>}
+                    </h3>
+                    <p className="text-xs text-slate-400">Últimos 5 contactos registrados</p>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3 px-6 pb-6 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-3">
-                  {recentLeads.length === 0 ? (
-                    <p className="text-center text-sm text-slate-400 py-12">No hay leads registrados</p>
-                  ) : (
-                    recentLeads.map((lead, idx) => (
-                      <div
-                        key={lead.id}
-                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
-                        style={{ animationDelay: `${idx * 50}ms` }}
-                      >
-                        <div className="flex-1 space-y-1.5">
-                          <p className="font-semibold text-base text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{lead.nombre}</p>
-                          <p className="text-xs text-slate-400 font-mono">
-                            {formatDate(lead.primerContacto)} <span className="text-slate-500">·</span> {lead.fuente}
-                          </p>
-                        </div>
-                        <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />
+                  <Badge label={`${leads.length} totales`} variant="outline" className="border-slate-700 text-slate-400" />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {recentLeads.length === 0 ? (
+                      <div className="flex h-32 items-center justify-center text-sm text-slate-500">
+                        No hay leads recientes
                       </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Consultas próximas */}
-              <Card className="group flex flex-col min-h-0 bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-5 pt-6 px-6 relative">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1.5">
-                      <CardTitle className="text-xl font-semibold text-white tracking-tight">
-                        Consultas Próximas {loadingConsultas && <span className="text-sm text-blue-400">↻</span>}
-                      </CardTitle>
-                      <CardDescription className="text-sm text-slate-400">Agenda de ambas sedes</CardDescription>
-                    </div>
-                    <Badge label={`${upcomingConsultas.length} próximas`} variant="outline" />
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3 px-6 pb-6 relative lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-3">
-                  {upcomingConsultas.length === 0 ? (
-                    <p className="text-center text-sm text-slate-400 py-12">No hay consultas programadas</p>
-                  ) : (
-                    upcomingConsultas.map((consulta, idx) => (
-                      <div
-                        key={consulta.id}
-                        className="group/item flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 text-sm hover:border-white/20 hover:from-white/[0.05] transition-all duration-200 cursor-pointer"
-                        style={{ animationDelay: `${idx * 50}ms` }}
-                      >
-                        <div className="flex-1 space-y-1.5">
-                          <p className="font-semibold text-base text-white tracking-tight group-hover/item:text-blue-300 transition-colors">{consulta.paciente}</p>
-                          <p className="text-xs text-slate-400 font-mono">
-                            {formatDate(consulta.fecha)} <span className="text-slate-500">·</span> {consulta.sede}
-                          </p>
-                        </div>
-                        <Badge label={consulta.estado} tone={STATE_COLORS[consulta.estado]} />
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            </section>
-          ) : (
-            <section className="grid gap-6 lg:gap-8 lg:grid-cols-2 min-h-0">
-              {/* Gráfico de leads por estado */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-4 pt-6 px-6 relative">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1.5">
-                      <CardTitle className="text-xl font-semibold text-white tracking-tight">Leads por Estado</CardTitle>
-                      <CardDescription className="text-sm text-slate-400">Distribución del funnel de conversión</CardDescription>
-                    </div>
-                    {/* Métricas rápidas */}
-                    {leadsStats.total > 0 && (
-                      <div className="text-right space-y-1">
-                        <div className="text-xs text-slate-400">Tasa conversión</div>
-                        <div className={`text-lg font-bold ${
-                          leadsStats.tasaConversion >= 30
-                            ? 'text-emerald-400'
-                            : leadsStats.tasaConversion >= 15
-                            ? 'text-yellow-400'
-                            : 'text-slate-400'
-                        }`}>
-                          {leadsStats.tasaConversion}%
-                        </div>
+                    ) : (
+                      <div className="divide-y divide-slate-800/50">
+                        {recentLeads.map((lead) => (
+                          <div
+                            key={lead.id}
+                            className="group flex cursor-pointer items-center justify-between px-6 py-4 transition-colors hover:bg-slate-800/50"
+                          >
+                            <div className="min-w-0 flex-1 pr-4">
+                              <p className="truncate text-sm font-medium text-slate-200 group-hover:text-white">
+                                {lead.nombre}
+                              </p>
+                              <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                                <span>{formatDate(lead.primerContacto)}</span>
+                                <span>•</span>
+                                <span className="capitalize">{lead.fuente}</span>
+                              </div>
+                            </div>
+                            <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4 px-6 pb-6">
+                </div>
+              </div>
+
+              {/* Consultas próximas */}
+              <div className="flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-white">
+                      Consultas Próximas {loadingConsultas && <span className="ml-2 animate-spin text-blue-500">↻</span>}
+                    </h3>
+                    <p className="text-xs text-slate-400">Agenda para los próximos días</p>
+                  </div>
+                  <Badge label={`${upcomingConsultas.length} próximas`} variant="outline" className="border-slate-700 text-slate-400" />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {upcomingConsultas.length === 0 ? (
+                      <div className="flex h-32 items-center justify-center text-sm text-slate-500">
+                        No hay consultas próximas
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-800/50">
+                        {upcomingConsultas.map((consulta) => (
+                          <div
+                            key={consulta.id}
+                            className="group flex cursor-pointer items-center justify-between px-6 py-4 transition-colors hover:bg-slate-800/50"
+                          >
+                            <div className="min-w-0 flex-1 pr-4">
+                              <p className="truncate text-sm font-medium text-slate-200 group-hover:text-white">
+                                {consulta.paciente}
+                              </p>
+                              <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                                <span>{formatDate(consulta.fecha)}</span>
+                                <span>•</span>
+                                <span className="font-medium text-slate-400">{consulta.sede}</span>
+                              </div>
+                            </div>
+                            <Badge label={consulta.estado} tone={STATE_COLORS[consulta.estado]} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className="grid gap-6 lg:grid-cols-2">
+              {/* Gráfico de leads por estado */}
+              <div className="flex flex-col rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
+                <div className="flex items-start justify-between border-b border-slate-800 px-6 py-4">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-white">Leads por Estado</h3>
+                    <p className="text-xs text-slate-400">Distribución del funnel</p>
+                  </div>
+                  {/* Métricas rápidas */}
+                  {leadsStats.total > 0 && (
+                    <div className="text-right">
+                      <div className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Conversión</div>
+                      <div className={`text-lg font-bold tabular-nums ${
+                        leadsStats.tasaConversion >= 30
+                          ? 'text-emerald-400'
+                          : leadsStats.tasaConversion >= 15
+                          ? 'text-amber-400'
+                          : 'text-slate-400'
+                      }`}>
+                        {leadsStats.tasaConversion}%
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col p-6">
                   {leadsChartData.every((d) => d.value === 0) ? (
                     <EmptyState
                       title="Sin datos"
@@ -317,49 +334,37 @@ export default function DashboardPage() {
                     />
                   ) : (
                     <>
-                      <BarChart data={leadsChartData} height={260} />
-                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
-                        {leadsChartData.map((item) => (
-                          <div key={item.label} className="flex items-center gap-2">
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{ backgroundColor: item.color }}
-                              aria-hidden
-                            />
-                            <span className="truncate">{item.label}</span>
-                          </div>
-                        ))}
+                      <div className="mb-6">
+                        <BarChart data={leadsChartData} height={200} />
                       </div>
+                      
                       {/* Resumen de métricas */}
-                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10">
-                        <div className="text-center p-2 rounded-lg bg-white/5">
-                          <div className="text-xs text-slate-400">Total</div>
-                          <div className="text-lg font-bold text-white">{leadsStats.total}</div>
+                      <div className="mt-auto grid grid-cols-3 gap-4 border-t border-slate-800 pt-6">
+                        <div className="rounded-lg bg-slate-800/50 p-3 text-center">
+                          <div className="text-[10px] font-medium uppercase text-slate-400">Total</div>
+                          <div className="text-xl font-bold text-white">{leadsStats.total}</div>
                         </div>
-                        <div className="text-center p-2 rounded-lg bg-emerald-500/10">
-                          <div className="text-xs text-emerald-400">Convertidos</div>
-                          <div className="text-lg font-bold text-emerald-300">{leadsStats.convertidos}</div>
+                        <div className="rounded-lg bg-emerald-500/10 p-3 text-center">
+                          <div className="text-[10px] font-medium uppercase text-emerald-400">Convertidos</div>
+                          <div className="text-xl font-bold text-emerald-300">{leadsStats.convertidos}</div>
                         </div>
-                        <div className="text-center p-2 rounded-lg bg-blue-500/10">
-                          <div className="text-xs text-blue-400">En Proceso</div>
-                          <div className="text-lg font-bold text-blue-300">{leadsStats.enProceso}</div>
+                        <div className="rounded-lg bg-blue-500/10 p-3 text-center">
+                          <div className="text-[10px] font-medium uppercase text-blue-400">En Proceso</div>
+                          <div className="text-xl font-bold text-blue-300">{leadsStats.enProceso}</div>
                         </div>
                       </div>
                     </>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Gráfico de consultas por sede */}
-              <Card className="group bg-gradient-to-br from-white/[0.05] to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-xl hover:border-white/20 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <CardHeader className="pb-5 pt-6 px-6 relative">
-                  <div className="space-y-1.5">
-                    <CardTitle className="text-xl font-semibold text-white tracking-tight">Consultas por Sede</CardTitle>
-                    <CardDescription className="text-sm text-slate-400">Próximas 4 semanas</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex justify-center py-6 px-6">
+              <div className="flex flex-col rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
+                <div className="border-b border-slate-800 px-6 py-4">
+                  <h3 className="font-semibold text-white">Consultas por Sede</h3>
+                  <p className="text-xs text-slate-400">Próximas 4 semanas</p>
+                </div>
+                <div className="flex flex-1 items-center justify-center p-6">
                   {sedesChartData.every((d) => d.value === 0) ? (
                     <EmptyState
                       title="Sin consultas"
@@ -368,14 +373,14 @@ export default function DashboardPage() {
                   ) : (
                     <DonutChart
                       data={sedesChartData}
-                      size={240}
+                      size={220}
                       thickness={40}
-                      centerText={dm ? (dm.polancoFuturas + dm.sateliteFuturas).toString() : '0'}
+                      centerText={kpi.consultasMes.toLocaleString()}
                       centerSubtext="Total"
                     />
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </section>
           )}
         </div>

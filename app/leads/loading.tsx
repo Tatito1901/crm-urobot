@@ -7,7 +7,7 @@
 
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { TableContentSkeleton } from '@/app/components/common/ContentLoader';
+import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 
 export default function LeadsLoading() {
   return (

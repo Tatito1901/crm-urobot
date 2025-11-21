@@ -87,8 +87,8 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         className={`
           relative w-full ${sizeClasses[size]}
-          bg-slate-900
-          rounded-t-2xl sm:rounded-2xl
+          bg-[#0f1115]
+          rounded-t-xl sm:rounded-xl
           border-t border-l border-r sm:border border-slate-800
           shadow-2xl shadow-black/50
           animate-in slide-in-from-bottom sm:zoom-in-95 duration-200
@@ -97,16 +97,16 @@ export const Modal: React.FC<ModalProps> = ({
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-800">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0a0e15]">
             {title && (
-              <h2 id="modal-title" className="text-lg sm:text-xl font-semibold text-slate-100">
+              <h2 id="modal-title" className="text-lg font-semibold text-slate-100 tracking-tight">
                 {title}
               </h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="ml-auto p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+                className="ml-auto p-1.5 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
                 aria-label="Cerrar modal"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +123,9 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-5 py-5 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+          {children}
+        </div>
       </div>
     </div>
   );
