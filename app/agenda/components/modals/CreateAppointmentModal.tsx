@@ -160,21 +160,23 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Nueva Cita" size="lg">
-      <form onSubmit={handleFormSubmit} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-5">
         {/* Información del slot seleccionado */}
-        <div className="rounded-xl bg-blue-500/10 border border-blue-500/30 p-4">
-          <div className="flex items-center gap-2 text-blue-400">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
+        <div className="rounded-md bg-blue-500/5 border border-blue-500/20 p-3.5">
+          <div className="flex items-center gap-3 text-blue-400">
+            <div className="p-2 rounded-full bg-blue-500/10">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
             <div>
-              <p className="font-medium">{formattedDate}</p>
-              <p className="text-sm">
+              <p className="font-semibold text-blue-300">{formattedDate}</p>
+              <p className="text-sm text-blue-400/80 font-medium">
                 {slotStartTime} - {slotEndTime} • {slot.sede}
               </p>
             </div>
@@ -183,7 +185,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
         {/* Selección de paciente */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
             Paciente <span className="text-red-400">*</span>
           </label>
           <PatientSearch
@@ -212,7 +214,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
         {/* Tipo de consulta */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
             Tipo de consulta <span className="text-red-400">*</span>
           </label>
           <select
@@ -220,12 +222,13 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             onChange={(e) => updateField('tipo', e.target.value)}
             onBlur={() => touchField('tipo')}
             className={`
-              w-full px-4 py-2.5 rounded-xl
-              bg-slate-800/50 border text-slate-100
-              focus:outline-none focus:ring-2
+              w-full px-3.5 py-2.5 rounded-md
+              bg-[#0f1115] border text-slate-200 text-sm
+              focus:outline-none focus:ring-1
+              transition-colors
               ${
                 touched.tipo && errors.tipo
-                  ? 'border-red-500 focus:ring-red-500/20'
+                  ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
                   : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'
               }
             `}
@@ -237,13 +240,13 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             ))}
           </select>
           {touched.tipo && errors.tipo && (
-            <p className="mt-1 text-sm text-red-400">{errors.tipo}</p>
+            <p className="mt-1 text-xs text-red-400 font-medium">{errors.tipo}</p>
           )}
         </div>
 
         {/* Motivo de consulta */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
             Motivo de la consulta
           </label>
           <textarea
@@ -253,31 +256,31 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             placeholder="Ej: Evaluación de próstata, dolor abdominal, etc."
             rows={3}
             className={`
-              w-full px-4 py-2.5 rounded-xl
-              bg-slate-800/50 border text-slate-100
-              placeholder-slate-500
-              focus:outline-none focus:ring-2
-              resize-none
+              w-full px-3.5 py-2.5 rounded-md
+              bg-[#0f1115] border text-slate-200 text-sm
+              placeholder-slate-600
+              focus:outline-none focus:ring-1
+              resize-none transition-colors
               ${
                 touched.motivoConsulta && errors.motivoConsulta
-                  ? 'border-red-500 focus:ring-red-500/20'
+                  ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
                   : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'
               }
             `}
           />
           {touched.motivoConsulta && errors.motivoConsulta && (
-            <p className="mt-1 text-sm text-red-400">{errors.motivoConsulta}</p>
+            <p className="mt-1 text-xs text-red-400 font-medium">{errors.motivoConsulta}</p>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-5">
           {/* Duración */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Duración</label>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Duración</label>
             <select
               value={formData.duracionMinutos}
               onChange={(e) => updateField('duracionMinutos', parseInt(e.target.value))}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
+              className="w-full px-3.5 py-2.5 rounded-md bg-[#0f1115] border border-slate-700 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500/20 transition-colors"
             >
               {DURACIONES.map((dur) => (
                 <option key={dur.value} value={dur.value}>
@@ -289,13 +292,13 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
           {/* Modalidad */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Modalidad</label>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Modalidad</label>
             <select
               value={formData.modalidad}
               onChange={(e) =>
                 updateField('modalidad', e.target.value as 'presencial' | 'teleconsulta')
               }
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
+              className="w-full px-3.5 py-2.5 rounded-md bg-[#0f1115] border border-slate-700 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500/20 transition-colors"
             >
               <option value="presencial">Presencial</option>
               <option value="teleconsulta">Teleconsulta</option>
@@ -306,8 +309,8 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
         {/* Prioridad */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Prioridad</label>
-          <div className="flex gap-3">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Prioridad</label>
+          <div className="flex gap-2">
             {[
               { value: 'normal', label: 'Normal', color: 'slate' },
               { value: 'alta', label: 'Alta', color: 'yellow' },
@@ -320,15 +323,15 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
                   updateField('prioridad', priority.value as 'normal' | 'alta' | 'urgente')
                 }
                 className={`
-                  flex-1 px-4 py-2.5 rounded-xl border transition-all
+                  flex-1 px-3 py-2 rounded-md border text-sm font-medium transition-all
                   ${
                     formData.prioridad === priority.value
                       ? priority.color === 'red'
-                        ? 'bg-red-600/10 border-red-600 text-red-400'
+                        ? 'bg-red-500/10 border-red-500/50 text-red-400'
                         : priority.color === 'yellow'
-                        ? 'bg-amber-500/10 border-amber-500 text-amber-500'
-                        : 'bg-slate-500/10 border-slate-500 text-slate-300'
-                      : 'bg-slate-800/30 border-slate-700 text-slate-400 hover:border-slate-600'
+                        ? 'bg-amber-500/10 border-amber-500/50 text-amber-500'
+                        : 'bg-slate-700/50 border-slate-600 text-slate-200'
+                      : 'bg-transparent border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-400'
                   }
                 `}
               >
@@ -340,7 +343,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
         {/* Notas internas */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
             Notas internas (opcional)
           </label>
           <textarea
@@ -348,31 +351,34 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             onChange={(e) => updateField('notasInternas', e.target.value)}
             placeholder="Notas privadas para el equipo médico..."
             rows={2}
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20 resize-none"
+            className="w-full px-3.5 py-2.5 rounded-md bg-[#0f1115] border border-slate-700 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500/20 resize-none transition-colors"
           />
         </div>
 
         {/* Error de submit */}
         {submitError && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4">
-            <p className="text-sm text-red-400">{submitError}</p>
+          <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3.5 flex items-start gap-3">
+            <svg className="h-5 w-5 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-red-400 font-medium">{submitError}</p>
           </div>
         )}
 
         {/* Botones */}
-        <div className="flex gap-3 pt-4 border-t border-slate-800">
+        <div className="flex gap-3 pt-5 border-t border-slate-800">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 px-6 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2.5 rounded-md border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting || !isValid || isCreatingPatient}
-            className="flex-1 px-6 py-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex-1 px-4 py-2.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {isCreatingPatient
               ? 'Creando paciente...'
@@ -380,7 +386,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
               ? 'Guardando...'
               : newPatientData
               ? 'Crear paciente y cita'
-              : 'Guardar Cita'}
+              : 'Agendar Cita'}
           </button>
         </div>
       </form>

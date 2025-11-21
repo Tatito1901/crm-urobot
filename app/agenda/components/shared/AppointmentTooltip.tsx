@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Clock, MapPin, User, Calendar, Phone, Mail, FileText } from 'lucide-react';
 import type { Appointment } from '@/types/agenda';
 import { StatusBadge } from './StatusBadge';
@@ -17,27 +18,33 @@ import type { EstadoConsulta } from '../../lib/constants';
 interface AppointmentTooltipProps {
   appointment: Appointment;
   isVisible: boolean;
-  position?: 'right' | 'left' | 'top' | 'bottom';
+  x?: number;
+  y?: number;
 }
 
 export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
   appointment,
   isVisible,
-  position = 'right',
+  x = 0,
+  y = 0,
 }) => {
   const [show, setShow] = useState(false);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isVisible) {
-      const timer = setTimeout(() => setShow(true), 300); // Delay para evitar flickering
+      const timer = setTimeout(() => setShow(true), 400); // Delay slightly longer
       return () => clearTimeout(timer);
     } else {
       setShow(false);
     }
   }, [isVisible]);
 
-  if (!show) return null;
+  if (!show || !mounted) return null;
 
   const startTime = appointment.start.toPlainTime().toString().slice(0, 5);
   const endTime = appointment.end.toPlainTime().toString().slice(0, 5);
@@ -51,35 +58,24 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
     });
   };
 
-  const positionClasses = {
-    right: 'left-full ml-2 top-0',
-    left: 'right-full mr-2 top-0',
-    top: 'bottom-full mb-2 left-0',
-    bottom: 'top-full mt-2 left-0',
-  };
+  // Ajuste de posición para no salirse de la pantalla
+  const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1000;
+  const tooltipWidth = 300;
+  const effectiveX = x + tooltipWidth > screenWidth ? x - tooltipWidth - 10 : x + 10;
+  const effectiveY = Math.max(10, Math.min(y, typeof window !== 'undefined' ? window.innerHeight - 200 : y));
 
-  return (
+  const content = (
     <div
-      ref={tooltipRef}
-      className={`
-        absolute ${positionClasses[position]} z-[100]
-        pointer-events-none
-        animate-in fade-in slide-in-from-left-1 duration-200
-      `}
+      className="fixed z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+      style={{ left: effectiveX, top: effectiveY }}
     >
-      {/* Flecha decorativa */}
-      {position === 'right' && (
-        <div className="absolute left-0 top-4 -translate-x-1 w-2 h-2 rotate-45 bg-slate-800 border-l border-t border-slate-600" />
-      )}
-      
-      {/* Contenido del tooltip */}
-      <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-xl shadow-black/40 min-w-[280px] max-w-[320px] overflow-hidden">
+      <div className="bg-[#1a1e26] border border-slate-700 rounded-lg shadow-2xl min-w-[280px] max-w-[320px] overflow-hidden">
         {/* Header profesional */}
-        <div className="bg-slate-900/50 p-4 border-b border-slate-700">
+        <div className="bg-slate-900/80 p-3 border-b border-slate-700/50">
           <div className="flex items-start gap-3">
             {/* Avatar profesional */}
-            <div className="flex-shrink-0 w-11 h-11 rounded-lg bg-blue-600 flex items-center justify-center shadow-md">
-              <span className="text-base font-bold text-white">
+            <div className="flex-shrink-0 w-10 h-10 rounded-md bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-inner">
+              <span className="text-sm font-bold text-white">
                 {appointment.paciente
                   .split(' ')
                   .map(n => n[0])
@@ -90,7 +86,7 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
             </div>
             
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-white truncate mb-1.5">
+              <h4 className="text-sm font-bold text-white truncate mb-1">
                 {appointment.paciente}
               </h4>
               <div className="flex items-center gap-2">
@@ -99,24 +95,18 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
                   size="sm" 
                   showIcon={false}
                 />
-                {!appointment.confirmadoPaciente && appointment.estado !== 'Cancelada' && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-300 text-[10px] font-medium border border-amber-600/30">
-                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
-                    Sin confirmar
-                  </span>
-                )}
               </div>
             </div>
           </div>
         </div>
 
         {/* Información principal */}
-        <div className="p-3.5 space-y-2.5">
+        <div className="p-3 space-y-3">
           {/* Fecha y hora */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
               <Calendar className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-              <span className="text-slate-300 font-medium">
+              <span className="text-slate-300 font-medium capitalize">
                 {formatDate()}
               </span>
             </div>
@@ -132,10 +122,10 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
           </div>
 
           {/* Separador */}
-          <div className="border-t border-slate-700" />
+          <div className="border-t border-slate-700/50" />
 
           {/* Detalles */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs">
               <MapPin className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
               {(appointment.sede === 'POLANCO' || appointment.sede === 'SATELITE') && (
@@ -143,17 +133,19 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
-              <User className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-              <span className="text-slate-300 capitalize">
-                {appointment.tipo.replace(/_/g, ' ')}
-              </span>
-            </div>
+            {appointment.tipo && (
+              <div className="flex items-center gap-2 text-xs">
+                <User className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                <span className="text-slate-300 capitalize bg-slate-800 px-1.5 py-0.5 rounded">
+                  {appointment.tipo.replace(/_/g, ' ')}
+                </span>
+              </div>
+            )}
 
             {appointment.motivoConsulta && (
-              <div className="flex items-start gap-2 text-xs">
+              <div className="flex items-start gap-2 text-xs bg-slate-800/50 p-2 rounded border border-slate-700/30">
                 <FileText className="h-3.5 w-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
-                <p className="text-slate-400 text-[11px] line-clamp-2 leading-relaxed">
+                <p className="text-slate-300 text-[11px] leading-relaxed">
                   {appointment.motivoConsulta}
                 </p>
               </div>
@@ -163,12 +155,12 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
           {/* Contacto rápido */}
           {(appointment.telefono || appointment.email) && (
             <>
-              <div className="border-t border-slate-700" />
-              <div className="space-y-1">
+              <div className="border-t border-slate-700/50" />
+              <div className="space-y-1.5">
                 {appointment.telefono && (
                   <div className="flex items-center gap-2 text-[11px]">
                     <Phone className="h-3 w-3 text-slate-500 flex-shrink-0" />
-                    <span className="text-slate-400 font-mono">
+                    <span className="text-slate-400 font-mono hover:text-slate-300 transition-colors">
                       {appointment.telefono}
                     </span>
                   </div>
@@ -176,7 +168,7 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
                 {appointment.email && (
                   <div className="flex items-center gap-2 text-[11px]">
                     <Mail className="h-3 w-3 text-slate-500 flex-shrink-0" />
-                    <span className="text-slate-400 truncate">
+                    <span className="text-slate-400 truncate hover:text-slate-300 transition-colors">
                       {appointment.email}
                     </span>
                   </div>
@@ -185,14 +177,9 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
             </>
           )}
         </div>
-
-        {/* Footer discreto */}
-        <div className="bg-slate-900 px-3 py-1.5 border-t border-slate-700">
-          <p className="text-[10px] text-slate-500 text-center">
-            Clic para más detalles
-          </p>
-        </div>
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 };

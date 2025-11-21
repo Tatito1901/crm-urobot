@@ -14,6 +14,7 @@ interface SedeBadgeProps {
   sede: Sede;
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
+  className?: string;
 }
 
 const sedeConfig = {
@@ -38,7 +39,8 @@ const sizeConfig = {
 export const SedeBadge: React.FC<SedeBadgeProps> = ({ 
   sede, 
   size = 'md',
-  showIcon = true 
+  showIcon = true,
+  className = ''
 }) => {
   const config = sedeConfig[sede] || sedeConfig.POLANCO;
   const Icon = config.icon;
@@ -50,6 +52,7 @@ export const SedeBadge: React.FC<SedeBadgeProps> = ({
         ${config.color}
         ${sizeConfig[size]}
         transition-colors
+        ${className}
       `}
     >
       {showIcon && <Icon className="w-3 h-3" />}

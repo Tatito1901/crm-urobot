@@ -14,6 +14,9 @@ interface AgendaState {
   // ========== VISTA ==========
   viewMode: 'week' | 'day' | 'month' | 'list' | 'heatmap';
   setViewMode: (mode: 'week' | 'day' | 'month' | 'list' | 'heatmap') => void;
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
+  setIsSidebarOpen: (isOpen: boolean) => void;
   
   // ========== CONFIGURACIÓN DE HORARIO ==========
   hourRange: 'business' | 'extended' | 'full'; // business: 7-21, extended: 6-22, full: 0-24
@@ -42,6 +45,12 @@ interface AgendaState {
   setOnlyPendingConfirmation: (value: boolean) => void;
   showFilters: boolean;
   setShowFilters: (value: boolean) => void;
+
+  // ========== CONFIGURACIÓN DE SEDES (COLORES Y VISIBILIDAD) ==========
+  sedeColors: Record<string, string>;
+  setSedeColor: (sede: string, color: string) => void;
+  visibleSedes: Record<string, boolean>;
+  toggleSedeVisibility: (sede: string) => void;
 
   // ========== SELECCIÓN ==========
   selectedAppointment: Appointment | null;
@@ -79,7 +88,8 @@ interface AgendaState {
 export const useAgendaState = create<AgendaState>((set, get) => ({
   // ========== ESTADO INICIAL ==========
   viewMode: 'week',
-  hourRange: 'business', // Horario laboral por defecto
+  isSidebarOpen: false,
+  hourRange: 'full', // Vista de 24 horas por defecto
   selectedDate: Temporal.Now.plainDateISO('America/Mexico_City'),
   dateRange: getWeekRange(Temporal.Now.plainDateISO('America/Mexico_City')),
   selectedSede: 'ALL',
@@ -96,6 +106,29 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
   isCreateModalOpen: false,
   isEditModalOpen: false,
 
+  // Colores iniciales (Tailwind classes mapeadas a hex o clases directas)
+  // Usamos clases de Tailwind para consistencia, pero el picker podría usar hex
+  sedeColors: {
+    'POLANCO': 'bg-blue-600',
+    'SATELITE': 'bg-emerald-600',
+  },
+  visibleSedes: {
+    'POLANCO': true,
+    'SATELITE': true,
+  },
+
+  // ========== ACCIONES DE SEDES ==========
+  setSedeColor: (sede, color) => 
+    set((state) => ({ sedeColors: { ...state.sedeColors, [sede]: color } })),
+  
+  toggleSedeVisibility: (sede) =>
+    set((state) => ({ 
+      visibleSedes: { 
+        ...state.visibleSedes, 
+        [sede]: !state.visibleSedes[sede] 
+      } 
+    })),
+
   // ========== ACCIONES DE VISTA ==========
   setViewMode: (mode) => {
     set({ viewMode: mode });
@@ -109,6 +142,9 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
         : getMonthRange(selectedDate);
     set({ dateRange: newRange });
   },
+
+  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  setIsSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
   
   // ========== ACCIONES DE HORARIO ==========
   setHourRange: (range) => set({ hourRange: range }),

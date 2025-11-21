@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { cn } from '@/app/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface SkeletonProps {
   className?: string;
@@ -97,6 +97,52 @@ export function DataTableSkeleton({ rows = 5 }: { rows?: number }) {
     <div className="space-y-4">
       <TableSkeleton rows={rows} />
       <MobileCardsSkeleton count={rows} />
+    </div>
+  );
+}
+
+/**
+ * Skeleton para lista de items (Dashboard, Listas simples)
+ */
+export function ListItemSkeleton() {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-3.5">
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-3 w-24" />
+      </div>
+      <Skeleton className="h-6 w-16 rounded-full" />
+    </div>
+  );
+}
+
+/**
+ * Skeleton para cards de resumen (Dashboard)
+ */
+export function CardSkeleton() {
+  return (
+    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-6 w-12" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Table Skeleton simple (compatibilidad)
+ */
+export function TableContentSkeleton({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: rows }).map((_, i) => (
+        <ListItemSkeleton key={i} />
+      ))}
     </div>
   );
 }

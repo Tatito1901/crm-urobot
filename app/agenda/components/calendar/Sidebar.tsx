@@ -1,25 +1,36 @@
 /**
  * ============================================================
- * SIDEBAR UNIFICADO - Calendario + Citas del día
+ * SIDEBAR UNIFICADO - Calendario + Configuración
  * ============================================================
- * Sidebar limpio con solo lo esencial
+ * Sidebar limpio estilo Google Calendar con gestión de calendarios (sedes)
  */
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Calendar, Plus } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Plus, Check, MoreVertical, Building2, MapPin } from 'lucide-react';
 import { MiniMonth } from './MiniMonth';
 import { useConsultas } from '@/hooks/useConsultas';
 import { isSameDay } from '@/lib/date-utils';
 import type { Consulta } from '@/types/consultas';
 import { useAgendaState } from '../../hooks/useAgendaState';
 import { typography } from '@/app/lib/design-system';
-import { StatusBadge } from '../shared/StatusBadge';
-import { SedeBadge } from '../shared/SedeBadge';
-import { FilterButton } from '../shared/FilterButton';
-import { SEDES, getSedeConfig } from '../../lib/constants';
-import type { EstadoConsulta } from '../../lib/constants';
+import { SEDES } from '../../lib/constants';
+
+// Paleta de colores estilo Google Calendar
+const CALENDAR_COLORS = [
+  { name: 'Tomato', value: 'bg-red-500', hex: '#ef4444' },
+  { name: 'Flamingo', value: 'bg-pink-500', hex: '#ec4899' },
+  { name: 'Tangerine', value: 'bg-orange-500', hex: '#f97316' },
+  { name: 'Banana', value: 'bg-yellow-500', hex: '#eab308' },
+  { name: 'Sage', value: 'bg-emerald-500', hex: '#10b981' },
+  { name: 'Basil', value: 'bg-green-600', hex: '#16a34a' },
+  { name: 'Peacock', value: 'bg-cyan-500', hex: '#06b6d4' },
+  { name: 'Blueberry', value: 'bg-blue-600', hex: '#2563eb' },
+  { name: 'Lavender', value: 'bg-indigo-500', hex: '#6366f1' },
+  { name: 'Grape', value: 'bg-purple-600', hex: '#9333ea' },
+  { name: 'Graphite', value: 'bg-slate-600', hex: '#475569' },
+];
 
 interface SidebarProps {
   selectedDate: Date;
@@ -35,155 +46,135 @@ export const Sidebar = React.memo(function Sidebar({
   onAppointmentClick 
 }: SidebarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { consultas, loading } = useConsultas();
-  const { selectedSede, setSelectedSede, searchQuery } = useAgendaState();
+  // const { consultas } = useConsultas(); // ❌ Eliminado fetch innecesario
+  const { 
+    searchQuery,
+    visibleSedes,
+    toggleSedeVisibility,
+    sedeColors,
+    setSedeColor
+  } = useAgendaState();
 
-  // Filtrar citas del día seleccionado por sede y búsqueda global
-  const filteredAppointments = useMemo(() => {
-    const dayAppointments = consultas.filter((apt) => {
-      const aptDate = new Date(apt.fechaConsulta);
-      if (!isSameDay(aptDate, selectedDate)) return false;
-      if (selectedSede !== 'ALL' && apt.sede !== selectedSede) return false;
-      
-      // Aplicar búsqueda global
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matches = apt.paciente.toLowerCase().includes(query) ||
-          apt.motivoConsulta?.toLowerCase().includes(query);
-        if (!matches) return false;
+  // Estado para el menú de colores (ID de sede y posición)
+  const [colorMenu, setColorMenu] = useState<{sede: string, top: number, left: number} | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar menú al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setColorMenu(null);
       }
-      
-      return true;
-    });
-    
-    return dayAppointments.sort((a, b) => 
-      a.horaConsulta.localeCompare(b.horaConsulta)
-    );
-  }, [consultas, selectedDate, selectedSede, searchQuery]);
+    };
+    // Usar capture para asegurar que se detecta antes
+    document.addEventListener('mousedown', handleClickOutside, true);
+    return () => document.removeEventListener('mousedown', handleClickOutside, true);
+  }, []);
 
-  // Configuración eliminada - ahora usa constantes centralizadas
+  // Manejar scroll para cerrar el menú si se hace scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (colorMenu) setColorMenu(null);
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [colorMenu]);
 
   return (
-    <aside className="w-[320px] h-full border-r-2 border-slate-700/50 bg-gradient-to-b from-slate-900/60 to-slate-950/60 backdrop-blur-sm flex flex-col shadow-xl shadow-black/20">
-      {/* Header */}
-      <div className="px-4 py-4 border-b border-slate-800/40">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-blue-400" />
-            <h2 className={`${typography.sectionTitle} text-lg`}>Agenda Médica</h2>
-          </div>
-          {onCreateAppointment && (
-            <button
-              onClick={onCreateAppointment}
-              className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 transition-colors"
-              title="Nueva cita"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          )}
+    <aside className="w-[280px] h-full border-r border-slate-800 bg-[#0f1218] flex flex-col relative z-20">
+      {/* Botón Crear + Mini Calendario */}
+      <div className="p-4 space-y-4 shrink-0">
+        {/* Botón Crear eliminado temporalmente a petición */}
+        
+        <div className="pb-2 border-b border-slate-800/50">
+          <MiniMonth
+            selectedDate={selectedDate}
+            onDateSelect={onDateSelect}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
+          />
         </div>
+      </div>
 
-        {/* Filtro de sedes - optimizado */}
-        <div className="flex gap-2">
-          {SEDES.map((sede) => (
-            <FilterButton
-              key={sede.value}
-              label={sede.label}
-              selected={selectedSede === sede.value}
-              onClick={() => setSelectedSede(sede.value)}
-              fullWidth
-              size="md"
+      {/* Sección: Mis Calendarios (Sedes) */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
+        <div className="mb-2">
+          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 pl-2">Mis calendarios</h3>
+          
+          <div className="space-y-1">
+            {SEDES.map((sede) => {
+              const isVisible = visibleSedes[sede.value];
+              // Colores más vibrantes estilo GCal
+              const colorClass = sedeColors[sede.value] || (sede.value === 'POLANCO' ? 'bg-blue-600' : 'bg-purple-600');
+              const isMenuOpen = colorMenu?.sede === sede.value;
+
+              return (
+                <div key={sede.value} className="relative group flex items-center justify-between py-2 px-2 rounded-md hover:bg-slate-800/60 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3 flex-1 min-w-0" onClick={() => toggleSedeVisibility(sede.value)}>
+                    <div className={`
+                      w-[18px] h-[18px] rounded-[4px] flex items-center justify-center border transition-all duration-200
+                      ${isVisible ? `border-transparent ${colorClass} shadow-sm` : 'border-slate-500 bg-transparent hover:border-slate-400'}
+                    `}>
+                      {isVisible && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                    </div>
+                    <span className={`text-[13px] truncate transition-colors ${isVisible ? 'text-slate-200 font-medium' : 'text-slate-400'}`}>
+                      {sede.label}
+                    </span>
+                  </div>
+
+                  {/* Botón 3 puntos */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setColorMenu(isMenuOpen ? null : {
+                        sede: sede.value,
+                        top: rect.top,
+                        left: rect.right + 5 // Un poco a la derecha del botón
+                      });
+                    }}
+                    className={`p-1.5 rounded-full hover:bg-slate-700 text-slate-400 opacity-0 group-hover:opacity-100 transition-all ${isMenuOpen ? 'opacity-100 bg-slate-700 text-slate-200' : ''}`}
+                    aria-label="Opciones de color"
+                  >
+                    <MoreVertical className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer minimalista */}
+      <div className="p-4 border-t border-slate-800/50 text-[10px] text-slate-600 text-center shrink-0">
+        CRM UROBOT v1.0
+      </div>
+
+      {/* Menú de colores (Fixed Position / Portal-like) */}
+      {colorMenu && (
+        <div 
+          ref={menuRef}
+          className="fixed z-[100] bg-[#1a1e26] border border-slate-700 rounded-lg shadow-2xl p-3 grid grid-cols-4 gap-2 w-[180px] animate-in fade-in zoom-in-95 duration-150"
+          style={{ 
+            top: Math.min(colorMenu.top - 60, window.innerHeight - 200), // Evitar que se salga por abajo
+            left: colorMenu.left 
+          }}
+        >
+          {CALENDAR_COLORS.map((color) => (
+            <button
+              key={color.name}
+              onClick={() => {
+                setSedeColor(colorMenu.sede, color.value);
+                setColorMenu(null);
+              }}
+              className={`w-6 h-6 rounded-full hover:scale-110 transition-transform border-2 ${color.value} ${
+                sedeColors[colorMenu.sede] === color.value ? 'border-white scale-110' : 'border-transparent hover:border-white/30'
+              }`}
+              title={color.name}
             />
           ))}
         </div>
-      </div>
-
-      {/* Mini calendario */}
-      <div className="border-b border-slate-800/40">
-        <MiniMonth
-          selectedDate={selectedDate}
-          onDateSelect={onDateSelect}
-          currentMonth={currentMonth}
-          onMonthChange={setCurrentMonth}
-        />
-      </div>
-
-      {/* Lista de citas del día */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className={typography.cardTitleSmall}>
-              {selectedDate.toLocaleDateString('es-MX', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long' 
-              })}
-            </h3>
-            <span className={`${typography.metadataSmall} font-medium`}>
-              {filteredAppointments.length} {filteredAppointments.length === 1 ? 'cita' : 'citas'}
-            </span>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent" />
-            </div>
-          ) : filteredAppointments.length === 0 ? (
-            <div className="text-center py-8">
-              <Calendar className="h-12 w-12 text-slate-600 mx-auto mb-3" />
-              <p className={typography.body}>Sin citas programadas</p>
-              {searchQuery && (
-                <p className={`${typography.metadataSmall} mt-1`}>Intenta con otra búsqueda</p>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {filteredAppointments.map((apt) => {
-                const sedeConfig = getSedeConfig(apt.sede);
-                return (
-                  <button
-                    key={apt.id}
-                    onClick={() => onAppointmentClick?.(apt)}
-                    className={`w-full text-left p-3 rounded-xl bg-slate-900/80 border border-slate-700/70 border-l-[3px] shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group ${sedeConfig.borderLeftClass}`}
-                  >
-                    {/* Hora y Estado */}
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-base font-bold text-white tabular-nums">
-                        {apt.horaConsulta.slice(0, 5)}
-                      </span>
-                      <StatusBadge estado={apt.estado as EstadoConsulta} size="sm" showIcon={false} />
-                    </div>
-
-                    {/* Paciente */}
-                    <p className="text-base font-semibold text-slate-200 mb-2 group-hover:text-white transition-colors">
-                      {apt.paciente}
-                    </p>
-
-                    {/* Tipo, sede y duración */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs text-slate-400 capitalize">
-                        {apt.tipo.replace(/_/g, ' ')}
-                      </span>
-                      <span className="text-slate-600">•</span>
-                      {(apt.sede === 'POLANCO' || apt.sede === 'SATELITE') && (
-                        <SedeBadge sede={apt.sede} size="sm" showIcon={false} />
-                      )}
-                      {apt.duracionMinutos && (
-                        <>
-                          <span className="text-slate-600">•</span>
-                          <span className="text-xs text-slate-400 tabular-nums">
-                            {apt.duracionMinutos}min
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </aside>
   );
 });

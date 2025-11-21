@@ -191,7 +191,7 @@ export const getStatusConfig = (status: string) => {
 export const URGENCY_CONFIG = {
   urgent: {
     label: 'Urgente',
-    borderClass: 'border-red-500 border-2 animate-pulse',
+    borderClass: 'border-red-500 border-2 shadow-lg shadow-red-500/30',
     badgeClass: 'bg-red-500 text-white',
   },
   soon: {

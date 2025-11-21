@@ -25,10 +25,32 @@ export interface OccupancyStats {
   total: number;
 }
 
+export interface WeekdayStats {
+  dayIndex: number; // 0=Sunday
+  avgCount: number;
+  totalCount: number;
+  label: string;
+}
+
+export interface PredictionStats {
+  busiestDay: WeekdayStats;
+  quietestDay: WeekdayStats;
+  monthlyGrowth: number; // percentage
+  predictedNextWeekCount: number;
+}
+
+export interface HourlyPattern {
+  hour: number; // 0-23
+  countsByDay: number[]; // Array de 7 elementos (Dom-Sab) con conteo de citas
+  total: number;
+}
+
 interface UseOccupancyHeatmapReturn {
   getOccupancyForDate: (date: Date) => DayOccupancy;
   getOccupancyForRange: (startDate: Date, endDate: Date) => Map<string, DayOccupancy>;
   stats: OccupancyStats;
+  predictions: PredictionStats;
+  hourlyPatterns: HourlyPattern[]; // Patrones por hora y día
   loading: boolean;
 }
 
@@ -92,6 +114,103 @@ export function useOccupancyHeatmap(): UseOccupancyHeatmapReturn {
     return { min, max, avg, total };
   }, [occupancyMap]);
 
+  // Calcular predicciones y estadísticas avanzadas
+  const predictions = useMemo((): PredictionStats => {
+    const weekdayCounts = Array(7).fill(0);
+    const weekdayOccurrences = Array(7).fill(0);
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const sixtyDaysAgo = new Date(now);
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+    let last30DaysCount = 0;
+    let previous30DaysCount = 0;
+
+    consultas.forEach(c => {
+      if (c.estado === 'Cancelada') return;
+      const date = new Date(c.fechaConsulta);
+      const dayIndex = date.getDay(); // 0 = Sunday
+      
+      // Solo considerar datos históricos para promedios semanales (últimos 12 meses)
+      // para evitar sesgo por fechas futuras vacías
+      if (date <= now) {
+        weekdayCounts[dayIndex]++;
+        weekdayOccurrences[dayIndex]++; // Aproximación simple, idealmente contaríamos semanas exactas
+      }
+
+      // Conteo para crecimiento mensual
+      if (date >= thirtyDaysAgo && date <= now) {
+        last30DaysCount++;
+      } else if (date >= sixtyDaysAgo && date < thirtyDaysAgo) {
+        previous30DaysCount++;
+      }
+    });
+
+    // Calcular promedios por día
+    const weekdayStats: WeekdayStats[] = weekdayCounts.map((count, index) => ({
+      dayIndex: index,
+      totalCount: count,
+      avgCount: weekdayOccurrences[index] > 0 ? count / (weekdayOccurrences[index] || 1) : 0, // Simplificación: asumimos distribución uniforme de semanas
+      label: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][index],
+    }));
+
+    // Encontrar día más y menos ocupado (excluyendo Domingo si es 0 o muy bajo, común en consultorios)
+    const activeDays = weekdayStats.filter(d => d.totalCount > 0);
+    const sortedDays = [...activeDays].sort((a, b) => b.totalCount - a.totalCount);
+    
+    const busiestDay = sortedDays[0] || weekdayStats[1]; // Fallback a Lunes
+    const quietestDay = sortedDays[sortedDays.length - 1] || weekdayStats[0];
+
+    // Crecimiento mensual
+    const monthlyGrowth = previous30DaysCount > 0 
+      ? ((last30DaysCount - previous30DaysCount) / previous30DaysCount) * 100 
+      : 0;
+
+    // Predicción próxima semana (simple: suma de promedios diarios)
+    const predictedNextWeekCount = Math.round(activeDays.reduce((acc, day) => acc + (day.totalCount / 12), 0)); // Aprox. promedio de 12 semanas
+
+    return {
+      busiestDay,
+      quietestDay,
+      monthlyGrowth,
+      predictedNextWeekCount
+    };
+  }, [consultas]);
+
+  // Calcular patrones horarios (Heatmap Semanal)
+  const hourlyPatterns = useMemo(() => {
+    // Inicializar matriz 24h x 7d
+    const patterns: HourlyPattern[] = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      countsByDay: Array(7).fill(0),
+      total: 0
+    }));
+
+    consultas.forEach(c => {
+      if (c.estado === 'Cancelada') return;
+      
+      // Parsear hora "HH:mm:ss" o "HH:mm"
+      const [hourStr] = c.horaConsulta.split(':');
+      const hour = parseInt(hourStr, 10);
+      
+      if (!isNaN(hour) && hour >= 0 && hour < 24) {
+        const date = new Date(c.fechaConsulta);
+        const dayIndex = date.getDay(); // 0=Dom, 1=Lun...
+        
+        patterns[hour].countsByDay[dayIndex]++;
+        patterns[hour].total++;
+      }
+    });
+
+    // Filtrar horas sin actividad para compactar la vista (ej. 00:00 - 06:00)
+    // Opcional: mantener rango fijo operativo (ej. 8-20) si se prefiere consistencia
+    const startHour = 7; // 7 AM
+    const endHour = 21;  // 9 PM
+    
+    return patterns.filter(p => p.hour >= startHour && p.hour <= endHour);
+  }, [consultas]);
+
   // Función para obtener ocupación de una fecha específica
   const getOccupancyForDate = (date: Date): DayOccupancy => {
     const dateKey = formatDateKey(date);
@@ -127,6 +246,8 @@ export function useOccupancyHeatmap(): UseOccupancyHeatmapReturn {
     getOccupancyForDate,
     getOccupancyForRange,
     stats,
+    predictions,
+    hourlyPatterns,
     loading,
   };
 }

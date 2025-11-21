@@ -81,21 +81,20 @@ export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSel
                 key={`${weekIndex}-${dayIndex}`}
                 onClick={() => onDateSelect(date)}
                 className={`
-                  relative aspect-square flex items-center justify-center rounded-full text-xs transition-all group
-                  ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-200'}
-                  ${isCurrentDay ? 'bg-emerald-500 text-white font-bold' : ''}
-                  ${isSelected && !isCurrentDay ? 'bg-slate-700' : ''}
-                  ${!isCurrentDay && !isSelected ? 'hover:bg-slate-800/60' : ''}
-                  ${occupancy.count > 0 && !isCurrentDay && !isSelected ? colors.bg : ''}
+                  relative aspect-square flex items-center justify-center rounded-full text-[11px] font-medium transition-all group
+                  ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-300'}
+                  ${isCurrentDay ? 'bg-blue-600 text-white shadow-sm shadow-blue-900/20' : ''}
+                  ${isSelected && !isCurrentDay ? 'bg-blue-500/20 text-blue-200' : ''}
+                  ${!isCurrentDay && !isSelected ? 'hover:bg-slate-800' : ''}
                 `}
                 aria-current={isCurrentDay ? 'date' : undefined}
                 title={occupancy.count > 0 ? `${occupancy.count} citas` : ''}
               >
                 {date.getDate()}
                 {/* Indicador de ocupación (solo para días con citas) */}
-                {occupancy.count > 0 && isCurrentMonth && !isCurrentDay && (
+                {occupancy.count > 0 && isCurrentMonth && !isCurrentDay && !isSelected && (
                   <div 
-                    className={`absolute bottom-0.5 w-1 h-1 rounded-full ${colors.indicator} group-hover:scale-125 transition-transform`}
+                    className={`absolute bottom-1 w-1 h-1 rounded-full ${colors.indicator} opacity-70 group-hover:opacity-100`}
                   />
                 )}
               </button>

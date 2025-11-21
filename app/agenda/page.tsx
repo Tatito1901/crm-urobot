@@ -30,12 +30,15 @@ import {
 
 // Lazy load de componentes pesados (reduce bundle inicial)
 const ListView = lazy(() => import('./components/calendar/ListView').then(m => ({ default: m.ListView })));
-const HeatmapView = lazy(() => import('./components/calendar/HeatmapView').then(m => ({ default: m.HeatmapView })));
 const FiltersPanel = lazy(() => import('./components/calendar/FiltersPanel').then(m => ({ default: m.FiltersPanel })));
-const MiniMonth = lazy(() => import('./components/calendar/MiniMonth').then(m => ({ default: m.MiniMonth })));
+const MonthGrid = lazy(() => import('./components/calendar/MonthGrid').then(m => ({ default: m.MonthGrid })));
 const CreateAppointmentModal = lazy(() => import('./components/modals/CreateAppointmentModal').then(m => ({ default: m.CreateAppointmentModal })));
 const AppointmentDetailsModal = lazy(() => import('./components/modals/AppointmentDetailsModal').then(m => ({ default: m.AppointmentDetailsModal })));
 const EditAppointmentModal = lazy(() => import('./components/modals/EditAppointmentModal').then(m => ({ default: m.EditAppointmentModal })));
+
+// Lazy load del Sidebar solo para mobile (desktop se importa estático arriba)
+// Nota: Usamos el mismo componente pero cargado dinámicamente
+const MobileSidebar = lazy(() => import('./components/calendar/Sidebar').then(m => ({ default: m.Sidebar })));
 
 // Loading fallback optimizado
 const ModalLoader = () => <div className="flex items-center justify-center p-4"><div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full" /></div>;
@@ -47,12 +50,22 @@ function consultaToAppointment(consulta: Consulta): Appointment {
   try {
     // Preferir fecha_hora_utc (consulta.fecha) y convertirla al timezone local
     if (consulta.fecha) {
-      const instant = Temporal.Instant.from(consulta.fecha);
+      // Sanitizar fecha (reemplazar espacio por T si es necesario)
+      // Formato esperado: 2025-05-23 09:30:00+00
+      // Formato Temporal: 2025-05-23T09:30:00+00:00
+      let sanitizedDate = consulta.fecha.trim().replace(' ', 'T');
+      
+      // Asegurar que tenga offset o Z. Si termina en +00, añadir :00
+      if (sanitizedDate.endsWith('+00')) {
+        sanitizedDate += ':00';
+      }
+      
+      const instant = Temporal.Instant.from(sanitizedDate);
       startDateTime = instant.toZonedDateTimeISO(consulta.timezone);
     } else {
       throw new Error('Missing fecha');
     }
-  } catch {
+  } catch (e) {
     // Fallback: usar fechaConsulta + horaConsulta como hora local
     const [yearStr, monthStr, dayStr] = consulta.fechaConsulta.split('-');
     const [hourStr, minuteStr, secondStr] = consulta.horaConsulta.split(':');
@@ -134,6 +147,9 @@ export default function AgendaPage() {
     closeDetailsModal,
     closeEditModal,
     openEditModal,
+    isSidebarOpen,
+    setIsSidebarOpen,
+    visibleSedes, // Nuevo estado
   } = useAgendaState();
   
   // Obtener rango de horas dinámico
@@ -186,8 +202,11 @@ export default function AgendaPage() {
         if (!matchesSearch) return false;
       }
 
-      // Filtro de sede
+      // Filtro de sede (Dropdown)
       if (selectedSede !== 'ALL' && apt.sede !== selectedSede) return false;
+
+      // Filtro de visibilidad de sede (Checkboxes)
+      if (apt.sede && visibleSedes[apt.sede] === false) return false;
 
       // Filtro de estados
       if (selectedEstados.length > 0 && !selectedEstados.includes(apt.estado)) return false;
@@ -220,6 +239,7 @@ export default function AgendaPage() {
     selectedPrioridades,
     onlyToday,
     onlyPendingConfirmation,
+    visibleSedes, // ✅ AÑADIDO: Dependencia crítica para re-filtrar al hacer toggle
   ]);
 
   // Calcular estadísticas (optimizado con single pass)
@@ -344,10 +364,10 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-urobot font-roboto">
+    <div className="h-screen flex flex-col bg-[#050b18]">
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar unificado - oculto en móvil */}
-        <div className="hidden lg:block">
+        {/* Sidebar unificado - Desktop */}
+        <div className="hidden lg:flex lg:flex-shrink-0 z-30 relative">
           <Sidebar 
             selectedDate={selectedDate} 
             onDateSelect={handleDateSelect}
@@ -356,7 +376,6 @@ export default function AgendaPage() {
               state.openCreateModal();
             }}
             onAppointmentClick={(consulta) => {
-              // Convertir Consulta a Appointment y abrir detalles
               const appointment = consultaToAppointment(consulta);
               const state = useAgendaState.getState();
               state.openDetailsModal(appointment);
@@ -364,8 +383,43 @@ export default function AgendaPage() {
           />
         </div>
 
+        {/* Sidebar unificado - Mobile Overlay */}
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-[150] lg:hidden flex">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            
+            {/* Sidebar Content */}
+            <div className="relative w-[85%] max-w-[340px] h-full shadow-2xl animate-in slide-in-from-left duration-300 bg-[#0f1218]">
+              <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><ModalLoader /></div>}>
+                <MobileSidebar 
+                  selectedDate={selectedDate} 
+                  onDateSelect={(date) => {
+                    handleDateSelect(date);
+                    setIsSidebarOpen(false); // Close on select
+                  }}
+                  onCreateAppointment={() => {
+                    const state = useAgendaState.getState();
+                    state.openCreateModal();
+                    setIsSidebarOpen(false);
+                  }}
+                  onAppointmentClick={(consulta) => {
+                    const appointment = consultaToAppointment(consulta);
+                    const state = useAgendaState.getState();
+                    state.openDetailsModal(appointment);
+                    setIsSidebarOpen(false);
+                  }}
+                />
+              </Suspense>
+            </div>
+          </div>
+        )}
+
         {/* Zona principal */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Header de navegación con estadísticas */}
           <HeaderBar
             currentWeekStart={currentWeekStart}
@@ -381,12 +435,8 @@ export default function AgendaPage() {
           </Suspense>
 
           {/* Área del calendario o lista */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {viewMode === 'heatmap' ? (
-              <Suspense fallback={<ModalLoader />}>
-                <HeatmapView monthsToShow={6} />
-              </Suspense>
-            ) : viewMode === 'list' ? (
+          <div className="flex-1 flex flex-col overflow-hidden relative">
+            {viewMode === 'list' ? (
               <Suspense fallback={<ModalLoader />}>
                 <ListView
                   appointments={filteredAppointments}
@@ -402,16 +452,18 @@ export default function AgendaPage() {
                 />
               </Suspense>
             ) : viewMode === 'month' ? (
-              <div className="flex-1 overflow-auto bg-[#050b18] p-4">
-                <Suspense fallback={<ModalLoader />}>
-                  <MiniMonth
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    currentMonth={monthViewCurrent}
-                    onMonthChange={handleMonthChange}
-                  />
-                </Suspense>
-              </div>
+              <Suspense fallback={<ModalLoader />}>
+                <MonthGrid
+                  currentMonth={monthViewCurrent}
+                  selectedDate={selectedDate}
+                  appointments={filteredAppointments}
+                  onDateSelect={handleDateSelect}
+                  onAppointmentClick={(apt) => {
+                    const state = useAgendaState.getState();
+                    state.openDetailsModal(apt);
+                  }}
+                />
+              </Suspense>
             ) : (
               <>
                 {/* Header de días (sticky) */}

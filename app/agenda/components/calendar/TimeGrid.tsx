@@ -22,6 +22,12 @@ interface TimeGridProps {
   onAppointmentClick?: (appointment: Appointment) => void;
 }
 
+// Función auxiliar fuera del componente para evitar recreación
+const isWorkingDay = (date: Date) => {
+  const day = date.getDay();
+  return day >= 1 && day <= 5;
+};
+
 export const TimeGrid = React.memo(function TimeGrid({ 
   weekStart, 
   appointments = [],
@@ -47,34 +53,23 @@ export const TimeGrid = React.memo(function TimeGrid({
   const currentTimePosition = (currentHour - startHour) * 60 + currentMinute;
   const showCurrentTimeLine = days.some(day => isToday(day));
   
-  // Auto-scroll a la hora actual al cargar (solo si hay día de hoy visible)
+  // Auto-scroll a la hora actual al cargar
   useEffect(() => {
-    if (showCurrentTimeLine && containerRef.current && currentTimeRef.current) {
-      // Pequeño delay para asegurar que el DOM está listo
-      const timer = setTimeout(() => {
-        const container = containerRef.current;
-        const currentLine = currentTimeRef.current;
-        
-        if (container && currentLine) {
-          const containerHeight = container.clientHeight;
-          const scrollTop = currentLine.offsetTop - containerHeight / 3;
-          
-          container.scrollTo({
-            top: Math.max(0, scrollTop),
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
+    if (!showCurrentTimeLine || !containerRef.current || !currentTimeRef.current) return;
+    
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      const currentLine = currentTimeRef.current;
+      if (!container || !currentLine) return;
       
-      return () => clearTimeout(timer);
-    }
-  }, [showCurrentTimeLine, mode, weekStart]);
-
-  // Determinar si un día tiene horario laboral
-  const isWorkingDay = (date: Date) => {
-    const day = date.getDay();
-    return day >= 1 && day <= 5;
-  };
+      container.scrollTo({
+        top: Math.max(0, currentLine.offsetTop - container.clientHeight / 3),
+        behavior: 'smooth'
+      });
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [showCurrentTimeLine]);
 
   // Agrupar y posicionar citas por día (optimizado)
   const appointmentsByDay = useMemo(() => {
@@ -106,33 +101,35 @@ export const TimeGrid = React.memo(function TimeGrid({
     <div 
       ref={containerRef}
       data-time-grid
-      className="flex-1 overflow-auto bg-slate-900 p-1 md:p-2 scroll-smooth"
+      className="flex-1 overflow-auto bg-[#121212] scroll-smooth custom-scrollbar"
     >
       <div
         className={`grid ${
-          mode === 'day' ? 'grid-cols-[50px_1fr] sm:grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[50px_repeat(7,1fr)] sm:grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
-        } min-h-full gap-0.5 md:gap-1 rounded-lg overflow-hidden`}
+          mode === 'day' ? 'grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
+        } min-h-full gap-0 border-t border-slate-800/40 bg-[#121212]`}
       >
-        {/* Columna de horas - Solo mostrar horas completas (estilo Google Calendar) */}
-        <div className="border-r border-slate-700/70 sticky left-0 bg-slate-900/95 z-10 backdrop-blur-sm">
-          {timeSlots.map((slot) => (
-            <div
-              key={slot.time}
-              className={`flex items-start justify-end pr-1.5 sm:pr-2 md:pr-3 ${
-                slot.isHourStart ? 'pt-1' : ''
-              } text-[10px] sm:text-xs font-medium text-slate-400 ${
-                slot.isHourStart ? 'border-t border-slate-700/50' : ''
-              }`}
-              style={{ height: `${slotHeight}px` }}
-            >
-              {/* Solo mostrar hora en slots completos */}
-              {slot.isHourStart && (
-                <span className="tabular-nums -mt-2">
-                  {formatHour12(slot.hour)}
+        {/* Columna de horas - Solo horas completas */}
+        <div className="border-r border-slate-800/40 sticky left-0 bg-[#121212] z-10 translate-y-[-10px]">
+          {timeSlots.map((slot) => {
+            // Calcular hora 12h
+            const hour12 = slot.hour > 12 ? slot.hour - 12 : slot.hour === 0 ? 12 : slot.hour;
+            const ampm = slot.hour >= 12 ? 'PM' : 'AM';
+            
+            // Solo renderizar etiqueta en horas en punto
+            if (!slot.isHourStart) return <div key={slot.time} style={{ height: `${slotHeight}px` }} />;
+
+            return (
+              <div
+                key={slot.time}
+                className="flex flex-col items-end justify-start pr-3 relative"
+                style={{ height: `${slotHeightPerHour}px` }}
+              >
+                <span className="text-[10px] font-medium text-slate-400 tabular-nums leading-none translate-y-[50%]">
+                  {hour12} {ampm}
                 </span>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
         {/* Columnas por día - renderizado optimizado */}
@@ -149,34 +146,36 @@ export const TimeGrid = React.memo(function TimeGrid({
           return (
             <div
               key={dayIndex}
-              className={`relative border-r border-slate-700/50 last:border-r-0 rounded-sm transition-colors ${
-                hasWorkingHours ? 'bg-slate-900/30' : 'bg-[#0b0f16]'
+              className={`relative border-r border-slate-800/40 last:border-r-0 transition-colors ${
+                hasWorkingHours ? 'bg-transparent' : 'bg-slate-900/10'
               }`}
               role="gridcell"
               aria-label={`${date.toLocaleDateString('es-MX')}`}
             >
-              {/* Grid de slots de tiempo - Grid mejorado estilo Google Calendar */}
-              {timeSlots.map((slot) => (
-                <div
-                  key={`${dayIndex}-${slot.time}`}
-                  className={`${
-                    slot.isHourStart 
-                      ? 'border-t border-slate-700/60' 
-                      : 'border-t border-slate-700/20'
-                  } hover:bg-blue-500/8 transition-colors cursor-pointer group relative`}
-                  style={{ height: `${slotHeight}px` }}
-                  data-time={slot.time}
-                  data-date={date.toISOString().split('T')[0]}
-                  title={`${formatHour12(slot.hour)}${slot.minute > 0 ? `:${slot.minute}` : ''} - ${date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}`}
-                >
-                  {/* Indicador de tiempo al hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <div className="absolute top-0 left-0 text-[9px] text-blue-400 font-medium px-1 bg-slate-900/80 rounded-br">
-                      {formatHour12(slot.hour)}{slot.minute > 0 ? `:${slot.minute}` : ''}
-                    </div>
+              {/* Grid de líneas de tiempo - Solo líneas visibles en horas completas */}
+              {timeSlots.map((slot, slotIndex) => {
+                // Solo renderizar borde en horas completas
+                if (!slot.isHourStart) {
+                   return (
+                    <div
+                      key={`${dayIndex}-${slot.time}`}
+                      className="relative"
+                      style={{ height: `${slotHeight}px` }}
+                    />
+                   );
+                }
+                
+                return (
+                  <div
+                    key={`${dayIndex}-${slot.time}`}
+                    className="border-t border-slate-800/40 w-full relative group"
+                    style={{ height: `${slotHeightPerHour}px` }} // Altura doble para cubrir la hora completa
+                  >
+                    {/* Indicador hover sutil */}
+                    <div className="hidden group-hover:block absolute left-0 top-0 w-full h-full bg-slate-800/10 z-0 pointer-events-none" />
                   </div>
-                </div>
-              ))}
+                );
+              })}
               
               {/* Línea indicadora de hora actual - solo en día de hoy */}
               {isToday(date) && (
@@ -188,14 +187,10 @@ export const TimeGrid = React.memo(function TimeGrid({
                     top: `${((currentHour - startHour) * slotHeightPerHour) + (currentMinute * slotHeightPerHour / 60)}px` 
                   }}
                 >
-                  {/* Círculo */}
-                  <div className="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50 animate-pulse" />
+                  {/* Círculo indicador */}
+                  <div className="absolute -left-[5px] -top-[5px] w-2.5 h-2.5 rounded-full bg-[#ea4335] shadow-sm" />
                   {/* Línea */}
-                  <div className="h-0.5 bg-red-500 shadow-md shadow-red-500/30" />
-                  {/* Hora actual */}
-                  <div className="absolute -left-16 sm:-left-14 -top-2.5 text-[10px] font-bold text-red-500 bg-slate-900 px-1.5 py-0.5 rounded border border-red-500/30 whitespace-nowrap">
-                    {now.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                  </div>
+                  <div className="h-[2px] bg-[#ea4335] w-full shadow-sm" />
                 </div>
               )}
               

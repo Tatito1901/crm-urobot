@@ -6,6 +6,7 @@
  * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
+import { useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import {

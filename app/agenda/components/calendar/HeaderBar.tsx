@@ -9,7 +9,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid, Activity, Clock } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid, Activity, Clock, Menu } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
 
@@ -28,11 +29,11 @@ export const HeaderBar = React.memo(function HeaderBar({
   pendingConfirmation = 0,
   todayAppointments = 0,
 }: HeaderBarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const weekRange = formatWeekRangeMX(currentWeekStart);
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showHourMenu, setShowHourMenu] = useState(false);
-  const viewMenuRef = useRef<HTMLDivElement>(null);
-  const hourMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     viewMode,
@@ -47,38 +48,36 @@ export const HeaderBar = React.memo(function HeaderBar({
     selectedEstados,
     selectedTipos,
     selectedPrioridades,
+    toggleSidebar,
   } = useAgendaState();
 
-  // Cerrar menús al hacer clic fuera
+  // Determinar si estamos en la página de heatmap
+  const isHeatmapPage = pathname === '/agenda/heatmap';
+
+  // Sincronizar viewMode si estamos en heatmap (efecto visual)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (viewMenuRef.current && !viewMenuRef.current.contains(event.target as Node)) {
+    if (isHeatmapPage && viewMode !== 'heatmap') {
+      setViewMode('heatmap');
+    } else if (!isHeatmapPage && viewMode === 'heatmap') {
+      // Si NO estamos en heatmap page pero el estado dice heatmap, resetear a week
+      setViewMode('week');
+    }
+  }, [isHeatmapPage, viewMode, setViewMode]);
+
+  // Cerrar menús con Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
         setShowViewMenu(false);
-      }
-      if (hourMenuRef.current && !hourMenuRef.current.contains(event.target as Node)) {
         setShowHourMenu(false);
       }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
   const goToToday = () => {
-    const today = new Date();
-    const thisWeek = startOfWeek(today);
-    onWeekChange(thisWeek);
-    
-    // Auto-scroll en TimeGrid si existe
-    setTimeout(() => {
-      const timeGrid = document.querySelector('[data-time-grid]');
-      if (timeGrid) {
-        const currentTimeLine = timeGrid.querySelector('[data-current-time]');
-        if (currentTimeLine) {
-          currentTimeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    }, 200);
+    onWeekChange(startOfWeek(new Date()));
   };
 
   const goToPreviousWeek = () => {
@@ -114,105 +113,114 @@ export const HeaderBar = React.memo(function HeaderBar({
     selectedPrioridades.length;
 
   return (
-    <header className="border-b border-slate-800/60 bg-slate-900/40">
+    <header className="border-b border-slate-800 bg-[#0a0e15]">
       {/* Barra principal - mejorada para mobile */}
-      <div className="min-h-[70px] md:h-[80px] px-3 md:px-6 flex items-center justify-between gap-2 py-2 md:py-0">
+      <div className="min-h-[60px] md:h-[64px] px-4 md:px-6 flex items-center justify-between gap-3 py-2 md:py-0">
         {/* Controles de navegación izquierda */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <button
+            onClick={toggleSidebar}
+            className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/70 px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-slate-100 hover:bg-slate-800/80 hover:border-slate-500 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-700/50 bg-transparent px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden md:inline">Volver</span>
           </Link>
+
           <button
             onClick={goToToday}
-            className="px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold border-2 border-emerald-500/40 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-500/60 transition-all text-emerald-400 hover:scale-105 active:scale-95"
+            className="px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-all"
             title="Ir al día de hoy"
           >
             Hoy
           </button>
 
-          <div className="flex items-center gap-0.5 md:gap-1">
+          <div className="flex items-center">
             <button
               onClick={goToPreviousWeek}
-              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center justify-center"
+              className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
               aria-label="Anterior"
             >
-              <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
 
             <button
               onClick={goToNextWeek}
-              className="p-1.5 md:p-2 rounded-lg hover:bg-slate-800/60 transition-colors flex items-center justify-center"
+              className="p-1.5 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
               aria-label="Siguiente"
             >
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-slate-300" />
+              <ChevronRight className="h-5 w-5" />
             </button>
           </div>
 
-          <span className="text-xs md:text-sm lg:text-base font-bold text-slate-100 hidden sm:inline truncate">{weekRange}</span>
+          <span className="text-sm md:text-lg font-medium text-slate-200 hidden sm:inline truncate ml-2">{weekRange}</span>
         </div>
 
         {/* Acciones derecha */}
-        <div className="flex items-center gap-2 md:gap-3">
-          {/* Buscador global - más compacto en móvil */}
-          <div className="relative flex-1 max-w-[120px] sm:max-w-[200px] md:max-w-xs">
-            <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 h-3 w-3 md:h-4 md:w-4 text-slate-400" />
+        <div className="flex items-center gap-2">
+          {/* Buscador global */}
+          <div className="relative flex-1 max-w-[140px] sm:max-w-[220px] md:max-w-xs hidden sm:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar..."
-              className="w-full pl-7 md:pl-10 pr-7 md:pr-10 py-1.5 md:py-2 text-xs md:text-sm border border-slate-700 rounded-lg bg-slate-800/40 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Buscar cita..."
+              className="w-full pl-9 pr-4 py-1.5 text-sm border-none rounded-md bg-slate-800/30 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:bg-slate-800 focus:ring-1 focus:ring-slate-700 transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                className="absolute right-2 md:right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
               >
-                <svg className="h-3 w-3 md:h-4 md:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             )}
           </div>
 
-          {/* Botón de filtros - más compacto */}
+          {/* Separador vertical sutil */}
+          <div className="h-4 w-px bg-slate-800 mx-1"></div>
+
+          {/* Botón de filtros - estilo Ghost */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-1 md:gap-2 px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border rounded-lg transition-colors relative ${
+            className={`flex items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-md transition-colors relative ${
               showFilters || activeFiltersCount > 0
-                ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                : 'border-slate-700 hover:bg-slate-800/60 text-slate-200'
+                ? 'bg-blue-500/10 text-blue-400'
+                : 'bg-transparent hover:bg-slate-800 text-slate-400 hover:text-white'
             }`}
+            title="Filtros"
           >
-            <Filter className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            <span className="hidden md:inline">Filtros</span>
+            <Filter className="h-4 w-4" />
             {activeFiltersCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-bold">
-                {activeFiltersCount}
-              </span>
+              <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-blue-500"></span>
             )}
           </button>
 
-          {/* Selector de rango de horas - Solo visible en vistas week/day */}
+          {/* Selector de rango de horas - estilo Ghost */}
           {(viewMode === 'week' || viewMode === 'day') && (
-            <div className="relative" ref={hourMenuRef}>
+            <div className="relative">
               <button
                 onClick={() => setShowHourMenu(!showHourMenu)}
-                className="flex items-center gap-1 md:gap-2 px-2 py-2 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+                onBlur={() => setTimeout(() => setShowHourMenu(false), 200)}
+                className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-md hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
                 title={currentHourRange.description}
               >
-                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                <span className="hidden lg:inline text-xs">{currentHourRange.label}</span>
-                <ChevronDown className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="hidden lg:inline">{currentHourRange.label}</span>
+                <Clock className="h-4 w-4 lg:hidden" />
               </button>
 
               {/* Dropdown de rango de horas */}
               {showHourMenu && (
-                <div className="absolute right-0 mt-2 w-48 rounded-lg bg-slate-800 border border-slate-700 shadow-2xl z-[100] overflow-hidden">
+                <div className="absolute right-0 mt-1 w-48 rounded-lg bg-[#1a1e26] border border-slate-800 shadow-xl z-[200] overflow-hidden py-1">
                   {hourRangeOptions.map((option) => (
                     <button
                       key={option.value}
@@ -220,27 +228,11 @@ export const HeaderBar = React.memo(function HeaderBar({
                         setHourRange(option.value);
                         setShowHourMenu(false);
                       }}
-                      className={`w-full flex flex-col gap-0.5 px-4 py-2.5 text-left transition-colors ${
-                        hourRange === option.value
-                          ? 'bg-blue-500/10 text-blue-400'
-                          : 'text-slate-300 hover:bg-slate-700/50'
+                      className={`w-full flex flex-col gap-0.5 px-4 py-2 text-left hover:bg-slate-800/50 transition-colors ${
+                        hourRange === option.value ? 'text-blue-400' : 'text-slate-300'
                       }`}
                     >
                       <span className="text-sm font-medium">{option.label}</span>
-                      <span className="text-xs text-slate-400">{option.description}</span>
-                      {hourRange === option.value && (
-                        <svg
-                          className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      )}
                     </button>
                   ))}
                 </div>
@@ -248,42 +240,46 @@ export const HeaderBar = React.memo(function HeaderBar({
             </div>
           )}
           
-          {/* Selector de vista - más compacto */}
-          <div className="relative" ref={viewMenuRef}>
+          {/* Selector de vista - estilo Ghost */}
+          <div className="relative">
             <button
               onClick={() => setShowViewMenu(!showViewMenu)}
-              className="flex items-center gap-1 md:gap-2 px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-slate-700 rounded-lg hover:bg-slate-800/60 transition-colors text-slate-200"
+              onBlur={() => setTimeout(() => setShowViewMenu(false), 200)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
             >
-              <ViewIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
               <span className="hidden md:inline">{currentView.label}</span>
-              <ChevronDown className="h-3 w-3 md:h-3.5 md:w-3.5" />
+              <span className="md:hidden"><ViewIcon className="h-4 w-4" /></span>
+              <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
             </button>
 
             {/* Dropdown de vistas */}
             {showViewMenu && (
-              <div className="absolute right-0 mt-2 w-48 rounded-lg bg-slate-800 border border-slate-700 shadow-2xl z-[100] overflow-hidden">
+              <div className="absolute right-0 mt-1 w-40 rounded-md bg-[#1a1e26] border border-slate-700 shadow-xl z-[200] overflow-hidden py-1">
                 {viewOptions.map((option) => {
                   const Icon = option.icon;
                   return (
                     <button
                       key={option.value}
                       onClick={() => {
-                        setViewMode(option.value);
+                        if (option.value === 'heatmap') {
+                          router.push('/agenda/heatmap');
+                        } else {
+                          if (pathname === '/agenda/heatmap') {
+                            router.push('/agenda');
+                          }
+                          setViewMode(option.value as any);
+                        }
                         setShowViewMenu(false);
-                        // Al cambiar de vista, volver a enfocar hoy
-                        setTimeout(() => goToToday(), 100);
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        viewMode === option.value
-                          ? 'bg-blue-500/10 text-blue-400'
-                          : 'text-slate-300 hover:bg-slate-700/50'
+                      className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-700/50 transition-colors ${
+                        viewMode === option.value ? 'text-blue-400 bg-blue-500/5' : 'text-slate-300'
                       }`}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-4 w-4 opacity-70" />
                       <span>{option.label}</span>
                       {viewMode === option.value && (
                         <svg
-                          className="ml-auto h-4 w-4"
+                          className="ml-auto h-3.5 w-3.5"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -305,28 +301,19 @@ export const HeaderBar = React.memo(function HeaderBar({
 
       {/* Barra de estadísticas rápidas */}
       {(totalAppointments > 0 || pendingConfirmation > 0 || todayAppointments > 0) && (
-        <div className="px-3 md:px-6 py-2 border-t border-slate-800/40 bg-slate-900/20 overflow-x-auto">
-          <div className="flex items-center gap-3 md:gap-6 text-xs whitespace-nowrap">
-            {todayAppointments > 0 && (
-              <div className="flex items-center gap-1 md:gap-2">
-                <span className="text-slate-400">Hoy:</span>
-                <span className="font-semibold text-slate-200">{todayAppointments}</span>
-              </div>
-            )}
-            {totalAppointments > 0 && (
-              <div className="flex items-center gap-1 md:gap-2">
-                <span className="text-slate-400 hidden sm:inline">Total visible:</span>
-                <span className="text-slate-400 sm:hidden">Total:</span>
-                <span className="font-semibold text-slate-200">{totalAppointments}</span>
-              </div>
-            )}
-            {pendingConfirmation > 0 && (
-              <div className="flex items-center gap-1 md:gap-2">
-                <span className="text-amber-400">⏳ Pend:</span>
-                <span className="font-semibold text-amber-400">{pendingConfirmation}</span>
-              </div>
-            )}
-          </div>
+        <div className="px-4 md:px-6 py-1.5 border-t border-slate-800 bg-[#0a0e15] flex items-center gap-6 text-xs">
+          {todayAppointments > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500">Hoy</span>
+              <span className="font-medium text-slate-300">{todayAppointments}</span>
+            </div>
+          )}
+          {pendingConfirmation > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-amber-500/80">Pendientes</span>
+              <span className="font-medium text-amber-400">{pendingConfirmation}</span>
+            </div>
+          )}
         </div>
       )}
     </header>

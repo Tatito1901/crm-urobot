@@ -1,129 +1,117 @@
 /**
  * ============================================================
- * DONUT CHART - Gráfico de dona mejorado
+ * DONUT CHART - Gráfico de dona ligero con Recharts
  * ============================================================
+ * Componente optimizado para visualizar distribuciones porcentuales
  */
 
+'use client';
 
-import React, { memo } from 'react';
+import React, { useMemo } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-export interface DonutChartDataPoint {
+interface DonutChartData {
   label: string;
   value: number;
   color: string;
+  [key: string]: string | number; // Index signature for Recharts compatibility
 }
 
-export interface DonutChartProps {
-  data: DonutChartDataPoint[];
+interface DonutChartProps {
+  data: DonutChartData[];
   size?: number;
   thickness?: number;
-  showLegend?: boolean;
   centerText?: string;
   centerSubtext?: string;
 }
 
-export const DonutChart = memo(function DonutChart({
+export const DonutChart: React.FC<DonutChartProps> = React.memo(({
   data,
   size = 200,
-  thickness = 30,
-  showLegend = true,
+  thickness = 40,
   centerText,
   centerSubtext,
-}: DonutChartProps) {
-  if (data.length === 0) {
+}) => {
+  // Filtrar datos con valor 0 y memoizar resultado
+  const validData = useMemo(() => data.filter((d) => d.value > 0), [data]);
+  const total = useMemo(() => validData.reduce((sum, item) => sum + item.value, 0), [validData]);
+
+  if (validData.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-slate-400"
+        className="flex items-center justify-center bg-slate-800/20 rounded-full border border-slate-800/50 border-dashed"
         style={{ width: size, height: size }}
       >
-        No hay datos
+        <p className="text-xs text-slate-500 font-medium">Sin datos</p>
       </div>
     );
   }
 
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-  const radius = (size - thickness) / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  let accumulatedPercentage = 0;
-
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* Chart */}
+    <div className="relative flex flex-col items-center gap-4">
+      {/* Gráfico */}
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="transform -rotate-90">
-          {/* Background circle */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth={thickness}
-          />
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={validData}
+              cx="50%"
+              cy="50%"
+              innerRadius={size / 2 - thickness}
+              outerRadius={size / 2}
+              paddingAngle={2}
+              dataKey="value"
+              animationDuration={1000}
+              animationBegin={0}
+              stroke="none"
+            >
+              {validData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
 
-          {/* Data segments */}
-          {data.map((item, index) => {
-            const percentage = item.value / total;
-            const strokeDasharray = `${percentage * circumference} ${circumference}`;
-            const strokeDashoffset = -accumulatedPercentage * circumference;
-
-            accumulatedPercentage += percentage;
-
-            return (
-              <circle
-                key={index}
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                fill="none"
-                stroke={item.color}
-                strokeWidth={thickness}
-                strokeDasharray={strokeDasharray}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                className="transition-all duration-300 hover:opacity-80"
-                style={{
-                  filter: `drop-shadow(0 0 8px ${item.color}80)`,
-                }}
-              />
-            );
-          })}
-        </svg>
-
-        {/* Center text */}
+        {/* Centro con texto */}
         {(centerText || centerSubtext) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
             {centerText && (
-              <div className="text-3xl font-bold text-white">{centerText}</div>
+              <div className="text-3xl font-bold text-white tabular-nums">{centerText}</div>
             )}
             {centerSubtext && (
-              <div className="text-sm text-slate-400">{centerSubtext}</div>
+              <div className="text-xs text-slate-400 mt-0.5 font-medium">{centerSubtext}</div>
             )}
           </div>
         )}
       </div>
 
-      {/* Legend */}
-      {showLegend && (
-        <div className="flex flex-wrap gap-4 justify-center">
-          {data.map((item, index) => {
-            const percentage = ((item.value / total) * 100).toFixed(1);
-            return (
-              <div key={index} className="flex items-center gap-2">
+      {/* Leyenda */}
+      <div className="flex flex-col gap-2 w-full max-w-[240px]">
+        {validData.map((item) => {
+          const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+          
+          return (
+            <div
+              key={item.label}
+              className="flex items-center justify-between text-xs group hover:bg-slate-800/30 rounded px-2 py-1.5 transition-colors cursor-default"
+            >
+              <div className="flex items-center gap-2">
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-2.5 h-2.5 rounded-full ring-2 ring-white/5"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-sm text-slate-300">
-                  {item.label}: <span className="font-semibold">{item.value}</span>{' '}
-                  <span className="text-slate-400">({percentage}%)</span>
-                </span>
+                <span className="text-slate-300 font-medium truncate max-w-[100px]">{item.label}</span>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <div className="flex items-center gap-2">
+                <span className="text-white font-semibold tabular-nums">{item.value}</span>
+                <span className="text-slate-500 text-[10px]">({percentage}%)</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 });
+
+DonutChart.displayName = 'DonutChart';

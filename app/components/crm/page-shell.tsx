@@ -8,7 +8,7 @@
 
 import { ReactNode } from "react";
 
-import { cn } from "@/app/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface PageShellProps {
   eyebrow: string;
@@ -19,6 +19,7 @@ interface PageShellProps {
   accent?: boolean;
   className?: string;
   compact?: boolean;
+  fullWidth?: boolean;
 }
 
 export function PageShell({
@@ -29,11 +30,15 @@ export function PageShell({
   children,
   accent = false,
   compact = false,
+  fullWidth = false,
   className,
 }: PageShellProps) {
   const layoutClasses = compact
     ? "relative flex w-full flex-col gap-3 px-6 py-3 sm:gap-3 sm:px-8 sm:py-4 md:gap-3 lg:px-12 lg:py-4 xl:px-16"
-    : "relative mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-20 pt-6 sm:gap-8 sm:px-6 sm:pb-24 sm:pt-8 md:gap-10 lg:pt-8 lg:pb-20";
+    : cn(
+        "relative mx-auto flex w-full flex-col gap-6 px-6 pb-20 pt-8 sm:gap-8 sm:px-8 sm:pb-24 sm:pt-10 md:gap-10 lg:px-12 lg:pt-12 lg:pb-20 xl:px-16",
+        fullWidth ? "max-w-[1600px]" : "max-w-6xl"
+      );
 
   const headerClasses = cn(
     "flex flex-col",
