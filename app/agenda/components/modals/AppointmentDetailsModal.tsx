@@ -10,9 +10,9 @@
 
 import React, { useState } from 'react';
 import { 
-  Calendar, Clock, MapPin, User, Phone, Mail, FileText, 
-  Edit2, X, Check, AlertCircle, ExternalLink, MessageSquare,
-  Trash2, MessageCircle, CalendarCheck, ShieldAlert, Send
+  Clock, Phone, Mail, FileText, 
+  Edit2, X, Check, AlertCircle, ExternalLink,
+  Trash2, MessageCircle, ShieldAlert
 } from 'lucide-react';
 import { Modal } from '../shared/Modal';
 import { formatTimeRange, formatLongDate } from '../../lib/agenda-utils';

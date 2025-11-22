@@ -104,7 +104,7 @@ const nextConfig: NextConfig = {
             // Chunk de librerías grandes
             lib: {
               test: /[\\/]node_modules[\\/]/,
-              name(module: any) {
+              name(module: { context: string }) {
                 const packageName = module.context.match(
                   /[\\/]node_modules[\\/](.*?)([\\/]|$)/
                 )?.[1];

@@ -15,7 +15,6 @@ import { Sidebar } from '../components/calendar/Sidebar';
 import { HeaderBar } from '../components/calendar/HeaderBar';
 import { HeatmapView } from '../components/calendar/HeatmapView';
 import { useRouter } from 'next/navigation';
-import { Temporal } from '@js-temporal/polyfill';
 
 export default function HeatmapPage() {
   const router = useRouter();

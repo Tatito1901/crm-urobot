@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { formatDate } from '@/app/lib/crm-data';
+import type { RecordatorioDetalle } from '@/types/recordatorios';
 
 const ESTADO_COLORS = {
   pendiente: 'border-amber-400/60 bg-amber-500/15 text-amber-300',
@@ -11,7 +12,7 @@ const ESTADO_COLORS = {
 } as const;
 
 interface ConfirmacionesTableProps {
-  recordatorios: any[]; // Usar el tipo correcto si está disponible, 'any' temporalmente para compatibilidad rápida
+  recordatorios: RecordatorioDetalle[];
   emptyMessage: string;
 }
 

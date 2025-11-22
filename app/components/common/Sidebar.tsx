@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
@@ -43,15 +43,9 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const today = useMemo(() => DATE_FORMATTER.format(new Date()), []);
   
   const isEstadisticas = pathname === '/estadisticas' || pathname?.startsWith('/estadisticas/');
-  
-  // Determinar sección activa basada en el path
-  const seccionActiva = estadisticasSecciones.find(s => s.href === pathname)?.id || 
-                        (pathname === '/estadisticas' ? 'resumen' : '');
 
   return (
     <>

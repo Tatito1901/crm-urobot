@@ -9,15 +9,8 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import {
-  DEFAULT_CONSULTA_ESTADO,
-  DEFAULT_CONSULTA_SEDE,
-  type Consulta,
-  isConsultaEstado,
-  isConsultaSede,
-} from '@/types/consultas'
+import { type Consulta, isConsultaEstado, isConsultaSede, DEFAULT_CONSULTA_SEDE, DEFAULT_CONSULTA_ESTADO } from '@/types/consultas'
 import type { Tables } from '@/types/database'
-import { mapConsultaFromDB, enrichConsulta } from '@/lib/mappers'
 
 const supabase = createClient()
 

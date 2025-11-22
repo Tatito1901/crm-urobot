@@ -46,7 +46,7 @@ export const SuccessOverlay = memo(() => {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-sm animate-in fade-in duration-300"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 backdrop-blur-sm animate-in fade-in duration-300"
       role="dialog"
       aria-live="polite"
       aria-label="Inicio de sesión exitoso"

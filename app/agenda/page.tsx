@@ -9,7 +9,7 @@
 
 // ✅ OPTIMIZACIÓN: Importar polyfill solo en esta página que lo necesita
 import '@js-temporal/polyfill';
-import React, { useState, useCallback, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useMemo, lazy, Suspense, useEffect } from 'react';
 import { Temporal } from '@js-temporal/polyfill';
 import { startOfWeek } from '@/lib/date-utils';
 import { useAgendaState } from './hooks/useAgendaState';
@@ -32,6 +32,7 @@ import {
 const ListView = lazy(() => import('./components/calendar/ListView').then(m => ({ default: m.ListView })));
 const FiltersPanel = lazy(() => import('./components/calendar/FiltersPanel').then(m => ({ default: m.FiltersPanel })));
 const MonthGrid = lazy(() => import('./components/calendar/MonthGrid').then(m => ({ default: m.MonthGrid })));
+const HeatmapView = lazy(() => import('./components/calendar/HeatmapView').then(m => ({ default: m.HeatmapView })));
 const CreateAppointmentModal = lazy(() => import('./components/modals/CreateAppointmentModal').then(m => ({ default: m.CreateAppointmentModal })));
 const AppointmentDetailsModal = lazy(() => import('./components/modals/AppointmentDetailsModal').then(m => ({ default: m.AppointmentDetailsModal })));
 const EditAppointmentModal = lazy(() => import('./components/modals/EditAppointmentModal').then(m => ({ default: m.EditAppointmentModal })));
@@ -65,7 +66,7 @@ function consultaToAppointment(consulta: Consulta): Appointment {
     } else {
       throw new Error('Missing fecha');
     }
-  } catch (e) {
+  } catch {
     // Fallback: usar fechaConsulta + horaConsulta como hora local
     const [yearStr, monthStr, dayStr] = consulta.fechaConsulta.split('-');
     const [hourStr, minuteStr, secondStr] = consulta.horaConsulta.split(':');
@@ -129,7 +130,7 @@ export default function AgendaPage() {
   // Estado global de agenda
   const {
     viewMode,
-    hourRange,
+    setViewMode,
     getHourBounds,
     searchQuery,
     selectedSede,
@@ -158,6 +159,22 @@ export default function AgendaPage() {
   // Cargar consultas
   const { consultas, refetch } = useConsultas();
 
+  // RESPONSIVIDAD: Cambiar a vista de día automáticamente en móviles
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768 && viewMode !== 'day' && viewMode !== 'list') {
+        setViewMode('day');
+      }
+    };
+
+    // Check inicial
+    handleResize();
+
+    // Listener opcional (puede ser costoso, pero útil si rotan pantalla)
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setViewMode, viewMode]);
+
   // Convertir consultas a appointments (memoizado para evitar recálculos)
   const appointments = useMemo(() => consultas.map(consultaToAppointment), [consultas]);
 
@@ -165,26 +182,13 @@ export default function AgendaPage() {
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
     setCurrentWeekStart(startOfWeek(date));
+    setMonthViewCurrent(date);
     
     // Si cambia de semana, asegurar vista semanal
     const state = useAgendaState.getState();
     if (state.viewMode === 'list' || state.viewMode === 'month') {
       state.setViewMode('week');
     }
-  }, []);
-
-  const handleMonthChange = useCallback((date: Date) => {
-    setMonthViewCurrent(date);
-    setSelectedDate(date);
-    setCurrentWeekStart(startOfWeek(date));
-    
-    // Scroll suave al cambiar de mes
-    setTimeout(() => {
-      const monthView = document.querySelector('[data-month-view]');
-      if (monthView) {
-        monthView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
   }, []);
 
   // Filtrar consultas según filtros activos
@@ -463,6 +467,10 @@ export default function AgendaPage() {
                     state.openDetailsModal(apt);
                   }}
                 />
+              </Suspense>
+            ) : viewMode === 'heatmap' ? (
+              <Suspense fallback={<ModalLoader />}>
+                <HeatmapView monthsToShow={12} />
               </Suspense>
             ) : (
               <>

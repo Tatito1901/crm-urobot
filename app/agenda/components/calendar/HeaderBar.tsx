@@ -10,9 +10,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid, Activity, Clock, Menu } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid, Activity, Clock, Menu, Settings } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
-import { useAgendaState } from '../../hooks/useAgendaState';
+import { useAgendaState, type ViewMode } from '../../hooks/useAgendaState';
 import { ViewDensityToggle } from './ViewDensityToggle';
 import { ColorPicker } from '../customization/ColorPicker';
 import { ThemeToggle } from '../shared/ThemeToggle';
@@ -33,14 +33,14 @@ export const HeaderBar = React.memo(function HeaderBar({
   totalAppointments = 0,
   pendingConfirmation = 0,
   todayAppointments = 0,
-  onToggleSidebar,
-  sidebarCollapsed = false,
 }: HeaderBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const weekRange = formatWeekRangeMX(currentWeekStart);
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showHourMenu, setShowHourMenu] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const settingsMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     viewMode,
@@ -71,19 +71,29 @@ export const HeaderBar = React.memo(function HeaderBar({
     }
   }, [isHeatmapPage, viewMode, setViewMode]);
 
-  // Cerrar menús con Escape
+  // Cerrar menús con Escape y Click Outside
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setShowViewMenu(false);
         setShowHourMenu(false);
-      }
-      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target as Node)) {
         setShowSettingsMenu(false);
       }
     };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (settingsMenuRef.current && !settingsMenuRef.current.contains(e.target as Node)) {
+        setShowSettingsMenu(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const goToToday = () => {
@@ -277,7 +287,7 @@ export const HeaderBar = React.memo(function HeaderBar({
                           if (pathname === '/agenda/heatmap') {
                             router.push('/agenda');
                           }
-                          setViewMode(option.value as any);
+                          setViewMode(option.value as ViewMode);
                         }
                         setShowViewMenu(false);
                       }}

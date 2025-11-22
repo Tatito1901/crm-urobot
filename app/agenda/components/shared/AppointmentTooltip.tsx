@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Clock, MapPin, User, Calendar, Phone, Mail, FileText } from 'lucide-react';
 import type { Appointment } from '@/types/agenda';

@@ -1,24 +1,11 @@
 'use client';
 
-import { useStats, KPIData } from '@/hooks/useStats';
+import React, { type ElementType } from 'react';
+import dynamic from 'next/dynamic';
+import { useStats } from '@/hooks/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cards, spacing, typography } from '@/app/lib/design-system';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  AreaChart, 
-  Area,
-  Legend
-} from 'recharts';
+import { spacing } from '@/app/lib/design-system';
 import { 
   Users, 
   Calendar, 
@@ -27,13 +14,38 @@ import {
   ArrowUpRight, 
   Activity, 
   PieChart as PieChartIcon,
-  Smartphone,
   MessageSquare,
   Share2
 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
-export const dynamic = 'force-dynamic';
+export const dynamicConfig = 'force-dynamic';
+
+// Lazy Loading de Gráficos para reducir bundle size inicial
+const EvolutionChart = dynamic(() => import('./components/dashboard/DashboardEvolutionChart').then(mod => mod.DashboardEvolutionChart), {
+  loading: () => <Skeleton className="h-[300px] w-full" />,
+  ssr: false
+});
+
+const FunnelChart = dynamic(() => import('./components/dashboard/DashboardFunnelChart').then(mod => mod.DashboardFunnelChart), {
+  loading: () => <Skeleton className="h-[300px] w-full" />,
+  ssr: false
+});
+
+const SourcesChart = dynamic(() => import('./components/dashboard/DashboardSourcesChart').then(mod => mod.DashboardSourcesChart), {
+  loading: () => <Skeleton className="h-[220px] w-full" />,
+  ssr: false
+});
+
+const StatusChart = dynamic(() => import('./components/dashboard/DashboardStatusChart').then(mod => mod.DashboardStatusChart), {
+  loading: () => <Skeleton className="h-[220px] w-full" />,
+  ssr: false
+});
+
+const SedesChart = dynamic(() => import('./components/dashboard/DashboardSedesChart').then(mod => mod.DashboardSedesChart), {
+  loading: () => <Skeleton className="h-[220px] w-full" />,
+  ssr: false
+});
 
 // Componente para tarjeta KPI pequeña
 function KpiCard({ 
@@ -46,7 +58,7 @@ function KpiCard({
   title: string; 
   value: string | number; 
   subtext: string; 
-  icon: any; 
+  icon: ElementType; 
   trend?: string 
 }) {
   return (
@@ -153,31 +165,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-xs text-slate-400">Consultas vs Pacientes Nuevos (6 meses)</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={evolucionMensual} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorConsultas" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorPacientes" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
-                  />
-                  <Area type="monotone" dataKey="consultas" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorConsultas)" name="Consultas" />
-                  <Area type="monotone" dataKey="pacientes" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPacientes)" name="Nuevos Pacientes" />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px', color: '#94a3b8' }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            <EvolutionChart data={evolucionMensual} />
           </CardContent>
         </Card>
 
@@ -191,24 +179,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-xs text-slate-400">Flujo de leads desde captura hasta cierre</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={funnelLeads} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-                  <XAxis type="number" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis dataKey="name" type="category" stroke="#e2e8f0" fontSize={11} tickLine={false} axisLine={false} width={80} />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} name="Leads">
-                    {funnelLeads.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <FunnelChart data={funnelLeads} />
           </CardContent>
         </Card>
 
@@ -227,29 +198,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-xs text-slate-400">Origen de los leads</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[220px] w-full flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={fuentesCaptacion}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {fuentesCaptacion.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke="rgba(0,0,0,0.2)" />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
-                  />
-                  <Legend layout="vertical" verticalAlign="middle" align="right" iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#94a3b8' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <SourcesChart data={fuentesCaptacion} />
           </CardContent>
         </Card>
 
@@ -263,24 +212,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-xs text-slate-400">Desglose operativo actual</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[220px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={estadoCitas} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
-                  />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={30}>
-                    {estadoCitas.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <StatusChart data={estadoCitas} />
           </CardContent>
         </Card>
 
@@ -294,33 +226,12 @@ export default function EstadisticasPage() {
             <CardDescription className="text-xs text-slate-400">Distribución geográfica</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[220px] w-full flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={consultasPorSede}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {consultasPorSede.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke="rgba(0,0,0,0.2)" />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
-                  />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px', color: '#94a3b8' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <SedesChart data={consultasPorSede} />
           </CardContent>
         </Card>
 
       </div>
-    </div>
+    </PageShell>
   );
 }
+

@@ -2,8 +2,8 @@
 
 import { useStats } from '@/hooks/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cards, spacing } from '@/app/lib/design-system';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { spacing } from '@/app/lib/design-system';
 import { Users, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 

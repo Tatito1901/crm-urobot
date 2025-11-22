@@ -23,18 +23,16 @@ export const DaysHeader = React.memo(function DaysHeader({ weekStart, mode = 'we
       ? [weekStart]
       : Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const headerHeight = viewDensity === 'compact' ? 'py-2' : viewDensity === 'comfortable' ? 'py-3' : 'py-4';
-
   return (
     <div
       className={`grid ${
         mode === 'day' 
           ? 'grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' 
           : 'grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
-      } bg-[#0f1115] sticky top-0 z-20 border-b border-slate-800`}
+      } bg-[#18181b] sticky top-0 z-20 border-b border-white/[0.08]`}
     >
       {/* Columna vacía para alinear con columna de horas */}
-      <div className="bg-[#0f1115] z-20 border-r border-slate-800" />
+      <div className="bg-[#18181b] z-20 border-r border-white/[0.08]" />
 
       {/* Días de la semana - estilo Google Calendar */}
       {days.map((date, index) => {
@@ -48,24 +46,26 @@ export const DaysHeader = React.memo(function DaysHeader({ weekStart, mode = 'we
         return (
           <div
             key={index}
-            className={`relative flex flex-col items-center justify-center py-3 border-r border-slate-800 last:border-r-0 group transition-colors ${isTodayDate ? 'bg-transparent' : ''}`}
+            className={`relative flex flex-col items-center justify-center py-4 border-r border-white/[0.08] last:border-r-0 group transition-colors`}
             onMouseEnter={() => setHoveredDay(index)}
             onMouseLeave={() => setHoveredDay(null)}
           >
-            <span className={`text-[11px] font-medium mb-1 uppercase tracking-wide ${isTodayDate ? 'text-blue-500' : 'text-slate-400'}`}>
+            <span className={`text-[11px] font-medium mb-1 uppercase tracking-wider ${isTodayDate ? 'text-blue-400' : 'text-gray-400'}`}>
               {dayName}
             </span>
             
             {isTodayDate ? (
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 shadow-md shadow-blue-900/20 mb-1">
-                <span className="text-xl font-medium text-white leading-none mt-[1px]">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white shadow-lg shadow-blue-900/20">
+                <span className="text-2xl font-normal leading-none pt-[2px]">
                   {dayNumber}
                 </span>
               </div>
             ) : (
-              <span className="flex items-center justify-center w-8 h-8 text-xl font-medium text-slate-200 mb-1 group-hover:bg-slate-800 rounded-full transition-colors">
-                {dayNumber}
-              </span>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/5 transition-colors text-gray-200">
+                <span className="text-2xl font-normal leading-none pt-[2px]">
+                  {dayNumber}
+                </span>
+              </div>
             )}
             
             {/* Indicador de ocupación minimalista (punto) */}

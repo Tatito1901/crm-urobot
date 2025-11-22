@@ -11,7 +11,7 @@ import React, { useMemo, useEffect, useRef } from 'react';
 import { Temporal } from '@js-temporal/polyfill';
 import { formatTimeRange, getStatusConfig } from '../../lib/agenda-utils';
 import { useAgendaState } from '../../hooks/useAgendaState';
-import { useAppointmentColor } from '../../hooks/useColorPreferences';
+import { useColorPreferences } from '../../hooks/useColorPreferences';
 import type { Appointment } from '@/types/agenda';
 
 interface ListViewProps {
@@ -27,6 +27,7 @@ export const ListView: React.FC<ListViewProps> = ({
 }) => {
   const todayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { sedeColors } = useColorPreferences();
   
   // Agrupar citas por fecha
   const groupedAppointments = useMemo(() => {
@@ -125,10 +126,9 @@ export const ListView: React.FC<ListViewProps> = ({
         const isToday = date.year === today.getFullYear() && 
                        date.month === (today.getMonth() + 1) && 
                        date.day === today.getDate();
-
-        // Verificar si es hoy
-        const isToday = dateStr === todayStr;
         
+        const viewDensity = 'comfortable' as 'comfortable' | 'compact';
+
         return (
           <div 
             key={dateStr} 
@@ -148,7 +148,7 @@ export const ListView: React.FC<ListViewProps> = ({
                 const status = getStatusConfig(apt.estado);
                 const paddingClass = viewDensity === 'compact' ? 'p-3' : viewDensity === 'comfortable' ? 'p-4' : 'p-5';
                 // Obtener color personalizado
-                const customColor = useAppointmentColor(apt.sede);
+                const customColor = sedeColors[apt.sede as 'POLANCO' | 'SATELITE'] || '#64748b';
 
                 return (
                   <button

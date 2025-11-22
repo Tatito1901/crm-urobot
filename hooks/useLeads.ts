@@ -7,10 +7,9 @@
  * ✅ Realtime: Actualización automática cuando n8n modifica la tabla
  */
 
-import { useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import { DEFAULT_LEAD_ESTADO, type Lead, isLeadEstado } from '@/types/leads'
+import { type Lead } from '@/types/leads'
 import type { Tables } from '@/types/database'
 import { mapLeadFromDB, enrichLead } from '@/lib/mappers'
 
@@ -54,7 +53,7 @@ type LeadRowEnriquecido = LeadRow & {
  */
 const mapLead = (row: LeadRowEnriquecido): Lead => {
   // Usar mapper centralizado (convierte snake_case → camelCase)
-  const leadBase = mapLeadFromDB(row as any);
+  const leadBase = mapLeadFromDB(row as unknown as Tables<'leads'>);
   
   // Enriquecer con cálculos (días, esCaliente, esInactivo)
   const leadEnriquecido = enrichLead(leadBase);

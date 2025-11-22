@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Database } from '@/types/supabase';
 
 export interface KPIData {
   totalPacientes: number;
@@ -17,7 +16,7 @@ export interface ChartData {
   name: string;
   value: number;
   fill?: string;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }
 
 export interface MonthlyData {
@@ -25,7 +24,7 @@ export interface MonthlyData {
   consultas: number;
   pacientes: number;
   leads: number;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }
 
 // Interfaces para tipado de datos crudos de Supabase
@@ -212,9 +211,9 @@ export function useStats() {
       
       setEvolucionMensual(monthlyData);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching stats:', err);
-      setError(err);
+      setError(err as Error);
     } finally {
       setLoading(false);
     }

@@ -64,7 +64,14 @@ export function useSlowConnection(): boolean {
       return;
     }
 
-    const conn = (navigator as any).connection;
+    interface NavigatorConnection {
+      effectiveType: string;
+      saveData: boolean;
+      addEventListener: (type: string, listener: () => void) => void;
+      removeEventListener: (type: string, listener: () => void) => void;
+    }
+
+    const conn = (navigator as unknown as { connection: NavigatorConnection }).connection;
     if (!conn) return;
 
     const checkConnection = () => {

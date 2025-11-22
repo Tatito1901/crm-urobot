@@ -12,11 +12,10 @@ import type { Lead } from '@/types/leads';
 
 interface LeadsTableProps {
   leads: Lead[];
-  loading: boolean;
   emptyMessage: string;
 }
 
-export const LeadsTable = React.memo(function LeadsTable({ leads, loading, emptyMessage }: LeadsTableProps) {
+export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }: LeadsTableProps) {
   // Configuración de columnas
   const headers = [
     { key: 'nombre', label: <TableHeaders.Persona /> },

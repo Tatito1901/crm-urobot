@@ -13,8 +13,19 @@ import { typography, spacing, cards, inputs } from '@/app/lib/design-system';
 import { Users, UserCheck, UserPlus, AlertCircle } from 'lucide-react';
 import { PacientesTable } from './components/PacientesTable';
 
+// Interface para las estadísticas
+interface PacientesStats {
+  total: number;
+  activos: number;
+  inactivos: number;
+  recientes: number;
+  requierenAtencion: number;
+  conConsultas: number;
+  sinConsultas: number;
+}
+
 // Componente de métricas visuales consistente con Leads/Dashboard
-const PacientesMetrics = memo(({ stats, loading }: { stats: any, loading: boolean }) => {
+const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, loading: boolean }) => {
   if (loading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

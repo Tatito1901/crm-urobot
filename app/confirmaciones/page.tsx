@@ -30,7 +30,7 @@ export default function ConfirmacionesPage() {
   }, 300);
 
   // ✅ Datos reales de Supabase
-  const { recordatorios, loading, error, refresh } = useRecordatorios();
+  const { recordatorios, loading, refresh } = useRecordatorios();
 
   const filtered = useMemo(() => {
     const now = new Date();

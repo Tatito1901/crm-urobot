@@ -155,9 +155,15 @@ export default function DashboardPage() {
     <ErrorBoundary>
       <PageShell
         accent
-        eyebrow="Dashboard"
-        title="Resumen general"
-        description="Visión consolidada de métricas y actividad reciente del consultorio."
+        eyebrow="Portal Médico"
+        title={
+          <div className="flex flex-col gap-1">
+            <span className="text-3xl font-bold tracking-tight text-white">
+              Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Doctor</span>
+            </span>
+          </div>
+        }
+        description="Panel de control inteligente para la gestión integral de sus pacientes."
         compact
         headerSlot={
           <button

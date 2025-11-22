@@ -5,32 +5,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { signInAction } from './actions'
 import { initialAuthState } from './state'
-import { EmailIcon, LockIcon, AlertIcon } from './AuthIcons'
+import { AlertIcon } from './AuthIcons'
+import { Loader2 } from 'lucide-react'
 
-// Lazy load del overlay para reducir bundle inicial
+// Lazy load del overlay
 const SuccessOverlay = lazy(() => import('./SuccessOverlay').then(mod => ({ default: mod.SuccessOverlay })))
 
-// Icono de spinner memoizado
-const SpinnerIcon = memo(() => (
-  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-  </svg>
-))
-SpinnerIcon.displayName = 'SpinnerIcon'
-
-// Componente de alerta de error memoizado
+// Componente de alerta de error minimalista
 const ErrorAlert = memo(({ message }: { message: string }) => (
-  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 flex items-start gap-3" role="alert">
+  <div className="flex items-center gap-2 rounded-md bg-red-500/10 p-3 text-sm text-red-400 border border-red-500/20" role="alert">
     <AlertIcon />
-    <p className="text-sm text-red-200">{message}</p>
+    <p>{message}</p>
   </div>
 ))
 ErrorAlert.displayName = 'ErrorAlert'
 
 /**
- * Componente cliente que maneja toda la lógica del formulario de login
- * Incluye el formulario y el overlay de éxito
+ * Formulario de login optimizado y moderno
  */
 export function AuthClient() {
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false)
@@ -39,7 +30,6 @@ export function AuthClient() {
     initialAuthState,
   )
 
-  // Mostrar overlay cuando el login es exitoso
   useEffect(() => {
     if (state.success && !isPending) {
       setShowSuccessOverlay(true)
@@ -54,46 +44,44 @@ export function AuthClient() {
         </Suspense>
       )}
       
-      <form action={formAction} className="space-y-4 sm:space-y-5" noValidate>
-        <div className="space-y-2">
+      <form action={formAction} className="grid gap-5" noValidate>
+        <div className="grid gap-2">
           <label 
-            htmlFor="login-email" 
-            className="text-sm font-medium text-slate-300 flex items-center gap-2"
+            htmlFor="email" 
+            className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 ml-1"
           >
-            <EmailIcon />
             Correo electrónico
           </label>
           <Input
-            id="login-email"
+            id="email"
             name="email"
             type="email"
-            placeholder="doctor@clinica.com"
+            placeholder="urologo@urobot.mx"
             autoComplete="email"
-            className="h-11 sm:h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-400/50 focus:ring-blue-400/20 transition-colors"
+            className="h-11 bg-white dark:bg-black border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all rounded-xl shadow-sm"
             required
-            aria-required="true"
-            aria-invalid={state.error ? 'true' : 'false'}
+            aria-invalid={!!state.error}
           />
         </div>
 
-        <div className="space-y-2">
-          <label 
-            htmlFor="login-password" 
-            className="text-sm font-medium text-slate-300 flex items-center gap-2"
-          >
-            <LockIcon />
-            Contraseña
-          </label>
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between ml-1">
+            <label 
+              htmlFor="password" 
+              className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300"
+            >
+              Contraseña
+            </label>
+          </div>
           <Input
-            id="login-password"
+            id="password"
             name="password"
             type="password"
-            placeholder="••••••••••••"
+            placeholder="••••••••"
             autoComplete="current-password"
-            className="h-11 sm:h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-400/50 focus:ring-blue-400/20 transition-colors"
+            className="h-11 bg-white dark:bg-black border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all rounded-xl shadow-sm"
             required
-            aria-required="true"
-            aria-invalid={state.error ? 'true' : 'false'}
+            aria-invalid={!!state.error}
           />
         </div>
 
@@ -101,17 +89,16 @@ export function AuthClient() {
 
         <Button 
           type="submit" 
-          className="w-full h-11 sm:h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed" 
+          className="w-full h-11 mt-2 bg-slate-950 hover:bg-slate-900 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500 dark:text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed" 
           disabled={isPending}
-          aria-busy={isPending}
         >
           {isPending ? (
-            <span className="flex items-center justify-center gap-2">
-              <SpinnerIcon />
-              <span>Ingresando...</span>
-            </span>
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Verificando...
+            </>
           ) : (
-            'Iniciar sesión'
+            'Acceder al Sistema'
           )}
         </Button>
       </form>

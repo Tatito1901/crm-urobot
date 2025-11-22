@@ -26,8 +26,7 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   const { sedeColors } = useAgendaState();
 
   // Obtener color dinámico de la sede o usar fallback
-  const bgColorClass = sedeColors[appointment.sede] || 
-    (appointment.sede === 'POLANCO' ? 'bg-blue-600' : 'bg-emerald-600');
+  const customColor = appointment.sede === 'POLANCO' ? '#3b82f6' : '#10b981'; // blue-500 : emerald-500
 
   // Formatear hora
   const startTime = appointment.start.toPlainTime().toString().slice(0, 5);
@@ -65,18 +64,16 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
         rounded-md
         px-2 py-1
         cursor-pointer
-        transition-all duration-150
-        hover:brightness-110 hover:shadow-md hover:scale-[1.02] hover:z-10
         flex flex-col
         ${isShortAppointment ? 'justify-center' : 'justify-start'}
         overflow-hidden
         shadow-sm
-        ${bgColorClass} text-white
-        border border-white/10
+        text-white
+        border-l-[3px]
       `}
       style={{
         borderLeftColor: customColor,
-        backgroundColor: `${customColor}25`, // 25% opacity - más visible
+        backgroundColor: `${customColor}40`, // 25% opacity - Ligeramente más claro/transparente
       }}
       onClick={() => onClick?.(appointment)}
       onMouseEnter={handleMouseEnter}

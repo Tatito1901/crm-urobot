@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Users, UserCheck, UserPlus, Clock, AlertCircle, UserX } from 'lucide-react';
-import { WrapTooltip } from '@/app/components/common/InfoTooltip';
-import { GLOSARIO } from '@/app/lib/glosario-medico';
+import { Users, UserCheck, UserPlus, Clock, AlertCircle } from 'lucide-react';
 
 interface LeadsStats {
   total: number;

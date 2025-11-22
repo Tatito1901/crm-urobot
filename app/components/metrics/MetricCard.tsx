@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { memo } from 'react';
-
 interface MetricCardProps {
   title: string;
   value: number | string;

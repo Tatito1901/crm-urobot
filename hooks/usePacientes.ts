@@ -6,9 +6,8 @@
  * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
-import { useEffect } from 'react'
-import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
+import useSWR from 'swr'
 import {
   DEFAULT_PACIENTE_ESTADO,
   type Paciente,
@@ -163,7 +162,7 @@ const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number 
  * - Mantiene datos previos mientras recarga (sin parpadeos)
  */
 export function usePacientes(): UsePacientesReturn {
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR<{ pacientes: Paciente[], count: number }>(
     'pacientes',
     fetchPacientes,
     {

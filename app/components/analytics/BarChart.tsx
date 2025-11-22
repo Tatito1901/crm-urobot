@@ -19,6 +19,18 @@ import {
   Cell,
 } from 'recharts';
 
+interface CustomTooltipPayload {
+  value: number;
+  payload: {
+    label: string;
+  };
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: CustomTooltipPayload[];
+}
+
 interface BarChartData {
   label: string;
   value: number;
@@ -32,7 +44,7 @@ interface BarChartProps {
 }
 
 // Tooltip memoizado para evitar recreación en cada render
-const CustomTooltip = React.memo(({ active, payload }: any) => {
+const CustomTooltip = React.memo(({ active, payload }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (

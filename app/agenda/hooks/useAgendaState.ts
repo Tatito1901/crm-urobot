@@ -10,10 +10,14 @@ import { create } from 'zustand';
 import { Temporal } from '@js-temporal/polyfill';
 import type { Appointment, TimeSlot } from '@/types/agenda';
 
+export type ViewMode = 'week' | 'day' | 'month' | 'list' | 'heatmap';
+
 interface AgendaState {
   // ========== VISTA ==========
-  viewMode: 'week' | 'day' | 'month' | 'list' | 'heatmap';
-  setViewMode: (mode: 'week' | 'day' | 'month' | 'list' | 'heatmap') => void;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+  viewDensity: 'compact' | 'comfortable' | 'spacious';
+  setViewDensity: (density: 'compact' | 'comfortable' | 'spacious') => void;
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
   setIsSidebarOpen: (isOpen: boolean) => void;
@@ -88,6 +92,7 @@ interface AgendaState {
 export const useAgendaState = create<AgendaState>((set, get) => ({
   // ========== ESTADO INICIAL ==========
   viewMode: 'week',
+  viewDensity: 'comfortable',
   isSidebarOpen: false,
   hourRange: 'full', // Vista de 24 horas por defecto
   selectedDate: Temporal.Now.plainDateISO('America/Mexico_City'),
@@ -142,6 +147,8 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
         : getMonthRange(selectedDate);
     set({ dateRange: newRange });
   },
+
+  setViewDensity: (density) => set({ viewDensity: density }),
 
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   setIsSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),

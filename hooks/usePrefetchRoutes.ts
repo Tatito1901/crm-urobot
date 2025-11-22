@@ -65,7 +65,8 @@ export function usePrefetchRoutes() {
   useEffect(() => {
     // Detectar conexión lenta o datos ahorrados
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-      const conn = (navigator as any).connection;
+      const nav = navigator as unknown as { connection: { effectiveType: string; saveData: boolean } };
+      const conn = nav.connection;
       if (conn) {
         // No prefetch en conexiones lentas (2G, slow-2g) o con ahorro de datos
         const isSlowConnection = conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g';

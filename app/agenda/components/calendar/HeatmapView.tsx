@@ -9,7 +9,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel } from '../../hooks/useOccupancyHeatmap';
+import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel, type OccupancyLevel, type DayOccupancy } from '../../hooks/useOccupancyHeatmap';
 import { addDays, getMonthName, isSameDay, isToday } from '@/lib/date-utils';
 import { TrendingUp, Calendar, BarChart3, MapPin, Clock, Award } from 'lucide-react';
 import { useConsultas } from '@/hooks/useConsultas';
@@ -133,8 +133,6 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
     const sortedDates = Array.from(getDayOccupancyForSede.keys()).sort();
     let currentStreak = 0;
     let longestStreak = 0;
-    let longestStreakStart = '';
-    let longestStreakEnd = '';
     let lastDate: Date | null = null;
 
     sortedDates.forEach(dateStr => {
@@ -389,13 +387,14 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             <div className="flex items-center justify-end gap-2 mt-4 text-xs text-slate-500">
               <span>Menos</span>
               <div className="flex gap-1">
-                {['empty', 'low', 'medium', 'high', 'very-high'].map((level) => {
-                  const colors = getOccupancyColors(level as any);
+                {['empty', 'low', 'medium', 'high', 'very-high'].map((levelStr) => {
+                  const level = levelStr as OccupancyLevel;
+                  const colors = getOccupancyColors(level);
                   return (
                     <div 
                       key={level}
                       className={`w-3 h-3 rounded-sm ${colors.indicator}`}
-                      title={getOccupancyLabel(level as any)}
+                      title={getOccupancyLabel(level)}
                     />
                   );
                 })}
@@ -673,7 +672,7 @@ const MonthlyHeatmap = ({
 }: { 
   title: string; 
   date: Date; 
-  getOccupancy: (d: Date) => any 
+  getOccupancy: (d: Date) => DayOccupancy 
 }) => {
   const currentMonth = date.getMonth();
   const currentYear = date.getFullYear();

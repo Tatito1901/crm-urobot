@@ -40,7 +40,7 @@ export const ConsultasTable = React.memo(function ConsultasTable({
     ),
     sede: (
       <div className="flex justify-center sm:justify-start">
-        <Badge label={consulta.sede} tone={SEDE_COLORS[consulta.sede] as any} />
+        <Badge label={consulta.sede} tone={SEDE_COLORS[consulta.sede]} />
       </div>
     ),
     estado: (

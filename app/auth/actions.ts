@@ -17,7 +17,13 @@ function getCredentials(formData: FormData): Credentials | { error: string } {
   const password = String(formData.get('password') ?? '').trim()
 
   if (!email || !password) {
-    return { error: 'Correo y contraseña son obligatorios' } as const
+    return { error: 'Credenciales incompletas' } as const
+  }
+
+  // Validación básica de formato de email para evitar envíos basura a Supabase
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return { error: 'Formato de correo inválido' } as const
   }
 
   return { email, password }
@@ -54,7 +60,12 @@ export async function signInAction(_: AuthFormState, formData: FormData): Promis
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    return buildErrorState(error.message)
+    // SEGURIDAD: Tarpit - Retraso artificial para mitigar ataques de fuerza bruta
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 500))
+    
+    // SEGURIDAD: Mensaje genérico para evitar enumeración de usuarios
+    // No devolver error.message crudo si es un error de credenciales
+    return buildErrorState('Credenciales inválidas')
   }
 
   // Retornar estado de éxito para que el cliente maneje la animación y redirect
