@@ -14,17 +14,48 @@ import {
 
 import { ChartData } from '@/hooks/useStats';
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs shadow-lg">
+        <p className="font-bold text-slate-900 dark:text-white mb-2">{label}</p>
+        {payload.map((p: any, index: number) => (
+          <div key={index} className="flex items-center gap-2 mb-1 last:mb-0 min-w-[120px]">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.payload.fill }} />
+            <span className="text-slate-500 dark:text-slate-400">{p.name}:</span>
+            <span className="font-medium text-slate-900 dark:text-white ml-auto">{p.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export const DashboardStatusChart = memo(function DashboardStatusChart({ data }: { data: ChartData[] }) {
   return (
     <div className="h-[220px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-          <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-          <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.2} vertical={false} />
+          <XAxis 
+            dataKey="name" 
+            stroke="#94a3b8" 
+            fontSize={10} 
+            tickLine={false} 
+            axisLine={false} 
+            tick={{ fill: '#64748b' }}
+          />
+          <YAxis 
+            stroke="#94a3b8" 
+            fontSize={12} 
+            tickLine={false} 
+            axisLine={false} 
+            tick={{ fill: '#64748b' }}
+          />
           <Tooltip 
-            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-            contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
+            cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
+            content={<CustomTooltip />}
           />
           <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={30}>
             {data.map((entry, index) => (

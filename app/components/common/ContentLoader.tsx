@@ -34,13 +34,13 @@ export function ContentLoader({
     return (
       <div className={`flex items-center justify-center ${minHeight}`}>
         <div className="max-w-md text-center space-y-4">
-          <div className="text-xl font-bold text-red-400">Error</div>
-          <h3 className="text-lg font-semibold text-white">Error al cargar datos</h3>
-          <p className="text-sm text-slate-400">{error.message}</p>
+          <div className="text-xl font-bold text-destructive">Error</div>
+          <h3 className="text-lg font-semibold text-foreground">Error al cargar datos</h3>
+          <p className="text-sm text-muted-foreground">{error.message}</p>
           {onRetry && (
             <button
               onClick={onRetry}
-              className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg hover:bg-blue-600/30 transition-colors text-sm font-medium"
+              className="px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors text-sm font-medium"
             >
               Reintentar
             </button>

@@ -29,10 +29,10 @@ export function Tooltip({
   };
 
   const arrowClasses = {
-    top: 'top-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-slate-800',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-slate-800',
-    left: 'left-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-slate-800',
-    right: 'right-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-slate-800',
+    top: 'top-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-popover',
+    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-popover',
+    left: 'left-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-popover',
+    right: 'right-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-popover',
   };
 
   return (
@@ -48,8 +48,8 @@ export function Tooltip({
           className={`
             absolute z-50 ${positionClasses[position]} ${maxWidth}
             px-3 py-2 text-xs leading-relaxed
-            bg-slate-800 text-white rounded-lg shadow-xl
-            border border-white/10
+            bg-popover text-popover-foreground rounded-lg shadow-xl
+            border border-border
             animate-in fade-in-0 zoom-in-95 duration-200
           `}
           role="tooltip"
@@ -91,7 +91,7 @@ export function HelpTooltip({
   
   return (
     <Tooltip content={content} position={position}>
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold cursor-help hover:bg-blue-500/30 transition-colors">
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary/20 text-primary text-[10px] font-bold cursor-help hover:bg-primary/30 transition-colors">
         ?
       </span>
     </Tooltip>

@@ -26,10 +26,10 @@ export default function PacientePerfilPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-urobot">
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Cargando perfil del paciente...</p>
+          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Cargando perfil del paciente...</p>
         </div>
       </div>
     );
@@ -38,7 +38,7 @@ export default function PacientePerfilPage() {
   // Error state
   if (error || !paciente) {
     return (
-      <div className="h-screen flex items-center justify-center bg-urobot p-6">
+      <div className="h-screen flex items-center justify-center bg-background p-6">
         <div className="max-w-md w-full">
           <ErrorState
             title="Error al cargar paciente"
@@ -48,7 +48,7 @@ export default function PacientePerfilPage() {
           />
           <button
             onClick={() => router.push('/pacientes')}
-            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-muted hover:bg-accent text-foreground rounded-lg transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver a Pacientes
@@ -59,13 +59,13 @@ export default function PacientePerfilPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-urobot">
+    <div className="h-screen flex flex-col bg-slate-50 dark:bg-[#0b101a] transition-colors">
       {/* Header superior */}
-      <header className="border-b border-slate-800/60 bg-slate-900/40 px-6 py-4">
+      <header className="border-b border-slate-200 dark:border-blue-900/20 bg-white/80 dark:bg-[#0b101a]/80 backdrop-blur-md px-6 py-4 z-10">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push('/pacientes')}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg transition-all shadow-sm dark:shadow-none"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Volver a Pacientes</span>
@@ -73,25 +73,25 @@ export default function PacientePerfilPage() {
           </button>
 
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-white">{paciente.nombre}</h1>
-            <p className="text-sm text-slate-400">Perfil de paciente • N° {paciente.pacienteId}</p>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{paciente.nombre}</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Perfil de paciente • N° {paciente.pacienteId}</p>
           </div>
 
-          <div className="hidden lg:flex items-center gap-4 text-sm">
+          <div className="hidden lg:flex items-center gap-6 text-sm">
             <div className="text-right">
-              <p className="text-slate-400">Total de citas</p>
-              <p className="text-2xl font-bold text-white">{paciente.totalConsultas}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-0.5">Total de citas</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{paciente.totalConsultas}</p>
             </div>
-            <div className="h-12 w-px bg-slate-700"></div>
+            <div className="h-10 w-px bg-slate-200 dark:bg-slate-700"></div>
             <div className="text-right">
-              <p className="text-slate-400">Estado</p>
-              <p className={`text-sm font-medium ${
+              <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-0.5">Estado</p>
+              <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                 paciente.estado === 'Activo' 
-                  ? 'text-emerald-400' 
-                  : 'text-slate-500'
+                  ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' 
+                  : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
               }`}>
                 {paciente.estado}
-              </p>
+              </div>
             </div>
           </div>
         </div>

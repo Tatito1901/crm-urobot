@@ -38,29 +38,29 @@ export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSel
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={handlePrevMonth}
-          className="rounded p-1 hover:bg-slate-800/60 transition-colors"
+          className="rounded p-1 hover:bg-accent transition-colors"
           aria-label="Mes anterior"
         >
-          <ChevronLeft className="h-4 w-4 text-slate-300" />
+          <ChevronLeft className="h-4 w-4 text-muted-foreground" />
         </button>
 
-        <span className="text-sm font-bold text-slate-100">
+        <span className="text-sm font-bold text-foreground">
           {getMonthName(currentMonth.getMonth())} {currentMonth.getFullYear()}
         </span>
 
         <button
           onClick={handleNextMonth}
-          className="rounded p-1 hover:bg-slate-800/60 transition-colors"
+          className="rounded p-1 hover:bg-accent transition-colors"
           aria-label="Mes siguiente"
         >
-          <ChevronRight className="h-4 w-4 text-slate-300" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 
       {/* Días de la semana */}
       <div className="mb-2 grid grid-cols-7 gap-1">
         {dayAbbreviations.map((day, index) => (
-          <div key={index} className="text-center text-xs font-medium text-slate-400">
+          <div key={index} className="text-center text-xs font-medium text-muted-foreground">
             {day}
           </div>
         ))}
@@ -82,10 +82,10 @@ export const MiniMonth = React.memo(function MiniMonth({ selectedDate, onDateSel
                 onClick={() => onDateSelect(date)}
                 className={`
                   relative aspect-square flex items-center justify-center rounded-full text-[11px] font-medium transition-all group
-                  ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-300'}
-                  ${isCurrentDay ? 'bg-blue-600 text-white shadow-sm shadow-blue-900/20' : ''}
-                  ${isSelected && !isCurrentDay ? 'bg-blue-500/20 text-blue-200' : ''}
-                  ${!isCurrentDay && !isSelected ? 'hover:bg-slate-800' : ''}
+                  ${!isCurrentMonth ? 'text-muted-foreground/50' : 'text-foreground'}
+                  ${isCurrentDay ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20' : ''}
+                  ${isSelected && !isCurrentDay ? 'bg-primary/20 text-primary' : ''}
+                  ${!isCurrentDay && !isSelected ? 'hover:bg-accent' : ''}
                 `}
                 aria-current={isCurrentDay ? 'date' : undefined}
                 title={occupancy.count > 0 ? `${occupancy.count} citas` : ''}

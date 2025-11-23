@@ -81,7 +81,7 @@ export default function ConsultasPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2 pt-0 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-white/40" />
               <input
                 value={inputValue}
                 onChange={(event) => {
@@ -116,7 +116,7 @@ export default function ConsultasPage() {
             
             {/* Filtros de sede y botón recargar (Unificados y Responsivos) */}
             <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-              <div className="flex bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
+              <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1 border border-slate-200 dark:border-slate-700/50">
                 {[
                   { key: 'all' as const, label: 'Todas', icon: <Building2 className="h-3.5 w-3.5" /> },
                   { key: 'POLANCO' as const, label: 'Polanco', icon: <MapPin className="h-3.5 w-3.5" /> },
@@ -129,8 +129,8 @@ export default function ConsultasPage() {
                     className={`
                       flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-2
                       ${sedeFilter === option.key
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                        ? 'bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-transparent'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
                       }
                     `}
                   >
@@ -144,7 +144,7 @@ export default function ConsultasPage() {
               <button
                 onClick={() => refetch()}
                 disabled={loading}
-                className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all disabled:opacity-50 hidden sm:flex"
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50 hidden sm:flex"
                 title="Recargar datos"
               >
                 <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,10 +179,10 @@ export default function ConsultasPage() {
             
             {/* Paginación mejorada */}
             {filteredConsultas.length > itemsPerPage && (
-              <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-xs sm:text-sm text-white/60">
-                    Mostrando <span className="font-semibold text-white">{currentPage * itemsPerPage + 1}</span> - <span className="font-semibold text-white">{Math.min((currentPage + 1) * itemsPerPage, filteredConsultas.length)}</span> de <span className="font-semibold text-white">{filteredConsultas.length}</span> consultas
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-white/60">
+                    Mostrando <span className="font-semibold text-slate-900 dark:text-white">{currentPage * itemsPerPage + 1}</span> - <span className="font-semibold text-slate-900 dark:text-white">{Math.min((currentPage + 1) * itemsPerPage, filteredConsultas.length)}</span> de <span className="font-semibold text-slate-900 dark:text-white">{filteredConsultas.length}</span> consultas
                   </p>
                   <Pagination
                     currentPage={currentPage}

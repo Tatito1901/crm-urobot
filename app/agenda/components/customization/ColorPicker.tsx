@@ -44,28 +44,28 @@ export const ColorPicker: React.FC = () => {
       {/* Botón toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/40 rounded-lg border border-slate-700 hover:bg-slate-800 transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800/40 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
         title="Cambiar colores"
       >
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded border-2" style={{ borderColor: sedeColors.POLANCO }} />
-          <span className="text-xs text-slate-300 hidden sm:inline">POL</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300 hidden sm:inline">POL</span>
         </div>
-        <div className="w-px h-3 bg-slate-600" />
+        <div className="w-px h-3 bg-slate-300 dark:bg-slate-600" />
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded border-2" style={{ borderColor: sedeColors.SATELITE }} />
-          <span className="text-xs text-slate-300 hidden sm:inline">SAT</span>
+          <span className="text-xs text-slate-600 dark:text-slate-300 hidden sm:inline">SAT</span>
         </div>
       </button>
 
       {/* Popover */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 p-4 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-50 w-64 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-full mt-2 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl z-50 w-64 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* POLANCO */}
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-3 h-3 rounded border-2" style={{ borderColor: sedeColors.POLANCO }} />
-              <span className="text-xs font-semibold text-white">POLANCO</span>
+              <span className="text-xs font-semibold text-slate-900 dark:text-white">POLANCO</span>
             </div>
             <div className="grid grid-cols-6 gap-2">
               {COLORS.map((color) => (
@@ -74,8 +74,8 @@ export const ColorPicker: React.FC = () => {
                   onClick={() => setSedeColor('POLANCO', color.value)}
                   className={`w-8 h-8 rounded border-2 transition-transform hover:scale-110 ${
                     sedeColors.POLANCO === color.value 
-                      ? 'border-white ring-2 ring-white/30 scale-110' 
-                      : 'border-slate-700'
+                      ? 'border-slate-900 dark:border-white ring-2 ring-slate-900/30 dark:ring-white/30 scale-110' 
+                      : 'border-slate-200 dark:border-slate-700'
                   }`}
                   style={{ backgroundColor: color.value }}
                   title={color.name}
@@ -88,7 +88,7 @@ export const ColorPicker: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-3 h-3 rounded border-2" style={{ borderColor: sedeColors.SATELITE }} />
-              <span className="text-xs font-semibold text-white">SATÉLITE</span>
+              <span className="text-xs font-semibold text-slate-900 dark:text-white">SATÉLITE</span>
             </div>
             <div className="grid grid-cols-6 gap-2">
               {COLORS.map((color) => (
@@ -97,8 +97,8 @@ export const ColorPicker: React.FC = () => {
                   onClick={() => setSedeColor('SATELITE', color.value)}
                   className={`w-8 h-8 rounded border-2 transition-transform hover:scale-110 ${
                     sedeColors.SATELITE === color.value 
-                      ? 'border-white ring-2 ring-white/30 scale-110' 
-                      : 'border-slate-700'
+                      ? 'border-slate-900 dark:border-white ring-2 ring-slate-900/30 dark:ring-white/30 scale-110' 
+                      : 'border-slate-200 dark:border-slate-700'
                   }`}
                   style={{ backgroundColor: color.value }}
                   title={color.name}

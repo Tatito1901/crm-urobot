@@ -51,28 +51,32 @@ export function PageShell({
   return (
     <div
       className={cn(
-        "relative h-screen overflow-hidden bg-urobot text-white flex flex-col",
+        "relative h-screen overflow-hidden flex flex-col transition-colors duration-300",
+        "bg-background text-foreground",
         className
       )}
     >
       {accent && (
         <div className="pointer-events-none absolute inset-0 opacity-40" aria-hidden>
-          <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/40 blur-[180px]" />
+          <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/20 blur-[180px] dark:bg-blue-500/40" />
         </div>
       )}
       <div className={cn(layoutClasses, "flex-1 min-h-0 overflow-y-auto")}>
         <header className={headerClasses}>
           <div className={titleBlockClasses}>
             <p className={cn(
-              "uppercase tracking-[0.3em] text-blue-200/60",
+              "uppercase tracking-[0.3em] font-semibold",
+              "text-muted-foreground",
               compact ? "text-[10px]" : "text-xs"
             )}>{eyebrow}</p>
             <h1 className={cn(
-              "font-semibold text-white",
+              "font-bold tracking-tight",
+              "text-foreground",
               compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
             )}>{title}</h1>
             {description && <p className={cn(
-              "text-white/60",
+              "font-medium",
+              "text-muted-foreground",
               compact ? "text-xs" : "text-sm"
             )}>{description}</p>}
           </div>

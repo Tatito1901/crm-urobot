@@ -74,24 +74,24 @@ export const PacientesTable = React.memo(function PacientesTable({
     nombre: (
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-white">{paciente.nombre}</span>
+          <span className="font-medium text-foreground">{paciente.nombre}</span>
           {paciente.esReciente && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 border-blue-200 border dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20">
               Nuevo
             </span>
           )}
         </div>
-        <span className="text-xs text-white/40">{paciente.telefono}</span>
+        <span className="text-xs text-muted-foreground">{paciente.telefono}</span>
       </div>
     ),
     actividad: (
       <div className="flex flex-col gap-1 text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-white/70">
+          <span className="text-foreground">
             {paciente.totalConsultas} {paciente.totalConsultas === 1 ? 'consulta' : 'consultas'}
           </span>
           {paciente.requiereAtencion && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700 border-amber-200 border dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
               Atención
             </span>
           )}
@@ -101,11 +101,11 @@ export const PacientesTable = React.memo(function PacientesTable({
     estado: <Badge label={paciente.estado} tone={STATE_COLORS[paciente.estado]} />,
     ultimaConsulta: (
       <div className="flex flex-col gap-1 text-xs">
-        <span className="text-white/70">
+        <span className="text-foreground">
           {paciente.ultimaConsulta ? formatDate(paciente.ultimaConsulta) : 'Sin consulta previa'}
         </span>
         {paciente.diasDesdeUltimaConsulta !== null && (
-          <span className="text-white/50">
+          <span className="text-muted-foreground">
             Hace {paciente.diasDesdeUltimaConsulta}d
           </span>
         )}

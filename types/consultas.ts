@@ -2,8 +2,23 @@
 export const CONSULTA_ESTADOS = ['Programada', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada', 'No Asistió'] as const;
 export const CONSULTA_SEDES = ['POLANCO', 'SATELITE'] as const;
 
+// ✅ Tipos de Consulta (Centralizado)
+export const CONSULTA_TIPOS = [
+  'primera_vez',
+  'subsecuente',
+  'control_post_op',
+  'urgencia',
+  'procedimiento_menor',
+  'valoracion_prequirurgica',
+  'teleconsulta',
+] as const;
+
+export const CONSULTA_ESTADOS_CONFIRMACION = ['Pendiente', 'Confirmada', 'No Confirmada'] as const;
+
 export type ConsultaEstado = (typeof CONSULTA_ESTADOS)[number];
 export type ConsultaSede = (typeof CONSULTA_SEDES)[number];
+export type ConsultaTipo = (typeof CONSULTA_TIPOS)[number];
+export type ConsultaEstadoConfirmacion = (typeof CONSULTA_ESTADOS_CONFIRMACION)[number];
 
 // ✅ Interface adaptado EXACTAMENTE a lo que existe en Supabase
 export interface Consulta {
@@ -12,11 +27,11 @@ export interface Consulta {
   paciente: string;
   pacienteId: string | null;
   sede: ConsultaSede;
-  tipo: string; // tipo_cita en BD
+  tipo: ConsultaTipo; // tipo_cita en BD (Tipado estricto)
   estado: ConsultaEstado; // estado_cita en BD
   
   // Sistema de confirmación completo
-  estadoConfirmacion: 'Pendiente' | 'Confirmada' | 'No Confirmada';
+  estadoConfirmacion: ConsultaEstadoConfirmacion;
   confirmadoPaciente: boolean;
   fechaConfirmacion: string | null;
   fechaLimiteConfirmacion: string | null;
@@ -50,6 +65,7 @@ export interface Consulta {
 
 export const DEFAULT_CONSULTA_ESTADO: ConsultaEstado = 'Programada';
 export const DEFAULT_CONSULTA_SEDE: ConsultaSede = 'POLANCO';
+export const DEFAULT_CONSULTA_TIPO: ConsultaTipo = 'primera_vez';
 
 export function isConsultaEstado(value: unknown): value is ConsultaEstado {
   return typeof value === 'string' && (CONSULTA_ESTADOS as readonly string[]).includes(value);
@@ -58,3 +74,8 @@ export function isConsultaEstado(value: unknown): value is ConsultaEstado {
 export function isConsultaSede(value: unknown): value is ConsultaSede {
   return typeof value === 'string' && (CONSULTA_SEDES as readonly string[]).includes(value);
 }
+
+export function isConsultaTipo(value: unknown): value is ConsultaTipo {
+  return typeof value === 'string' && (CONSULTA_TIPOS as readonly string[]).includes(value);
+}
+

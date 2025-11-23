@@ -81,12 +81,12 @@ export const Sidebar = React.memo(function Sidebar({
   }, [colorMenu]);
 
   return (
-    <aside className="w-[280px] h-full border-r border-slate-800 bg-[#0f1218] flex flex-col relative z-20">
+    <aside className="w-[280px] h-full border-r border-border bg-sidebar flex flex-col relative z-20">
       {/* Botón Crear + Mini Calendario */}
       <div className="p-4 space-y-4 shrink-0">
         {/* Botón Crear eliminado temporalmente a petición */}
         
-        <div className="pb-2 border-b border-slate-800/50">
+        <div className="pb-2 border-b border-border">
           <MiniMonth
             selectedDate={selectedDate}
             onDateSelect={onDateSelect}
@@ -99,7 +99,7 @@ export const Sidebar = React.memo(function Sidebar({
       {/* Sección: Mis Calendarios (Sedes) */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
         <div className="mb-2">
-          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 pl-2">Mis calendarios</h3>
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 pl-2">Mis calendarios</h3>
           
           <div className="space-y-1">
             {SEDES.map((sede) => {
@@ -109,15 +109,15 @@ export const Sidebar = React.memo(function Sidebar({
               const isMenuOpen = colorMenu?.sede === sede.value;
 
               return (
-                <div key={sede.value} className="relative group flex items-center justify-between py-2 px-2 rounded-md hover:bg-slate-800/60 transition-colors cursor-pointer">
+                <div key={sede.value} className="relative group flex items-center justify-between py-2 px-2 rounded-md hover:bg-accent transition-colors cursor-pointer">
                   <div className="flex items-center gap-3 flex-1 min-w-0" onClick={() => toggleSedeVisibility(sede.value)}>
                     <div className={`
                       w-[18px] h-[18px] rounded-[4px] flex items-center justify-center border transition-all duration-200
-                      ${isVisible ? `border-transparent ${colorClass} shadow-sm` : 'border-slate-500 bg-transparent hover:border-slate-400'}
+                      ${isVisible ? `border-transparent ${colorClass} shadow-sm` : 'border-muted-foreground/50 bg-transparent hover:border-muted-foreground'}
                     `}>
                       {isVisible && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
                     </div>
-                    <span className={`text-[13px] truncate transition-colors ${isVisible ? 'text-slate-200 font-medium' : 'text-slate-400'}`}>
+                    <span className={`text-[13px] truncate transition-colors ${isVisible ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                       {sede.label}
                     </span>
                   </div>
@@ -133,7 +133,7 @@ export const Sidebar = React.memo(function Sidebar({
                         left: rect.right + 5 // Un poco a la derecha del botón
                       });
                     }}
-                    className={`p-1.5 rounded-full hover:bg-slate-700 text-slate-400 opacity-0 group-hover:opacity-100 transition-all ${isMenuOpen ? 'opacity-100 bg-slate-700 text-slate-200' : ''}`}
+                    className={`p-1.5 rounded-full hover:bg-accent text-muted-foreground opacity-0 group-hover:opacity-100 transition-all ${isMenuOpen ? 'opacity-100 bg-accent text-foreground' : ''}`}
                     aria-label="Opciones de color"
                   >
                     <MoreVertical className="w-3.5 h-3.5" />
@@ -146,7 +146,7 @@ export const Sidebar = React.memo(function Sidebar({
       </div>
 
       {/* Footer minimalista */}
-      <div className="p-4 border-t border-slate-800/50 text-[10px] text-slate-600 text-center shrink-0">
+      <div className="p-4 border-t border-border text-[10px] text-muted-foreground text-center shrink-0">
         CRM UROBOT v1.0
       </div>
 
@@ -154,7 +154,7 @@ export const Sidebar = React.memo(function Sidebar({
       {colorMenu && (
         <div 
           ref={menuRef}
-          className="fixed z-[100] bg-[#1a1e26] border border-slate-700 rounded-lg shadow-2xl p-3 grid grid-cols-4 gap-2 w-[180px] animate-in fade-in zoom-in-95 duration-150"
+          className="fixed z-[100] bg-popover border border-border rounded-lg shadow-2xl p-3 grid grid-cols-4 gap-2 w-[180px] animate-in fade-in zoom-in-95 duration-150"
           style={{ 
             top: Math.min(colorMenu.top - 60, window.innerHeight - 200), // Evitar que se salga por abajo
             left: colorMenu.left 

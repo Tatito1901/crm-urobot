@@ -102,15 +102,15 @@ export const TimeGrid = React.memo(function TimeGrid({
     <div 
       ref={containerRef}
       data-time-grid
-      className="flex-1 overflow-auto bg-[#18181b] scroll-smooth custom-scrollbar"
+      className="flex-1 overflow-auto bg-background scroll-smooth custom-scrollbar"
     >
       <div
         className={`grid ${
           mode === 'day' ? 'grid-cols-[60px_1fr] md:grid-cols-[80px_1fr]' : 'grid-cols-[60px_repeat(7,1fr)] md:grid-cols-[80px_repeat(7,1fr)]'
-        } min-h-full gap-0 border-t border-white/[0.08] bg-[#18181b]`}
+        } min-h-full gap-0 border-t border-border bg-background`}
       >
         {/* Columna de horas - Solo horas completas */}
-        <div className="border-r border-white/[0.08] sticky left-0 bg-[#18181b] z-10">
+        <div className="border-r border-border sticky left-0 bg-background z-10">
           {timeSlots.map((slot) => {
             // Calcular hora 12h
             const hour12 = slot.hour > 12 ? slot.hour - 12 : slot.hour === 0 ? 12 : slot.hour;
@@ -126,7 +126,7 @@ export const TimeGrid = React.memo(function TimeGrid({
                 style={{ height: `${slotHeightPerHour}px` }}
               >
                 {/* Etiqueta alineada con la línea superior (Google Style) */}
-                <span className="absolute -top-3 right-3 text-[11px] font-medium text-gray-400 tabular-nums">
+                <span className="absolute -top-3 right-3 text-[11px] font-medium text-muted-foreground tabular-nums">
                   {hour12} {ampm}
                 </span>
               </div>
@@ -150,8 +150,8 @@ export const TimeGrid = React.memo(function TimeGrid({
           return (
             <div
               key={dayIndex}
-              className={`relative border-r border-white/[0.08] last:border-r-0 transition-colors ${
-                hasWorkingHours ? 'bg-transparent' : 'bg-[#202124]/30'
+              className={`relative border-r border-border last:border-r-0 transition-colors ${
+                hasWorkingHours ? 'bg-transparent' : 'bg-muted/30'
               }`}
               role="gridcell"
               aria-label={`${date.toLocaleDateString('es-MX')}`}
@@ -172,11 +172,11 @@ export const TimeGrid = React.memo(function TimeGrid({
                 return (
                   <div
                     key={`${dayIndex}-${slot.time}`}
-                    className="border-t border-white/[0.08] w-full relative group"
+                    className="border-t border-border w-full relative group"
                     style={{ height: `${slotHeightPerHour}px` }} // Altura doble para cubrir la hora completa
                   >
                     {/* Indicador hover sutil */}
-                    <div className="hidden group-hover:block absolute left-0 top-0 w-full h-full bg-white/[0.02] z-0 pointer-events-none" />
+                    <div className="hidden group-hover:block absolute left-0 top-0 w-full h-full bg-accent/50 z-0 pointer-events-none" />
                   </div>
                 );
               })}

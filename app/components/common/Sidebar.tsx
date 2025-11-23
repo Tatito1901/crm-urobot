@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
 import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import { ThemeToggle } from "./ThemeToggle";
 
 type NavItem = { readonly label: string; readonly href: string };
 
@@ -51,17 +52,17 @@ export function Sidebar() {
     <>
       {/* Main Sidebar */}
       <aside
-        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-white/10 lg:bg-gradient-to-b lg:from-[#0a1429]/90 lg:via-[#060b18]/88 lg:to-[#02040a]/92 lg:px-6 lg:py-8 lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur lg:w-60 xl:w-72 2xl:w-80 transition-all duration-300"
+        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-sidebar-border lg:bg-sidebar lg:px-6 lg:py-8 lg:shadow-xl dark:lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur lg:w-60 xl:w-72 2xl:w-80 transition-all duration-300"
       >
         <div className="flex flex-1 flex-col gap-8 overflow-hidden">
-          <header className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white/5/40 px-4 py-3 shadow-inner">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/15 text-lg font-semibold text-blue-100">
+          <header className="flex items-center gap-3 rounded-2xl border border-sidebar-border bg-sidebar-accent/50 px-4 py-3 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white dark:bg-blue-500/20 dark:text-blue-100 text-lg font-semibold shadow-md dark:shadow-none">
               DM
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-[0.32em] text-white/40">CRM Clínico</p>
-              <p className="text-base font-semibold text-white">Dr. Mario Martínez Thomas</p>
-              <p className="text-xs text-white/50">Operativo en tiempo real</p>
+              <p className="text-[10px] uppercase tracking-[0.32em] text-sidebar-foreground/60">CRM Clínico</p>
+              <p className="text-base font-semibold text-sidebar-foreground">Dr. Mario Martínez</p>
+              <p className="text-xs text-sidebar-foreground/70">Operativo en tiempo real</p>
             </div>
           </header>
 
@@ -69,7 +70,7 @@ export function Sidebar() {
           {isEstadisticas && (
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm font-medium text-blue-300 hover:bg-blue-500/20 hover:border-blue-500/40 transition-all"
+              className="flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-300 hover:bg-blue-500/20 hover:border-blue-500/40 transition-all"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -83,19 +84,19 @@ export function Sidebar() {
               /* Subsecciones de estadísticas */
               <>
                 <div className="mb-3 px-2">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold">Categorías</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/50 font-semibold">Categorías</p>
                 </div>
                 <ul className="flex flex-col gap-1.5 text-sm">
                   {estadisticasSecciones.map((seccion) => {
                     const isActive = pathname === seccion.href;
                     const colorClass = {
-                      blue: 'border-blue-500/40 bg-blue-500/15 text-blue-300',
-                      emerald: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300',
-                      purple: 'border-purple-500/40 bg-purple-500/15 text-purple-300',
-                      amber: 'border-amber-500/40 bg-amber-500/15 text-amber-300',
-                      cyan: 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300',
-                      pink: 'border-pink-500/40 bg-pink-500/15 text-pink-300',
-                      red: 'border-red-500/40 bg-red-500/15 text-red-300',
+                      blue: 'border-blue-500/40 bg-blue-500/15 text-blue-600 dark:text-blue-300',
+                      emerald: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-300',
+                      purple: 'border-purple-500/40 bg-purple-500/15 text-purple-600 dark:text-purple-300',
+                      amber: 'border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-300',
+                      cyan: 'border-cyan-500/40 bg-cyan-500/15 text-cyan-600 dark:text-cyan-300',
+                      pink: 'border-pink-500/40 bg-pink-500/15 text-pink-600 dark:text-pink-300',
+                      red: 'border-red-500/40 bg-red-500/15 text-red-600 dark:text-red-300',
                     }[seccion.color];
 
                     return (
@@ -106,8 +107,8 @@ export function Sidebar() {
                             "w-full group flex items-center gap-2.5 rounded-xl border px-3 py-2.5 font-medium transition-all text-left",
                             "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
                             isActive 
-                              ? `${colorClass} shadow-lg` 
-                              : "border-white/10 text-white/60 hover:border-white/20 hover:bg-white/5 hover:text-white"
+                              ? `${colorClass} shadow-sm` 
+                              : "border-transparent text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                           )}
                         >
                           <span className="text-base flex-shrink-0">{seccion.icon}</span>
@@ -134,24 +135,25 @@ export function Sidebar() {
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
                           // ✅ Touch target optimizado desktop
-                          "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-3 font-medium text-white/65 transition-colors",
+                          "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-3 font-medium transition-colors",
                           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-                          "hover:border-white/15 hover:bg-white/5 hover:text-white",
-                          isActive && "border-white/20 bg-white/12 text-white shadow-[0_15px_35px_-25px_rgba(56,189,248,0.7)]"
+                          isActive 
+                            ? "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-500/15 dark:text-white dark:border-white/10 shadow-sm"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                         )}
                       >
                         <span className="relative flex items-center gap-2">
                           <span
                             className={cn(
-                              "h-2 w-2 rounded-full bg-blue-400/70 opacity-0 transition group-hover:opacity-70",
-                              isActive && "opacity-100"
+                              "h-2 w-2 rounded-full transition group-hover:opacity-70",
+                              isActive ? "bg-blue-600 dark:bg-blue-400 opacity-100" : "bg-sidebar-foreground/30 opacity-0"
                             )}
                             aria-hidden
                           />
                           <span>{item.label}</span>
                         </span>
                         <span
-                          className="ml-auto text-xs text-white/40 transition group-hover:text-white/70"
+                          className="ml-auto text-xs text-sidebar-foreground/40 transition group-hover:text-sidebar-foreground/70"
                           aria-hidden
                         >
                           →
@@ -166,19 +168,24 @@ export function Sidebar() {
         </div>
 
         <footer className="space-y-3">
-          <div className="rounded-2xl border border-white/20 bg-white/[0.04] px-4 py-3 text-xs text-white/70">
-            <p className="font-medium text-white">Agenda al día</p>
-            <p className="mt-1 text-white/60">Hoy · {today}</p>
-            <p className="text-white/40">Actualización automática cada 60&nbsp;min</p>
+          <div className="flex items-center justify-between px-1">
+             <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/40 font-medium">Preferencia</span>
+             <ThemeToggle />
+          </div>
+
+          <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/30 px-4 py-3 text-xs text-sidebar-foreground/60">
+            <p className="font-medium text-sidebar-foreground">Agenda al día</p>
+            <p className="mt-1 text-sidebar-foreground/60">Hoy · {today}</p>
+            <p className="text-sidebar-foreground/40">Actualización automática cada 60&nbsp;min</p>
           </div>
 
           <form action={signOutAction} className="w-full">
             <button
               type="submit"
               className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/70 transition-all duration-100",
-                "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
-                "active:bg-red-500/15 active:scale-95",
+                "w-full flex items-center justify-center gap-2 rounded-xl border border-sidebar-border bg-sidebar px-4 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-all duration-100",
+                "hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-200",
+                "active:bg-red-100 dark:active:bg-red-500/15 active:scale-95",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
               )}
             >
@@ -199,7 +206,7 @@ export function Sidebar() {
             </button>
           </form>
 
-          <p className="text-center text-xs uppercase tracking-[0.2em] text-white/50">
+          <p className="text-center text-xs uppercase tracking-[0.2em] text-sidebar-foreground/30">
             UROBOT · CRM
           </p>
         </footer>
@@ -213,7 +220,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navegación inferior"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-urobot/98 backdrop-blur-lg shadow-[0_-4px_16px_rgba(0,0,0,0.3)] lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/90 backdrop-blur-lg shadow-[0_-4px_16px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)] lg:hidden"
     >
       <div className="flex items-center justify-between gap-1 px-2 py-2 sm:px-3">
         {navItems.map((item) => {
@@ -226,11 +233,11 @@ export function BottomNav() {
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 // ✅ Touch target optimizado: min 48px height
-                "flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2.5 min-h-[48px] justify-center text-center transition-all duration-200 active:scale-95 active:bg-white/20",
+                "flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2.5 min-h-[48px] justify-center text-center transition-all duration-200 active:scale-95 active:bg-muted/50",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
                 isActive 
-                  ? "bg-blue-500/15 text-white font-semibold shadow-[0_0_12px_rgba(59,130,246,0.3)]" 
-                  : "text-white/60 active:text-white"
+                  ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white font-semibold shadow-sm dark:shadow-[0_0_12px_rgba(59,130,246,0.3)]" 
+                  : "text-muted-foreground active:text-foreground"
               )}
             >
               <span className="text-[10px] sm:text-xs leading-tight truncate max-w-full text-center">
@@ -241,7 +248,7 @@ export function BottomNav() {
         })}
       </div>
       {/* ✅ Safe area para iPhones con notch */}
-      <div className="h-[env(safe-area-inset-bottom)] bg-urobot/98" />
+      <div className="h-[env(safe-area-inset-bottom)] bg-background/90" />
     </nav>
   );
 }
@@ -280,15 +287,15 @@ export function MobileSidebar() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-blue-900/30 backdrop-blur transition-all duration-100 hover:border-white/30 hover:bg-white/20 active:scale-95 min-h-[44px] min-w-[44px]"
+        className="lg:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-lg border border-border bg-card/80 px-4 py-3 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-all duration-100 hover:bg-card active:scale-95 min-h-[44px] min-w-[44px]"
         aria-expanded={open}
         aria-label="Abrir menú principal"
       >
         <span className="sr-only">Abrir menú</span>
         <span className="flex flex-col gap-1">
-          <span className="h-0.5 w-5 rounded-full bg-white" />
-          <span className="h-0.5 w-5 rounded-full bg-white" />
-          <span className="h-0.5 w-5 rounded-full bg-white" />
+          <span className="h-0.5 w-5 rounded-full bg-foreground" />
+          <span className="h-0.5 w-5 rounded-full bg-foreground" />
+          <span className="h-0.5 w-5 rounded-full bg-foreground" />
         </span>
       </button>
 
@@ -296,24 +303,27 @@ export function MobileSidebar() {
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <button
             type="button"
-            className="absolute inset-0 bg-black/55 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/20 dark:bg-black/55 backdrop-blur-sm"
             onClick={() => setOpen(false)}
             aria-label="Cerrar menú"
           />
-          <aside ref={swipeRef} className="relative h-full w-72 max-w-[85%] translate-x-0 bg-gradient-to-b from-[#0a1429]/95 via-[#060b18]/92 to-[#02040a]/96 p-6 shadow-2xl shadow-blue-900/40">
+          <aside ref={swipeRef} className="relative h-full w-72 max-w-[85%] translate-x-0 bg-sidebar p-6 shadow-2xl border-r border-sidebar-border">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="text-[10px] uppercase tracking-[0.32em] text-white/40">CRM Clínico</p>
-                <p className="text-lg font-semibold text-white">Dr. Mario Martínez Thomas</p>
+                <p className="text-[10px] uppercase tracking-[0.32em] text-muted-foreground">CRM Clínico</p>
+                <p className="text-lg font-semibold text-foreground">Dr. Mario Martínez</p>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/70 hover:text-white active:scale-95 transition-all duration-100"
-                aria-label="Cerrar menú"
-              >
-                ×
-              </button>
+              <div className="flex items-center gap-3">
+                <ThemeToggle />
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-100"
+                  aria-label="Cerrar menú"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
             <nav className="mt-8" aria-label="Menú móvil">
@@ -326,10 +336,11 @@ export function MobileSidebar() {
                         href={item.href}
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
-                          "flex items-center justify-between rounded-xl border border-transparent px-3 py-2.5 font-medium text-white/70 transition-colors",
+                          "flex items-center justify-between rounded-xl border border-transparent px-3 py-2.5 font-medium transition-colors",
                           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-                          "hover:border-white/15 hover:bg-white/5 hover:text-white",
-                          isActive && "border-white/25 bg-white/12 text-white"
+                          isActive 
+                            ? "border-blue-100 bg-blue-50 text-blue-700 dark:border-white/25 dark:bg-white/12 dark:text-white"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         )}
                         onClick={() => setOpen(false)}
                       >
@@ -345,9 +356,9 @@ export function MobileSidebar() {
                 <button
                   type="submit"
                   className={cn(
-                    "w-full flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-base font-medium text-white/70 transition-all duration-100",
-                    "hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-200",
-                    "active:bg-red-500/15 active:scale-95",
+                    "w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-base font-medium text-foreground transition-all duration-100",
+                    "hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-200",
+                    "active:bg-red-100 dark:active:bg-red-500/15 active:scale-95",
                     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
                   )}
                 >

@@ -7,18 +7,17 @@
  */
 
 import { Temporal } from '@js-temporal/polyfill';
+import { 
+  type ConsultaEstado, 
+  type ConsultaSede, 
+  type ConsultaTipo,
+  CONSULTA_TIPOS 
+} from './consultas';
 
 // ========== ENUMS Y CONSTANTES ==========
 
-export const CONSULT_TYPES = [
-  'primera_vez',
-  'subsecuente',
-  'control_post_op',
-  'urgencia',
-  'procedimiento_menor',
-  'valoracion_prequirurgica',
-  'teleconsulta',
-] as const;
+// Re-exportamos para compatibilidad, pero usando la fuente de verdad en consultas.ts
+export { CONSULTA_TIPOS as CONSULT_TYPES };
 
 export const APPOINTMENT_PRIORITIES = ['normal', 'alta', 'urgente'] as const;
 
@@ -33,7 +32,7 @@ export const BLOCK_TYPES = [
   'personal',
 ] as const;
 
-export type ConsultType = (typeof CONSULT_TYPES)[number];
+export type ConsultType = ConsultaTipo; // Alias para compatibilidad
 export type AppointmentPriority = (typeof APPOINTMENT_PRIORITIES)[number];
 export type AppointmentModality = (typeof APPOINTMENT_MODALITIES)[number];
 export type BlockType = (typeof BLOCK_TYPES)[number];
@@ -62,11 +61,11 @@ export interface Appointment {
   duracionMinutos: number;
 
   // Ubicación
-  sede: 'POLANCO' | 'SATELITE';
+  sede: ConsultaSede;
   consultorio: string | null;
 
   // Tipo y clasificación
-  tipo: string; // Compatible con tipo actual
+  tipo: ConsultaTipo; // Usamos el tipo estricto de Consulta
   prioridad: AppointmentPriority;
   modalidad: AppointmentModality;
 
@@ -76,7 +75,7 @@ export interface Appointment {
   requisitosEspeciales: string[] | null;
 
   // Estado
-  estado: 'Programada' | 'Confirmada' | 'Reagendada' | 'Completada' | 'Cancelada' | 'No Asistió';
+  estado: ConsultaEstado; // Usamos el tipo estricto de Consulta
   estadoConfirmacion: string;
   confirmadoPaciente: boolean;
   confirmadoEn: string | null; // ISO string
@@ -105,7 +104,7 @@ export interface TimeSlot {
   start: Temporal.ZonedDateTime;
   end: Temporal.ZonedDateTime;
   timezone: string; // Default: "America/Mexico_City"
-  sede: 'POLANCO' | 'SATELITE';
+  sede: ConsultaSede;
   duracionMinutos: number;
 
   // Estado
@@ -137,7 +136,7 @@ export interface CalendarBlock {
   timezone: string;
 
   // Ubicación
-  sede: 'POLANCO' | 'SATELITE' | 'AMBAS';
+  sede: ConsultaSede | 'AMBAS';
 
   // Recurrencia
   recurrente: boolean;
@@ -153,7 +152,7 @@ export interface CalendarBlock {
  * Regla de duración por tipo de consulta
  */
 export interface ConsultDurationRule {
-  tipo: ConsultType;
+  tipo: ConsultaTipo;
   duracionDefecto: number;
   duracionMinima: number;
   duracionMaxima: number;
@@ -163,7 +162,7 @@ export interface ConsultDurationRule {
 
 // ========== CONFIGURACIÓN DE DURACIONES ==========
 
-export const CONSULT_DURATION_RULES: Record<ConsultType, Omit<ConsultDurationRule, 'tipo'>> = {
+export const CONSULT_DURATION_RULES: Record<ConsultaTipo, Omit<ConsultDurationRule, 'tipo'>> = {
   primera_vez: {
     duracionDefecto: 45,
     duracionMinima: 30,
@@ -236,10 +235,10 @@ export const DAILY_LIMITS = {
 export interface CreateAppointmentDTO {
   patientId: string;
   slotId: string;
-  tipo: string;
+  tipo: ConsultaTipo;
   motivoConsulta: string;
   duracionMinutos: number;
-  sede: 'POLANCO' | 'SATELITE';
+  sede: ConsultaSede;
   modalidad: AppointmentModality;
   prioridad: AppointmentPriority;
   notasInternas?: string;
@@ -269,7 +268,7 @@ export interface CancelAppointmentDTO {
 export interface AvailabilityParams {
   startDate: string; // ISO date string
   endDate: string;
-  sede: 'POLANCO' | 'SATELITE' | 'ANY';
+  sede: ConsultaSede | 'ANY';
   consultType?: string;
   duration?: number;
 }

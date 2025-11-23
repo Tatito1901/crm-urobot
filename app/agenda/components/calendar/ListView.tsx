@@ -136,10 +136,10 @@ export const ListView: React.FC<ListViewProps> = ({
             className={isToday ? 'scroll-mt-4' : ''}
           >
             {/* Header de fecha */}
-            <div className={`flex items-center gap-3 mb-3 ${isToday ? 'bg-gradient-to-r from-emerald-500/10 to-transparent -mx-4 px-4 py-2 rounded-lg' : ''}`}>
-              <h3 className="text-sm font-semibold text-slate-300">{dateLabel}</h3>
-              <div className="flex-1 h-px bg-slate-800" />
-              <span className="text-xs text-slate-500">{appointments.length} consultas</span>
+            <div className={`flex items-center gap-3 mb-3 ${isToday ? 'bg-accent/50 -mx-4 px-4 py-2 rounded-lg' : ''}`}>
+              <h3 className="text-sm font-semibold text-foreground">{dateLabel}</h3>
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">{appointments.length} consultas</span>
             </div>
 
             {/* Lista de citas */}
@@ -154,19 +154,18 @@ export const ListView: React.FC<ListViewProps> = ({
                   <button
                     key={apt.id}
                     onClick={() => onAppointmentClick(apt)}
-                    className={`w-full text-left ${paddingClass} rounded-lg bg-slate-900/80 border-l-4 border-r border-t border-b border-slate-700/70 shadow-sm shadow-black/40 hover:bg-slate-900 hover:border-slate-300/40 hover:shadow-md hover:shadow-black/60 transition-all group`}
+                    className={`w-full text-left ${paddingClass} rounded-lg bg-card border-l-4 border-r border-t border-b border-border shadow-sm hover:bg-accent/10 hover:border-primary/20 transition-all group`}
                     style={{
                       borderLeftColor: customColor,
-                      backgroundColor: `${customColor}08`, // 8% opacity
                     }}
                   >
                     <div className={`flex items-start ${viewDensity === 'compact' ? 'gap-2' : viewDensity === 'comfortable' ? 'gap-4' : 'gap-5'}`}>
                       {/* Hora */}
                       <div className={`flex-shrink-0 ${viewDensity === 'compact' ? 'w-16' : viewDensity === 'comfortable' ? 'w-24' : 'w-28'}`}>
-                        <p className={`font-semibold text-slate-200 ${viewDensity === 'compact' ? 'text-xs' : viewDensity === 'comfortable' ? 'text-sm' : 'text-base'}`}>
+                        <p className={`font-semibold text-foreground ${viewDensity === 'compact' ? 'text-xs' : viewDensity === 'comfortable' ? 'text-sm' : 'text-base'}`}>
                           {formatTimeRange(apt.start, apt.end).split(' - ')[0]}
                         </p>
-                        <p className={`text-slate-400 ${viewDensity === 'compact' ? 'text-[10px]' : 'text-xs'}`}>
+                        <p className={`text-muted-foreground ${viewDensity === 'compact' ? 'text-[10px]' : 'text-xs'}`}>
                           {apt.duracionMinutos} min
                         </p>
                       </div>
@@ -175,10 +174,10 @@ export const ListView: React.FC<ListViewProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3 mb-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-100 truncate">
+                            <p className="text-sm font-semibold text-foreground truncate">
                               {apt.paciente}
                             </p>
-                            <p className="text-xs text-slate-400 capitalize">
+                            <p className="text-xs text-muted-foreground capitalize">
                               {apt.tipo.replace(/_/g, ' ')}
                             </p>
                           </div>
@@ -194,7 +193,7 @@ export const ListView: React.FC<ListViewProps> = ({
 
                         {/* Motivo de consulta */}
                         {apt.motivoConsulta && (
-                          <p className="text-xs text-slate-400 mb-2 line-clamp-2">
+                          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                             {apt.motivoConsulta}
                           </p>
                         )}
@@ -202,7 +201,7 @@ export const ListView: React.FC<ListViewProps> = ({
                         {/* Meta información */}
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                           {/* Sede */}
-                          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 strokeLinecap="round"
@@ -221,7 +220,7 @@ export const ListView: React.FC<ListViewProps> = ({
                           </span>
 
                           {/* Modalidad */}
-                          <span className="inline-flex items-center gap-1 text-xs text-slate-400 capitalize">
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground capitalize">
                             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 strokeLinecap="round"
@@ -235,7 +234,7 @@ export const ListView: React.FC<ListViewProps> = ({
 
                           {/* Teléfono */}
                           {apt.telefono && (
-                            <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                   strokeLinecap="round"
@@ -272,7 +271,7 @@ export const ListView: React.FC<ListViewProps> = ({
 
                       {/* Icono de navegación */}
                       <svg
-                        className="h-5 w-5 text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0"
+                        className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

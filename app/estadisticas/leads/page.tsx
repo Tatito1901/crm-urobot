@@ -3,7 +3,7 @@
 import { useStats } from '@/hooks/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { spacing } from '@/app/lib/design-system';
+import { spacing, cards } from '@/app/lib/design-system';
 import { Users, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
@@ -34,35 +34,35 @@ export default function LeadsAnalysisPage() {
       description="Desglose detallado de la adquisición y calidad de leads."
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <Card className="bg-slate-950 border-slate-800">
+        <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-400" />
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-500 dark:text-blue-400" />
               Total Leads
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">{kpi.totalLeads}</div>
-            <p className="text-xs text-slate-400">Histórico acumulado</p>
+            <div className="text-3xl font-bold text-slate-900 dark:text-white">{kpi.totalLeads}</div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Histórico acumulado</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-950 border-slate-800">
+        <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               Nuevos (Mes)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">+{kpi.leadsNuevosMes}</div>
-            <p className="text-xs text-slate-400">Crecimiento mensual</p>
+            <div className="text-3xl font-bold text-slate-900 dark:text-white">+{kpi.leadsNuevosMes}</div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Crecimiento mensual</p>
           </CardContent>
         </Card>
       </div>
       
       {/* Aquí se podría agregar una tabla detallada de leads con filtros avanzados */}
-      <div className="p-12 border border-dashed border-slate-800 rounded-xl flex items-center justify-center text-slate-500 text-sm">
+      <div className="p-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm bg-slate-50 dark:bg-slate-900/20">
         Análisis profundo de cohortes próximamente
       </div>
     </PageShell>

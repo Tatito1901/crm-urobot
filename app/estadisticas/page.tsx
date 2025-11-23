@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useStats } from '@/hooks/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { spacing } from '@/app/lib/design-system';
+import { spacing, cards } from '@/app/lib/design-system';
 import { 
   Users, 
   Calendar, 
@@ -62,21 +62,21 @@ function KpiCard({
   trend?: string 
 }) {
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden shadow-lg hover:border-slate-700 transition-colors">
+    <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden shadow-sm dark:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 transition-all">
       <div className="flex justify-between items-start mb-3">
-        <div className="p-2.5 bg-slate-800 rounded-lg text-blue-400 border border-slate-700">
+        <div className="p-2.5 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-slate-700 rounded-lg">
           <Icon className="w-5 h-5" />
         </div>
         {trend && (
-          <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
+          <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
             <ArrowUpRight className="w-3 h-3" />
             {trend}
           </div>
         )}
       </div>
       <div>
-        <h3 className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-1">{title}</h3>
-        <div className="text-3xl font-bold text-white mb-1 tracking-tight">{value}</div>
+        <h3 className="text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-1">{title}</h3>
+        <div className="text-3xl font-bold text-slate-900 dark:text-white mb-1 tracking-tight">{value}</div>
         <p className="text-xs font-medium text-slate-500">{subtext}</p>
       </div>
     </div>
@@ -156,13 +156,13 @@ export default function EstadisticasPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         
         {/* Evolución Mensual */}
-        <Card className="bg-slate-950 border-slate-800">
+        <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-blue-400" />
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-blue-500 dark:text-blue-400" />
               Crecimiento Operativo
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">Consultas vs Pacientes Nuevos (6 meses)</CardDescription>
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">Consultas vs Pacientes Nuevos (6 meses)</CardDescription>
           </CardHeader>
           <CardContent>
             <EvolutionChart data={evolucionMensual} />
@@ -170,13 +170,13 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Funnel de Leads Mejorado */}
-        <Card className="bg-slate-950 border-slate-800">
+        <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <Target className="w-4 h-4 text-indigo-400" />
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <Target className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
               Embudo de Conversión
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">Flujo de leads desde captura hasta cierre</CardDescription>
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">Flujo de leads desde captura hasta cierre</CardDescription>
           </CardHeader>
           <CardContent>
             <FunnelChart data={funnelLeads} />
@@ -189,13 +189,13 @@ export default function EstadisticasPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Marketing: Fuentes */}
-        <Card className="bg-slate-950 border-slate-800">
+        <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-pink-400" />
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-pink-500 dark:text-pink-400" />
               Canales de Captación
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">Origen de los leads</CardDescription>
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">Origen de los leads</CardDescription>
           </CardHeader>
           <CardContent>
             <SourcesChart data={fuentesCaptacion} />
@@ -203,13 +203,13 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Operativo: Estado Citas */}
-        <Card className="bg-slate-950 border-slate-800">
+        <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-400" />
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               Estado de Citas
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">Desglose operativo actual</CardDescription>
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">Desglose operativo actual</CardDescription>
           </CardHeader>
           <CardContent>
             <StatusChart data={estadoCitas} />
@@ -217,13 +217,13 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Sedes */}
-        <Card className="bg-slate-950 border-slate-800">
+        <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-              <PieChartIcon className="w-4 h-4 text-purple-400" />
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <PieChartIcon className="w-4 h-4 text-purple-500 dark:text-purple-400" />
               Por Sede
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">Distribución geográfica</CardDescription>
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">Distribución geográfica</CardDescription>
           </CardHeader>
           <CardContent>
             <SedesChart data={consultasPorSede} />

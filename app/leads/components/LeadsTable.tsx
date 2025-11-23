@@ -13,9 +13,10 @@ import type { Lead } from '@/types/leads';
 interface LeadsTableProps {
   leads: Lead[];
   emptyMessage: string;
+  loading?: boolean;
 }
 
-export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }: LeadsTableProps) {
+export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, loading }: LeadsTableProps) {
   // Configuración de columnas
   const headers = [
     { key: 'nombre', label: <TableHeaders.Persona /> },
@@ -35,20 +36,24 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
       nombre: (
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-white">{lead.nombre}</span>
+            <span className="font-medium text-foreground">{lead.nombre}</span>
             {lead.esCaliente && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 animate-pulse border">
                 🔥
               </span>
             )}
           </div>
-          <span className="text-xs text-slate-400 font-mono">{lead.telefono}</span>
-          <span className="text-[10px] text-slate-500 truncate max-w-[150px]">{lead.fuente}</span>
+          <span className="text-xs text-muted-foreground font-mono">{lead.telefono}</span>
+          <span className="text-[10px] text-muted-foreground/80 truncate max-w-[150px]">{lead.fuente}</span>
         </div>
       ),
       origen: (
         <WrapTooltip content={GLOSARIO.canales[canal]} side="right">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border ${canalStyle.bg} ${canalStyle.text} ${canalStyle.border} cursor-help transition-transform hover:scale-105`}>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border cursor-help transition-transform hover:scale-105 ${
+            // Adaptar colores de canal si no son dinámicos (asumiendo que CANAL_COLORS devuelve clases fijas oscuras, las forzamos o ajustamos)
+            // Idealmente CANAL_COLORS debería ser revisado, pero por ahora aplicamos opacidad en light mode si es posible o confiamos en el diseño
+            canalStyle.bg
+          } ${canalStyle.text} ${canalStyle.border}`}>
             <span>{canalStyle.icon}</span>
             <span>{canal}</span>
           </span>
@@ -58,7 +63,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
         <div className="flex flex-col gap-1 text-xs">
           {lead.ultimaInteraccion ? (
             <>
-              <span className="text-slate-300 font-medium">
+              <span className="text-foreground font-medium">
                 {new Date(lead.ultimaInteraccion).toLocaleDateString('es-MX', { 
                   day: 'numeric', 
                   month: 'short',
@@ -66,17 +71,17 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
                   minute: '2-digit'
                 })}
               </span>
-              <span className="text-slate-500">
+              <span className="text-muted-foreground">
                 Hace {lead.diasDesdeUltimaInteraccion}d
               </span>
             </>
           ) : (
-            <span className="text-slate-600 italic">
+            <span className="text-muted-foreground italic">
               Sin mensajes aún
             </span>
           )}
           {lead.esInactivo && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-red-950/30 text-red-400 border border-red-900/30 w-fit mt-1">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-red-50 text-red-600 border-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30 border w-fit mt-1">
               Inactivo
             </span>
           )}
@@ -87,7 +92,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
           content={
             <div className="space-y-1">
               <p className="font-semibold">{lead.estado}</p>
-              <p className="text-white/70">{GLOSARIO.estados.detalle[lead.estado]}</p>
+              <p className="text-muted-foreground">{GLOSARIO.estados.detalle[lead.estado]}</p>
             </div>
           } 
           side="right"
@@ -103,22 +108,22 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
             <div className="group">
               <Link
                 href={`/pacientes/${lead.paciente.id}`}
-                className="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 transition-colors"
+                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium flex items-center gap-1 transition-colors"
               >
                 Ver perfil
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </Link>
-              <span className="text-slate-500 block mt-0.5">
+              <span className="text-muted-foreground block mt-0.5">
                 {lead.paciente.totalConsultas} {lead.paciente.totalConsultas === 1 ? 'consulta' : 'consultas'}
               </span>
               {lead.diasDesdeConversion !== null && (
-                <span className="text-slate-600 text-[10px]">
+                <span className="text-muted-foreground text-[10px]">
                   Hace {lead.diasDesdeConversion}d
                 </span>
               )}
             </div>
           ) : (
-            <span className="text-slate-600">
+            <span className="text-muted-foreground">
               En prospección
             </span>
           )}

@@ -87,19 +87,19 @@ export type RecordatorioDetalle = Recordatorio & {
 };
 
 export const STATE_COLORS: Record<string, string> = {
-  Nuevo: "border border-blue-400/60 bg-blue-500/15 text-blue-100",
-  "En seguimiento": "border border-amber-400/60 bg-amber-500/15 text-amber-100",
-  Convertido: "border border-teal-400/60 bg-teal-500/15 text-teal-100",
-  Descartado: "border border-rose-400/60 bg-rose-500/15 text-rose-100",
-  Programada: "border border-sky-400/60 bg-sky-500/15 text-sky-100",
-  Confirmada: "border border-emerald-400/60 bg-emerald-500/15 text-emerald-100",
-  Reagendada: "border border-orange-400/60 bg-orange-500/15 text-orange-100",
-  Cancelada: "border border-rose-500/70 bg-rose-600/20 text-rose-100",
-  Completada: "border border-lime-400/60 bg-lime-500/15 text-lime-100",
-  procesando: "border border-indigo-400/60 bg-indigo-500/15 text-indigo-100",
-  pendiente: "border border-amber-400/60 bg-amber-500/15 text-amber-100",
-  enviado: "border border-emerald-400/60 bg-emerald-500/15 text-emerald-100",
-  error: "border border-rose-500/70 bg-rose-600/20 text-rose-100",
+  Nuevo: "border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/60 dark:bg-blue-500/15 dark:text-blue-100",
+  "En seguimiento": "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-100",
+  Convertido: "border border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-400/60 dark:bg-teal-500/15 dark:text-teal-100",
+  Descartado: "border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/60 dark:bg-rose-500/15 dark:text-rose-100",
+  Programada: "border border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/60 dark:bg-sky-500/15 dark:text-sky-100",
+  Confirmada: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/60 dark:bg-emerald-500/15 dark:text-emerald-100",
+  Reagendada: "border border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-400/60 dark:bg-orange-500/15 dark:text-orange-100",
+  Cancelada: "border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/70 dark:bg-rose-600/20 dark:text-rose-100",
+  Completada: "border border-lime-200 bg-lime-50 text-lime-700 dark:border-lime-400/60 dark:bg-lime-500/15 dark:text-lime-100",
+  procesando: "border border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-400/60 dark:bg-indigo-500/15 dark:text-indigo-100",
+  pendiente: "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-100",
+  enviado: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/60 dark:bg-emerald-500/15 dark:text-emerald-100",
+  error: "border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/70 dark:bg-rose-600/20 dark:text-rose-100",
 };
 
 export const TAB_LABELS: Record<TabKey, string> = {

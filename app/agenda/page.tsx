@@ -368,7 +368,7 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#050b18]">
+    <div className="h-screen flex flex-col bg-background">
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar unificado - Desktop */}
         <div className="hidden lg:flex lg:flex-shrink-0 z-30 relative">
@@ -397,7 +397,7 @@ export default function AgendaPage() {
             />
             
             {/* Sidebar Content */}
-            <div className="relative w-[85%] max-w-[340px] h-full shadow-2xl animate-in slide-in-from-left duration-300 bg-[#0f1218]">
+            <div className="relative w-[85%] max-w-[340px] h-full shadow-2xl animate-in slide-in-from-left duration-300 bg-sidebar">
               <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><ModalLoader /></div>}>
                 <MobileSidebar 
                   selectedDate={selectedDate} 

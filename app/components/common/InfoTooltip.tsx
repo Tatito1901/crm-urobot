@@ -50,7 +50,7 @@ export const InfoTooltip = memo(function InfoTooltip({
       </TooltipTrigger>
       <TooltipContent 
         side={side}
-        className={`${maxWidth} bg-slate-800 border border-white/10 text-white leading-relaxed z-50`}
+        className={`${maxWidth} bg-popover border border-border text-popover-foreground leading-relaxed z-50 shadow-md`}
         sideOffset={8}
       >
         {content}
@@ -72,7 +72,7 @@ export const HelpIcon = memo(function HelpIcon({
 }) {
   return (
     <InfoTooltip content={content} side={side} delayDuration={150}>
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold cursor-help hover:bg-blue-500/30 transition-colors select-none">
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300 text-[10px] font-bold cursor-help hover:bg-blue-200 dark:hover:bg-blue-500/30 transition-colors select-none">
         ?
       </span>
     </InfoTooltip>

@@ -12,6 +12,22 @@ import {
 
 import { ChartData } from '@/hooks/useStats';
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs shadow-lg">
+        <p className="font-bold text-slate-900 dark:text-white mb-2">{payload[0].name}</p>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />
+          <span className="text-slate-500 dark:text-slate-400">Total:</span>
+          <span className="font-medium text-slate-900 dark:text-white ml-auto">{payload[0].value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const DashboardSourcesChart = memo(function DashboardSourcesChart({ data }: { data: ChartData[] }) {
   return (
     <div className="h-[220px] w-full flex items-center justify-center">
@@ -27,13 +43,11 @@ export const DashboardSourcesChart = memo(function DashboardSourcesChart({ data 
             dataKey="value"
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.fill} stroke="rgba(0,0,0,0.2)" />
+              <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
             ))}
           </Pie>
-          <Tooltip 
-            contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
-          />
-          <Legend layout="vertical" verticalAlign="middle" align="right" iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#94a3b8' }} />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend layout="vertical" verticalAlign="middle" align="right" iconType="circle" wrapperStyle={{ fontSize: '10px', color: '#64748b' }} />
         </PieChart>
       </ResponsiveContainer>
     </div>

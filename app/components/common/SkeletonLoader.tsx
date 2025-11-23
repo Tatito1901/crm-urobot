@@ -20,7 +20,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-lg bg-white/5',
+        'animate-pulse rounded-lg bg-muted',
         className
       )}
     />
@@ -32,7 +32,7 @@ export function Skeleton({ className }: SkeletonProps) {
  */
 export function MetricCardSkeleton() {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+    <div className="rounded-xl border border-border bg-card p-4">
       <Skeleton className="h-4 w-20 mb-3" />
       <Skeleton className="h-8 w-16 mb-2" />
       <Skeleton className="h-3 w-24" />
@@ -47,7 +47,7 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="hidden md:block space-y-3">
       {/* Header */}
-      <div className="flex gap-4 pb-3 border-b border-white/10">
+      <div className="flex gap-4 pb-3 border-b border-border">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-20" />
@@ -75,7 +75,7 @@ export function MobileCardsSkeleton({ count = 5 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-white/10 bg-white/[0.04] p-3"
+          className="rounded-xl border border-border bg-card p-3"
         >
           <Skeleton className="h-5 w-3/4 mb-2" />
           <Skeleton className="h-4 w-1/2 mb-3" />
@@ -106,7 +106,7 @@ export function DataTableSkeleton({ rows = 5 }: { rows?: number }) {
  */
 export function ListItemSkeleton() {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-3.5">
+    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-3.5">
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-3 w-24" />
@@ -121,7 +121,7 @@ export function ListItemSkeleton() {
  */
 export function CardSkeleton() {
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6 space-y-4">
+    <div className="bg-card border border-border rounded-xl p-6 space-y-4">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-6 w-12" />
@@ -192,8 +192,8 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
       <div className="text-6xl mb-4 opacity-50">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-200 mb-2">{title}</h3>
-      {description && <p className="text-sm text-slate-400 mb-4 max-w-md">{description}</p>}
+      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+      {description && <p className="text-sm text-muted-foreground mb-4 max-w-md">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -206,7 +206,7 @@ export function FullPageLoader({ message = 'Cargando...' }: { message?: string }
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh]">
       <Spinner size="lg" />
-      <p className="mt-4 text-slate-400">{message}</p>
+      <p className="mt-4 text-muted-foreground">{message}</p>
     </div>
   );
 }

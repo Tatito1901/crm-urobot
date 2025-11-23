@@ -13,34 +13,34 @@ interface StatCardProps {
 
 const StatCard = memo(({ label, value, description, icon, color }: StatCardProps) => {
   const colorClasses = {
-    blue: 'bg-slate-900/40 border-blue-500/20',
-    emerald: 'bg-slate-900/40 border-emerald-500/20',
-    red: 'bg-slate-900/40 border-red-500/20',
-    amber: 'bg-slate-900/40 border-amber-500/20',
+    blue: 'bg-white dark:bg-slate-900/40 border-blue-200 dark:border-blue-500/20',
+    emerald: 'bg-white dark:bg-slate-900/40 border-emerald-200 dark:border-emerald-500/20',
+    red: 'bg-white dark:bg-slate-900/40 border-red-200 dark:border-red-500/20',
+    amber: 'bg-white dark:bg-slate-900/40 border-amber-200 dark:border-amber-500/20',
   };
 
   const textColors = {
-    blue: 'text-blue-400',
-    emerald: 'text-emerald-400',
-    red: 'text-red-400',
-    amber: 'text-amber-400',
+    blue: 'text-blue-500 dark:text-blue-400',
+    emerald: 'text-emerald-500 dark:text-emerald-400',
+    red: 'text-red-500 dark:text-red-400',
+    amber: 'text-amber-500 dark:text-amber-400',
   };
 
   const titleColors = {
-    blue: 'text-blue-300',
-    emerald: 'text-emerald-300',
-    red: 'text-red-300',
-    amber: 'text-amber-300',
+    blue: 'text-blue-600 dark:text-blue-300',
+    emerald: 'text-emerald-600 dark:text-emerald-300',
+    red: 'text-red-600 dark:text-red-300',
+    amber: 'text-amber-600 dark:text-amber-300',
   };
 
   return (
-    <div className={`rounded-lg border p-4 flex flex-col justify-between relative overflow-hidden ${colorClasses[color]}`}>
+    <div className={`rounded-lg border p-4 flex flex-col justify-between relative overflow-hidden transition-colors shadow-sm dark:shadow-none ${colorClasses[color]}`}>
       <div className="absolute top-0 right-0 p-3 opacity-5">
         <div className={`w-12 h-12 ${textColors[color]}`}>{icon}</div>
       </div>
       <div>
         <div className={`text-xs mb-1 font-medium ${titleColors[color]}`}>{label}</div>
-        <div className="text-2xl font-bold text-slate-100">{value}</div>
+        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</div>
       </div>
       <div className="text-[10px] text-slate-500 mt-2">{description}</div>
     </div>

@@ -22,7 +22,7 @@ export const Badge = memo(function Badge({
     <ShadcnBadge
       variant={variant}
       className={cn(
-        "capitalize tracking-[0.12em] text-xs font-medium text-white/80",
+        "capitalize tracking-[0.12em] text-xs font-medium",
         tone,
         className
       )}
@@ -35,16 +35,16 @@ export const Badge = memo(function Badge({
 
 export const StatCard = memo(function StatCard({ title, value, hint }: { title: string; value: string; hint?: string }) {
   return (
-    <Card className="bg-white/[0.03]">
+    <Card className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-transparent shadow-sm dark:shadow-none">
       <CardHeader className="space-y-3 pb-2">
-        <CardDescription className="text-[0.68rem] uppercase tracking-[0.28em] text-white/50">
+        <CardDescription className="text-[0.68rem] uppercase tracking-[0.28em] text-slate-500 dark:text-white/50">
           {title}
         </CardDescription>
-        <CardTitle className="text-2xl font-semibold text-white sm:text-3xl">{value}</CardTitle>
+        <CardTitle className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{value}</CardTitle>
       </CardHeader>
       {hint && (
         <CardContent className="pt-0">
-          <p className="text-xs text-white/50">{hint}</p>
+          <p className="text-xs text-slate-500 dark:text-white/50">{hint}</p>
         </CardContent>
       )}
     </Card>
@@ -86,7 +86,7 @@ export function DataTable({
   if (rows.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[300px] text-center py-12">
-        <p className="text-sm text-slate-400">{empty}</p>
+        <p className="text-sm text-muted-foreground">{empty}</p>
       </div>
     );
   }
@@ -102,23 +102,23 @@ export function DataTable({
 
   return (
     <div className="space-y-4">
-      <div className="hidden w-full overflow-x-auto rounded-xl border border-white/10 bg-white/[0.02] md:block">
-        <table className="min-w-full divide-y divide-white/10 text-left text-sm text-white/80">
-          <thead className="bg-white/5 text-xs uppercase tracking-[0.2em] text-white/40">
+      <div className="hidden w-full overflow-x-auto rounded-xl border border-border bg-card md:block shadow-sm">
+        <table className="min-w-full divide-y divide-border text-left text-sm text-foreground">
+          <thead className="bg-muted text-xs uppercase tracking-[0.2em] text-muted-foreground">
             <tr>
               {headers.map((header) => (
-                <th key={header.key} scope="col" className={cn("px-3 py-3", getAlignmentClasses(header.align))}>
+                <th key={header.key} scope="col" className={cn("px-3 py-3 font-semibold", getAlignmentClasses(header.align))}>
                   {header.label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-border">
             {rows.map((row) => (
               <tr
                 key={row.id}
                 className={cn(
-                  "transition hover:bg-white/[0.04]",
+                  "transition hover:bg-muted/50",
                   onRowClick && "cursor-pointer"
                 )}
                 onClick={onRowClick ? () => onRowClick(row.id) : undefined}
@@ -148,20 +148,20 @@ export function DataTable({
               onClick={onRowClick ? () => onRowClick(row.id) : undefined}
               onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
               className={cn(
-                "rounded-xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-4 transition-all duration-200 active:scale-[0.98] min-h-[80px] flex flex-col justify-center",
-                onRowClick && "cursor-pointer active:bg-white/10 active:border-blue-400/30"
+                "rounded-xl border border-border bg-card p-4 transition-all duration-200 active:scale-[0.98] min-h-[80px] flex flex-col justify-center shadow-sm",
+                onRowClick && "cursor-pointer active:bg-muted/50 active:border-primary/30"
               )}
             >
               <div className="mb-3">
-                {primary && <div className="text-base font-semibold text-white leading-tight">{primary}</div>}
-                {secondary && <div className="mt-1.5 text-sm text-white/70">{secondary}</div>}
+                {primary && <div className="text-base font-semibold text-foreground leading-tight">{primary}</div>}
+                {secondary && <div className="mt-1.5 text-sm text-muted-foreground">{secondary}</div>}
               </div>
               {metadata.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   {metadata.map((key) => (
                     <div key={key} className="flex flex-col gap-0.5">
-                      <span className="text-white/40 text-[10px] uppercase tracking-wide">{headers.find((h) => h.key === key)?.label}</span>
-                      <span className="text-white/90 font-medium">{row[key]}</span>
+                      <span className="text-muted-foreground text-[10px] uppercase tracking-wide">{headers.find((h) => h.key === key)?.label}</span>
+                      <span className="text-foreground font-medium">{row[key]}</span>
                     </div>
                   ))}
                 </div>

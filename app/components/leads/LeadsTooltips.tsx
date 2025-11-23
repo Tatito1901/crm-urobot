@@ -46,7 +46,7 @@ export const TableHeaders = {
           content={
             <div className="space-y-1">
               <p>{GLOSARIO.ultimoMensaje.descripcion}</p>
-              <p className="text-white/70 text-[10px]">{GLOSARIO.ultimoMensaje.importante}</p>
+              <p className="text-muted-foreground text-[10px]">{GLOSARIO.ultimoMensaje.importante}</p>
             </div>
           } 
           side="bottom" 
@@ -91,7 +91,7 @@ export const MainTitle = memo(function MainTitle() {
         content={
           <div className="space-y-2">
             <p className="font-semibold">{GLOSARIO.leads.descripcion}</p>
-            <p className="text-white/70">{GLOSARIO.leads.ejemplos}</p>
+            <p className="text-muted-foreground">{GLOSARIO.leads.ejemplos}</p>
           </div>
         }
       />
@@ -107,7 +107,7 @@ export const QuickGuide = memo(function QuickGuide() {
     <HelpIcon 
       content={
         <div className="space-y-2 max-w-sm">
-          <p className="font-semibold text-emerald-300">💡 Guía rápida</p>
+          <p className="font-semibold text-emerald-600 dark:text-emerald-400">💡 Guía rápida</p>
           <ul className="space-y-1 text-[11px]">
             <li>• Pasa el cursor sobre cualquier elemento con ? para ver más información</li>
             <li>• Los badges de colores indican el origen del contacto</li>
@@ -131,7 +131,7 @@ export const StatsTooltips = {
   altaPrioridad: (
     <div className="space-y-1">
       <p className="font-semibold">{GLOSARIO.caliente.descripcion}</p>
-      <p className="text-white/70">{GLOSARIO.caliente.accion}</p>
+      <p className="text-muted-foreground">{GLOSARIO.caliente.accion}</p>
     </div>
   ),
 };

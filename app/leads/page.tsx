@@ -89,7 +89,7 @@ export default function LeadsPage() {
       <LeadsMetrics stats={leadsStats} loading={loading} />
 
       <Card className={`${cards.base} overflow-hidden`}>
-        <CardHeader className={`${spacing.cardHeader} border-b border-slate-800/50 bg-slate-900/20`}>
+        <CardHeader className={`${spacing.cardHeader} border-b border-border bg-muted/20`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function LeadsPage() {
             <button
               onClick={() => refetch()}
               disabled={loading}
-              className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all disabled:opacity-50"
+              className="p-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
               title="Recargar datos"
             >
               <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,8 +136,8 @@ export default function LeadsPage() {
             minHeight="min-h-[400px]"
             skeleton={<TableContentSkeleton rows={10} />}
             emptyState={
-              <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-                <div className="bg-slate-800/50 p-4 rounded-full mb-3">
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <div className="bg-muted/50 p-4 rounded-full mb-3">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -146,7 +146,7 @@ export default function LeadsPage() {
               </div>
             }
           >
-            <div className="border-t border-slate-800/50">
+            <div className="border-t border-border">
               <LeadsTable 
                 leads={paginatedLeads} 
                 loading={loading}
@@ -156,7 +156,7 @@ export default function LeadsPage() {
             
             {/* Paginación */}
             {filteredLeads.length > itemsPerPage && (
-              <div className="p-4 border-t border-slate-800/50 bg-slate-900/20">
+              <div className="p-4 border-t border-border bg-muted/20">
                 <Pagination
                   currentPage={currentPage}
                   totalItems={filteredLeads.length}

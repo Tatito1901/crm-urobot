@@ -22,45 +22,45 @@ export type CanalMarketing = typeof CANALES_MARKETING[number];
  */
 export const CANAL_COLORS: Record<CanalMarketing, { bg: string; text: string; border: string; icon: string }> = {
   'Facebook Ads': {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-300',
-    border: 'border-blue-500/30',
+    bg: 'bg-blue-50 dark:bg-blue-500/10',
+    text: 'text-blue-700 dark:text-blue-300',
+    border: 'border-blue-200 dark:border-blue-500/30',
     icon: '📘'
   },
   'Google Ads': {
-    bg: 'bg-red-500/10',
-    text: 'text-red-300',
-    border: 'border-red-500/30',
+    bg: 'bg-red-50 dark:bg-red-500/10',
+    text: 'text-red-700 dark:text-red-300',
+    border: 'border-red-200 dark:border-red-500/30',
     icon: '🔍'
   },
   'Instagram Ads': {
-    bg: 'bg-pink-500/10',
-    text: 'text-pink-300',
-    border: 'border-pink-500/30',
+    bg: 'bg-pink-50 dark:bg-pink-500/10',
+    text: 'text-pink-700 dark:text-pink-300',
+    border: 'border-pink-200 dark:border-pink-500/30',
     icon: '📸'
   },
   'Orgánico': {
-    bg: 'bg-green-500/10',
-    text: 'text-green-300',
-    border: 'border-green-500/30',
+    bg: 'bg-green-50 dark:bg-green-500/10',
+    text: 'text-green-700 dark:text-green-300',
+    border: 'border-green-200 dark:border-green-500/30',
     icon: '🌱'
   },
   'Referido': {
-    bg: 'bg-purple-500/10',
-    text: 'text-purple-300',
-    border: 'border-purple-500/30',
+    bg: 'bg-purple-50 dark:bg-purple-500/10',
+    text: 'text-purple-700 dark:text-purple-300',
+    border: 'border-purple-200 dark:border-purple-500/30',
     icon: '👥'
   },
   'WhatsApp Directo': {
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-300',
-    border: 'border-emerald-500/30',
+    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    text: 'text-emerald-700 dark:text-emerald-300',
+    border: 'border-emerald-200 dark:border-emerald-500/30',
     icon: '💬'
   },
   'Otro': {
-    bg: 'bg-slate-500/10',
-    text: 'text-slate-300',
-    border: 'border-slate-500/30',
+    bg: 'bg-slate-50 dark:bg-slate-500/10',
+    text: 'text-slate-700 dark:text-slate-300',
+    border: 'border-slate-200 dark:border-slate-500/30',
     icon: '📌'
   }
 };

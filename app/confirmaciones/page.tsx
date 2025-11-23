@@ -122,17 +122,17 @@ export default function ConfirmacionesPage() {
         <div className="space-y-6">
           <Card className={`${cards.base} lg:sticky lg:top-6`}>
             <CardHeader className={spacing.cardHeader}>
-              <CardTitle className="text-sm font-semibold text-white flex items-center gap-2">
-                <Filter className="w-4 h-4 text-blue-400" />
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Filter className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                 Filtros
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               {/* Búsqueda */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Búsqueda rápida</label>
+                <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Búsqueda rápida</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" />
                   <input
                     value={inputValue}
                     onChange={(event) => {
@@ -140,21 +140,21 @@ export default function ConfirmacionesPage() {
                       debouncedSearch(event.target.value);
                     }}
                     placeholder="Paciente o consulta..."
-                    className="w-full pl-9 pr-3 py-2 bg-slate-950/50 border border-slate-800 rounded-md text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-md text-sm text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
                   />
                 </div>
               </div>
 
               {/* Tipo */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400">Tipo de recordatorio</label>
+                <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Tipo de recordatorio</label>
                 <select
                   value={tipoFiltro}
                   onChange={(e) => {
                     setTipoFiltro(e.target.value as TipoFilter);
                     setCurrentPage(0);
                   }}
-                  className="w-full px-3 py-2 bg-slate-950/50 border border-slate-800 rounded-md text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-md text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
                 >
                   <option value="ALL">Todos los tipos</option>
                   <option value="confirmacion_inicial">Confirmación inicial</option>
@@ -166,7 +166,7 @@ export default function ConfirmacionesPage() {
 
               {/* Rango */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-400 flex items-center gap-1">
+                <label className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
                   <Calendar className="w-3 h-3" /> Período
                 </label>
                 <div className="grid grid-cols-1 gap-1">
@@ -183,8 +183,8 @@ export default function ConfirmacionesPage() {
                       }}
                       className={`px-3 py-1.5 text-xs text-left rounded-md transition-colors ${
                         rangoFiltro === opt.value
-                          ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
-                          : 'text-slate-400 hover:bg-slate-800/50'
+                          ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20'
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                       }`}
                     >
                       {opt.label}
@@ -194,9 +194,9 @@ export default function ConfirmacionesPage() {
               </div>
 
               {/* Agrupación */}
-              <div className="pt-4 border-t border-slate-800/50">
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800/50">
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${soloUltimo ? 'bg-blue-500 border-blue-500' : 'border-slate-600 group-hover:border-slate-500'}`}>
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${soloUltimo ? 'bg-blue-600 dark:bg-blue-500 border-blue-600 dark:border-blue-500' : 'border-slate-300 dark:border-slate-600 group-hover:border-slate-400 dark:group-hover:border-slate-500 bg-white dark:bg-transparent'}`}>
                     {soloUltimo && <CheckCircle2 className="w-3 h-3 text-white" />}
                   </div>
                   <input
@@ -208,7 +208,7 @@ export default function ConfirmacionesPage() {
                     }}
                     className="hidden"
                   />
-                  <span className="text-xs text-slate-300 group-hover:text-white transition-colors">Ver solo último envío</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Ver solo último envío</span>
                 </label>
               </div>
             </CardContent>
@@ -221,17 +221,17 @@ export default function ConfirmacionesPage() {
             <CardHeader className={spacing.cardHeader}>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-sm font-semibold text-white">
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">
                     Historial de envíos
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
                     {filtered.length} registros encontrados
                   </CardDescription>
                 </div>
                 <button
                   onClick={() => refresh()}
                   disabled={loading}
-                  className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all disabled:opacity-50"
+                  className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
                 >
                   <div className={loading ? 'animate-spin' : ''}>↻</div>
                 </button>
@@ -245,7 +245,7 @@ export default function ConfirmacionesPage() {
               
               {/* Paginación */}
               {filtered.length > itemsPerPage && (
-                <div className="border-t border-slate-800/50 p-4">
+                <div className="border-t border-slate-200 dark:border-slate-800/50 p-4">
                   <Pagination
                     currentPage={currentPage}
                     totalItems={filtered.length}

@@ -3,7 +3,7 @@
 import { useStats } from '@/hooks/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { spacing } from '@/app/lib/design-system';
+import { spacing, cards } from '@/app/lib/design-system';
 import { 
   PieChart, 
   Pie, 
@@ -16,6 +16,22 @@ import { Share2 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
 export const dynamic = 'force-dynamic';
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs shadow-lg">
+        <p className="font-bold text-slate-900 dark:text-white mb-2">{payload[0].name}</p>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />
+          <span className="text-slate-500 dark:text-slate-400">Total:</span>
+          <span className="font-medium text-slate-900 dark:text-white ml-auto">{payload[0].value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function CanalesPage() {
   const { fuentesCaptacion, loading } = useStats();
@@ -41,13 +57,13 @@ export default function CanalesPage() {
       title="Canales de Captación"
       description="Análisis de fuentes de adquisición de leads y pacientes."
     >
-      <Card className="bg-slate-950 border-slate-800">
+      <Card className={cards.base}>
         <CardHeader className={spacing.cardHeader}>
-          <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-            <Share2 className="w-4 h-4 text-pink-400" />
+          <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <Share2 className="w-4 h-4 text-pink-500 dark:text-pink-400" />
             Distribución por Fuente
           </CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
             Origen de los leads registrados
           </CardDescription>
         </CardHeader>
@@ -66,13 +82,11 @@ export default function CanalesPage() {
                   label={({ name, percent }: { name?: string; percent?: number }) => `${name || 'Desconocido'} ${((percent || 0) * 100).toFixed(0)}%`}
                 >
                   {fuentesCaptacion.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} stroke="rgba(0,0,0,0.2)" />
+                    <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
-                />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: '#94a3b8' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: '#64748b' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

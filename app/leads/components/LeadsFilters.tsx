@@ -29,7 +29,7 @@ export const LeadsFilters = React.memo(function LeadsFilters({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       {/* Tabs de Filtros */}
-      <div className="flex p-1 bg-slate-900/50 rounded-lg border border-slate-800/50 overflow-x-auto no-scrollbar">
+      <div className="flex p-1 bg-muted/50 rounded-lg border border-border overflow-x-auto no-scrollbar">
         {filters.map((filter) => (
           <button
             key={filter.id}
@@ -37,8 +37,8 @@ export const LeadsFilters = React.memo(function LeadsFilters({
             className={`
               px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all whitespace-nowrap
               ${currentFilter === filter.id
-                ? 'bg-slate-800 text-white shadow-sm ring-1 ring-slate-700'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }
             `}
           >
@@ -50,13 +50,13 @@ export const LeadsFilters = React.memo(function LeadsFilters({
       {/* Buscador */}
       <div className="relative w-full sm:w-64">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-4 w-4 text-slate-500" />
+          <Search className="h-4 w-4 text-muted-foreground" />
         </div>
         <input
           type="text"
           value={searchValue}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="block w-full pl-10 pr-3 py-2 border border-slate-700/50 rounded-lg leading-5 bg-slate-900/50 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+          className="block w-full pl-10 pr-3 py-2 border border-border rounded-lg leading-5 bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
           placeholder="Buscar lead..."
         />
       </div>

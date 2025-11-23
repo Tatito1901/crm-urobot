@@ -6,6 +6,7 @@ import { Users, Activity, UserCheck, Calendar, Clock } from 'lucide-react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
 import { Badge } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
+import { ThemeToggle } from '@/app/components/common/ThemeToggle';
 import { useStats } from '@/hooks/useStats';
 import { useLeads } from '@/hooks/useLeads';
 import { useConsultas } from '@/hooks/useConsultas';
@@ -15,12 +16,12 @@ import { EmptyState } from '@/app/components/common/SkeletonLoader';
 
 // Lazy load de gráficos pesados para mejorar rendimiento mobile y reducir TBT (Total Blocking Time)
 const DonutChart = dynamicImport(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
-  loading: () => <div className="h-[200px] animate-pulse bg-slate-800/50 rounded-xl" />,
+  loading: () => <div className="h-[200px] animate-pulse bg-muted rounded-xl" />,
   ssr: false,
 });
 
 const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart').then(mod => ({ default: mod.BarChart })), {
-  loading: () => <div className="h-[250px] animate-pulse bg-slate-800/50 rounded-xl" />,
+  loading: () => <div className="h-[250px] animate-pulse bg-muted rounded-xl" />,
   ssr: false,
 });
 
@@ -158,24 +159,27 @@ export default function DashboardPage() {
         eyebrow="Portal Médico"
         title={
           <div className="flex flex-col gap-1">
-            <span className="text-3xl font-bold tracking-tight text-white">
-              Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Doctor</span>
+            <span className="text-3xl font-bold tracking-tight text-foreground">
+              Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-cyan-400">Doctor</span>
             </span>
           </div>
         }
         description="Panel de control inteligente para la gestión integral de sus pacientes."
         compact
         headerSlot={
-          <button
-            onClick={handleRefresh}
-            disabled={isLoadingAny}
-            className="group flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600/20 to-blue-500/20 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-medium text-blue-200 backdrop-blur-sm border border-blue-500/20 hover:from-blue-600/30 hover:to-blue-500/30 hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 min-h-[36px] sm:min-h-0"
-          >
-            <span className="transition-transform group-hover:rotate-180 duration-500">
-              {isLoadingAny ? '⟳' : '↻'}
-            </span>
-            <span>{isLoadingAny ? 'Actualizando...' : 'Actualizar'}</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button
+              onClick={handleRefresh}
+              disabled={isLoadingAny}
+              className="group flex items-center justify-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-medium text-blue-600 dark:text-blue-200 border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/20 hover:border-blue-300 dark:hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 min-h-[36px]"
+            >
+              <span className="transition-transform group-hover:rotate-180 duration-500">
+                {isLoadingAny ? '⟳' : '↻'}
+              </span>
+              <span>{isLoadingAny ? 'Actualizando...' : 'Actualizar'}</span>
+            </button>
+          </div>
         }
       >
         <div className="flex flex-col gap-3 sm:gap-4">
@@ -194,14 +198,14 @@ export default function DashboardPage() {
           </section>
 
           {/* Tabs sección secundaria */}
-          <div className="mb-6 flex items-center gap-8 border-b border-slate-800">
+          <div className="mb-6 flex items-center gap-8 border-b border-border">
             <button
               type="button"
               onClick={() => setActiveTab('actividad')}
               className={`relative pb-3 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'actividad'
-                  ? 'text-blue-400 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-blue-500'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Actividad reciente
@@ -211,8 +215,8 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('graficas')}
               className={`relative pb-3 text-sm font-medium transition-all duration-200 ${
                 activeTab === 'graficas'
-                  ? 'text-blue-400 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-blue-500'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Gráficas
@@ -222,34 +226,34 @@ export default function DashboardPage() {
           {activeTab === 'actividad' ? (
             <section className="grid gap-6 lg:grid-cols-2">
               {/* Leads recientes */}
-              <div className="flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+              <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="flex items-center justify-between border-b border-border px-6 py-4">
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-white">
+                    <h3 className="font-semibold text-card-foreground">
                       Leads Recientes {loadingLeads && <span className="ml-2 animate-spin text-blue-500">↻</span>}
                     </h3>
-                    <p className="text-xs text-slate-400">Últimos 5 contactos registrados</p>
+                    <p className="text-xs text-muted-foreground">Últimos 5 contactos registrados</p>
                   </div>
-                  <Badge label={`${leads.length} totales`} variant="outline" className="border-slate-700 text-slate-400" />
+                  <Badge label={`${leads.length} totales`} variant="outline" className="border-border text-muted-foreground" />
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="max-h-[400px] overflow-y-auto">
                     {recentLeads.length === 0 ? (
-                      <div className="flex h-32 items-center justify-center text-sm text-slate-500">
+                      <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
                         No hay leads recientes
                       </div>
                     ) : (
-                      <div className="divide-y divide-slate-800/50">
+                      <div className="divide-y divide-border">
                         {recentLeads.map((lead) => (
                           <div
                             key={lead.id}
-                            className="group flex cursor-pointer items-center justify-between px-6 py-4 transition-colors hover:bg-slate-800/50"
+                            className="group flex cursor-pointer items-center justify-between px-6 py-4 transition-colors hover:bg-muted/50"
                           >
                             <div className="min-w-0 flex-1 pr-4">
-                              <p className="truncate text-sm font-medium text-slate-200 group-hover:text-white">
+                              <p className="truncate text-sm font-medium text-foreground group-hover:text-primary">
                                 {lead.nombre}
                               </p>
-                              <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                                 <span>{formatDate(lead.primerContacto)}</span>
                                 <span>•</span>
                                 <span className="capitalize">{lead.fuente}</span>
@@ -265,37 +269,37 @@ export default function DashboardPage() {
               </div>
 
               {/* Consultas próximas */}
-              <div className="flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+              <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="flex items-center justify-between border-b border-border px-6 py-4">
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-white">
+                    <h3 className="font-semibold text-card-foreground">
                       Consultas Próximas {loadingConsultas && <span className="ml-2 animate-spin text-blue-500">↻</span>}
                     </h3>
-                    <p className="text-xs text-slate-400">Agenda para los próximos días</p>
+                    <p className="text-xs text-muted-foreground">Agenda para los próximos días</p>
                   </div>
-                  <Badge label={`${upcomingConsultas.length} próximas`} variant="outline" className="border-slate-700 text-slate-400" />
+                  <Badge label={`${upcomingConsultas.length} próximas`} variant="outline" className="border-border text-muted-foreground" />
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="max-h-[400px] overflow-y-auto">
                     {upcomingConsultas.length === 0 ? (
-                      <div className="flex h-32 items-center justify-center text-sm text-slate-500">
+                      <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
                         No hay consultas próximas
                       </div>
                     ) : (
-                      <div className="divide-y divide-slate-800/50">
+                      <div className="divide-y divide-border">
                         {upcomingConsultas.map((consulta) => (
                           <div
                             key={consulta.id}
-                            className="group flex cursor-pointer items-center justify-between px-6 py-4 transition-colors hover:bg-slate-800/50"
+                            className="group flex cursor-pointer items-center justify-between px-6 py-4 transition-colors hover:bg-muted/50"
                           >
                             <div className="min-w-0 flex-1 pr-4">
-                              <p className="truncate text-sm font-medium text-slate-200 group-hover:text-white">
+                              <p className="truncate text-sm font-medium text-foreground group-hover:text-primary">
                                 {consulta.paciente}
                               </p>
-                              <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                                 <span>{formatDate(consulta.fecha)}</span>
                                 <span>•</span>
-                                <span className="font-medium text-slate-400">{consulta.sede}</span>
+                                <span className="font-medium text-foreground">{consulta.sede}</span>
                               </div>
                             </div>
                             <Badge label={consulta.estado} tone={STATE_COLORS[consulta.estado]} />
@@ -310,22 +314,22 @@ export default function DashboardPage() {
           ) : (
             <section className="grid gap-6 lg:grid-cols-2">
               {/* Gráfico de leads por estado */}
-              <div className="flex flex-col rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
-                <div className="flex items-start justify-between border-b border-slate-800 px-6 py-4">
+              <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
+                <div className="flex items-start justify-between border-b border-border px-6 py-4">
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-white">Leads por Estado</h3>
-                    <p className="text-xs text-slate-400">Distribución del funnel</p>
+                    <h3 className="font-semibold text-card-foreground">Leads por Estado</h3>
+                    <p className="text-xs text-muted-foreground">Distribución del funnel</p>
                   </div>
                   {/* Métricas rápidas */}
                   {leadsStats.total > 0 && (
                     <div className="text-right">
-                      <div className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Conversión</div>
+                      <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Conversión</div>
                       <div className={`text-lg font-bold tabular-nums ${
                         leadsStats.tasaConversion >= 30
-                          ? 'text-emerald-400'
+                          ? 'text-emerald-600 dark:text-emerald-400'
                           : leadsStats.tasaConversion >= 15
-                          ? 'text-amber-400'
-                          : 'text-slate-400'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-muted-foreground'
                       }`}>
                         {leadsStats.tasaConversion}%
                       </div>
@@ -345,18 +349,18 @@ export default function DashboardPage() {
                       </div>
                       
                       {/* Resumen de métricas */}
-                      <div className="mt-auto grid grid-cols-3 gap-4 border-t border-slate-800 pt-6">
-                        <div className="rounded-lg bg-slate-800/50 p-3 text-center">
-                          <div className="text-[10px] font-medium uppercase text-slate-400">Total</div>
-                          <div className="text-xl font-bold text-white">{leadsStats.total}</div>
+                      <div className="mt-auto grid grid-cols-3 gap-4 border-t border-border pt-6">
+                        <div className="rounded-lg bg-muted/50 p-3 text-center">
+                          <div className="text-[10px] font-medium uppercase text-muted-foreground">Total</div>
+                          <div className="text-xl font-bold text-foreground">{leadsStats.total}</div>
                         </div>
                         <div className="rounded-lg bg-emerald-500/10 p-3 text-center">
-                          <div className="text-[10px] font-medium uppercase text-emerald-400">Convertidos</div>
-                          <div className="text-xl font-bold text-emerald-300">{leadsStats.convertidos}</div>
+                          <div className="text-[10px] font-medium uppercase text-emerald-600 dark:text-emerald-400">Convertidos</div>
+                          <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{leadsStats.convertidos}</div>
                         </div>
                         <div className="rounded-lg bg-blue-500/10 p-3 text-center">
-                          <div className="text-[10px] font-medium uppercase text-blue-400">En Proceso</div>
-                          <div className="text-xl font-bold text-blue-300">{leadsStats.enProceso}</div>
+                          <div className="text-[10px] font-medium uppercase text-blue-600 dark:text-blue-400">En Proceso</div>
+                          <div className="text-xl font-bold text-blue-700 dark:text-blue-300">{leadsStats.enProceso}</div>
                         </div>
                       </div>
                     </>
@@ -365,10 +369,10 @@ export default function DashboardPage() {
               </div>
 
               {/* Gráfico de consultas por sede */}
-              <div className="flex flex-col rounded-xl border border-slate-800 bg-[#0f1115] shadow-sm">
-                <div className="border-b border-slate-800 px-6 py-4">
-                  <h3 className="font-semibold text-white">Consultas por Sede</h3>
-                  <p className="text-xs text-slate-400">Próximas 4 semanas</p>
+              <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm">
+                <div className="border-b border-border px-6 py-4">
+                  <h3 className="font-semibold text-card-foreground">Consultas por Sede</h3>
+                  <p className="text-xs text-muted-foreground">Próximas 4 semanas</p>
                 </div>
                 <div className="flex flex-1 items-center justify-center p-6">
                   {sedesChartData.every((d) => d.value === 0) ? (

@@ -25,7 +25,7 @@ export function AppShell({ children }: PropsWithChildren) {
   }
 
   return (
-    <div className="flex min-h-screen bg-urobot">
+    <div className="flex min-h-screen bg-background transition-colors duration-300">
       <Suspense fallback={null}>
         <MobileSidebar />
       </Suspense>

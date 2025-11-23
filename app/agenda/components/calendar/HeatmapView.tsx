@@ -194,16 +194,16 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
     return Math.max(...Array.from(getDayOccupancyForSede.values()), 0);
   }, [getDayOccupancyForSede]);
 
-  return (
-    <div className="h-full overflow-auto bg-gradient-to-b from-slate-950 to-[#050b18] p-4 md:p-6">
+    return (
+    <div className="h-full overflow-auto bg-background p-4 md:p-6">
       {/* Header con contador estilo GitHub */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-100 mb-1">
+            <h2 className="text-xl font-bold text-foreground mb-1">
               {filteredConsultas.length.toLocaleString()} consultas en el último año
             </h2>
-            <p className="text-slate-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               Análisis de ocupación histórica por consultorio
             </p>
           </div>
@@ -214,8 +214,8 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
               onClick={() => setSedeFilter('ALL')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 sedeFilter === 'ALL'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-800'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
               Ambas Sedes
@@ -224,8 +224,8 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
               onClick={() => setSedeFilter('POLANCO')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 sedeFilter === 'POLANCO'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-800'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
               🏢 Polanco
@@ -234,8 +234,8 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
               onClick={() => setSedeFilter('SATELITE')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 sedeFilter === 'SATELITE'
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
               🏥 Satélite
@@ -244,13 +244,13 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
         </div>
 
         {/* View Mode Tabs */}
-        <div className="flex items-center gap-4 border-b border-slate-800">
+        <div className="flex items-center gap-4 border-b border-border">
           <button
             onClick={() => setViewMode('annual')}
             className={`pb-2 text-sm font-medium transition-colors relative ${
               viewMode === 'annual' 
-                ? 'text-blue-400 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-blue-500' 
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-primary after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Vista Anual (Tendencias)
@@ -259,8 +259,8 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             onClick={() => setViewMode('hourly')}
             className={`pb-2 text-sm font-medium transition-colors relative ${
               viewMode === 'hourly' 
-                ? 'text-blue-400 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-blue-500' 
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-primary after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary' 
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Mapa de Horarios (Patrones)
@@ -273,32 +273,32 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
           {/* Métricas estilo GitHub */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* ... cards existentes ... */}
-            <div className="bg-slate-900/40 border border-slate-700/40 rounded-lg p-5">
-              <div className="text-sm text-slate-400 mb-2">Año de consultas</div>
-              <div className="text-3xl font-bold text-slate-100 mb-1">
-                {filteredConsultas.length.toLocaleString()} <span className="text-lg text-slate-400">total</span>
+            <div className="bg-card border border-border rounded-lg p-5 shadow-sm">
+              <div className="text-sm text-muted-foreground mb-2">Año de consultas</div>
+              <div className="text-3xl font-bold text-foreground mb-1">
+                {filteredConsultas.length.toLocaleString()} <span className="text-lg text-muted-foreground">total</span>
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-muted-foreground">
                 Últimos 12 meses
               </div>
             </div>
 
-            <div className="bg-slate-900/40 border border-slate-700/40 rounded-lg p-5">
-              <div className="text-sm text-slate-400 mb-2">Racha más larga</div>
-              <div className="text-3xl font-bold text-emerald-400 mb-1">
-                {streaks.longest} <span className="text-lg text-slate-400">días</span>
+            <div className="bg-card border border-border rounded-lg p-5 shadow-sm">
+              <div className="text-sm text-muted-foreground mb-2">Racha más larga</div>
+              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
+                {streaks.longest} <span className="text-lg text-muted-foreground">días</span>
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-muted-foreground">
                 Días consecutivos con citas
               </div>
             </div>
 
-            <div className="bg-slate-900/40 border border-slate-700/40 rounded-lg p-5">
-              <div className="text-sm text-slate-400 mb-2">Racha actual</div>
-              <div className="text-3xl font-bold text-blue-400 mb-1">
-                {streaks.current} <span className="text-lg text-slate-400">días</span>
+            <div className="bg-card border border-border rounded-lg p-5 shadow-sm">
+              <div className="text-sm text-muted-foreground mb-2">Racha actual</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                {streaks.current} <span className="text-lg text-muted-foreground">días</span>
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-muted-foreground">
                 Días consecutivos recientes
               </div>
             </div>
@@ -306,11 +306,11 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
           {/* Calendario Heatmap (Estilo GitHub mejorado) */}
           {/* ... código existente del heatmap anual ... */}
-          <div className="bg-slate-900/30 border border-slate-700/30 rounded-xl p-6 mb-6 overflow-hidden">
-            <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/30">
+          <div className="bg-card border border-border rounded-xl p-6 mb-6 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
               <div className="min-w-[800px]">
                 {/* Headers de meses */}
-                <div className="flex mb-2 text-xs text-slate-400 relative h-6">
+                <div className="flex mb-2 text-xs text-muted-foreground relative h-6">
                   {monthHeaders.map((header, idx) => (
                     <div
                       key={idx}
@@ -330,7 +330,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                     {['', 'L', '', 'M', '', 'V', ''].map((day, idx) => (
                       <div
                         key={idx}
-                        className="text-[10px] text-slate-500 h-3 flex items-center justify-end w-4"
+                        className="text-[10px] text-muted-foreground h-3 flex items-center justify-end w-4"
                       >
                         {day}
                       </div>
@@ -356,21 +356,21 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                               key={dayIdx}
                               className={`
                                 w-3 h-3 rounded-sm transition-all cursor-pointer group relative
-                                ${isTodayDate ? 'ring-1 ring-emerald-400 z-10' : ''}
-                                ${dayCount > 0 ? colors.indicator : 'bg-slate-800/40 hover:bg-slate-700/50'}
-                                hover:scale-125 hover:z-20 hover:ring-1 hover:ring-slate-400
+                                ${isTodayDate ? 'ring-1 ring-emerald-500 z-10' : ''}
+                                ${dayCount > 0 ? colors.indicator : 'bg-muted hover:bg-muted/80'}
+                                hover:scale-125 hover:z-20 hover:ring-1 hover:ring-ring
                               `}
                             >
                               {/* Tooltip mejorado */}
-                              <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-max min-w-[120px] p-2 bg-slate-900/95 border border-slate-700 rounded shadow-xl pointer-events-none backdrop-blur-sm">
-                                <div className="text-[10px] text-slate-400 font-medium text-center mb-1 border-b border-slate-800 pb-1">
+                              <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-max min-w-[120px] p-2 bg-popover border border-border rounded shadow-xl pointer-events-none">
+                                <div className="text-[10px] text-muted-foreground font-medium text-center mb-1 border-b border-border pb-1">
                                   {date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
                                 </div>
                                 <div className="text-center">
-                                  <span className={`text-sm font-bold ${dayCount > 0 ? 'text-white' : 'text-slate-500'}`}>
+                                  <span className={`text-sm font-bold ${dayCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
                                     {dayCount}
                                   </span>
-                                  <span className="text-[10px] text-slate-500 ml-1">citas</span>
+                                  <span className="text-[10px] text-muted-foreground ml-1">citas</span>
                                 </div>
                               </div>
                             </div>
@@ -384,7 +384,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             </div>
             
             {/* Leyenda */}
-            <div className="flex items-center justify-end gap-2 mt-4 text-xs text-slate-500">
+            <div className="flex items-center justify-end gap-2 mt-4 text-xs text-muted-foreground">
               <span>Menos</span>
               <div className="flex gap-1">
                 {['empty', 'low', 'medium', 'high', 'very-high'].map((levelStr) => {
@@ -418,14 +418,14 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
           </div>
         </>
       ) : (
-        <div className="bg-slate-900/30 border border-slate-700/30 rounded-xl p-6 mb-6 animate-in fade-in duration-300">
+        <div className="bg-card border border-border rounded-xl p-6 mb-6 animate-in fade-in duration-300 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-slate-100 mb-1 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-400" />
+              <h3 className="text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-blue-500" />
                 Patrones de Horarios
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 Intensidad de citas por día y hora. Identifica tus horas pico recurrentes.
               </p>
             </div>
@@ -435,31 +435,27 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             <div className="min-w-[600px]">
               {/* Headers Días */}
               <div className="grid grid-cols-8 mb-2">
-                <div className="text-xs font-medium text-slate-500 text-right pr-4">Hora</div>
+                <div className="text-xs font-medium text-muted-foreground text-right pr-4">Hora</div>
                 {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-                  <div key={day} className="text-xs font-semibold text-slate-300 text-center">{day}</div>
+                  <div key={day} className="text-xs font-semibold text-foreground text-center">{day}</div>
                 ))}
               </div>
 
               {/* Filas Horas */}
               <div className="space-y-1">
                 {hourlyPatterns.map((pattern) => (
-                  <div key={pattern.hour} className="grid grid-cols-8 items-center group hover:bg-white/5 rounded-md transition-colors">
+                  <div key={pattern.hour} className="grid grid-cols-8 items-center group hover:bg-accent/50 rounded-md transition-colors">
                     {/* Label Hora */}
-                    <div className="text-xs font-medium text-slate-500 text-right pr-4 py-2">
+                    <div className="text-xs font-medium text-muted-foreground text-right pr-4 py-2">
                       {pattern.hour}:00
                     </div>
                     
                     {/* Celdas Días */}
                     {pattern.countsByDay.map((count, dayIndex) => {
-                      // Calcular intensidad relativa para esta hora
-                      // Normalizar vs el max global o max de la fila? Global es mejor para comparar.
-                      // Usaremos un max aproximado para visualización (ej. 10 citas es muy alto para una hora específica)
-                      const intensity = Math.min(count / 5, 1); // Asumiendo 5 como saturación alta por hora
+                      const intensity = Math.min(count / 5, 1); 
                       
-                      // Escala de azules/indigo
                       const bgStyle = count === 0 
-                        ? 'bg-slate-800/30' 
+                        ? 'bg-muted/30' 
                         : `bg-indigo-500`;
                       
                       const opacity = count === 0 ? 1 : 0.2 + (intensity * 0.8);
@@ -479,7 +475,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                             
                             {/* Tooltip */}
                             {count > 0 && (
-                              <div className="hidden group-hover/cell:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 whitespace-nowrap px-2 py-1 bg-slate-900 border border-slate-700 text-white text-xs rounded shadow-lg pointer-events-none">
+                              <div className="hidden group-hover/cell:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 whitespace-nowrap px-2 py-1 bg-popover border border-border text-popover-foreground text-xs rounded shadow-lg pointer-events-none">
                                 {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][dayIndex]} {pattern.hour}:00 - {count} citas históricas
                               </div>
                             )}
@@ -493,7 +489,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             </div>
           </div>
           
-          <div className="mt-6 text-xs text-slate-500 flex justify-end items-center gap-2">
+          <div className="mt-6 text-xs text-muted-foreground flex justify-end items-center gap-2">
             <span>Baja intensidad</span>
             <div className="w-16 h-2 bg-gradient-to-r from-indigo-500/20 to-indigo-500 rounded-full" />
             <span>Alta intensidad</span>
@@ -503,40 +499,40 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
       {/* Análisis Comparativo por Sede */}
       {sedeFilter === 'ALL' && (
-        <div className="bg-slate-900/30 border border-slate-700/30 rounded-xl p-6 mb-6">
-          <h3 className="text-lg font-semibold text-slate-100 mb-6 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-blue-400" />
+        <div className="bg-card border border-border rounded-xl p-6 mb-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-blue-500" />
             Comparativa de Consultorios
           </h3>
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Polanco */}
-            <div className="bg-slate-800/30 border border-blue-500/20 rounded-lg p-5">
+            <div className="bg-muted/30 border border-blue-500/20 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 rounded-full bg-blue-500" />
-                <h4 className="text-sm font-semibold text-blue-400">🏢 Consultorio Polanco</h4>
+                <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400">🏢 Consultorio Polanco</h4>
               </div>
               <div className="space-y-3">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-400">Total de consultas</span>
-                    <span className="text-xl font-bold text-slate-100">
+                    <span className="text-xs text-muted-foreground">Total de consultas</span>
+                    <span className="text-xl font-bold text-foreground">
                       {sedeComparison.polanco.total}
                     </span>
                   </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-400">Duración promedio</span>
-                    <span className="text-lg font-semibold text-blue-400">
+                    <span className="text-xs text-muted-foreground">Duración promedio</span>
+                    <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
                       {Math.round(sedeComparison.polanco.promedio)} min
                     </span>
                   </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-400">% del total</span>
-                    <span className="text-lg font-semibold text-slate-300">
+                    <span className="text-xs text-muted-foreground">% del total</span>
+                    <span className="text-lg font-semibold text-foreground">
                       {((sedeComparison.polanco.total / consultas.filter(c => c.estado !== 'Cancelada').length) * 100).toFixed(1)}%
                     </span>
                   </div>
@@ -545,32 +541,32 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             </div>
 
             {/* Satélite */}
-            <div className="bg-slate-800/30 border border-emerald-500/20 rounded-lg p-5">
+            <div className="bg-muted/30 border border-emerald-500/20 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <h4 className="text-sm font-semibold text-emerald-400">🏥 Consultorio Satélite</h4>
+                <h4 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">🏥 Consultorio Satélite</h4>
               </div>
               <div className="space-y-3">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-400">Total de consultas</span>
-                    <span className="text-xl font-bold text-slate-100">
+                    <span className="text-xs text-muted-foreground">Total de consultas</span>
+                    <span className="text-xl font-bold text-foreground">
                       {sedeComparison.satelite.total}
                     </span>
                   </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-400">Duración promedio</span>
-                    <span className="text-lg font-semibold text-emerald-400">
+                    <span className="text-xs text-muted-foreground">Duración promedio</span>
+                    <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
                       {Math.round(sedeComparison.satelite.promedio)} min
                     </span>
                   </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-400">% del total</span>
-                    <span className="text-lg font-semibold text-slate-300">
+                    <span className="text-xs text-muted-foreground">% del total</span>
+                    <span className="text-lg font-semibold text-foreground">
                       {((sedeComparison.satelite.total / consultas.filter(c => c.estado !== 'Cancelada').length) * 100).toFixed(1)}%
                     </span>
                   </div>
@@ -581,7 +577,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
           {/* Gráfico de barras comparativo */}
           <div className="mt-6">
-            <div className="text-xs text-slate-400 mb-2">Distribución de consultas por sede</div>
+            <div className="text-xs text-muted-foreground mb-2">Distribución de consultas por sede</div>
             <div className="flex gap-1 h-8">
               <div 
                 className="bg-blue-500 rounded-l flex items-center justify-center text-xs font-semibold text-white"
@@ -596,7 +592,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                 {sedeComparison.satelite.total > 0 && `${Math.round((sedeComparison.satelite.total / (sedeComparison.polanco.total + sedeComparison.satelite.total)) * 100)}%`}
               </div>
             </div>
-            <div className="flex justify-between text-xs text-slate-500 mt-1">
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
               <span>Polanco</span>
               <span>Satélite</span>
             </div>
@@ -606,52 +602,52 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
       {/* Sección de Análisis Predictivo (IA) */}
       {sedeFilter === 'ALL' && predictions && (
-        <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border border-indigo-500/20 rounded-xl p-6 mb-6">
-          <h3 className="text-lg font-semibold text-slate-100 mb-6 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-indigo-400" />
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-500/20 rounded-xl p-6 mb-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-indigo-500" />
             Análisis Predictivo de Demanda (IA)
           </h3>
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Día Pico */}
-            <div className="bg-slate-900/40 border border-indigo-500/30 rounded-lg p-5 relative overflow-hidden group">
+            <div className="bg-background/60 border border-indigo-500/30 rounded-lg p-5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Calendar className="w-12 h-12 text-indigo-400" />
+                <Calendar className="w-12 h-12 text-indigo-500" />
               </div>
-              <div className="text-sm text-indigo-300 mb-2 font-medium">Día Pico Histórico</div>
-              <div className="text-3xl font-bold text-slate-100 mb-1 capitalize">
+              <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-2 font-medium">Día Pico Histórico</div>
+              <div className="text-3xl font-bold text-foreground mb-1 capitalize">
                 {predictions.busiestDay.label}
               </div>
-              <div className="text-xs text-slate-400">
-                Promedio de <span className="text-indigo-300 font-semibold">{predictions.busiestDay.avgCount.toFixed(1)}</span> citas
+              <div className="text-xs text-muted-foreground">
+                Promedio de <span className="text-indigo-600 dark:text-indigo-300 font-semibold">{predictions.busiestDay.avgCount.toFixed(1)}</span> citas
               </div>
             </div>
 
             {/* Tendencia Mensual */}
-            <div className="bg-slate-900/40 border border-indigo-500/30 rounded-lg p-5 relative overflow-hidden group">
+            <div className="bg-background/60 border border-indigo-500/30 rounded-lg p-5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <BarChart3 className="w-12 h-12 text-indigo-400" />
+                <BarChart3 className="w-12 h-12 text-indigo-500" />
               </div>
-              <div className="text-sm text-indigo-300 mb-2 font-medium">Tendencia Mensual</div>
-              <div className={`text-3xl font-bold mb-1 flex items-center gap-2 ${predictions.monthlyGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-2 font-medium">Tendencia Mensual</div>
+              <div className={`text-3xl font-bold mb-1 flex items-center gap-2 ${predictions.monthlyGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                 {predictions.monthlyGrowth > 0 ? '+' : ''}{predictions.monthlyGrowth.toFixed(1)}%
-                <span className="text-lg text-slate-500">vs mes anterior</span>
+                <span className="text-lg text-muted-foreground">vs mes anterior</span>
               </div>
-              <div className="text-xs text-slate-400">
+              <div className="text-xs text-muted-foreground">
                 Crecimiento de demanda últimos 30 días
               </div>
             </div>
 
             {/* Proyección Semanal */}
-            <div className="bg-slate-900/40 border border-indigo-500/30 rounded-lg p-5 relative overflow-hidden group">
+            <div className="bg-background/60 border border-indigo-500/30 rounded-lg p-5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Clock className="w-12 h-12 text-indigo-400" />
+                <Clock className="w-12 h-12 text-indigo-500" />
               </div>
-              <div className="text-sm text-indigo-300 mb-2 font-medium">Proyección Semanal</div>
-              <div className="text-3xl font-bold text-slate-100 mb-1">
-                ~{predictions.predictedNextWeekCount} <span className="text-lg text-slate-500">citas</span>
+              <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-2 font-medium">Proyección Semanal</div>
+              <div className="text-3xl font-bold text-foreground mb-1">
+                ~{predictions.predictedNextWeekCount} <span className="text-lg text-muted-foreground">citas</span>
               </div>
-              <div className="text-xs text-slate-400">
+              <div className="text-xs text-muted-foreground">
                 Estimación para la próxima semana
               </div>
             </div>
@@ -690,17 +686,17 @@ const MonthlyHeatmap = ({
   const blanks = Array.from({ length: startOffset }, (_, i) => i);
 
   return (
-    <div className="bg-slate-900/30 border border-slate-700/30 rounded-xl p-5">
+    <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h4 className="font-semibold text-slate-200">{title}</h4>
-        <span className="text-xs font-medium text-slate-400 uppercase">
+        <h4 className="font-semibold text-foreground">{title}</h4>
+        <span className="text-xs font-medium text-muted-foreground uppercase">
           {getMonthName(currentMonth)} {currentYear}
         </span>
       </div>
       
       <div className="grid grid-cols-7 gap-1 text-center mb-2">
         {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, idx) => (
-          <div key={`${d}-${idx}`} className="text-[10px] text-slate-500 font-medium">{d}</div>
+          <div key={`${d}-${idx}`} className="text-[10px] text-muted-foreground font-medium">{d}</div>
         ))}
       </div>
       
@@ -718,8 +714,8 @@ const MonthlyHeatmap = ({
               key={day}
               className={`
                 aspect-square rounded-md flex items-center justify-center text-xs font-medium relative group cursor-default
-                ${colors.indicator} ${occupancy.count > 0 ? colors.text : 'text-slate-600'}
-                ${isTodayDate ? 'ring-1 ring-emerald-400 ring-offset-1 ring-offset-slate-900' : ''}
+                ${colors.indicator} ${occupancy.count > 0 ? colors.text : 'text-muted-foreground/50'}
+                ${isTodayDate ? 'ring-1 ring-emerald-500 ring-offset-1 ring-offset-background' : ''}
               `}
             >
               {day}
@@ -728,7 +724,7 @@ const MonthlyHeatmap = ({
               )}
               
               {/* Tooltip simple */}
-              <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 whitespace-nowrap px-2 py-1 bg-slate-800 text-white text-[10px] rounded shadow-lg pointer-events-none">
+              <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 whitespace-nowrap px-2 py-1 bg-popover text-popover-foreground border border-border text-[10px] rounded shadow-lg pointer-events-none">
                 {occupancy.count} citas
               </div>
             </div>
