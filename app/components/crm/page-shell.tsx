@@ -34,9 +34,9 @@ export function PageShell({
   className,
 }: PageShellProps) {
   const layoutClasses = compact
-    ? "relative flex w-full flex-col gap-3 px-6 py-3 sm:gap-3 sm:px-8 sm:py-4 md:gap-3 lg:px-12 lg:py-4 xl:px-16"
+    ? "relative flex w-full flex-col gap-3 px-6 py-3 pt-16 sm:gap-3 sm:px-8 sm:py-4 md:gap-3 lg:px-12 lg:py-4 xl:px-16"
     : cn(
-        "relative mx-auto flex w-full flex-col gap-6 px-6 pb-20 pt-8 sm:gap-8 sm:px-8 sm:pb-24 sm:pt-10 md:gap-10 lg:px-12 lg:pt-12 lg:pb-20 xl:px-16",
+        "relative mx-auto flex w-full flex-col gap-6 px-6 pb-20 pt-16 sm:gap-8 sm:px-8 sm:pb-24 sm:pt-10 md:gap-10 lg:px-12 lg:pt-12 lg:pb-20 xl:px-16",
         fullWidth ? "max-w-[1600px]" : "max-w-6xl"
       );
 

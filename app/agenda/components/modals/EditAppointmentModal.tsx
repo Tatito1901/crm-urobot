@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal } from '../shared/Modal';
 import { formatShortTime } from '../../lib/agenda-utils';
 import type { Appointment } from '@/types/agenda';
+import type { ConsultaTipo } from '@/types/consultas';
 
 interface EditAppointmentModalProps {
   appointment: Appointment | null;
@@ -36,7 +37,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   onUpdate,
 }) => {
   const [formData, setFormData] = useState({
-    tipo: 'primera_vez',
+    tipo: 'primera_vez' as ConsultaTipo,
     motivoConsulta: '',
     prioridad: 'normal' as 'normal' | 'alta' | 'urgente',
     notasInternas: '',
@@ -49,7 +50,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   useEffect(() => {
     if (appointment && isOpen) {
       setFormData({
-        tipo: appointment.tipo,
+        tipo: appointment.tipo || 'primera_vez',
         motivoConsulta: appointment.motivoConsulta || '',
         prioridad: appointment.prioridad,
         notasInternas: appointment.notasInternas || '',
@@ -161,7 +162,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
           </label>
           <select
             value={formData.tipo}
-            onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, tipo: e.target.value as ConsultaTipo })}
             className="w-full px-3.5 py-2.5 rounded-md bg-[#0f1115] border border-slate-700 text-slate-200 text-sm focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-500/20 transition-colors"
           >
             {TIPOS_CONSULTA.map((tipo) => (

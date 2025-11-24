@@ -16,7 +16,7 @@ interface LeadsTableProps {
   loading?: boolean;
 }
 
-export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, loading }: LeadsTableProps) {
+export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }: LeadsTableProps) {
   // Configuración de columnas
   const headers = [
     { key: 'nombre', label: <TableHeaders.Persona /> },

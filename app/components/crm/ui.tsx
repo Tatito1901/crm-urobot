@@ -157,13 +157,19 @@ export function DataTable({
                 {secondary && <div className="mt-1.5 text-sm text-muted-foreground">{secondary}</div>}
               </div>
               {metadata.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  {metadata.map((key) => (
-                    <div key={key} className="flex flex-col gap-0.5">
-                      <span className="text-muted-foreground text-[10px] uppercase tracking-wide">{headers.find((h) => h.key === key)?.label}</span>
-                      <span className="text-foreground font-medium">{row[key]}</span>
-                    </div>
-                  ))}
+                <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+                  {metadata.map((key) => {
+                    // Encontrar header correspondiente para label si es necesario, 
+                    // pero en mobile a veces es mejor inferir o mostrar directo el valor si es un componente rico (Badge)
+                    // Si row[key] es un componente complejo (Badge), el label "Estado" sobra visualmente.
+                    
+                    return (
+                      <div key={key} className="flex flex-col justify-center">
+                         {/* Renderizamos el contenido directamente. Si es Badge, se encarga de su estilo. */}
+                         <div className="text-foreground font-medium flex items-center">{row[key]}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

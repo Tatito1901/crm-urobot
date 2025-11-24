@@ -8,10 +8,9 @@
 'use client';
 
 import React, { useMemo, useEffect, useRef } from 'react';
-import { addDays, generateTimeSlotsDetailed, formatHour12, isToday } from '@/lib/date-utils';
+import { addDays, generateTimeSlotsDetailed, isToday } from '@/lib/date-utils';
 import { AppointmentCard } from '../shared/AppointmentCard';
 import { positionAppointmentsForDay, getDayOfWeek } from '../../lib/appointment-positioning';
-import { useAgendaState } from '../../hooks/useAgendaState';
 import type { Appointment } from '@/types/agenda';
 
 interface TimeGridProps {
@@ -51,7 +50,7 @@ export const TimeGrid = React.memo(function TimeGrid({
   const now = new Date();
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
-  const currentTimePosition = (currentHour - startHour) * 60 + currentMinute;
+  // const currentTimePosition = (currentHour - startHour) * 60 + currentMinute;
   const showCurrentTimeLine = days.some(day => isToday(day));
   
   // Auto-scroll a la hora actual al cargar
@@ -145,7 +144,7 @@ export const TimeGrid = React.memo(function TimeGrid({
             slotHeightPerHour // Pasar altura por hora completa
           );
 
-          const isTodayDate = isToday(date);
+          // const isTodayDate = isToday(date);
           
           return (
             <div
@@ -157,7 +156,7 @@ export const TimeGrid = React.memo(function TimeGrid({
               aria-label={`${date.toLocaleDateString('es-MX')}`}
             >
               {/* Grid de líneas de tiempo - Solo líneas visibles en horas completas */}
-              {timeSlots.map((slot, slotIndex) => {
+              {timeSlots.map((slot) => {
                 // Solo renderizar borde en horas completas
                 if (!slot.isHourStart) {
                    return (

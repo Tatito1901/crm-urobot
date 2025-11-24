@@ -9,7 +9,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
 import { ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Search, Filter, Calendar, List, Grid, Activity, Clock, Menu, Settings } from 'lucide-react';
 import { formatWeekRangeMX, startOfWeek, addWeeks } from '@/lib/date-utils';
 import { useAgendaState, type ViewMode } from '../../hooks/useAgendaState';
@@ -34,8 +33,6 @@ export const HeaderBar = React.memo(function HeaderBar({
   pendingConfirmation = 0,
   todayAppointments = 0,
 }: HeaderBarProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const weekRange = formatWeekRangeMX(currentWeekStart);
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showHourMenu, setShowHourMenu] = useState(false);

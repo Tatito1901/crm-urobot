@@ -9,7 +9,7 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import { type Consulta, isConsultaEstado, isConsultaSede, DEFAULT_CONSULTA_SEDE, DEFAULT_CONSULTA_ESTADO } from '@/types/consultas'
+import { type Consulta, isConsultaEstado, isConsultaSede, isConsultaTipo, DEFAULT_CONSULTA_SEDE, DEFAULT_CONSULTA_ESTADO, DEFAULT_CONSULTA_TIPO } from '@/types/consultas'
 import type { Tables } from '@/types/database'
 
 const supabase = createClient()
@@ -133,7 +133,7 @@ const mapConsulta = (row: ConsultaRow): Consulta => {
     paciente: row.paciente?.nombre_completo ?? 'Paciente sin nombre',
     pacienteId: row.paciente_id,
     sede,
-    tipo: row.tipo_cita ?? 'primera_vez',
+    tipo: isConsultaTipo(row.tipo_cita) ? row.tipo_cita : DEFAULT_CONSULTA_TIPO,
     estado,
     
     // Sistema de confirmación completo
@@ -314,7 +314,7 @@ export function useConsultas(): UseConsultasReturn {
   
   // Tipo de consulta
   const primeraVez = consultas.filter(c => c.tipo === 'primera_vez').length
-  const seguimiento = consultas.filter(c => c.tipo === 'seguimiento').length
+  const seguimiento = consultas.filter(c => c.tipo === 'subsecuente').length
   
   // Métricas de confirmación
   const consultasFuturas = consultas.filter(c => 

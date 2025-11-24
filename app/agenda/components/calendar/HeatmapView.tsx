@@ -10,10 +10,9 @@
 
 import React, { useMemo, useState } from 'react';
 import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel, type OccupancyLevel, type DayOccupancy } from '../../hooks/useOccupancyHeatmap';
-import { addDays, getMonthName, isSameDay, isToday } from '@/lib/date-utils';
-import { TrendingUp, Calendar, BarChart3, MapPin, Clock, Award } from 'lucide-react';
+import { addDays, getMonthName, isToday } from '@/lib/date-utils';
+import { TrendingUp, Calendar, BarChart3, MapPin, Clock } from 'lucide-react';
 import { useConsultas } from '@/hooks/useConsultas';
-import type { Consulta } from '@/types/consultas';
 
 interface HeatmapViewProps {
   monthsToShow?: number;
@@ -23,9 +22,9 @@ type SedeFilter = 'ALL' | 'POLANCO' | 'SATELITE';
 
 export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) => {
   const [sedeFilter, setSedeFilter] = useState<SedeFilter>('ALL');
-  const { getOccupancyForDate, stats, predictions, hourlyPatterns } = useOccupancyHeatmap();
+  const { getOccupancyForDate, predictions, hourlyPatterns } = useOccupancyHeatmap();
   const { consultas } = useConsultas();
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const [viewMode, setViewMode] = useState<'annual' | 'hourly'>('annual');
 
   // Filtrar consultas por sede
@@ -113,20 +112,9 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
   }, [weeks]);
 
   // Calcular distribución de niveles
-  const distribution = useMemo(() => {
-    const dist = { empty: 0, low: 0, medium: 0, high: 0, 'very-high': 0 };
-    
-    weeks.forEach(week => {
-      week.forEach(date => {
-        const occupancy = getOccupancyForDate(date);
-        dist[occupancy.level]++;
-      });
-    });
+  // const distribution = useMemo(() => { ... }, [weeks, getOccupancyForDate]);
 
-    return dist;
-  }, [weeks, getOccupancyForDate]);
-
-  const totalDays = weeks.length * 7;
+  // const totalDays = weeks.length * 7;
 
   // Calcular rachas (streaks) de días consecutivos con citas
   const streaks = useMemo(() => {
@@ -443,7 +431,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
               {/* Filas Horas */}
               <div className="space-y-1">
-                {hourlyPatterns.map((pattern) => (
+                {hourlyPatterns.map((pattern: { hour: number; countsByDay: number[] }) => (
                   <div key={pattern.hour} className="grid grid-cols-8 items-center group hover:bg-accent/50 rounded-md transition-colors">
                     {/* Label Hora */}
                     <div className="text-xs font-medium text-muted-foreground text-right pr-4 py-2">
@@ -451,7 +439,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                     </div>
                     
                     {/* Celdas Días */}
-                    {pattern.countsByDay.map((count, dayIndex) => {
+                    {pattern.countsByDay.map((count: number, dayIndex: number) => {
                       const intensity = Math.min(count / 5, 1); 
                       
                       const bgStyle = count === 0 

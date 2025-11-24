@@ -68,7 +68,7 @@ export const MonthGrid = React.memo(function MonthGrid({
       <div className="flex-1 grid grid-cols-7 grid-rows-6 auto-rows-fr min-h-0">
         {matrix.map((week, weekIndex) => (
           <React.Fragment key={weekIndex}>
-            {week.map((date, dayIndex) => {
+            {week.map((date) => {
               const dateKey = date.toISOString().split('T')[0];
               const dayAppointments = appointmentsByDate.get(dateKey) || [];
               

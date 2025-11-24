@@ -10,7 +10,6 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import { Temporal } from '@js-temporal/polyfill';
 import { formatTimeRange, getStatusConfig } from '../../lib/agenda-utils';
-import { useAgendaState } from '../../hooks/useAgendaState';
 import { useColorPreferences } from '../../hooks/useColorPreferences';
 import type { Appointment } from '@/types/agenda';
 
@@ -56,6 +55,7 @@ export const ListView: React.FC<ListViewProps> = ({
   // Obtener fecha de hoy en formato string
   const todayStr = Temporal.Now.plainDateISO('America/Mexico_City').toString();
   const hasTodayAppointments = sortedDates.includes(todayStr);
+  const sortedDatesKey = sortedDates.join(',');
   
   // Auto-scroll al día de hoy
   useEffect(() => {
@@ -66,7 +66,7 @@ export const ListView: React.FC<ListViewProps> = ({
       
       return () => clearTimeout(timer);
     }
-  }, [hasTodayAppointments, sortedDates.join(',')]);
+  }, [hasTodayAppointments, sortedDatesKey]);
 
   if (appointments.length === 0) {
     return (

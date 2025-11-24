@@ -10,7 +10,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { PacienteDetallado } from '@/types/pacientes';
 import type { Consulta, ConsultaEstado, ConsultaSede } from '@/types/consultas';
-import { DEFAULT_CONSULTA_ESTADO, DEFAULT_CONSULTA_SEDE, isConsultaEstado, isConsultaSede } from '@/types/consultas';
+import { DEFAULT_CONSULTA_ESTADO, DEFAULT_CONSULTA_SEDE, DEFAULT_CONSULTA_TIPO, isConsultaEstado, isConsultaSede, isConsultaTipo } from '@/types/consultas';
 
 const supabase = createClient();
 
@@ -149,7 +149,7 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
           paciente: pacienteDetallado.nombre,
           pacienteId: row.paciente_id ?? pacienteDetallado.pacienteId,
           sede,
-          tipo: row.tipo_cita ?? 'Consulta',
+          tipo: isConsultaTipo(row.tipo_cita) ? row.tipo_cita : DEFAULT_CONSULTA_TIPO,
           estado,
           estadoConfirmacion: (row.estado_confirmacion as 'Pendiente' | 'Confirmada' | 'No Confirmada') ?? 'Pendiente',
           confirmadoPaciente: Boolean(row.confirmado_paciente),

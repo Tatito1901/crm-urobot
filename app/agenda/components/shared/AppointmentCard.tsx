@@ -10,7 +10,6 @@
 import React, { useState } from 'react';
 import type { Appointment } from '@/types/agenda';
 import { AppointmentTooltip } from './AppointmentTooltip';
-import { useAgendaState } from '../../hooks/useAgendaState';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -23,7 +22,7 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
-  const { sedeColors } = useAgendaState();
+  // const { sedeColors } = useAgendaState();
 
   // Obtener color dinámico de la sede o usar fallback
   const customColor = appointment.sede === 'POLANCO' ? '#3b82f6' : '#10b981'; // blue-500 : emerald-500

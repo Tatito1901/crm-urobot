@@ -7,14 +7,11 @@
 
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Plus, Check, MoreVertical, Building2, MapPin } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Check, MoreVertical } from 'lucide-react';
 import { MiniMonth } from './MiniMonth';
-import { useConsultas } from '@/hooks/useConsultas';
-import { isSameDay } from '@/lib/date-utils';
 import type { Consulta } from '@/types/consultas';
 import { useAgendaState } from '../../hooks/useAgendaState';
-import { typography } from '@/app/lib/design-system';
 import { SEDES } from '../../lib/constants';
 
 // Paleta de colores estilo Google Calendar
@@ -42,13 +39,10 @@ interface SidebarProps {
 export const Sidebar = React.memo(function Sidebar({ 
   selectedDate, 
   onDateSelect,
-  onCreateAppointment,
-  onAppointmentClick 
 }: SidebarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   // const { consultas } = useConsultas(); // ❌ Eliminado fetch innecesario
   const { 
-    searchQuery,
     visibleSedes,
     toggleSedeVisibility,
     sedeColors,
