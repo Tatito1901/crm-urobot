@@ -8,35 +8,16 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { PacienteDetallado } from '@/types/pacientes';
-import type { Consulta, ConsultaEstado, ConsultaSede } from '@/types/consultas';
-import { DEFAULT_CONSULTA_ESTADO, DEFAULT_CONSULTA_SEDE, DEFAULT_CONSULTA_TIPO, isConsultaEstado, isConsultaSede, isConsultaTipo } from '@/types/consultas';
+import type { PacienteDetallado, DestinoPaciente } from '@/types/pacientes';
+import type { Consulta } from '@/types/consultas';
+import type { Tables } from '@/types/database';
+import { 
+  mapPacienteFromDB, 
+  enrichPaciente, 
+  mapConsultasFromDB 
+} from '@/lib/mappers';
 
 const supabase = createClient();
-
-type ConsultaRow = {
-  id: string;
-  consulta_id: string;
-  paciente_id: string | null;
-  sede: string | null;
-  tipo_cita: string | null;
-  estado_cita: string | null;
-  estado_confirmacion: string | null;
-  confirmado_paciente: boolean | null;
-  fecha_hora_utc: string;
-  fecha_consulta: string;
-  hora_consulta: string;
-  timezone: string | null;
-  motivo_consulta: string | null;
-  duracion_minutos: number | null;
-  calendar_event_id: string | null;
-  calendar_link: string | null;
-  canal_origen: string | null;
-  cancelado_por: string | null;
-  motivo_cancelacion: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-};
 
 interface UsePacienteDetalladoResult {
   paciente: PacienteDetallado | null;
@@ -70,42 +51,79 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
         throw new Error('Paciente no encontrado');
       }
 
-      // Mapear datos del paciente
-      const now = new Date();
-      const ultimaConsulta = pacienteData.ultima_consulta ? new Date(pacienteData.ultima_consulta) : null;
-      const diasDesdeUltimaConsulta = ultimaConsulta
-        ? Math.floor((now.getTime() - ultimaConsulta.getTime()) / (1000 * 60 * 60 * 24))
-        : null;
-      
-      const fechaRegistro = pacienteData.fecha_registro ? new Date(pacienteData.fecha_registro) : null;
-      const diasDesdeRegistro = fechaRegistro
-        ? Math.floor((now.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24))
-        : null;
-      
-      const esReciente = diasDesdeRegistro !== null && diasDesdeRegistro <= 30;
-      const requiereAtencion = pacienteData.estado === 'Activo' && diasDesdeUltimaConsulta !== null && diasDesdeUltimaConsulta >= 90;
-      
+      // Mapear datos del paciente usando mappers centralizados
+      const pacienteBase = mapPacienteFromDB(pacienteData);
+      const pacienteEnriquecido = enrichPaciente(pacienteBase);
+
+      // Obtener el destino desde la tabla destinos_pacientes
+      // Tabla destinos_pacientes no está en tipos generados aún
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const { data: destinoData } = await supabase
+        // @ts-ignore
+        .from('destinos_pacientes')
+        .select('*')
+        .eq('paciente_id', pacienteId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Mapear el destino de la BD al tipo frontend
+      let destino: DestinoPaciente | undefined;
+      if (destinoData) {
+        const data = destinoData as any;
+        destino = {
+          tipo: data.tipo_destino,
+          fechaRegistro: data.fecha_registro,
+          observaciones: data.observaciones || undefined,
+        };
+
+        if (data.tipo_destino === 'alta_definitiva' && data.motivo_alta) {
+          destino.motivoAlta = data.motivo_alta;
+        }
+
+        if (data.tipo_destino === 'presupuesto_enviado' && data.tipo_cirugia) {
+          destino.presupuesto = {
+            tipoCirugia: data.tipo_cirugia,
+            monto: data.monto,
+            moneda: data.moneda,
+            fechaEnvio: data.fecha_evento,
+            notas: data.notas || undefined,
+          };
+        }
+
+        if (data.tipo_destino === 'cirugia_realizada' && data.tipo_cirugia) {
+          destino.cirugia = {
+            tipoCirugia: data.tipo_cirugia,
+            costo: data.monto,
+            moneda: data.moneda,
+            fechaCirugia: data.fecha_evento,
+            sedeOperacion: data.sede_operacion || undefined,
+            notas: data.notas || undefined,
+          };
+        }
+      }
+
       const pacienteDetallado: PacienteDetallado = {
-        id: pacienteData.id,
-        pacienteId: pacienteData.paciente_id,
-        nombre: pacienteData.nombre_completo,
-        telefono: pacienteData.telefono,
-        telefonoMx10: null,
-        email: pacienteData.email || '',
-        fechaRegistro: pacienteData.fecha_registro || new Date().toISOString(),
-        fuenteOriginal: pacienteData.fuente_original || 'WhatsApp',
-        ultimaConsulta: pacienteData.ultima_consulta,
-        diasDesdeUltimaConsulta,
-        totalConsultas: pacienteData.total_consultas || 0,
-        estado: (pacienteData.estado as 'Activo' | 'Inactivo') || 'Activo',
-        esReciente,
-        requiereAtencion,
-        notas: pacienteData.notas,
-        createdAt: pacienteData.created_at || new Date().toISOString(),
-        updatedAt: pacienteData.updated_at || new Date().toISOString(),
-        // TODO: Agregar campo informacionMedica a la base de datos
-        // Por ahora usar un campo JSON en notas o crear nueva tabla
+        ...pacienteEnriquecido,
+        // Asegurar campos obligatorios de PacienteDetallado que vienen de enriquecimiento o defaults
+        id: pacienteEnriquecido.id!,
+        pacienteId: pacienteEnriquecido.pacienteId!,
+        nombre: pacienteEnriquecido.nombre!,
+        telefono: pacienteEnriquecido.telefono!,
+        email: pacienteEnriquecido.email ?? null,
+        fechaRegistro: pacienteEnriquecido.fechaRegistro ?? new Date().toISOString(),
+        fuenteOriginal: pacienteEnriquecido.fuenteOriginal ?? 'WhatsApp',
+        ultimaConsulta: pacienteEnriquecido.ultimaConsulta ?? null,
+        totalConsultas: pacienteEnriquecido.totalConsultas ?? 0,
+        estado: pacienteEnriquecido.estado || 'Activo',
+        notas: pacienteEnriquecido.notas ?? null,
+        
+        // Campos específicos de PacienteDetallado no cubiertos por el mapper base
+        telefonoMx10: pacienteData.telefono_mx10,
+        createdAt: pacienteData.created_at,
+        updatedAt: pacienteData.updated_at,
         informacionMedica: undefined,
+        destino: destino, // Destino desde tabla destinos_pacientes
       };
 
       setPaciente(pacienteDetallado);
@@ -119,65 +137,14 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
 
       if (consultasError) throw consultasError;
 
-      // Mapear consultas
-      const consultasMapeadas: Consulta[] = ((consultasData as ConsultaRow[] | null) ?? []).map((row) => {
-        let sede: ConsultaSede = DEFAULT_CONSULTA_SEDE;
-        if (row.sede && isConsultaSede(row.sede)) {
-          sede = row.sede;
-        }
-
-        let estado: ConsultaEstado = DEFAULT_CONSULTA_ESTADO;
-        if (row.estado_cita && isConsultaEstado(row.estado_cita)) {
-          estado = row.estado_cita;
-        }
-
-        // Calcular métricas temporales
-        const now = new Date();
-        const fechaConsulta = new Date(row.fecha_hora_utc);
-        const horasHastaConsulta = Math.floor((fechaConsulta.getTime() - now.getTime()) / (1000 * 60 * 60));
-        const diasHastaConsulta = Math.floor(horasHastaConsulta / 24);
-        
-        // Determinar si requiere confirmación (consultas futuras)
-        const requiereConfirmacion = horasHastaConsulta > 0 && horasHastaConsulta <= 48;
-        
-        // Determinar si la confirmación está vencida (menos de 24h y no confirmada)
-        const confirmacionVencida = horasHastaConsulta > 0 && horasHastaConsulta < 24 && row.estado_confirmacion !== 'Confirmada';
-
-        return {
-          id: row.id,
-          uuid: row.consulta_id,
+      // Mapear consultas usando mapper centralizado
+      // Inyectamos el nombre del paciente ya que lo tenemos en memoria
+      const consultasMapeadas = mapConsultasFromDB((consultasData as Tables<'consultas'>[]))
+        .map(c => ({
+          ...c,
           paciente: pacienteDetallado.nombre,
-          pacienteId: row.paciente_id ?? pacienteDetallado.pacienteId,
-          sede,
-          tipo: isConsultaTipo(row.tipo_cita) ? row.tipo_cita : DEFAULT_CONSULTA_TIPO,
-          estado,
-          estadoConfirmacion: (row.estado_confirmacion as 'Pendiente' | 'Confirmada' | 'No Confirmada') ?? 'Pendiente',
-          confirmadoPaciente: Boolean(row.confirmado_paciente),
-          fechaConfirmacion: null,
-          fechaLimiteConfirmacion: null,
-          remConfirmacionInicialEnviado: false,
-          rem48hEnviado: false,
-          rem24hEnviado: false,
-          rem3hEnviado: false,
-          horasHastaConsulta: horasHastaConsulta > 0 ? horasHastaConsulta : null,
-          diasHastaConsulta: horasHastaConsulta > 0 ? diasHastaConsulta : null,
-          requiereConfirmacion,
-          confirmacionVencida,
-          fecha: row.fecha_hora_utc,
-          fechaConsulta: row.fecha_consulta,
-          horaConsulta: row.hora_consulta,
-          timezone: row.timezone ?? 'America/Mexico_City',
-          motivoConsulta: row.motivo_consulta,
-          duracionMinutos: row.duracion_minutos ?? 30,
-          calendarEventId: row.calendar_event_id,
-          calendarLink: row.calendar_link,
-          canalOrigen: row.canal_origen,
-          canceladoPor: row.cancelado_por ?? undefined,
-          motivoCancelacion: row.motivo_cancelacion ?? undefined,
-          createdAt: row.created_at ?? new Date().toISOString(),
-          updatedAt: row.updated_at ?? new Date().toISOString(),
-        };
-      });
+          pacienteId: pacienteDetallado.id // Asegurar consistencia de IDs
+        }));
 
       setConsultas(consultasMapeadas);
     } catch (err) {

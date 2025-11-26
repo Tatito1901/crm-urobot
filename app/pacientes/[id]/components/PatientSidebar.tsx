@@ -9,22 +9,41 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Phone, Mail, Calendar, AlertCircle, Pill, FileText, ChevronDown, ChevronUp } from 'lucide-react';
-import type { PacienteDetallado, InformacionMedica } from '@/types/pacientes';
+import { Phone, Mail, Calendar, AlertCircle, Pill, FileText, ChevronDown, ChevronUp, Target, CheckCircle, Scissors, DollarSign, Plus } from 'lucide-react';
+import type { PacienteDetallado, InformacionMedica, DestinoPaciente } from '@/types/pacientes';
+import { DESTINO_LABELS, DESTINO_COLORS } from '@/types/pacientes';
+import { DestinoPacienteModal } from './DestinoPacienteModal';
 
 interface PatientSidebarProps {
   paciente: PacienteDetallado;
   onUpdateNotas?: (notas: string) => void;
   onUpdateInfoMedica?: (info: InformacionMedica) => void;
+  onUpdateDestino?: (destino: DestinoPaciente) => void;
 }
 
 export const PatientSidebar: React.FC<PatientSidebarProps> = ({ 
   paciente, 
   onUpdateNotas,
+  onUpdateDestino,
 }) => {
   const [showMedicalInfo, setShowMedicalInfo] = useState(true);
+  const [showDestino, setShowDestino] = useState(true);
   const [isEditingNotas, setIsEditingNotas] = useState(false);
   const [notas, setNotas] = useState(paciente.notas || '');
+  const [isDestinoModalOpen, setIsDestinoModalOpen] = useState(false);
+  const [destinoActual, setDestinoActual] = useState<DestinoPaciente | undefined>(paciente.destino);
+
+  const handleSaveDestino = (destino: DestinoPaciente) => {
+    setDestinoActual(destino);
+    onUpdateDestino?.(destino);
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+    }).format(value);
+  };
 
   const handleSaveNotas = () => {
     onUpdateNotas?.(notas);
@@ -107,6 +126,120 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Destino del Paciente */}
+      <div className="border-b border-slate-200 dark:border-blue-900/20">
+        <button
+          onClick={() => setShowDestino(!showDestino)}
+          className="w-full px-4 py-3 flex items-center justify-between bg-white dark:bg-[#0f1623] hover:bg-slate-50 dark:hover:bg-[#131b2b] transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-indigo-500" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-300/70">Destino del Paciente</h3>
+          </div>
+          {showDestino ? (
+            <ChevronUp className="h-4 w-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          )}
+        </button>
+
+        {showDestino && (
+          <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-2.5 sm:space-y-3">
+            {destinoActual ? (
+              <>
+                {/* Badge del tipo de destino */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${DESTINO_COLORS[destinoActual.tipo]} truncate max-w-[60%]`}>
+                    {destinoActual.tipo === 'alta_definitiva' && <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />}
+                    {destinoActual.tipo === 'presupuesto_enviado' && <FileText className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />}
+                    {destinoActual.tipo === 'cirugia_realizada' && <Scissors className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />}
+                    <span className="truncate">{DESTINO_LABELS[destinoActual.tipo]}</span>
+                  </span>
+                  <button
+                    onClick={() => setIsDestinoModalOpen(true)}
+                    className="text-[9px] sm:text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-950/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0"
+                  >
+                    EDITAR
+                  </button>
+                </div>
+
+                {/* Detalles del presupuesto */}
+                {destinoActual.presupuesto && (
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 space-y-1.5 sm:space-y-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-amber-700 dark:text-amber-400">
+                      <DollarSign className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                      <span className="text-xs sm:text-sm font-semibold truncate">
+                        {formatCurrency(destinoActual.presupuesto.monto)}
+                      </span>
+                    </div>
+                    <p className="text-[11px] sm:text-xs text-amber-600 dark:text-amber-300 line-clamp-2">
+                      <span className="font-medium">{destinoActual.presupuesto.tipoCirugia}</span>
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] text-amber-500 dark:text-amber-400/70">
+                      Enviado: {formatDate(destinoActual.presupuesto.fechaEnvio)}
+                    </p>
+                    {destinoActual.presupuesto.notas && (
+                      <p className="text-[10px] sm:text-xs text-amber-600/80 dark:text-amber-300/60 italic line-clamp-2">
+                        {destinoActual.presupuesto.notas}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Detalles de la cirugía realizada */}
+                {destinoActual.cirugia && (
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-500/5 border border-blue-200 dark:border-blue-500/20 space-y-1.5 sm:space-y-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-blue-700 dark:text-blue-400">
+                      <Scissors className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                      <span className="text-xs sm:text-sm font-semibold line-clamp-1">{destinoActual.cirugia.tipoCirugia}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-blue-600 dark:text-blue-300">
+                      <DollarSign className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                      <span className="text-[11px] sm:text-xs font-medium truncate">
+                        {formatCurrency(destinoActual.cirugia.costo)}
+                      </span>
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] text-blue-500 dark:text-blue-400/70 line-clamp-1">
+                      Fecha: {formatDate(destinoActual.cirugia.fechaCirugia)}
+                      {destinoActual.cirugia.sedeOperacion && ` • ${destinoActual.cirugia.sedeOperacion}`}
+                    </p>
+                    {destinoActual.cirugia.notas && (
+                      <p className="text-[10px] sm:text-xs text-blue-600/80 dark:text-blue-300/60 italic line-clamp-2">
+                        {destinoActual.cirugia.notas}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Alta definitiva */}
+                {destinoActual.tipo === 'alta_definitiva' && destinoActual.motivoAlta && (
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20">
+                    <p className="text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-300 line-clamp-3">
+                      {destinoActual.motivoAlta}
+                    </p>
+                  </div>
+                )}
+
+                {/* Observaciones */}
+                {destinoActual.observaciones && (
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 italic line-clamp-2">
+                    {destinoActual.observaciones}
+                  </p>
+                )}
+              </>
+            ) : (
+              <button
+                onClick={() => setIsDestinoModalOpen(true)}
+                className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-indigo-50 dark:bg-indigo-500/5 hover:bg-indigo-100 dark:hover:bg-indigo-500/10 border border-dashed border-indigo-300 dark:border-indigo-500/30 rounded-lg text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-medium transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                Registrar Destino
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Notas */}
@@ -246,6 +379,14 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
           </div>
         </div>
       </div>
+      {/* Modal de Destino */}
+      <DestinoPacienteModal
+        isOpen={isDestinoModalOpen}
+        onClose={() => setIsDestinoModalOpen(false)}
+        onSave={handleSaveDestino}
+        destinoActual={destinoActual}
+        pacienteNombre={paciente.nombre}
+      />
     </aside>
   );
 };

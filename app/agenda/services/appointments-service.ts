@@ -456,6 +456,91 @@ export async function confirmAppointment(appointmentId: string): Promise<Service
 }
 
 /**
+ * Marca que el paciente llegó a la cita
+ * Solo funciona para citas confirmadas del día actual
+ *
+ * @param appointmentId - ID de la cita (consulta_id)
+ * @returns Respuesta indicando éxito o error
+ */
+export async function markPatientArrived(appointmentId: string): Promise<ServiceResponse> {
+  try {
+    // Verificar que la cita existe, está confirmada y es de hoy
+    const { data: existing, error: fetchError } = await supabase
+      .from('consultas')
+      .select('id, estado_cita, confirmado_paciente, fecha_consulta')
+      .eq('consulta_id', appointmentId)
+      .single();
+
+    if (fetchError || !existing) {
+      return {
+        success: false,
+        error: 'Cita no encontrada',
+      };
+    }
+
+    // Validar que la cita esté confirmada
+    if (!existing.confirmado_paciente) {
+      return {
+        success: false,
+        error: 'La cita debe estar confirmada para marcar llegada',
+      };
+    }
+
+    // Validar que la cita sea de hoy (Considerando zona horaria de México)
+    const mexicoDate = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    if (existing.fecha_consulta !== mexicoDate) {
+      return {
+        success: false,
+        error: `Solo se puede marcar llegada para citas del día de hoy (${mexicoDate})`,
+      };
+    }
+
+    // Validar consistencia de estado
+    const estadosValidosParaLlegada = ['Programada', 'Confirmada', 'Reagendada'];
+    if (!estadosValidosParaLlegada.includes(existing.estado_cita)) {
+      return {
+        success: false,
+        error: `No se puede marcar llegada. El estado actual es "${existing.estado_cita}" y debería ser Programada o Confirmada.`,
+      };
+    }
+
+    // Validación extra de seguridad: no permitir si está cancelada, completada o no asistió
+    if (['Cancelada', 'Completada', 'No Asistió'].includes(existing.estado_cita)) {
+      return {
+        success: false,
+        error: `La cita ya está en estado final: ${existing.estado_cita}`,
+      };
+    }
+
+    // Actualizar estado a Completada (paciente llegó)
+    const { error: updateError } = await supabase
+      .from('consultas')
+      .update({
+        estado_cita: 'Completada',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('consulta_id', appointmentId);
+
+    if (updateError) {
+      return {
+        success: false,
+        error: updateError.message || 'Error al marcar llegada del paciente',
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error inesperado al marcar llegada:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido al marcar llegada',
+    };
+  }
+}
+
+/**
  * Reagenda una cita (cancela la actual y crea una nueva)
  *
  * @param appointmentId - ID de la cita a reagendar

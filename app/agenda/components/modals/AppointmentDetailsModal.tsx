@@ -12,7 +12,7 @@ import React, { useState } from 'react';
 import { 
   Clock, Phone, Mail, FileText, 
   Edit2, X, Check, AlertCircle, ExternalLink,
-  Trash2, MessageCircle, ShieldAlert
+  Trash2, MessageCircle, ShieldAlert, UserCheck
 } from 'lucide-react';
 import { Modal } from '../shared/Modal';
 import { formatTimeRange, formatLongDate } from '../../lib/agenda-utils';
@@ -36,6 +36,7 @@ interface AppointmentDetailsModalProps {
   onCancel?: (id: string, reason: string) => Promise<ServiceResponse>;
   onEdit?: (appointment: Appointment) => void;
   onConfirm?: (id: string) => Promise<ServiceResponse>;
+  onPatientArrived?: (id: string) => Promise<ServiceResponse>;
 }
 
 export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = ({
@@ -45,11 +46,13 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
   onCancel,
   onEdit,
   onConfirm,
+  onPatientArrived,
 }) => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isMarkingArrived, setIsMarkingArrived] = useState(false);
 
   if (!appointment) return null;
 
@@ -88,6 +91,24 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
     }
   };
 
+  const handlePatientArrived = async () => {
+    if (!onPatientArrived) return;
+
+    setIsMarkingArrived(true);
+    try {
+      const result = await onPatientArrived(appointment.id);
+      if (result.success) {
+        onClose();
+      } else {
+        alert(result.error || 'Error al marcar llegada del paciente');
+      }
+    } catch {
+      alert('Error al marcar llegada del paciente');
+    } finally {
+      setIsMarkingArrived(false);
+    }
+  };
+
   // Generar iniciales del paciente
   const getInitials = (name: string) => {
     return name
@@ -112,8 +133,23 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
     return `En ${diffDays} días`;
   };
 
+  // Verificar si la cita es de hoy (robusto con timezone México)
+  const isToday = () => {
+    // Fecha actual en México (YYYY-MM-DD)
+    const mexicoToday = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    
+    // Fecha de la cita en México
+    const aptDateObj = new Date(appointment.start.toString());
+    const aptDateMexico = aptDateObj.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    
+    return mexicoToday === aptDateMexico;
+  };
+
   const isCancelled = appointment.estado === 'Cancelada';
   const isCompleted = appointment.estado === 'Completada';
+  
+  // Puede marcar llegada: cita confirmada, de hoy, no cancelada ni completada
+  const canMarkArrived = appointment.confirmadoPaciente && isToday() && !isCancelled && !isCompleted;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="lg">
@@ -340,12 +376,24 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
 
         {/* Acciones Principales (Footer Sticky) */}
         {!showCancelDialog && !isCancelled && !isCompleted && (
-          <div className="mt-8 pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+          <div className="mt-8 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
+             {/* Botón Paciente Llegó - Solo para citas confirmadas de hoy */}
+             {canMarkArrived && onPatientArrived && (
+              <button
+                onClick={handlePatientArrived}
+                disabled={isMarkingArrived}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-500 shadow-lg shadow-blue-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed order-1"
+              >
+                <UserCheck className="w-4 h-4" />
+                {isMarkingArrived ? 'Registrando...' : 'Paciente Llegó'}
+              </button>
+             )}
+             {/* Botón Confirmar Cita - Solo si no está confirmada */}
              {!appointment.confirmadoPaciente && onConfirm && (
               <button
                 onClick={handleConfirm}
                 disabled={isConfirming}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-500 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed order-2"
               >
                 <Check className="w-4 h-4" />
                 {isConfirming ? 'Confirmando...' : 'Confirmar Cita'}
@@ -353,7 +401,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
              )}
              <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-lg bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 border border-slate-700 active:scale-95 transition-all"
+              className="px-5 py-2.5 rounded-lg bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 border border-slate-700 active:scale-95 transition-all order-3"
              >
               Cerrar
              </button>

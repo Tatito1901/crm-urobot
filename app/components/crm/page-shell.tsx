@@ -51,17 +51,17 @@ export function PageShell({
   return (
     <div
       className={cn(
-        "relative h-screen overflow-hidden flex flex-col transition-colors duration-300",
+        "relative transition-colors duration-300",
         "bg-background text-foreground",
         className
       )}
     >
       {accent && (
-        <div className="pointer-events-none absolute inset-0 opacity-40" aria-hidden>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-40 overflow-hidden" aria-hidden>
           <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/20 blur-[180px] dark:bg-blue-500/40" />
         </div>
       )}
-      <div className={cn(layoutClasses, "flex-1 min-h-0 overflow-y-auto")}>
+      <div className={layoutClasses}>
         <header className={headerClasses}>
           <div className={titleBlockClasses}>
             <p className={cn(

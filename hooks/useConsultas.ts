@@ -9,8 +9,9 @@
 import { useEffect } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import { type Consulta, isConsultaEstado, isConsultaSede, isConsultaTipo, DEFAULT_CONSULTA_SEDE, DEFAULT_CONSULTA_ESTADO, DEFAULT_CONSULTA_TIPO } from '@/types/consultas'
+import type { Consulta } from '@/types/consultas'
 import type { Tables } from '@/types/database'
+import { mapConsultaFromDB, enrichConsulta } from '@/lib/mappers'
 
 const supabase = createClient()
 
@@ -86,87 +87,19 @@ type ConsultaRow = Tables<'consultas'> & {
 }
 
 const mapConsulta = (row: ConsultaRow): Consulta => {
-  const fallbackDate = new Date().toISOString();
-  const resolvedTimezone: Consulta['timezone'] = 'America/Mexico_City';
-  const now = new Date();
-
-  // Validar sede
-  const sede = isConsultaSede(row.sede) ? row.sede : DEFAULT_CONSULTA_SEDE
-
-  // Validar estado de cita
-  const estado = isConsultaEstado(row.estado_cita)
-    ? row.estado_cita
-    : DEFAULT_CONSULTA_ESTADO
-
-  const fechaLocal = row.fecha_consulta && row.hora_consulta
-    ? `${row.fecha_consulta}T${row.hora_consulta}`
-    : row.fecha_consulta ?? fallbackDate;
-
-  const horaDesdeUtc = row.fecha_hora_utc ? row.fecha_hora_utc.split('T')[1]?.slice(0, 8) : null;
+  // 1. Mapeo base usando utilidades centralizadas
+  // Hacemos cast a Tables<'consultas'> porque row tiene propiedades extra (paciente)
+  // que mapConsultaFromDB ignorará
+  const consultaBase = mapConsultaFromDB(row as unknown as Tables<'consultas'>);
   
-  // Calcular métricas de tiempo
-  const fechaConsulta = new Date(`${row.fecha_consulta}T${row.hora_consulta}`);
-  const msHastaConsulta = fechaConsulta.getTime() - now.getTime();
-  const horasHastaConsulta = msHastaConsulta > 0 ? Math.floor(msHastaConsulta / (1000 * 60 * 60)) : null;
-  const diasHastaConsulta = msHastaConsulta > 0 ? Math.floor(msHastaConsulta / (1000 * 60 * 60 * 24)) : null;
-  
-  // Estado de confirmación
-  const estadoConfirmacion = (row.estado_confirmacion || 'Pendiente') as 'Pendiente' | 'Confirmada' | 'No Confirmada';
-  const confirmadoPaciente = row.confirmado_paciente ?? false;
-  
-  // Requiere confirmación si está programada/confirmada y es futura
-  const requiereConfirmacion = 
-    (estado === 'Programada' || estado === 'Confirmada') && 
-    msHastaConsulta > 0 && 
-    !confirmadoPaciente;
-  
-  // Confirmación vencida si pasó la fecha límite y sigue pendiente
-  const fechaLimite = row.fecha_limite_confirmacion ? new Date(row.fecha_limite_confirmacion) : null;
-  const confirmacionVencida = 
-    requiereConfirmacion && 
-    fechaLimite !== null && 
-    now > fechaLimite;
+  // 2. Enriquecimiento con lógica de negocio (confirmaciones, tiempos)
+  const consultaEnriquecida = enrichConsulta(consultaBase);
 
+  // 3. Inyección de datos relacionales (Paciente)
   return {
-    id: row.consulta_id,
-    uuid: row.id,
+    ...consultaEnriquecida,
     paciente: row.paciente?.nombre_completo ?? 'Paciente sin nombre',
-    pacienteId: row.paciente_id,
-    sede,
-    tipo: isConsultaTipo(row.tipo_cita) ? row.tipo_cita : DEFAULT_CONSULTA_TIPO,
-    estado,
-    
-    // Sistema de confirmación completo
-    estadoConfirmacion,
-    confirmadoPaciente,
-    fechaConfirmacion: row.fecha_confirmacion,
-    fechaLimiteConfirmacion: row.fecha_limite_confirmacion,
-    
-    // Recordatorios enviados
-    remConfirmacionInicialEnviado: row.rem_confirmacion_inicial_enviado ?? false,
-    rem48hEnviado: row.rem_48h_enviado ?? false,
-    rem24hEnviado: row.rem_24h_enviado ?? false,
-    rem3hEnviado: row.rem_3h_enviado ?? false,
-    
-    // Métricas calculadas
-    horasHastaConsulta,
-    diasHastaConsulta,
-    requiereConfirmacion,
-    confirmacionVencida,
-    
-    fecha: row.fecha_hora_utc ?? fechaLocal,
-    fechaConsulta: row.fecha_consulta ?? (row.fecha_hora_utc ? row.fecha_hora_utc.split('T')[0] : fallbackDate.split('T')[0]),
-    horaConsulta: row.hora_consulta ?? horaDesdeUtc ?? '00:00:00',
-    timezone: resolvedTimezone,
-    motivoConsulta: row.motivo_consulta,
-    duracionMinutos: row.duracion_minutos ?? 30,
-    calendarEventId: row.calendar_event_id,
-    calendarLink: row.calendar_link,
-    canalOrigen: row.canal_origen,
-    canceladoPor: row.cancelado_por,
-    motivoCancelacion: row.motivo_cancelacion,
-    createdAt: row.created_at ?? fallbackDate,
-    updatedAt: row.updated_at ?? row.created_at ?? fallbackDate,
+    pacienteId: row.paciente_id, // Asegurar que usamos el ID correcto
   };
 }
 
@@ -184,6 +117,7 @@ const fetchConsultas = async (): Promise<{ consultas: Consulta[], count: number 
   const consultas = (data || []).map(mapConsulta)
   return { consultas, count: count || consultas.length }
 }
+
 
 /**
  * Hook para gestionar consultas

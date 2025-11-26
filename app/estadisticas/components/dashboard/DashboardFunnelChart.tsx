@@ -32,9 +32,9 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return null;
 };
 
-export const DashboardFunnelChart = memo(function DashboardFunnelChart({ data }: { data: ChartData[] }) {
+export const DashboardFunnelChart = memo(function DashboardFunnelChart({ data, height = 300, barSize = 24 }: { data: ChartData[], height?: number, barSize?: number }) {
   return (
-    <div className="h-[300px] w-full">
+    <div className="w-full" style={{ height: `${height}px` }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.2} horizontal={false} />
@@ -60,7 +60,7 @@ export const DashboardFunnelChart = memo(function DashboardFunnelChart({ data }:
             cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
             content={<CustomTooltip />}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} name="Leads">
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={barSize} name="Leads">
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.fill} />
             ))}

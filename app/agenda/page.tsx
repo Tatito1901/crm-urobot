@@ -26,6 +26,7 @@ import {
   updateAppointment,
   cancelAppointment as cancelAppointmentService,
   confirmAppointment as confirmAppointmentService,
+  markPatientArrived as markPatientArrivedService,
 } from './services/appointments-service';
 
 // Lazy load de componentes pesados (reduce bundle inicial)
@@ -367,6 +368,24 @@ export default function AgendaPage() {
     }
   };
 
+  const handlePatientArrived = async (id: string) => {
+    try {
+      const result = await markPatientArrivedService(id);
+
+      if (result.success) {
+        await refetch();
+        return { success: true };
+      }
+
+      return { success: false, error: result.error };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido',
+      };
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background">
       <div className="flex flex-1 overflow-hidden">
@@ -556,6 +575,7 @@ export default function AgendaPage() {
             onCancel={handleCancelAppointment}
             onEdit={openEditModal}
             onConfirm={handleConfirmAppointment}
+            onPatientArrived={handlePatientArrived}
           />
         </Suspense>
       )}

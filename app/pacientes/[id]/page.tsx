@@ -8,13 +8,15 @@
 
 'use client';
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { usePacienteDetallado } from '@/hooks/usePacienteDetallado';
 import { PatientSidebar } from './components/PatientSidebar';
 import { PatientHistory } from './components/PatientHistory';
 import { ErrorState } from '@/app/components/common/ErrorState';
+import { updatePacienteDestino, updatePacienteNotas } from './services/paciente-service';
+import type { DestinoPaciente } from '@/types/pacientes';
 
 export default function PacientePerfilPage() {
   const params = useParams();
@@ -22,6 +24,41 @@ export default function PacientePerfilPage() {
   const pacienteId = params.id as string;
 
   const { paciente, consultas, loading, error, refetch } = usePacienteDetallado(pacienteId);
+  
+  // Estado para notificaciones
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Handler para actualizar el destino
+  const handleUpdateDestino = useCallback(async (destino: DestinoPaciente) => {
+    if (!paciente?.id) return;
+    
+    const result = await updatePacienteDestino(paciente.id, destino);
+    
+    if (result.success) {
+      setNotification({ type: 'success', message: 'Destino actualizado correctamente' });
+      setTimeout(() => setNotification(null), 3000);
+      refetch(); // Recargar datos
+    } else {
+      setNotification({ type: 'error', message: result.error || 'Error al actualizar' });
+      setTimeout(() => setNotification(null), 5000);
+    }
+  }, [paciente?.id, refetch]);
+
+  // Handler para actualizar notas
+  const handleUpdateNotas = useCallback(async (notas: string) => {
+    if (!paciente?.id) return;
+    
+    const result = await updatePacienteNotas(paciente.id, notas);
+    
+    if (result.success) {
+      setNotification({ type: 'success', message: 'Notas guardadas correctamente' });
+      setTimeout(() => setNotification(null), 3000);
+      refetch();
+    } else {
+      setNotification({ type: 'error', message: result.error || 'Error al guardar notas' });
+      setTimeout(() => setNotification(null), 5000);
+    }
+  }, [paciente?.id, refetch]);
 
   // Loading state
   if (loading) {
@@ -60,6 +97,18 @@ export default function PacientePerfilPage() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 dark:bg-[#0b101a] transition-colors">
+      {/* Notificación Toast */}
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all animate-in fade-in slide-in-from-top-2 ${
+          notification.type === 'success' 
+            ? 'bg-emerald-600 text-white' 
+            : 'bg-red-600 text-white'
+        }`}>
+          <CheckCircle className="h-4 w-4" />
+          <span className="text-sm font-medium">{notification.message}</span>
+        </div>
+      )}
+
       {/* Header superior */}
       <header className="border-b border-slate-200 dark:border-blue-900/20 bg-white/80 dark:bg-[#0b101a]/80 backdrop-blur-md px-6 py-4 z-10">
         <div className="flex items-center gap-4">
@@ -103,14 +152,8 @@ export default function PacientePerfilPage() {
         <div className="hidden lg:block">
           <PatientSidebar 
             paciente={paciente}
-            onUpdateNotas={(notas) => {
-              console.log('Actualizar notas:', notas);
-              // TODO: Implementar actualización de notas
-            }}
-            onUpdateInfoMedica={(info) => {
-              console.log('Actualizar info médica:', info);
-              // TODO: Implementar actualización de info médica
-            }}
+            onUpdateNotas={handleUpdateNotas}
+            onUpdateDestino={handleUpdateDestino}
           />
         </div>
 

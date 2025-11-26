@@ -12,7 +12,7 @@
  */
 
 import type { Database } from '@/types/database';
-import { type Consulta, isConsultaTipo, DEFAULT_CONSULTA_TIPO } from '@/types/consultas';
+import { type Consulta, isConsultaTipo, DEFAULT_CONSULTA_TIPO, isConsultaSede, DEFAULT_CONSULTA_SEDE, isConsultaEstado, DEFAULT_CONSULTA_ESTADO } from '@/types/consultas';
 import type { Lead } from '@/types/leads';
 import type { Paciente } from '@/types/pacientes';
 
@@ -37,11 +37,11 @@ export function mapConsultaFromDB(raw: ConsultaDB): Consulta {
     pacienteId: raw.paciente_id,
     
     // Ubicación
-    sede: raw.sede as 'POLANCO' | 'SATELITE',
+    sede: isConsultaSede(raw.sede) ? raw.sede : DEFAULT_CONSULTA_SEDE,
     
     // Tipo y detalles
     tipo: isConsultaTipo(raw.tipo_cita) ? raw.tipo_cita : DEFAULT_CONSULTA_TIPO,
-    estado: raw.estado_cita as Consulta['estado'],
+    estado: isConsultaEstado(raw.estado_cita) ? raw.estado_cita : DEFAULT_CONSULTA_ESTADO,
     
     // Sistema de confirmación
     estadoConfirmacion: raw.estado_confirmacion as Consulta['estadoConfirmacion'],
