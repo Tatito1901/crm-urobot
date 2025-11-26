@@ -146,10 +146,37 @@ export default function PacientePerfilPage() {
         </div>
       </header>
 
+      {/* Tabs móvil */}
+      <div className="lg:hidden flex border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101a]">
+        <button
+          onClick={() => setActiveTab('info')}
+          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'info'
+              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-slate-500 dark:text-slate-400'
+          }`}
+        >
+          Información
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'history'
+              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-slate-500 dark:text-slate-400'
+          }`}
+        >
+          Historial Clínico
+        </button>
+      </div>
+
       {/* Layout principal: Sidebar + Historial */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - Oculto en móvil, visible en desktop */}
-        <div className="hidden lg:block">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Sidebar - Visible en desktop o si activeTab es 'info' */}
+        <div className={`
+          w-full lg:w-auto lg:block absolute inset-0 lg:static z-20 bg-white dark:bg-[#0b101a] lg:bg-transparent transition-transform duration-300 ease-in-out
+          ${activeTab === 'info' ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
           <PatientSidebar 
             paciente={paciente}
             onUpdateNotas={handleUpdateNotas}
@@ -157,22 +184,26 @@ export default function PacientePerfilPage() {
           />
         </div>
 
-        {/* Panel de historial */}
-        <PatientHistory
-          consultas={consultas}
-          onModificarCita={(consultaId) => {
-            console.log('Modificar cita:', consultaId);
-            // TODO: Abrir modal de edición de cita
-          }}
-          onVerEpisodio={(consultaId) => {
-            console.log('Ver episodio:', consultaId);
-            // TODO: Abrir episodio clínico
-          }}
-        />
+        {/* Panel de historial - Visible en desktop o si activeTab es 'history' */}
+        <div className={`
+          flex-1 w-full absolute inset-0 lg:static z-10 transition-transform duration-300 ease-in-out bg-slate-50 dark:bg-[#0b101a]
+          ${activeTab === 'history' ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+        `}>
+          <PatientHistory
+            consultas={consultas}
+            onModificarCita={(consultaId) => {
+              console.log('Modificar cita:', consultaId);
+              // TODO: Abrir modal de edición de cita
+            }}
+            onVerEpisodio={(consultaId) => {
+              console.log('Ver episodio:', consultaId);
+              // TODO: Abrir episodio clínico
+            }}
+          />
+        </div>
       </div>
 
-      {/* Vista móvil: Sidebar como modal o sección colapsable */}
-      {/* TODO: Implementar vista móvil con tabs o drawer */}
+      {/* Vista móvil: Sidebar como modal o sección colapsable (Eliminado placeholder) */}
     </div>
   );
 }

@@ -1,0 +1,442 @@
+{
+  "name": "RECORDATORIOS_BATCH",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8-20 * * *"
+            }
+          ]
+        }
+      },
+      "id": "d03002fd-0ad7-4b93-942d-5d53ec3aa073",
+      "name": "Schedule (Hourly 8-20h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4432,
+        -960
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d7bedb91-6caa-4135-8016-0774ecd612df",
+      "name": "Split In Batches (1 by 1)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3536,
+        -1072
+      ],
+      "notes": "Tamaño 1 para controlar el delay"
+    },
+    {
+      "parameters": {},
+      "id": "784f7d7b-04de-47ad-9ffa-1fc3fd613986",
+      "name": "Wait 5s (Rate Limit)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2192,
+        -1168
+      ],
+      "webhookId": "42478c2d-7748-4798-9980-3f9988888888"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst TZ = 'America/Mexico_City';\n\nconst hour = parseInt(now.toLocaleString('en-US', {\n  timeZone: TZ,\n  hour: 'numeric',\n  hour12: false\n}));\n\nif (hour < 8 || hour >= 20) {\n  console.log(`⏸️ Fuera de horario: ${hour}:00`);\n  return [];\n}\n\nconst ventanas = [\n  {\n    tipo: '48h',\n    inicio: new Date(now.getTime() + 44 * 3600 * 1000).toISOString(),\n    fin: new Date(now.getTime() + 52 * 3600 * 1000).toISOString()\n  },\n  {\n    tipo: '24h',\n    inicio: new Date(now.getTime() + 20 * 3600 * 1000).toISOString(),\n    fin: new Date(now.getTime() + 28 * 3600 * 1000).toISOString()\n  },\n  {\n    tipo: '3h',\n    inicio: new Date(now.getTime() + 2 * 3600 * 1000).toISOString(),\n    fin: new Date(now.getTime() + 4 * 3600 * 1000).toISOString()\n  }\n];\n\nreturn ventanas.map(v => ({ json: v }));"
+      },
+      "id": "731d5400-b2c4-4075-ab4c-695c8b007750",
+      "name": "Calcular Ventanas1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4208,
+        -960
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT * FROM get_recordatorios_pendientes(\n  '{{ $json.inicio }}'::timestamptz,\n  '{{ $json.fin }}'::timestamptz,\n  '{{ $json.tipo }}'\n);",
+        "options": {}
+      },
+      "id": "cf0f74a6-37a4-41ec-8ca3-a02b5e912f2c",
+      "name": "Consultar Pendientes1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -3984,
+        -960
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "tiene_resultados",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cd888d41-2cdd-4168-9288-86dd521be26c",
+      "name": "Tiene Pendientes?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -3760,
+        -960
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.paciente_telefono || '';\nconst clean = String(raw).replace(/\\D/g, '');\nconst mx10 = clean.replace(/^(?:52|521|01)/, '').slice(-10);\n\nif (mx10.length !== 10) {\n  throw new Error(`INVALID_PHONE: ${raw} -> ${mx10}`);\n}\n\nconst e164 = `52${mx10}`;\nconst nombreCompleto = String($json.paciente_nombre || 'Paciente').trim();\nconst primerNombre = nombreCompleto.split(' ')[0] || 'Paciente';\n\nreturn [{\n  json: {\n    ...$json,\n    telefono_validado: e164,\n    primer_nombre: primerNombre\n  }\n}];"
+      },
+      "id": "8f689698-d051-477e-afc4-6a425ccf166d",
+      "name": "Normalize Phone1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3312,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const tipo = $json.reminder_type;\nconst nombre = $json.primer_nombre;\nconst fechaUTC = $json.fecha_hora_utc;\nconst sede = $json.sede || 'POLANCO';\n\nconst SEDES = {\n  POLANCO: {\n    nombre: 'Hospital Ángeles Santa Mónica',\n    direccion: 'Temístocles 210, Polanco',\n    maps: 'https://share.google/FmIooaWDylhqcJgqT'\n  },\n  SATELITE: {\n    nombre: 'Hospital San Ángel Inn Satélite',\n    direccion: 'Cto Centro Comercial 20, Satélite',\n    maps: 'https://share.google/5EvcTrFaNxOmyOYBm'\n  }\n};\n\nconst infoSede = SEDES[sede.toUpperCase()] || SEDES.POLANCO;\n\nconst dateObj = new Date(fechaUTC);\nconst opcFecha = { \n  timeZone: 'America/Mexico_City', \n  weekday: 'long', \n  day: 'numeric', \n  month: 'long'\n};\nconst opcHora = { \n  timeZone: 'America/Mexico_City', \n  hour: 'numeric', \n  minute: '2-digit', \n  hour12: true \n};\n\nlet fechaLegible = dateObj.toLocaleDateString('es-MX', opcFecha);\nfechaLegible = fechaLegible.charAt(0).toUpperCase() + fechaLegible.slice(1);\n\nconst horaLegible = dateObj\n  .toLocaleTimeString('es-MX', opcHora)\n  .replace(/\\s+/g, ' ')\n  .replace(/a\\.?\\s*m\\.?/gi, 'AM')\n  .replace(/p\\.?\\s*m\\.?/gi, 'PM');\n\nconst TEMPLATES = {\n  '48h': `Estimado/a ${nombre},\n\nLe recordamos su cita programada con el *Dr. Mario Martínez Thomas* (Urólogo) en *2 días*:\n\n📅 *Fecha:* ${fechaLegible}\n⏰ *Hora:* ${horaLegible}\n📍 *Ubicación:* ${infoSede.nombre}\n${infoSede.direccion}\n\nSi requiere reagendar su cita, por favor responda a este mensaje.\n\nSaludos cordiales.`,\n\n  '24h': `Estimado/a ${nombre},\n\nLe recordamos que su cita es *mañana*:\n\n⏰ *Hora:* ${horaLegible}\n📍 *Ubicación:* ${infoSede.nombre}\n${infoSede.direccion}\n\n🗺️ Ubicación en mapa: ${infoSede.maps}\n\n*Recomendaciones:*\n- Llegar 10 minutos antes de su cita\n- Traer estudios previos (s)\n\n*¿Confirma su asistencia?* Por favor responda SÍ para confirmar.`,\n\n  '3h': `*Recordatorio de Cita*\n\nEstimado/a ${nombre},\n\nSu cita es *hoy* en las próximas horas:\n\n⏰ *Hora:* ${horaLegible}\n📍 *Ubicación:* ${infoSede.nombre}\n\n*Por favor traiga:*\n- Estudios previos (si cuenta con ellos)\n\nLe esperamos.`\n};\n\nconst mensaje = TEMPLATES[tipo] || TEMPLATES['24h'];\n\nreturn [{\n  json: {\n    ...$json,\n    mensaje_final: mensaje\n  }\n}];"
+      },
+      "id": "7506a52c-522a-4f5a-83eb-a72bcb56d682",
+      "name": "Build Message1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3088,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "success_check",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "no_error",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "negate": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "71001a67-0f7c-4561-8783-6b7a5e066c60",
+      "name": "Check Send Status1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2640,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT marcar_recordatorio_enviado(\n  '{{ $('Split In Batches (1 by 1)').item.json.consulta_id }}',\n  '{{ $('Split In Batches (1 by 1)').item.json.reminder_type }}'\n);",
+        "options": {}
+      },
+      "id": "d04a276d-1c4a-4846-9478-098bbeeb4da4",
+      "name": "Update Success Flag1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -2416,
+        -1360
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO reminders_retry_queue (\n  consulta_id,\n  consulta_id_text,\n  paciente_telefono,\n  reminder_type,\n  mensaje_body,\n  error_detail\n) VALUES (\n  '{{ $('Split In Batches (1 by 1)').item.json.id }}'::uuid,\n  '{{ $('Split In Batches (1 by 1)').item.json.consulta_id }}',\n  '{{ $('Split In Batches (1 by 1)').item.json.telefono_validado }}',\n  '{{ $('Split In Batches (1 by 1)').item.json.reminder_type }}',\n  $${{ $('Build Message1').item.json.mensaje_final }}$$,\n  $${{ JSON.stringify($json) }}$$::jsonb\n);",
+        "options": {}
+      },
+      "id": "f7d51b51-b787-4f3e-8b76-69a50552654a",
+      "name": "Insert Retry Queue1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -2416,
+        -1168
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "0daf5c16-2504-4682-8c1b-ac45311d1ae4",
+      "name": "No Action1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -3088,
+        -944
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.telefono_validado }}\",\n  \"text\": {{ JSON.stringify($json.mensaje_final) }}\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "186becca-c703-45ff-8b1d-cc45a3fe6621",
+      "name": "ENVIAR CONFIRMACION",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2864,
+        -1264
+      ],
+      "retryOnFail": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "BracTxTCVOWFfFBZ",
+          "name": "Header Auth account"
+        }
+      },
+      "continueOnFail": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule (Hourly 8-20h)": {
+      "main": [
+        [
+          {
+            "node": "Calcular Ventanas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches (1 by 1)": {
+      "main": [
+        [
+          {
+            "node": "No Action1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize Phone1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s (Rate Limit)": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches (1 by 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Ventanas1": {
+      "main": [
+        [
+          {
+            "node": "Consultar Pendientes1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Pendientes1": {
+      "main": [
+        [
+          {
+            "node": "Tiene Pendientes?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene Pendientes?1": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches (1 by 1)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Action1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Phone1": {
+      "main": [
+        [
+          {
+            "node": "Build Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Message1": {
+      "main": [
+        [
+          {
+            "node": "ENVIAR CONFIRMACION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Send Status1": {
+      "main": [
+        [
+          {
+            "node": "Update Success Flag1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Retry Queue1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Success Flag1": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s (Rate Limit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Retry Queue1": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s (Rate Limit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIAR CONFIRMACION": {
+      "main": [
+        [
+          {
+            "node": "Check Send Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "d3f796ae-dc51-4c1a-bcad-b58f3ede06d4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
+  },
+  "id": "QilsXdZR2f6n0SIw",
+  "tags": []
+}

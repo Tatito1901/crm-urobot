@@ -1,0 +1,96 @@
+{
+  "name": "ESCALAR_ASISTENTE",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"nombrePaciente\": \"Juan Pérez\",\n  \"telefono\": \"525512345678\",\n  \"motivo\": \"Solicita hablar con humano\",\n  \"contexto\": \"El paciente pregunta por un procedimiento quirúrgico específico que no está en la base de conocimientos.\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        112
+      ],
+      "id": "45623188-4541-4d2b-805b-e9f9cf2803f4",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "mensaje_alerta",
+              "stringValue": "=🤖 *Alerta Urobot: Atención Requerida*\n\nHola, un paciente requiere atención personalizada.\n\n👤 *PACIENTE*\nNombre: {{ $json.nombrePaciente || 'Desconocido' }}\nTeléfono: {{ $json.telefono }}\n🔗 Chat directo: https://wa.me/{{ $json.telefono.replace('+', '') }}\n\n⚠️ *MOTIVO*\n{{ $json.motivo }}\n\n📝 *CONTEXTO / ÚLTIMO MENSAJE*\n\"{{ $json.contexto }}\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b66359e4-e53c-4ab0-a9bb-797ac2d2a933",
+      "name": "Formato Mensaje Asistente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        -144,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"521XXXXXXXXXX\", \n  \"text\": {{ JSON.stringify($('Formato Mensaje Asistente').item.json.mensaje_alerta) }}\n}",
+        "options": {}
+      },
+      "id": "c2562b5d-e05b-40d1-81b7-08df6e68141e",
+      "name": "Notificar a Asistente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        112
+      ],
+      "notes": "⚠️ CAMBIAR EL NÚMERO 'to' POR EL DE LA ASISTENTE REAL"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Formato Mensaje Asistente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato Mensaje Asistente": {
+      "main": [
+        [
+          {
+            "node": "Notificar a Asistente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "789e6d63-0de1-49ff-b327-fa08c88f46b0",
+  "meta": {
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
+  },
+  "id": "EakL64jMzXkPuDfO",
+  "tags": []
+}

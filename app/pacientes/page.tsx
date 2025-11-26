@@ -111,8 +111,6 @@ export default function PacientesPage() {
     return filteredByEstado.slice(start, start + itemsPerPage);
   }, [filteredByEstado, currentPage]);
   
-  const totalPages = Math.ceil(filteredByEstado.length / itemsPerPage);
-  
   const handleEstadoFilterChange = useCallback((newFilter: typeof estadoFilter) => {
     setEstadoFilter(newFilter);
     setCurrentPage(0);

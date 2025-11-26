@@ -3,29 +3,30 @@
   "nodes": [
     {
       "parameters": {
-        "description": "Cuándo usar esta herramienta (activar de inmediato)\n\nCuando el usuario pregunte por horarios disponibles: «¿hay disponibilidad?», «¿cuándo hay citas?».\n\nCuando mencione una fecha relativa o específica: «quiero agendar el viernes», «mañana», «la próxima semana».\n\nCuando pregunte por una sede: «¿hay horarios en Polanco?».\n\nCuando use palabras clave: disponibilidad, horario, cita, agendar, consulta.\n\nParámetros a extraer\n\ndesiredStart (string, ISO 8601 UTC): fecha/hora de referencia.\nReglas de conversión (zona base: America/Mexico_City):\n\n«mañana» → mañana a las 00:00:00 hora local, convertida a UTC y expresada con sufijo Z.\n\n«viernes» → próximo viernes a las 00:00:00 hora local, convertida a UTC (con Z).\n\n«la próxima semana» → próximo lunes a las 00:00:00 hora local, convertida a UTC (con Z).\n\nSi NO menciona fecha → hoy a las 00:00:00 hora local, convertida a UTC (con Z).\nFormato requerido: YYYY-MM-DDTHH:MM:SSZ\nEjemplo: 2025-10-17T00:00:00Z\n\nuserText (string): mensaje original del usuario, sin modificaciones.\n\nsedePreferida (string): sede solicitada por el usuario.\nValores válidos (siempre en mayúsculas): POLANCO, SATELITE.\nNormalización:\n\n«polanco», «Polanco» → POLANCO\n\n«satélite», «satelite», «Satelite» → SATELITE\n\nSi NO menciona sede → cadena vacía ''.\n\ntimezone (string): enviar siempre America/Mexico_City.\n\nEjemplos\n\nUsuario: «Quiero cita mañana en Polanco»\n→ desiredStart: mañana 00:00 local → a UTC con Z\n→ userText: «Quiero cita mañana en Polanco»\n→ sedePreferida: POLANCO\n\nUsuario: «¿Hay horarios el viernes?»\n→ desiredStart: próximo viernes 00:00 local → a UTC con Z\n→ userText: «¿Hay horarios el viernes?»\n→ sedePreferida: ''\n\nUsuario: «¿Cuándo tienen disponibilidad?»\n→ desiredStart: hoy 00:00 local → a UTC con Z\n→ userText: «¿Cuándo tienen disponibilidad?»\n→ sedePreferida: ''\n\nReglas importantes\n\nNunca inventes horarios: usa siempre esta herramienta para consultar disponibilidad.\n\nSiempre extrae y normaliza la fecha si el usuario la menciona (convierte lenguaje natural → ISO 8601 con Z).\n\nSedes siempre en mayúsculas y limitarse a los valores válidos indicados.\n\nLa marca Z implica UTC: calcula en hora local America/Mexico_City y convierte a UTC antes de formatear.",
+        "description": "=HERRAMIENTA: DISPONIBILIDAD_CALENDARIO\n\nUSO\n- Para consultar horarios/días disponibles cuando el paciente pida horarios, mencione fecha (hoy, mañana, viernes, próxima semana o fecha específica) o sede (Polanco/Satélite).\n- Nunca inventes horarios.\n\nPARÁMETROS\n- timezone: \"America/Mexico_City\".\n- desiredStart (ISO local CDMX sin \"Z\"):\n  - sin fecha → hoy 00:00:00\n  - “mañana” → mañana 00:00:00\n  - “viernes” (u otro día) → próximo ese día 00:00:00\n  - “la próxima semana” → próximo lunes 00:00:00\n- userText: mensaje original del paciente.\n- sedePreferida: POLANCO / SATELITE o ''.\n",
         "workflowId": {
           "__rl": true,
-          "value": "HtbhK8aN1uBbKCLU",
+          "value": "9mpErXIgA9uOnzrE",
           "mode": "list",
-          "cachedResultUrl": "/workflow/HtbhK8aN1uBbKCLU",
+          "cachedResultUrl": "/workflow/9mpErXIgA9uOnzrE",
           "cachedResultName": "DISPONIBILIDAD_CALENDARIO"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "maxResults": 50,
-            "desiredStart": "={{ $fromAI('desiredStart', $now.toUTC().toISO(), 'string') }}",
-            "userText": "={{ $fromAI('userText', $json.mensajeUsuario || '', 'string') }}",
+            "includeWeekends": false,
+            "onlyMorning": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('onlyMorning', ``, 'boolean') }}",
+            "onlyAfternoon": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('onlyAfternoon', ``, 'boolean') }}",
+            "desiredStart": "={{ $fromAI('desiredStart', $now.setZone('America/Mexico_City').toISO(), 'string') }}",
+            "userText": "={{ $fromAI('userText', $json.mensajeUsuario)}}",
             "sedePreferida": "={{ $fromAI('sedePreferida', '', 'string').toUpperCase() }}",
             "timezone": "America/Mexico_City",
             "windowDays": 14,
-            "requestId": "={{ $now.toMillis() + '-' + Math.random().toString(36).substr(2, 9) }}",
+            "maxResults": 50,
+            "requestId": "={{ $now.toMillis() }}-{{ Math.random().toString(36).substr(2, 9) }}",
             "source": "urobot_whatsapp"
           },
-          "matchingColumns": [
-            "params"
-          ],
+          "matchingColumns": [],
           "schema": [
             {
               "id": "desiredStart",
@@ -34,8 +35,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "userText",
@@ -44,8 +44,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "sedePreferida",
@@ -54,8 +53,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "timezone",
@@ -64,8 +62,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "windowDays",
@@ -74,8 +71,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
+              "type": "number"
             },
             {
               "id": "maxResults",
@@ -84,8 +80,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
+              "type": "number"
             },
             {
               "id": "includeWeekends",
@@ -94,8 +89,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "boolean",
-              "removed": false
+              "type": "boolean"
             },
             {
               "id": "onlyMorning",
@@ -104,8 +98,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "boolean",
-              "removed": false
+              "type": "boolean"
             },
             {
               "id": "onlyAfternoon",
@@ -114,8 +107,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "boolean",
-              "removed": false
+              "type": "boolean"
             },
             {
               "id": "requestId",
@@ -124,8 +116,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "source",
@@ -134,8 +125,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             }
           ],
           "attemptToConvertTypes": false,
@@ -161,10 +151,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        4848,
+        1600,
         688
       ],
-      "id": "3e835cab-bf7c-4632-acd7-1638fd5c0165",
+      "id": "392049a7-5e74-4cf4-8976-3ee1f7df1393",
       "name": "call'GET_DISPONIBILIDAD_CALENDARIOS"
     },
     {
@@ -172,7 +162,7 @@
         "promptType": "define",
         "text": "={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "=NOMBRE: UroBot — Asistente de Agenda Médica del Dr. Mario Martínez Thomas (Urología)\n\nFECHA_HOY: {{ $today.setZone('America/Mexico_City').toFormat('dd/MM/yyyy') }}\n\nHORA_AHORA: {{ $now.setZone('America/Mexico_City').toFormat('HH:mm') }}\n\nOBJETIVO\nAtender a pacientes por chat de manera empatica, proactiva con la finalidad de poder asistirlos para agendar consulta o llevar el lead hacia la consulta (WhatsApp/web): consultar disponibilidad, agendar, reagendar, escalar a humano, enviar confirmaciones y educar (RAG) sin dar diagnósticos. Mantener privacidad y UX clínica impecable.\n\nIdentidad, estilo y límites\n\nTono: profesional, cercano y empático. Usa “tú”.\n\nBrevedad: máx. 4–5 líneas por bloque; 1 dato por turno.\n\nLenguaje: médico accesible; explica términos sin jerga.\n\nProactivo: si algo falla, ofrece alternativas concretas.\n\nNunca: exponer IDs, eventId, UUID, timestamps ISO, errores internos, ni “pensamientos”.\n\nPolíticas de seguridad clínica (máxima prioridad)\n\nUrgencias (deriva de inmediato, no agendar): dolor insoportable, sangrado abundante, fiebre >38.5°C con escalofríos, retención urinaria, trauma genital severo, hinchazón testicular súbita y dolorosa, priapismo >4h, hematuria con dolor severo, infección con fiebre alta.\nMensaje (copiar textual):\n\n🚨 IMPORTANTE: Tu situación requiere atención médica urgente ahora.\n🏥 Ángeles Santa Mónica (Polanco) — Temístocles 210, 24 h\n🏥 San Ángel Inn Satélite — Circuito Centro Comercial 2251, 24 h\nSi el dolor es intenso o hay sangrado abundante, llama al 911.\nDespués de urgencias, te ayudo a agendar control con el Dr. Mario.\n\nSedes, horarios y costos (responder directo, sin herramientas ni RAG)\n\n📍 POLANCO — Hospital Ángeles Santa Mónica\n\nDirección: Av. Temístocles 210, Polanco IV Sección, Miguel Hidalgo, 11550 CDMX\n\nGOOGLE MAPS https://maps.app.goo.gl/WfDcuYRKghxjf13F8\n\nHorarios: Lunes 09:00–13:00 • Martes 16:00–20:00 • Viernes 15:00–19:00\n\n📍 SATÉLITE — Hospital San Ángel Inn Satélite\n\nDirección: Circuito Centro Comercial 2251, Ciudad Satélite, Naucalpan, Edo. Méx., 53100\n\nGOOGLE MAPS https://share.google/KKsa4h5nPRZqAl4Ih\n\nHorarios: Miércoles 09:00–13:00 • Jueves 09:00–13:00 y 15:00–20:00 • Sábados alternos 09:00–13:00\n\nDetección por texto: satelite/satélite, san angel inn, naucalpan, plaza satélite, edo mex\n\nTarifas (MXN)\n\nConsulta inicial/subsecuente: $1,200\n\nVPH láser CO₂: $3,500 (otras lesiones: a cotizar)\n\nCirugías (aprox, incluye honorarios + seguimiento):\n\nCircuncisión (láser CO₂): $16,000\n\nVasectomía sin bisturí: $12,500\n\nBiopsia prostática con sedación: $15,000\nNo incluyen estudios preop ($800–$2,000 aprox.). Pago: efectivo/transferencia. Facturación disponible. Sin convenio directo (recibo para reembolso).\n\nPolítica de herramientas (router estricto)\n\nSIEMPRE usa herramientas para logística; jamás inventes disponibilidad.\n\nGET_DISPONIBILIDAD_CALENDARIOS → cuando pidan horarios/fechas o digan “¿cuándo hay?”\n\nAGENDAR_CONSULTA → cuando elijan un horario mostrado\n\nREAGENDAR_CONSULTA → cambiar fecha/hora/sede de una cita existente\n\nESCALAR_A_HUMANO → si lo piden, caso complejo, facturación, cirugía, frustración\n\nLEAD_TRACKER → al detectar prospecto (nombre + tel) antes de cita\n\nRAG_EDUCATIVO → sólo educación (procedimientos/condiciones); no logística (horarios, costos, direcciones)\n\nRazonamiento: piensa en privado y no muestres tu proceso; comparte únicamente la respuesta final. Si necesitas datos o acciones, llama herramienta.\n\nValidaciones obligatorias (antes de llamar herramientas)\n\nFecha/hora: futura ≥ 2 h.\n\nSede: POLANCO | SATELITE (normaliza variantes).\n\nTeléfono: MX10 (quitar +52/521/01/044/045, espacios y guiones).\n\nTipo de cita: primera_vez | subsecuente.\n\nMotivo: texto ≥ 3 palabras (capitaliza 1ª, evita “solo checar”).\n\nTZ: interpreta en CDMX y convierte a UTC (Z) internamente (no sumes offsets a mano).\n\nNormalización de datos\n\nFechas: entrada natural → YYYY-MM-DD (local); herramientas requieren UTC YYYY-MM-DDT00:00:00Z para desiredStart (disponibilidad) y start/end ISO (agendar).\n\nHoras: acepta 12h; convierte a HH:mm 24h.\n\nSede: mapea sinónimos (polanco/ángeles/temístocles → POLANCO; satélite/satelite/san angel inn/naucalpan/edo mex → SATELITE).\n\nNombre: capitaliza cada palabra (con acentos).\n\nPrivacidad: nunca muestres IDs/eventId/ISO en chat; solo “Viernes 25 de octubre, 3:00 PM”.\n\nPlantillas (NLG) y UX\n\nDisponibilidad (mostrar máx. 5 por sede, agrupado por día):\n\n“Encontré estas opciones:\nPolanco — Vie 25: 3:00 PM, 3:30 PM • Lun 28: 9:30 AM\nSatélite — Jue 31: 5:00 PM, 6:00 PM\n¿Cuál te acomoda?”\n\nAgendado (éxito):\n\n“✅ ¡Cita confirmada!\n📅 [Día completo, fecha]\n🕐 [Hora 12h] (30 min)\n📍 [Sede + hospital]\n¿Te envío la ubicación en Google Maps?”\n\nConflicto (slot no disponible):\n\n“Ese horario se ocupó. Te propongo estas opciones cercanas: [3–5 alternativas]. ¿Cuál eliges?”\n\nReagendado (éxito):\n\nDevuelve exactamente response.messages.urobot (no edites).\n\nEscalado (con consentimiento):\n\n“Entiendo. Mónica puede ayudarte por WhatsApp. ¿Te la comunico?”\n(Si “sí” → herramienta; devuelve exactamente agent_message).\n\nHerramientas (contratos JSON)\n1) GET_DISPONIBILIDAD_CALENDARIOS\n\nCuándo: preguntan por horarios/fechas/sedes o intenciones de agendar.\nEntrada:\n\n{\n  \"desiredStart\": \"YYYY-MM-DDT00:00:00Z\",\n  \"sedePreferida\": \"POLANCO|SATELITE|\",\n  \"userText\": \"<texto original>\",\n  \"timezone\": \"America/Mexico_City\",\n  \"includeWeekends\": true,\n  \"onlyMorning\": false,\n  \"onlyAfternoon\": false\n}\n\n\nSalida (ejemplo):\n\n{\n  \"slots\": [\n    {\n      \"slotId\": \"S1abc123\",\n      \"sede\": \"POLANCO\",\n      \"start\": \"2025-10-25T21:00:00.000Z\",\n      \"end\": \"2025-10-25T21:30:00.000Z\",\n      \"startLocal\": \"25/10/2025 03:00 PM\",\n      \"endLocal\": \"25/10/2025 03:30 PM\",\n      \"durationMinutes\": 30,\n      \"dayKey\": \"2025-10-25\",\n      \"startHM\": \"15:00\"\n    }\n  ],\n  \"summary\": { \"source\": \"calendars\", \"requestId\": \"...\" }\n}\n\n\nReglas de presentación: solo muestra día + hora legibles (no slotId/ISO), máximo 5 por sede, agrupado por día.\n\n2) AGENDAR_CONSULTA\n\nPrerequisitos: slotId mostrado + nombre + tel MX10 + tipoCita + motivo ≥3 palabras.\nEntrada:\n\n{\n  \"slotId\": \"S1abc123\",\n  \"sede\": \"POLANCO\",\n  \"start\": \"2025-10-25T21:00:00.000Z\",\n  \"end\": \"2025-10-25T21:30:00.000Z\",\n  \"paciente\": {\n    \"nombre\": \"Juan Pérez López\",\n    \"telefono\": \"5512345678\",\n    \"email\": \"opcional@mail.com\"\n  },\n  \"tipoCita\": \"primera_vez\",\n  \"motivoConsulta\": \"Dolor al orinar con pequeñas gotas de sangre\",\n  \"idempotencyKey\": \"hash(telefono|start|sede)\"\n}\n\n\nRespuestas esperadas:\n\nBOOKED → envía plantilla de éxito + ofrece Maps.\n\nCONFLICT → re-consulta disponibilidad ±2 días (misma sede) y ofrece 3–5 opciones.\n\nPARTIAL_ERROR / ERROR → disculpa breve + reintento o escalar.\n\n3) REAGENDAR_CONSULTA\n\nCuándo: “cambiar/mover/reagendar”.\nPrerequisitos: tel MX10 + newDate (YYYY-MM-DD, local) + newTime (HH:mm 24h, local) + newSede.\nEntrada:\n\n{\n  \"telefono\": \"5512345678\",\n  \"consultaId\": \"\",\n  \"newDate\": \"2025-10-28\",\n  \"newTime\": \"15:00\",\n  \"newSede\": \"POLANCO\",\n  \"reason\": \"Conflicto laboral\"\n}\n\n\nRespuestas:\n\nRESCHEDULED → devuelve tal cual response.messages.urobot.\n\nNOT_FOUND → explica y ofrece agendar nuevo.\n\nUNAVAILABLE → consulta disponibilidad ±3 días y ofrece 3–5 opciones.\n\nDAY_NOT_AVAILABLE / TIME_OUT_OF_RANGE / VALIDATION_ERROR → explica rango válido y propone horas.\n\n4) ESCALAR_A_HUMANO\n\nCuándo: lo piden, frustración, facturación, cirugía, caso complejo, preferencia de llamada.\nFlujo: pedir permiso → herramienta → devolver agent_message al usuario sin texto extra.\nEntrada:\n\n{\n  \"telefono\": \"5512345678\",\n  \"nombrePaciente\": \"Juan Pérez López\",\n  \"motivo\": \"facturacion|cirugia|frustracion|llamada|solicitud_explicita|otro\",\n  \"contexto\": \"Resumen breve (2–4 oraciones).\",\n  \"prioridad\": \"alta|normal\"\n}\n\n5) LEAD_TRACKER\n\nCuándo: detectes prospecto (nombre + tel), incluso antes de agendar.\nEntrada mínima:\n\n{\n  \"nombre_completo\": \"Juan Pérez López\",\n  \"telefono_whatsapp\": \"5512345678\",\n  \"fuente_lead\": \"WhatsApp\",\n  \"notas_iniciales\": \"Quiere costos de vasectomía\",\n  \"session_id\": \"<si aplica>\"\n}\n\n\nComportamiento: dedupe por MX10, actualizar ultima_interaccion, total_interacciones.\n\n6) RAG_EDUCATIVO (solo info médica general)\n\nCuándo: explicar procedimientos/condiciones (p.ej., vasectomía, circuncisión, VPH, HBP).\nReglas: no usar RAG para horarios/costos/direcciones/logística. Añade disclaimer: “No sustituye valoración médica”.\n\nReglas de razonamiento y privacidad\n\nRazonamiento interno: piensa paso a paso en privado; no compartas tu proceso ni listas de reglas.\n\nSalida: solo respuestas finales amigables y/o plantillas definidas.\n\nPrivacidad: censura cualquier rastro técnico; si la herramienta devuelve ISO/IDs, no los muestres.\n\nEjemplos (few-shot)\n\nEjemplo 1 — Pedir disponibilidad general\nUsuario: “¿Cuándo hay citas en Satélite la próxima semana por la tarde?”\nAgente (interno): Llama GET_DISPONIBILIDAD_CALENDARIOS con desiredStart a lunes prox. sedePreferida=\"SATELITE\", onlyAfternoon=true.\nAgente (usuario): “Tengo estas opciones en Satélite: Mié 5:00 PM • Jue 6:00 PM • Sáb 11:30 AM. ¿Cuál te acomoda?”\n\nEjemplo 2 — Agendar\nUsuario: “La de Jueves 6:00 PM en Satélite.”\nAgente: “Perfecto. ¿Tu nombre completo?” → “¿Tu número a 10 dígitos?” → “¿Es primera vez o subsecuente?” → “¿Motivo de tu consulta?” (≥3 palabras) → Llama AGENDAR_CONSULTA.\nRespuesta (éxito): “✅ ¡Cita confirmada! Jueves 6:00 PM • Satélite. ¿Te envío ubicación en Maps?”\n\nEjemplo 3 — Reagendar\nUsuario: “No puedo mañana, ¿lo movemos al viernes 3:30 PM en Polanco?”\nAgente: valida MX10; convierte 3:30 PM → 15:30; llama REAGENDAR_CONSULTA.\nSi UNAVAILABLE: “Ese horario no está libre. Te propongo: Vie 3:00 PM • 4:00 PM, o Lun 9:30 AM. ¿Cuál te funciona?”\n\nEjemplo 4 — Escalar\nUsuario: “Quiero hablar con alguien por WhatsApp para facturar.”\nAgente: “Claro, Mónica puede ayudarte. ¿La contacto ahora?” (si “sí” → herramienta; devolver agent_message).\n\nEjemplo 5 — Educación (RAG)\nUsuario: “¿Cómo es la vasectomía?”\nAgente: Resumen breve (qué es, duración, anestesia local, recuperación típica) + “Esto no sustituye una valoración médica. ¿Agendamos para revisar tu caso?”\n\nChecklist final (antes de responder)\n\n¿Evalué urgencias?\n\n¿Usé la herramienta correcta (disp/agendar/reagendar/escalar/RAG)?\n\n¿Validé MX10, fecha futura ≥2 h, franja válida de la sede?\n\n¿Convertí CDMX → UTC (Z) sin sumar offsets manuales?\n\n¿Mostré solo fecha/hora legibles (sin ISO/IDs)?\n\n¿Fui conciso y ofrecí alternativas si algo falló?\n\nRespuestas rápidas (snippets)\n\nHorarios por sede (genérico):\n“El Dr. Mario consulta en Polanco (Lun 9–13, Mar 16–20, Vie 15–19) y Satélite (Mié 9–13, Jue 9–13 y 15–20, Sábados alternos 9–13). ¿Prefieres sede y día?”\n\nDirecciones completas:\n\nPOLANCO — Ángeles Santa Mónica, Temístocles 210, Polanco. ¿Te envío Maps?\n\nSATÉLITE — San Ángel Inn Satélite, Circuito Centro Comercial 2251. ¿Te envío Maps?\n\nCostos:\n“La consulta cuesta $1,200. ¿Deseas agendar? Para vasectomía: $12,500 (aprox).”\n\nNotas operativas\n\nUsa AGENDAR_CONSULTA con idempotencyKey = hash(telefono|start|sede).\n\nEn reagendos, preferir actualizar evento; si cambia de sede (calendario) entonces crear nuevo.\n\nRegistra leads tempranos con LEAD_TRACKER (dedupe por MX10).\n\nPara escalado, devuelve exactamente agent_message de la herramienta.",
+          "systemMessage": "=UroBot – asistente clínico de urología del Dr. Mario Martínez Thomas.\n\nFECHA_ACTUAL: {{ $today.setZone('America/Mexico_City').toFormat('dd/MM/yyyy') }}\nHORA_ACTUAL: {{ $now.setZone('America/Mexico_City').toFormat('HH:mm') }}\n\nROL\nEres UroBot, asistente clínico (no vendedor) del Dr. Mario. Tu misión es:\n1) Entender rápido la situación.\n2) Dar claridad y tranquilidad con info general.\n3) Explicar cómo puede ayudar el Dr. Mario.\n4) Solo después, ofrecer ver horarios si tiene sentido.\n\nESTILO\n- Español neutro mexicano, de “tú”, tono cálido tipo WhatsApp.\n- Respuestas de 2–5 líneas, claras y concretas.\n- Máx 1 emoji 🙂 si suma calidez.\n- No des diagnósticos (“tienes X”), pronósticos ni medicamentos.\n- No digas que eres IA ni menciones herramientas o flujos internos.\n\nURGENCIAS (SIEMPRE ANTES DE TODO)\nSi el mensaje indica:\n- No puede orinar, con muchas ganas y dolor.\n- Orina con mucha sangre o coágulos.\n- Dolor testicular súbito e intenso, con o sin náusea/vómito.\n\nEntonces responde EXACTAMENTE y nada más:\n\n\"🚨 ATENCIÓN MÉDICA URGENTE\nTus síntomas indican una posible urgencia urológica que requiere atención inmediata.\n1. Acude YA a Urgencias de Hospital Ángeles (Polanco) o San Ángel Inn (Satélite) (abiertos 24h).\n2. No esperes a una consulta agendada. Tu seguridad es primero. Si es crítico, llama al 911.\"\n\nFLUJO (CUANDO NO ES URGENCIA)\n1) Agradece y valida en 1 línea:\n   - “Gracias por escribirme, entiendo que esto preocupe mucho 😊”.\n2) Haz MÁXIMO 2 preguntas cortas para entender:\n   - Prioriza: para quién es, síntoma principal, desde cuándo.\n3) Con esa info, explica en lenguaje simple:\n   - Qué podría significar en general (sin decir que sí tiene o no tiene cáncer/enfermedad).\n   - Qué suele valorar un urólogo y qué estudios ayudan a aclarar (por ejemplo, tacto rectal, ultrasonido, PSA, biopsia, etc. cuando aplique).\n   - Señales de alarma que debe vigilar, sin asustar.\n   Usa la herramienta de contenido educativo si está disponible.\n\n4) Conecta con el Dr. Mario:\n   - Explica qué haría el Dr. Mario con un caso así: cómo revisaría, qué estudios podría solicitar y cómo eso ayuda a decidir si requiere cirugía o no.\n   - Enfatiza que la consulta sirve para tomar una decisión informada y con calma.\n\n5) Cierra SIEMPRE con una invitación suave o pregunta:\n   - “¿Te gustaría que te ayude a ver horarios para que el Dr. Mario revise tu caso con calma?”\n   - o “Si prefieres, seguimos resolviendo tus dudas por aquí 🙂”.\n\nCOSTOS BÁSICOS (OPCIONAL SI PREGUNTA)\n- Consulta presencial: $1,200 MXN.\n- Sedes: Polanco (Ángeles Santa Mónica: Lun, Mar, Vie) y Satélite (San Ángel Inn: Mié, Jue, Sáb).\n- Cirugías aproximadas: vasectomía ~ $12,500 MXN, circuncisión ~ $16,000 MXN.\nAclara que los precios de cirugía son aproximados y requieren valoración presencial.\n",
           "returnIntermediateSteps": false,
           "batching": {},
           "enableStreaming": false
@@ -181,23 +171,23 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        5024,
+        1744,
         368
       ],
-      "id": "899a9bed-2cdf-4569-a4c2-f0eb4c1f3586",
+      "id": "31a2cc38-4402-4773-b734-96c3cd52ef16",
       "name": "Urobot"
     },
     {
       "parameters": {
-        "jsCode": "/**\n * WhatsApp Formatter v13.0 - NATURAL Y CONVERSACIONAL\n * Sistema de Agendamiento - Dr. Mario Martínez Thomas\n * Enfoque: Texto natural, sin espaciado excesivo, conversacional\n */\n\nreturn items.map(item => {\n  \n  // ═══════════════════════════════════════════════════════════\n  // CONFIGURACIÓN\n  // ═══════════════════════════════════════════════════════════\n  \n  const CONFIG = {\n    maxLength: 1400,\n    formatPhones: true,\n    useSeparators: true,\n    separatorStyle: '─────────────────',\n    useEmojis: true,\n    naturalMode: true,  // Modo natural activado\n    maxConsecutiveBreaks: 1  // Máximo 1 línea en blanco entre párrafos\n  };\n\n  // ═══════════════════════════════════════════════════════════\n  // EXTRACCIÓN DE TEXTO\n  // ═══════════════════════════════════════════════════════════\n  \n  const extractText = () => {\n    const sources = [\n      item?.json?.output,\n      item?.json?.text,\n      item?.json?.message,\n      $json?.output,\n      $input?.first()?.json?.output,\n      ''\n    ];\n    \n    const text = sources.find(v => v !== undefined && v !== null);\n    \n    if (typeof text === 'string') return text;\n    if (!text) return '';\n    if (Array.isArray(text)) return text.join('\\n');\n    if (typeof text === 'object') {\n      try { return JSON.stringify(text, null, 2); }\n      catch { return String(text); }\n    }\n    return String(text);\n  };\n\n  let text = extractText();\n  \n  if (!text || text.trim().length === 0) {\n    return { json: { success: false, error: 'Sin contenido', output: '' } };\n  }\n\n  // ═══════════════════════════════════════════════════════════\n  // LIMPIEZA PROFUNDA\n  // ═══════════════════════════════════════════════════════════\n  \n  const deepClean = (str) => {\n    str = str.normalize('NFC');\n    str = str.replace(/\\\\n/g, '\\n').replace(/\\\\r\\\\n/g, '\\n').replace(/\\r\\n?/g, '\\n');\n    str = str.replace(/[\\u200B-\\u200D\\uFEFF\\u00AD]/g, '');\n    str = str.replace(/[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F]/g, '');\n    \n    const entities = {\n      '&nbsp;': ' ', '&amp;': '&', '&quot;': '\"', '&apos;': \"'\",\n      '&lt;': '<', '&gt;': '>', '&ldquo;': '\"', '&rdquo;': '\"'\n    };\n    Object.entries(entities).forEach(([e, c]) => {\n      str = str.replace(new RegExp(e, 'gi'), c);\n    });\n    str = str.replace(/&#(\\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)));\n    str = str.replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)));\n    \n    str = str.replace(/<\\/(p|div|br|li|h[1-6]|tr|td)\\s*>/gi, '\\n');\n    str = str.replace(/<(p|div|br|li|h[1-6]|tr|td)[^>]*>/gi, '\\n');\n    str = str.replace(/<[^>]+>/g, '');\n    \n    str = str.replace(/\\*\\*/g, '');\n    str = str.replace(/\\*(?!\\s*\\n)/g, '');\n    str = str.replace(/(?<=\\s)\\*(?=\\w)/g, '');\n    str = str.replace(/_{2,}/g, '');\n    \n    str = str.replace(/[\\t\\f\\v]+/g, ' ');\n    str = str.replace(/\\u00A0/g, ' ');\n    str = str.replace(/ {2,}/g, ' ');\n    str = str.replace(/^ +/gm, '');\n    str = str.replace(/ +$/gm, '');\n    \n    str = str.replace(/([sS]ábado)\\s+s:/gi, '$1s:');\n    str = str.replace(/(📍)\\s*\\1+/g, '$1');\n    str = str.replace(/(🏥)\\s*\\1+/g, '$1');\n    \n    // ✅ CRÍTICO: Limitar líneas en blanco a máximo 2 (una línea vacía)\n    str = str.replace(/\\n{3,}/g, '\\n\\n');\n    \n    str = str.replace(/\\.{4,}/g, '...');\n    str = str.replace(/\\s+([,.;:!?¡¿])/g, '$1');\n    str = str.replace(/([¡¿])\\s+/g, '$1');\n    str = str.replace(/([.!?]){2,}/g, '$1');\n    \n    return str.trim();\n  };\n\n  text = deepClean(text);\n\n  // ═══════════════════════════════════════════════════════════\n  // FORMATO NATURAL Y CONVERSACIONAL\n  // ═══════════════════════════════════════════════════════════\n  \n  /**\n   * Procesa y formatea el texto de manera NATURAL\n   * SIN agregar espacios innecesarios\n   */\n  const formatNatural = (txt) => {\n    const lines = txt.split('\\n');\n    const formatted = [];\n    let hoursList = [];\n    let currentDate = null;\n    \n    for (let i = 0; i < lines.length; i++) {\n      let line = lines[i].trim();\n      \n      // Saltar líneas vacías pero mantener UNA si ya hay contenido\n      if (!line) {\n        // Solo agregar línea vacía si la anterior no era vacía\n        if (formatted.length > 0 && formatted[formatted.length - 1] !== '') {\n          // ✅ CAMBIO CRÍTICO: Solo agregar si la siguiente línea es una SEDE o separador importante\n          const nextNonEmpty = lines.slice(i + 1).find(l => l.trim() !== '');\n          if (nextNonEmpty && (\n            /^(?:📍\\s*)?(SEDE\\s+)/i.test(nextNonEmpty) ||\n            /^(?:─{5,}|={5,}|-{5,})$/.test(nextNonEmpty)\n          )) {\n            formatted.push('');\n          }\n        }\n        continue;\n      }\n      \n      // SEDE - Formato compacto\n      if (/^(?:📍\\s*)?(SEDE\\s+(?:POLANCO|SAT[ÉE]LITE|DE\\s+POLANCO|DE\\s+SAT[ÉE]LITE))/i.test(line)) {\n        // Guardar lista de horas si existe\n        if (hoursList.length > 0) {\n          formatted.push(formatHoursList(hoursList));\n          hoursList = [];\n          currentDate = null;\n        }\n        \n        if (formatted.length > 0 && formatted[formatted.length - 1] !== '') {\n          formatted.push('');\n        }\n        \n        let sedeName = line.replace(/^📍\\s*/i, '').trim();\n        sedeName = sedeName.replace(/^SEDE\\s+DE\\s+/i, 'SEDE ');\n        \n        if (CONFIG.useSeparators) {\n          formatted.push(CONFIG.separatorStyle);\n        }\n        formatted.push(`📍 ${sedeName.toUpperCase()}`);\n        continue;\n      }\n      \n      // HOSPITAL - en la misma línea que SEDE si es posible\n      if (/^(?:🏥\\s*)?Hospital/i.test(line)) {\n        line = line.replace(/^🏥\\s*/i, '').trim();\n        formatted.push(`🏥 ${line}`);\n        continue;\n      }\n      \n      // HORARIOS DE CONSULTA (Lunes: 9:00-13:00)\n      const dayMatch = line.match(/^(Lunes|Martes|Mi[ée]rcoles|Jueves|Viernes|S[áa]bados?|Domingo)s?:?\\s*(.+)/i);\n      if (dayMatch) {\n        if (hoursList.length > 0) {\n          formatted.push(formatHoursList(hoursList));\n          hoursList = [];\n          currentDate = null;\n        }\n        \n        const day = dayMatch[1].charAt(0).toUpperCase() + dayMatch[1].slice(1).toLowerCase();\n        let time = dayMatch[2].trim();\n        const dayFixed = day === 'Sábado' && line.toLowerCase().includes('sábados') ? 'Sábados' : day;\n        \n        formatted.push(`${dayFixed}: ${time}`);\n        continue;\n      }\n      \n      // FECHAS (Viernes 24 de octubre) - Inicio de lista compacta\n      const dateMatch = line.match(/^(Lunes|Martes|Mi[ée]rcoles|Jueves|Viernes|S[áa]bado|Domingo)\\s+\\d{1,2}\\s+de\\s+\\w+/i);\n      if (dateMatch) {\n        if (hoursList.length > 0) {\n          formatted.push(formatHoursList(hoursList));\n        }\n        \n        currentDate = line;\n        hoursList = [];\n        continue;\n      }\n      \n      // HORAS en lista (3:00 PM, 3:30 PM, etc.)\n      if (/^\\d{1,2}:\\d{2}\\s*(?:AM|PM)?/i.test(line) || /^[•\\-*]\\s*\\d{1,2}:\\d{2}/i.test(line)) {\n        const hour = line.replace(/^[•\\-*]\\s*/, '').trim();\n        hoursList.push(hour);\n        continue;\n      }\n      \n      // RANGOS DE HORARIOS (de 3:00 PM a 6:30 PM)\n      if (/de\\s+\\d{1,2}:\\d{2}\\s*(?:AM|PM)?\\s*a\\s*\\d{1,2}:\\d{2}\\s*(?:AM|PM)?/i.test(line)) {\n        if (hoursList.length > 0) {\n          formatted.push(formatHoursList(hoursList));\n          hoursList = [];\n          currentDate = null;\n        }\n        \n        formatted.push(line);\n        continue;\n      }\n      \n      // LISTAS con viñetas (- o •)\n      if (/^[-•]\\s+/.test(line)) {\n        const content = line.replace(/^[-•]\\s+/, '').trim();\n        formatted.push(`• ${content}`);\n        continue;\n      }\n      \n      // ✅ CAMBIO CRÍTICO: PREGUNTAS - NO agregar línea en blanco antes\n      if (/^[¿?]/.test(line)) {\n        if (hoursList.length > 0) {\n          formatted.push(formatHoursList(hoursList));\n          hoursList = [];\n          currentDate = null;\n        }\n        \n        // NO agregar línea en blanco aquí, solo agregar la pregunta\n        formatted.push(line);\n        continue;\n      }\n      \n      // Línea normal\n      if (line.length > 0) {\n        if (hoursList.length > 0) {\n          formatted.push(formatHoursList(hoursList));\n          hoursList = [];\n          currentDate = null;\n        }\n        \n        formatted.push(line);\n      }\n    }\n    \n    // Guardar última lista si existe\n    if (hoursList.length > 0) {\n      formatted.push(formatHoursList(hoursList));\n    }\n    \n    return formatted.join('\\n');\n  };\n  \n  /**\n   * Formatea lista de horas de manera compacta\n   */\n  const formatHoursList = (hours) => {\n    if (hours.length === 0) return '';\n    \n    // Si son muchas horas consecutivas, resumir\n    if (hours.length >= 8 && areConsecutive(hours)) {\n      const first = hours[0];\n      const last = hours[hours.length - 1];\n      return `Horarios: ${first} - ${last} (cada 30 min)`;\n    }\n    \n    // Si son menos de 6, mostrar en línea\n    if (hours.length <= 6) {\n      return `Horarios: ${hours.join(' • ')}`;\n    }\n    \n    // Si son más, dividir en líneas de 6\n    const result = ['Horarios disponibles:'];\n    for (let i = 0; i < hours.length; i += 6) {\n      const chunk = hours.slice(i, i + 6);\n      result.push(`  ${chunk.join(' • ')}`);\n    }\n    return result.join('\\n');\n  };\n  \n  /**\n   * Verifica si las horas son consecutivas (cada 30 min)\n   */\n  const areConsecutive = (hours) => {\n    if (hours.length < 2) return false;\n    \n    for (let i = 0; i < hours.length - 1; i++) {\n      const current = parseTime(hours[i]);\n      const next = parseTime(hours[i + 1]);\n      if (!current || !next) return false;\n      \n      const diff = next - current;\n      if (diff !== 30 && diff !== 60) return false;\n    }\n    \n    return true;\n  };\n  \n  /**\n   * Convierte hora a minutos\n   */\n  const parseTime = (timeStr) => {\n    const match = timeStr.match(/(\\d{1,2}):(\\d{2})\\s*(AM|PM)?/i);\n    if (!match) return null;\n    \n    let hours = parseInt(match[1]);\n    const minutes = parseInt(match[2]);\n    const period = match[3]?.toUpperCase();\n    \n    if (period === 'PM' && hours !== 12) hours += 12;\n    if (period === 'AM' && hours === 12) hours = 0;\n    \n    return hours * 60 + minutes;\n  };\n\n  text = formatNatural(text);\n\n  // ═══════════════════════════════════════════════════════════\n  // LIMPIEZA FINAL - CONVERSACIONAL\n  // ═══════════════════════════════════════════════════════════\n  \n  const formatPhones = (txt) => {\n    if (!CONFIG.formatPhones) return txt;\n    return txt.replace(\n      /(?:^\\+?52[\\s-]*)?(\\d{2})[\\s-]*(\\d{4})[\\s-]*(\\d{4})/g,\n      '($1) $2-$3'\n    );\n  };\n\n  const addSubtleHighlights = (txt) => {\n    return txt.replace(\n      /\\$\\s*[\\d,]+(?:\\.\\d{2})?(?:\\s*(?:MXN|pesos))?/gi,\n      match => `*${match.trim()}*`\n    );\n  };\n\n  const finalCleanup = (txt) => {\n    // ✅ Eliminar espacios múltiples\n    txt = txt.replace(/  +/g, ' ');\n    \n    // ✅ CRÍTICO: Limitar a MÁXIMO 2 saltos de línea (1 línea en blanco)\n    txt = txt.replace(/\\n{3,}/g, '\\n\\n');\n    \n    // ✅ NO agregar líneas en blanco antes de preguntas\n    txt = txt.replace(/\\n\\n([¿?])/g, '\\n$1');\n    \n    // ✅ Asegurar que las listas no tengan líneas en blanco extra\n    txt = txt.replace(/\\n\\n(• )/g, '\\n$1');\n    \n    return txt.trim();\n  };\n\n  text = formatPhones(text);\n  text = addSubtleHighlights(text);\n  text = finalCleanup(text);\n\n  // ═══════════════════════════════════════════════════════════\n  // DIVISIÓN INTELIGENTE\n  // ═══════════════════════════════════════════════════════════\n  \n  const smartSplit = (txt) => {\n    if (txt.length <= CONFIG.maxLength) return [txt];\n    \n    const messages = [];\n    const separator = CONFIG.useSeparators ? CONFIG.separatorStyle : '---';\n    const sections = txt.split(new RegExp(separator, 'g'));\n    let current = '';\n    \n    for (let i = 0; i < sections.length; i++) {\n      const section = sections[i].trim();\n      if (!section) continue;\n      \n      const piece = i > 0 ? `${separator}\\n${section}` : section;\n      \n      if (current.length + piece.length > CONFIG.maxLength && current) {\n        messages.push(current.trim() + '\\n\\n_(continúa...)_');\n        current = piece;\n      } else {\n        current += (current ? '\\n\\n' : '') + piece;\n      }\n    }\n    \n    if (current) messages.push(current.trim());\n    return messages;\n  };\n\n  const messages = smartSplit(text);\n\n  // ═══════════════════════════════════════════════════════════\n  // OUTPUT FINAL\n  // ═══════════════════════════════════════════════════════════\n  \n  return {\n    json: {\n      output: messages[0],\n      success: true,\n      messageCount: messages.length,\n      totalLength: text.length,\n      allMessages: messages.length > 1 ? messages : undefined,\n      processed: {\n        cleaned: true,\n        formatted: true,\n        style: 'natural-conversational',\n        timestamp: new Date().toISOString()\n      }\n    }\n  };\n});"
+        "jsCode": "/**\n * WhatsApp Formatter LITE\n * Enfoque: Limpieza rápida, respeta la estructura original de la IA\n */\n\nreturn items.map(item => {\n  \n  // 1. EXTRACCIÓN SEGURA (Busca en varios lugares comunes)\n  const extractText = () => {\n    const candidates = [\n      item.json?.output,\n      item.json?.text,\n      item.json?.message,\n      item.json?.content\n    ];\n    // Encuentra el primero que no sea nulo/vacío y sea string\n    return candidates.find(c => c && typeof c === 'string') || '';\n  };\n\n  let text = extractText();\n\n  // Si no hay texto, retornar vacío sin error\n  if (!text || text.trim().length === 0) {\n    return { json: { output: '' } };\n  }\n\n  // 2. LIMPIEZA Y FORMATO (La lógica simplificada)\n  \n  // A. Normalización básica\n  text = text.replace(/\\r\\n/g, '\\n'); // Estandarizar saltos de línea\n  text = text.replace(/^[\"']|[\"']$/g, ''); // Quitar comillas al inicio/final si la IA las puso\n\n  // B. Adaptación de Markdown (IA -> WhatsApp)\n  // La IA suele usar **negrita**, WhatsApp usa *negrita*\n  text = text.replace(/\\*\\*(.*?)\\*\\*/g, '*$1*'); \n  // Convertir encabezados Markdown (### Titulo) a Negritas (*Titulo*)\n  text = text.replace(/^#+\\s*(.*)$/gm, '*$1*');\n\n  // C. Limpieza de HTML residual (por seguridad)\n  text = text.replace(/<br\\s*\\/?>/gi, '\\n'); // <br> a salto de línea\n  text = text.replace(/<[^>]*>/g, ''); // Eliminar cualquier otro tag HTML\n\n  // D. Limpieza de Espacios (Lo más importante para que se vea \"Limpio\")\n  // Reemplazar múltiples espacios por uno solo\n  text = text.replace(/[ \\t]+/g, ' ');\n  // CRÍTICO: Máximo 2 saltos de línea consecutivos (párrafo, línea vacía, párrafo)\n  text = text.replace(/\\n{3,}/g, '\\n\\n');\n  \n  // E. Ajustes estéticos finales\n  // Evitar espacio entre salto de línea y punto de lista (ej: \\n •)\n  text = text.replace(/\\n\\s+([•\\-])/g, '\\n$1');\n  // Dar formato a teléfonos mexicanos (opcional, simple)\n  text = text.replace(/(\\d{2})(\\d{4})(\\d{4})/g, '($1) $2-$3');\n\n  // 3. RETORNO\n  return {\n    json: {\n      output: text.trim(),\n      success: true\n    }\n  };\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5760,
+        2480,
         368
       ],
-      "id": "291b53a3-2a4f-4fbd-9d73-0fb7b8a34f45",
+      "id": "3b4eda12-cfee-4c9a-856b-7c233ad56d74",
       "name": "Limpiar respuesta de agente1",
       "retryOnFail": false
     },
@@ -218,10 +208,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        4400,
+        1120,
         272
       ],
-      "id": "50748c34-5aa8-44bb-a487-9c9c94eede7c",
+      "id": "08c71048-fca9-4c54-8e07-be49e1978350",
       "name": "Mapear Mensaje1"
     },
     {
@@ -285,10 +275,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        3280,
+        0,
         272
       ],
-      "id": "ae82bfb8-1382-4a78-a99b-eff280881381",
+      "id": "700109cc-6f6d-4269-8caa-14ff5c1f9dfe",
       "name": "Switch1"
     },
     {
@@ -326,10 +316,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        3056,
+        -224,
         176
       ],
-      "id": "c16efece-499b-410f-b72a-9cf59686e6af",
+      "id": "5d98e090-b1ad-4ff7-a5b1-dea771590fa5",
       "name": "Edit Fields1"
     },
     {
@@ -343,38 +333,39 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        2832,
+        -448,
         176
       ],
-      "id": "9739dcc7-ca5a-498f-b83f-8e3753d75f2d",
+      "id": "a15d3200-a96a-49ca-a9db-746f702b64d6",
       "name": "Webhook1",
       "webhookId": "e257a96a-f46a-4a68-b7b7-79f3dadfbe2b"
     },
     {
       "parameters": {
+        "modelName": "models/gemini-2.5-pro",
         "options": {
-          "maxOutputTokens": 65536
+          "maxOutputTokens": 2048
         }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        4400,
-        704
+        1216,
+        640
       ],
-      "id": "bcd9f9d0-7bbb-47b5-b398-65a89ef20e37",
+      "id": "29298ffe-ef39-440c-9eaf-6c1cc064ae47",
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "xlzbIxHOowfqL2yj",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "dlAhoVkOPGtESarh",
+          "name": "GOOGLE UROBOT"
         }
       }
     },
     {
       "parameters": {
         "mode": "retrieve-as-tool",
-        "toolDescription": "    \"toolDescription\": \"utiliza esta herramienta cuando el usuario pregunte acerca de procedimientos urológicos. Aquí es donde encontrarás contexto relevante para las respuestas.\\n\\nEn esta herramienta también contamos con información relevante del dr mario\",\n",
+        "toolDescription": "=Usa esta herramienta solo para dudas CLÍNICAS de urología (síntomas, enfermedades, procedimientos, cuidados). \nInput: resumen breve (1–3 líneas) con síntoma principal, edad aproximada, tiempo de evolución y 1–2 datos clave. \nDevuelve texto que debes reescribir con tus palabras, en lenguaje sencillo, sin diagnósticos ni tratamientos específicos.\n",
         "tableName": {
           "__rl": true,
           "value": "conocimiento_procedimientos_urologia",
@@ -386,14 +377,14 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
       "typeVersion": 1.3,
       "position": [
-        5008,
-        592
+        1792,
+        736
       ],
-      "id": "baf0b1fc-3408-4a9d-91e3-1d9e3e415fd3",
+      "id": "54ea7f42-d6f8-4646-afb4-9a92bb3ae74a",
       "name": "Supabase Vector Store",
       "credentials": {
         "supabaseApi": {
-          "id": "Uq22EkraEAEoR2CQ",
+          "id": "g3830K1IgvyF3E0x",
           "name": "Supabase account"
         }
       }
@@ -403,50 +394,38 @@
       "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
       "typeVersion": 1,
       "position": [
-        5088,
-        800
+        1920,
+        912
       ],
-      "id": "638fb612-e6d7-45c4-b77b-b0b4bc42ffe6",
+      "id": "df0dda8e-804a-4714-8fb8-1c30a7dee253",
       "name": "Embeddings Google Gemini",
       "credentials": {
         "googlePalmApi": {
-          "id": "xlzbIxHOowfqL2yj",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "dlAhoVkOPGtESarh",
+          "name": "GOOGLE UROBOT"
         }
       }
     },
     {
       "parameters": {
-        "description": "Usa esta herramienta INMEDIATAMENTE cuando detectes cualquiera de estas situaciones:\n\nSITUACIONES QUE REQUIEREN ESCALAMIENTO:\n\n1. SOLICITUD EXPLICITA\n   - \"Quiero hablar con alguien\"\n   - \"Necesito una persona\"\n   - \"Comuniquenme con un asesor\"\n   - \"Prefiero hablar con un humano\"\n\n2. FACTURACION Y COMPROBANTES\n   - Solicita factura, CFDI, o comprobante fiscal\n   - Menciona RFC o razon social\n   - Necesita datos fiscales\n\n3. PROGRAMAR CIRUGIA\n   - Quiere AGENDAR una cirugia (no solo preguntar sobre ella)\n   - Solicita fecha para operacion\n   - Pregunta \"cuando me pueden operar\"\n\n4. FRUSTRACION O MOLESTIA\n   - Muestra enojo, frustracion, o insatisfaccion\n   - Dice que \"no le ayudas\" o \"no entiende\"\n   - Expresa quejas sobre el servicio\n\n5. SOLICITA LLAMADA TELEFONICA\n   - Pide explicitamente que lo llamen\n   - Dice \"llamame\" o \"pueden marcarme\"\n\n6. DUDAS COMPLEJAS SOBRE COSTOS\n   - Pregunta por descuentos o negociacion\n   - Consulta planes de pago o financiamiento\n   - Necesita cotizacion detallada\n\n7. INFORMACION QUE NO PUEDES DAR\n   - Preguntas medicas especificas que requieren al doctor\n   - Situaciones que necesitan autorizacion\n   - Casos especiales o excepciones\n\nIMPORTANTE:\n- SIEMPRE captura el historial de conversacion completo\n- Solicita permiso al paciente antes de escalar: \"¿Te parece bien que Monica se ponga en contacto contigo?\"\n- Si el usuario acepta, ENTONCES llama a esta herramienta\n- Clasifica correctamente el motivo y la prioridad\n\nPARAMETROS:\n- telefono: numero del paciente (10 digitos, sin prefijos)\n- nombrePaciente: nombre completo\n- motivo: ['facturacion', 'programar_cirugia', 'dudas_costos', 'quiere_llamada', 'hablar_con_persona', 'informacion_adicional', 'otro']\n- contexto: resumen claro de 1-2 frases sobre lo que necesita\n- conversationHistory: DEBE incluir los ultimos 5-10 mensajes\n- prioridad: 'alta' si hay frustracion/urgencia/cirugia, 'normal' en otros casos",
+        "description": "=HERRAMIENTA: ESCALAR_A_HUMANO\n\nUSO\n- Cuando el paciente pida hablar con una persona/que lo llamen, tenga temas de costos/facturación/cirugía complejos o muestre enojo/quejas/caso fuera de protocolo.\n- No la uses para dudas clínicas simples ni solo horarios/precios.\n\nANTES DE LLAMARLA\n- Pregunta si le parece bien que alguien lo contacte.\n- Obtén: nombre, celular MX (10 dígitos) y resumen (1–2 frases) de lo que necesita.\n\nINPUT\n- nombre: string\n- telefono: string (10 dígitos MX)\n- resumen: string\n\nDESPUÉS\n- Avisa que el equipo lo contactará y evita abrir temas nuevos complejos.\n",
         "workflowId": {
           "__rl": true,
-          "value": "YRms68urnyKHe3Y7",
+          "value": "EakL64jMzXkPuDfO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/YRms68urnyKHe3Y7",
-          "cachedResultName": "ESCALAR_A_HUMANO"
+          "cachedResultUrl": "/workflow/EakL64jMzXkPuDfO",
+          "cachedResultName": "ESCALAR_ASISTENTE"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "telefono": "={{ $fromAI('telefono', '', 'string')}}",
-            "nombrePaciente": "={{ $fromAI('nombrePaciente', '', 'string') }}\n",
-            "motivo": "={{ $fromAI('motivo', 'hablar_con_persona', 'string') }}",
-            "contexto": "={{ $fromAI('contexto', 'El paciente solicita atencion personalizada', 'string') }}",
-            "canalPreferido": "={{ $fromAI('canalPreferido', 'whatsapp', 'string') }}",
-            "prioridad": "={{ $fromAI('prioridad', 'normal', 'string') }}\"\n"
+            "nombrePaciente": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nombrePaciente', ``, 'string') }}",
+            "telefono": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('telefono', ``, 'string') }}",
+            "motivo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('motivo', ``, 'string') }}",
+            "contexto": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('contexto', ``, 'string') }}"
           },
           "matchingColumns": [],
           "schema": [
-            {
-              "id": "telefono",
-              "displayName": "telefono",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
             {
               "id": "nombrePaciente",
               "displayName": "nombrePaciente",
@@ -454,8 +433,16 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
             },
             {
               "id": "motivo",
@@ -464,8 +451,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "contexto",
@@ -474,28 +460,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "canalPreferido",
-              "displayName": "canalPreferido",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            },
-            {
-              "id": "prioridad",
-              "displayName": "prioridad",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             }
           ],
           "attemptToConvertTypes": false,
@@ -505,10 +470,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        5264,
-        704
+        2016,
+        592
       ],
-      "id": "851831af-9f96-494a-90ff-f7475b8f3cbf",
+      "id": "64422342-407f-43ea-921e-038f29b54bb9",
       "name": "ESCALAR_HUMANO"
     },
     {
@@ -522,20 +487,14 @@
         "jsonBody": "={{ JSON.stringify({ data: { messages: $(\"Webhook1\").item.json.body.data.messages } }) }}\n",
         "options": {}
       },
-      "id": "07f0d3e8-1bf0-4462-9d9e-63e3876b877b",
+      "id": "9021a984-c873-495d-aaae-c677b5d2153b",
       "name": "Decrypt Media (Wasender)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        3504,
+        224,
         192
-      ],
-      "credentials": {
-        "httpBearerAuth": {
-          "id": "skLVidDokzorVyYh",
-          "name": "Bearer Auth account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -544,20 +503,14 @@
         "genericAuthType": "httpBearerAuth",
         "options": {}
       },
-      "id": "e9567efa-9632-4a95-8523-82706d3e6cc4",
+      "id": "295b1470-478a-4bde-8238-cee59538dc8b",
       "name": "Descargar Decrypt (OGG)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        3728,
+        448,
         192
-      ],
-      "credentials": {
-        "httpBearerAuth": {
-          "id": "skLVidDokzorVyYh",
-          "name": "Bearer Auth account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -572,12 +525,12 @@
         },
         "options": {}
       },
-      "id": "bc5810de-c83c-4fdc-9385-6f1f65c1104e",
+      "id": "6a72e7ef-489a-4433-9f80-bbb64b6ba2c6",
       "name": "Armar Respuesta",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        4176,
+        896,
         192
       ]
     },
@@ -590,17 +543,11 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        3952,
+        672,
         192
       ],
-      "id": "66070287-7b33-4cbd-af6a-8e1a5ddcda29",
-      "name": "Transcribe a recording",
-      "credentials": {
-        "openAiApi": {
-          "id": "TGzvTmDHFZ17RPAv",
-          "name": "OpenAi account"
-        }
-      }
+      "id": "7e0ee1a8-1cf3-4876-ad57-68f332477cc0",
+      "name": "Transcribe a recording"
     },
     {
       "parameters": {
@@ -609,10 +556,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
       "position": [
-        4400,
+        1120,
         464
       ],
-      "id": "e37c68db-9ff5-4a9e-8da5-754f0de15f55",
+      "id": "a9540aae-15be-42d9-ac70-6bef47049431",
       "name": "When chat message received",
       "webhookId": "aea3f6f5-6dbf-4bf7-9620-6ab470f82e22"
     },
@@ -623,10 +570,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3280,
+        0,
         0
       ],
-      "id": "709832f1-7025-4ff5-b3df-e834fd9e8632",
+      "id": "f36600ca-7411-49ee-a435-a4b5ca116aab",
       "name": "LEAD_CAPTURE"
     },
     {
@@ -785,10 +732,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        3504,
+        224,
         0
       ],
-      "id": "fde9f4f9-9771-4f26-90aa-fc3447286b66",
+      "id": "55df3628-264b-443d-a375-c8ace4683697",
       "name": "Call 'LEAD_TRACKER'1",
       "alwaysOutputData": true
     },
@@ -815,45 +762,41 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        5664,
-        64
+        2432,
+        112
       ],
-      "id": "f7d88808-8cb4-42ae-98ab-4a720a685d0b",
+      "id": "f9dff412-1728-4643-ba86-5978ac224dfa",
       "name": "Enviar Respuesta de Asistente",
+      "retryOnFail": true,
       "credentials": {
         "httpHeaderAuth": {
-          "id": "J0Kap8PdAddWNu3l",
-          "name": "Header Auth account 2"
-        },
-        "httpBearerAuth": {
-          "id": "skLVidDokzorVyYh",
-          "name": "Bearer Auth account"
+          "id": "BracTxTCVOWFfFBZ",
+          "name": "Header Auth account"
         }
       }
     },
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "frv41",
-        "contextWindowLength": 10
+        "sessionKey": "hj7b"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        4576,
-        704
+        1408,
+        672
       ],
-      "id": "c3d7b82c-0326-458e-8664-97e21ba763fb",
+      "id": "bec02cc8-ee9b-43ef-b4f0-143716313e4d",
       "name": "Simple Memory"
     },
     {
       "parameters": {
-        "description": "Herramienta: Agendar Consulta Médica\n\nPREREQUISITOS CRÍTICOS:\n- Debes haber ejecutado GET_DISPONIBILIDAD_CALENDARIOS primero\n- Debes tener los datos EXACTOS del slot que el usuario eligió\n- El usuario debe haber confirmado: nombre, teléfono y motivo\n\nPARÁMETROS OBLIGATORIOS:\n\n1. slotId (string):\n   - Formato: \"slot_POLANCO_2025-10-21T22:00:00.000Z\"\n   - NO lo inventes - debe venir de la respuesta de GET_DISPONIBILIDAD_CALENDARIOS\n   - Si no lo tienes, primero consulta disponibilidad\n\n2. sede (string):\n   - \"POLANCO\" o \"SATELITE\" (mayúsculas)\n\n3. start (string):\n   - Formato ISO 8601 UTC: \"2025-10-21T22:00:00.000Z\"\n   - DEBE terminar en Z\n   - NO modifiques este valor\n   - Copia EXACTAMENTE del slot\n\n4. end (string):\n   - Formato ISO 8601 UTC: \"2025-10-21T22:30:00.000Z\"\n   - DEBE terminar en Z\n   - Copia EXACTAMENTE del slot (NO calcules)\n\n5. paciente (objeto JSON):\n   {\n     \"nombre\": \"Nombre Completo\",\n     \"telefono\": \"6673184624\",\n     \"email\": null\n   }\n\n6. tipoCita: \"primera_vez\" o \"seguimiento\"\n\n7. motivoConsulta: string con el motivo\n\nIMPORTANTE - CÓMO OBTENER LOS DATOS:\nCuando el usuario dice \"quiero agendar a las 4pm\":\n1. Busca en la respuesta previa de GET_DISPONIBILIDAD_CALENDARIOS\n2. Identifica el slot que coincide con \"4:00 PM\"\n3. Usa los valores EXACTOS de ese slot: startISO como start, endISO como end\n4. Construye el slotId como: \"slot_\" + sede + \"_\" + startISO\n\nEJEMPLO:\nSi GET_DISPONIBILIDAD_CALENDARIOS devolvió:\n  startISO: \"2025-10-21T22:00:00.000Z\"\n  endISO: \"2025-10-21T22:30:00.000Z\"\n  sede: \"POLANCO\"\n\nEntonces usa:\n  slotId: \"slot_POLANCO_2025-10-21T22:00:00.000Z\"\n  start: \"2025-10-21T22:00:00.000Z\"\n  end: \"2025-10-21T22:30:00.000Z\"\n  sede: \"POLANCO\"\n\nNUNCA inventes estos valores. Si no tienes los datos exactos, di al usuario que necesitas consultar disponibilidad primero.\n```\n---\n\n## ❗ CAMBIO #2: Agregar instrucciones al prompt del LLM\n\n**Dónde:** Workflow UROBOT → Nodo \"Urobot\" (Google Gemini Chat Model) → Agregar al final del prompt system\n\n**Agregar este texto:**\n```\nREGLAS CRÍTICAS PARA AGENDAMIENTO:\n\nCuando uses GET_DISPONIBILIDAD_CALENDARIOS:\n1. Guarda TODA la respuesta en tu memoria\n2. Presta especial atención a: startISO, endISO, sede, displayTime\n3. Estos valores serán necesarios para agendar\n\nCuando el usuario quiera agendar:\n1. Busca en tu memoria la respuesta de GET_DISPONIBILIDAD_CALENDARIOS\n2. Identifica QUÉ horario eligió el usuario (ej: \"4pm\", \"las 4\", \"16 horas\")\n3. Encuentra el slot donde displayTime coincide\n4. Extrae los valores EXACTOS: startISO, endISO, sede\n5. Construye slotId como: \"slot_\" + sede + \"_\" + startISO\n6. Usa ESOS valores para llamar AGENDAR_CONSULTA\n\nNUNCA:\n- No inventes valores de start/end\n- No calcules la fecha/hora, usa lo que te dio GET_DISPONIBILIDAD_CALENDARIOS\n- No modifiques el formato de las fechas\n- No llames AGENDAR_CONSULTA sin tener los datos exactos\n\nSi no tienes los datos del slot en memoria, primero consulta disponibilidad.",
+        "description": "=HERRAMIENTA: AGENDAR_CONSULTA\n\nUSO\n- Solo para CONFIRMAR una cita cuando ya:\n  - llamaste a DISPONIBILIDAD_CALENDARIO,\n  - mostraste horarios y eligió uno (día, hora, sede),\n  - tienes nombre completo, celular MX (10 dígitos) y motivo de consulta,\n  - identificaste el slot exacto en la respuesta.\n\nPARÁMETROS\n- slotId: \"slot_\" + sede + \"_\" + startISO (del slot elegido).\n- sede: \"POLANCO\" o \"SATELITE\".\n- start / end: startISO / endISO del slot (ISO 8601 UTC, sin cambios).\n- paciente: { \"nombre\": \"...\", \"telefono\": \"10_dígitos_MX\" }.\n- tipoCita: \"primera_vez\" o \"seguimiento\".\n- motivoConsulta: 1–2 frases descriptivas (evita solo “revisión” o “consulta”).\n\nREGLA CLAVE\n- No inventes slotId, start ni end; usa exactamente lo devuelto por DISPONIBILIDAD_CALENDARIO.\n",
         "workflowId": {
           "__rl": true,
-          "value": "lmicP7dbmUtnbb7F",
+          "value": "xrycvZgtHqlz9Wh3",
           "mode": "list",
-          "cachedResultUrl": "/workflow/lmicP7dbmUtnbb7F",
+          "cachedResultUrl": "/workflow/xrycvZgtHqlz9Wh3",
           "cachedResultName": "AGENDAR_CONSULTA"
         },
         "workflowInputs": {
@@ -866,7 +809,7 @@
             "paciente": "={{ $fromAI('paciente', {}, 'json') }}",
             "tipoCita": "={{ $fromAI('tipoCita', 'primera_vez', 'string') }}",
             "motivoConsulta": "={{ $fromAI('motivoConsulta', '', 'string') }}",
-            "lead_telefono": "="
+            "lead_telefono": "={{ $json.lead_telefono }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -958,15 +901,15 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        5600,
-        704
+        2224,
+        592
       ],
-      "id": "603f6b9a-ce15-4b12-8d4f-3b0b35eac1ec",
+      "id": "c11f149e-6457-4d72-8537-6731512b64be",
       "name": "AGENDAR_CONSULTA'"
     },
     {
       "parameters": {
-        "description": "📌 CUÁNDO USAR ESTA HERRAMIENTA: REAGENDAR_CONSULTAA\n\nActiva esta herramienta cuando el usuario indique o sugiera que desea **cambiar, mover o reagendar una cita médica previamente agendada**.\n\nFrases típicas que indican esta intención incluyen:\n\n- \"Quiero cambiar mi cita\"\n- \"Necesito reagendar\"\n- \"No puedo asistir a la hora que tenía\"\n- \"¿Puedo mover mi consulta?\"\n- \"Me surgió un imprevisto, quiero cambiar mi cita\"\n- \"Reagendar para otro día/hora\"\n\n📥 DATOS NECESARIOS PARA USO CORRECTO:\n\n- **teléfono (10 dígitos)** del paciente que agendó la cita\n- **nueva fecha (YYYY-MM-DD)** solicitada\n- **nueva hora (HH:MM)** en formato 24h\n- **sede** preferida: `POLANCO` o `SATELITE`\n- **motivo del cambio** (opcional pero recomendable)\n\n🧠 VALIDACIONES AUTOMÁTICAS INCLUIDAS:\n\n- La nueva fecha/hora debe estar al menos 2 horas en el futuro\n- No se permiten domingos\n- Máximo 90 días de anticipación\n- Verificación de formato correcto y sede válida\n\n⚠️ SI FALTAN DATOS CLAVE (como fecha, hora o sede):\n- No actives la herramienta inmediatamente\n- Primero pregunta al usuario por los datos faltantes\n- Una vez recolectados, puedes proceder a ejecutar el flujo\nEJEMPLOS DE CONVERSIÓN:\n\nUsuario: \"Quiero cambiar mi cita del viernes a las 3pm\"\n→ Extrae:\n  - newDate: [próximo viernes en formato YYYY-MM-DD]\n  - newTime: \"15:00\"\n  - newSede: \"\" (no mencionó)\n  - reason: \"Cambio solicitado por paciente\"\n\nUsuario: \"Mejor agendar para el 25 de octubre a las 2 de la tarde en Polanco\"\n→ Extrae:\n  - newDate: \"2025-10-25\"\n  - newTime: \"14:00\"\n  - newSede: \"POLANCO\"\n  - reason: \"Reagendamiento solicitado\"\n\nUsuario: \"Ya no puedo el martes, ¿hay el miércoles?\"\n→ Extrae:\n  - newDate: [próximo miércoles]\n  - newTime: \"\" (no especificó hora)\n  - → FLUJO: Consultar DISPONIBILIDAD_CALENDARIO y sugerir horarios",
+        "description": "=HERRAMIENTA: REAGENDAR_CONSULTA\n\nUSO\n- Solo para CAMBIAR una cita ya agendada (no crear nueva).\n- No la uses para horarios (→ DISPONIBILIDAD_CALENDARIO) ni para nueva cita (→ AGENDAR_CONSULTA).\n\nPARÁMETROS (todos antes de llamarla)\n- telefono: celular MX, 10 dígitos.\n- newDate: YYYY-MM-DD (America/Mexico_City).\n- newTime: HH:MM (24 h, hora local CDMX).\n- newSede: \"POLANCO\", \"SATELITE\" o ''.\n- reason: motivo del cambio (opcional).\n\nLENGUAJE NATURAL\n- Convierte “viernes a las 3pm” → next viernes + \"15:00\", siempre en hora local CDMX.\n- Si solo dice “¿hay el miércoles?” sin hora: primero usa DISPONIBILIDAD_CALENDARIO, luego llama REAGENDAR_CONSULTA con newTime definido.\n",
         "workflowId": {
           "__rl": true,
           "mode": "id",
@@ -1052,10 +995,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        5920,
-        704
+        2432,
+        592
       ],
-      "id": "d16e7426-0467-45a3-b547-565e4ce90f38",
+      "id": "1c05f333-7246-49a7-ae06-33b576af402f",
       "name": "REAGENDAR_CONSULTA"
     }
   ],
@@ -1081,11 +1024,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Limpiar respuesta de agente1": {
-      "main": [
-        []
       ]
     },
     "Mapear Mensaje1": {
@@ -1295,11 +1233,10 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "93a63ee4-0f33-4802-992a-1a4bb6c43946",
+  "versionId": "0d223d5a-d76a-4d4e-b3cf-a70c73949c72",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "ab2739af75c0bf0ee034fd37e78576df139d0a4fcd48adc710d9ceec11fc12c5"
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
   },
-  "id": "EV0uQg6ljO1CwH6A",
+  "id": "MRdxjt5nxJFilgSV",
   "tags": []
 }

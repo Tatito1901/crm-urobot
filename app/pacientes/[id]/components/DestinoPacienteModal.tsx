@@ -12,7 +12,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle, FileText, Scissors, Clock, DollarSign, MapPin, AlertCircle, Save } from 'lucide-react';
+import { X, CheckCircle, FileText, Scissors, Clock, DollarSign, MapPin, AlertCircle, Save, Plus, Trash2, Send, FileDown, Loader2 } from 'lucide-react';
 import type { 
   DestinoPaciente, 
   TipoDestino, 
@@ -24,6 +24,10 @@ import {
   TIPOS_CIRUGIA, 
   DESTINO_LABELS 
 } from '@/types/pacientes';
+
+// Import dinámico para jspdf (para evitar errores en build si no se usa)
+// Nota: Requiere instalar jspdf y jspdf-autotable
+// npm install jspdf jspdf-autotable
 
 interface DestinoPacienteModalProps {
   isOpen: boolean;
@@ -42,6 +46,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
 }) => {
   const [tipoDestino, setTipoDestino] = useState<TipoDestino>('pendiente');
   const [observaciones, setObservaciones] = useState('');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   
   // Estado para Alta
   const [motivoAlta, setMotivoAlta] = useState('');
@@ -49,9 +54,34 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
   // Estado para Presupuesto
   const [presupuesto, setPresupuesto] = useState<Partial<PresupuestoCirugia>>({
     moneda: 'MXN',
-    fechaEnvio: new Date().toISOString().split('T')[0]
+    fechaEnvio: new Date().toISOString().split('T')[0],
+    inclusiones: ['Honorarios Médicos', 'Hospitalización (1 noche)', 'Materiales y Medicamentos'],
+    sede: 'polanco' // Default
   });
-  
+  const [nuevoItemInclusion, setNuevoItemInclusion] = useState('');
+
+  // Direcciones de Sedes
+  const SEDES = {
+    polanco: {
+      nombre: 'Hospital Angeles Santa Mónica',
+      direccion: [
+        'Calle Temístocles 210',
+        'Consultorio 206',
+        'Polanco, Miguel Hidalgo, CDMX',
+        'Tel: 55 8437 9587'
+      ]
+    },
+    satelite: {
+      nombre: 'Hospital San Angel Inn Satélite',
+      direccion: [
+        'Cto. Centro Comercial 22',
+        'Consultorio 1415',
+        'Cd. Satélite, Naucalpan, Edo. Méx.',
+        'Tel: 55 5572 1463'
+      ]
+    }
+  };
+
   // Estado para Cirugía
   const [cirugia, setCirugia] = useState<Partial<CirugiaRealizada>>({
     moneda: 'MXN',
@@ -70,7 +100,10 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
       }
       
       if (destinoActual.presupuesto) {
-        setPresupuesto(destinoActual.presupuesto);
+        setPresupuesto({
+            ...destinoActual.presupuesto,
+            inclusiones: destinoActual.presupuesto.inclusiones || ['Honorarios Médicos', 'Hospitalización (1 noche)', 'Materiales y Medicamentos']
+        });
       }
       
       if (destinoActual.cirugia) {
@@ -81,10 +114,282 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
       setTipoDestino('pendiente');
       setObservaciones('');
       setMotivoAlta('');
-      setPresupuesto({ moneda: 'MXN', fechaEnvio: new Date().toISOString().split('T')[0] });
+      setPresupuesto({ 
+        moneda: 'MXN', 
+        fechaEnvio: new Date().toISOString().split('T')[0],
+        inclusiones: ['Honorarios Médicos', 'Hospitalización (1 noche)', 'Materiales y Medicamentos']
+      });
       setCirugia({ moneda: 'MXN', fechaCirugia: new Date().toISOString().split('T')[0], sedeOperacion: 'Polanco' });
     }
   }, [isOpen, destinoActual]);
+
+  const handleAddInclusion = () => {
+    if (nuevoItemInclusion.trim()) {
+      setPresupuesto(prev => ({
+        ...prev,
+        inclusiones: [...(prev.inclusiones || []), nuevoItemInclusion.trim()]
+      }));
+      setNuevoItemInclusion('');
+    }
+  };
+
+  const handleRemoveInclusion = (index: number) => {
+    setPresupuesto(prev => ({
+      ...prev,
+      inclusiones: (prev.inclusiones || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleGenerarPDF = async () => {
+    if (!presupuesto.tipoCirugia || !presupuesto.monto) {
+      alert('Por favor complete el tipo de cirugía y el monto.');
+      return;
+    }
+
+    setIsGeneratingPdf(true);
+
+    try {
+      // Importación dinámica de jsPDF
+      const jsPDF = (await import('jspdf')).default;
+      const autoTable = (await import('jspdf-autotable')).default;
+
+      const doc = new jsPDF();
+
+      // ==========================================
+      // CONFIGURACIÓN DE ESTILO
+      // ==========================================
+      // Colores basados en la imagen proporcionada (Verde URODEX)
+      const primaryColor = [14, 77, 67]; // #0E4D43 (Verde oscuro elegante)
+      const accentColor = [20, 184, 166]; // Teal claro para detalles
+      const textDark = [30, 41, 59]; // Slate 800
+      const textGray = [100, 116, 139]; // Slate 500
+      const bgLight = [248, 250, 252]; // Slate 50
+
+      // ==========================================
+      // HEADER (Diseño Minimalista y Formal)
+      // ==========================================
+      
+      // Logo Simulado (Texto) - Más refinado
+      // Icono decorativo
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(20, 15, 16, 16, 'F'); // Cuadrado un poco más pequeño
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(0.8);
+      doc.lines([[4, 0], [0, 4], [-4, 0]], 28, 19, [1, 1], 'S', true);
+
+      // Texto URODEX - Tracking visual (espaciado)
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(24);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('URODEX', 42, 23);
+
+      // Texto Dr. Mario Martínez Thomas
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.text('Dr. Mario Martínez Thomas', 42, 29);
+
+      // Subtítulo Especialidad
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+      doc.text('CIRUGÍA UROLÓGICA DE MÍNIMA INVASIÓN', 42, 33);
+
+      // Info de Contacto (Dinámica según sede) - Alineación derecha limpia
+      doc.setFontSize(8);
+      doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+      doc.setFont('helvetica', 'normal');
+      
+      const sedeSeleccionada = presupuesto.sede && SEDES[presupuesto.sede] ? SEDES[presupuesto.sede] : SEDES['polanco'];
+      
+      // Bloque de dirección
+      let yPos = 18;
+      doc.setFont('helvetica', 'bold');
+      doc.text(sedeSeleccionada.nombre, 190, yPos, { align: 'right' });
+      
+      doc.setFont('helvetica', 'normal');
+      yPos += 4;
+      sedeSeleccionada.direccion.forEach(line => {
+        doc.text(line, 190, yPos, { align: 'right' });
+        yPos += 4;
+      });
+      doc.text('contacto@urodex.mx', 190, yPos, { align: 'right' });
+
+      // Línea separadora header (Sutil)
+      doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.setLineWidth(0.5);
+      doc.line(20, 45, 190, 45);
+
+      // ==========================================
+      // DATOS DEL PACIENTE (Diseño sin caja, estilo carta)
+      // ==========================================
+      
+      // Título del Documento
+      doc.setFontSize(14);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PRESUPUESTO QUIRÚRGICO', 105, 60, { align: 'center' });
+
+      const today = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Grid de información (Labels en gris, valores en oscuro)
+      const startInfoY = 75;
+      
+      // Columna Izquierda (Paciente)
+      doc.setFontSize(8);
+      doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PACIENTE', 20, startInfoY);
+      
+      doc.setFontSize(11);
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.setFont('helvetica', 'normal');
+      doc.text(pacienteNombre, 20, startInfoY + 6);
+
+      // Columna Derecha (Fecha)
+      doc.setFontSize(8);
+      doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FECHA DE EMISIÓN', 140, startInfoY);
+
+      doc.setFontSize(11);
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.setFont('helvetica', 'normal');
+      doc.text(today, 140, startInfoY + 6);
+
+      // Fila 2: Procedimiento
+      const row2Y = startInfoY + 18;
+      doc.setFontSize(8);
+      doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PROCEDIMIENTO PROPUESTO', 20, row2Y);
+
+      doc.setFontSize(11);
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.setFont('helvetica', 'normal');
+      doc.text(presupuesto.tipoCirugia || '', 20, row2Y + 6);
+
+      // Línea separadora sutil
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.1);
+      doc.line(20, row2Y + 12, 190, row2Y + 12);
+
+      // ==========================================
+      // TABLA DE COSTOS (Estilo Formal / Financiero)
+      // ==========================================
+      // @ts-ignore
+      autoTable(doc, {
+        startY: row2Y + 20,
+        head: [['CONCEPTO', 'IMPORTE']],
+        body: [
+          [
+            { content: presupuesto.tipoCirugia?.toUpperCase(), styles: { fontStyle: 'bold' } }, 
+            { content: `$${presupuesto.monto?.toLocaleString('es-MX', { minimumFractionDigits: 2 })} ${presupuesto.moneda}`, styles: { halign: 'right', fontStyle: 'bold' } }
+          ],
+        ],
+        theme: 'plain', // Tema limpio sin fondo
+        headStyles: { 
+          fillColor: false, // Sin fondo
+          textColor: primaryColor, // Texto verde corporativo
+          fontStyle: 'bold',
+          halign: 'left',
+          cellPadding: { top: 5, bottom: 5, left: 0, right: 0 },
+          lineWidth: { top: 0.5, bottom: 0.5 }, // Líneas arriba y abajo del header
+          lineColor: primaryColor as [number, number, number]
+        },
+        bodyStyles: {
+          textColor: textDark,
+          fontSize: 11,
+          cellPadding: { top: 10, bottom: 10, left: 0, right: 0 },
+          lineWidth: { bottom: 0.1 },
+          lineColor: [226, 232, 240] as [number, number, number]
+        },
+        columnStyles: { 
+          0: { cellWidth: 'auto' }, 
+          1: { cellWidth: 50 } 
+        },
+        margin: { left: 20, right: 20 }
+      });
+
+      // @ts-ignore
+      let finalY = doc.lastAutoTable.finalY + 15;
+
+      // ==========================================
+      // INCLUSIONES (Lista limpia)
+      // ==========================================
+      if (presupuesto.inclusiones && presupuesto.inclusiones.length > 0) {
+        doc.setFontSize(9);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.setFont('helvetica', 'bold');
+        doc.text('EL PRESUPUESTO INCLUYE:', 20, finalY);
+        finalY += 8;
+
+        doc.setFontSize(10);
+        doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+        doc.setFont('helvetica', 'normal');
+        
+        presupuesto.inclusiones.forEach((item) => {
+          // Bullet point pequeño y elegante
+          doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]); // Usar color primario o acento
+          doc.circle(22, finalY - 1.2, 1, 'F'); // Círculo más pequeño
+          
+          doc.text(item, 28, finalY);
+          finalY += 7;
+        });
+        
+        finalY += 10;
+      }
+
+      // ==========================================
+      // NOTAS / OBSERVACIONES
+      // ==========================================
+      if (presupuesto.notas) {
+        doc.setFontSize(9);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.setFont('helvetica', 'bold');
+        doc.text('OBSERVACIONES:', 20, finalY);
+        finalY += 6;
+
+        doc.setFontSize(9);
+        doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+        doc.setFont('helvetica', 'italic');
+        
+        const splitNotes = doc.splitTextToSize(presupuesto.notas, 170);
+        doc.text(splitNotes, 20, finalY);
+      }
+
+      // ==========================================
+      // FOOTER (Discreto y centrado)
+      // ==========================================
+      const pageHeight = doc.internal.pageSize.height;
+      
+      // Línea footer muy fina
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.1);
+      doc.line(40, pageHeight - 25, 170, pageHeight - 25);
+
+      // Texto validez
+      doc.setFontSize(7);
+      doc.setTextColor(textGray[0], textGray[1], textGray[2]);
+      doc.setFont('helvetica', 'normal');
+      doc.text('ESTE PRESUPUESTO TIENE UNA VALIDEZ DE 15 DÍAS NATURALES A PARTIR DE SU FECHA DE EMISIÓN.', 105, pageHeight - 18, { align: 'center' });
+      doc.text('Precios sujetos a cambio sin previo aviso. Aplican restricciones.', 105, pageHeight - 14, { align: 'center' });
+
+
+      // Guardar y Enviar
+      const fileName = `Presupuesto_URODEX_${pacienteNombre.replace(/\s+/g, '_')}.pdf`;
+      doc.save(fileName);
+
+      // Simular envío exitoso
+      alert('Presupuesto generado correctamente.');
+      
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      alert('Hubo un error al generar el PDF.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   const handleSave = () => {
     const destino: DestinoPaciente = {
@@ -217,53 +522,185 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                   <h3 className="font-semibold">Detalles del Presupuesto</h3>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Tipo de Cirugía</label>
-                    <select
-                      value={presupuesto.tipoCirugia || ''}
-                      onChange={(e) => setPresupuesto({ ...presupuesto, tipoCirugia: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
-                    >
-                      <option value="">Seleccionar cirugía...</option>
-                      {TIPOS_CIRUGIA.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Sección 1: Configuración General */}
+                  <div className="space-y-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">1. Sede y Fecha</h4>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Selector de Sede */}
+                        <div className="space-y-2 sm:col-span-2">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sede de Atención</label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              onClick={() => setPresupuesto({ ...presupuesto, sede: 'polanco' })}
+                              className={`
+                                relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all hover:shadow-md
+                                ${presupuesto.sede === 'polanco'
+                                  ? 'bg-emerald-50/50 border-emerald-500 ring-1 ring-emerald-500 dark:bg-emerald-500/10 dark:border-emerald-500'
+                                  : 'bg-white border-slate-200 hover:border-emerald-200 dark:bg-slate-900 dark:border-slate-700'}
+                              `}
+                            >
+                              <div className={`p-2 rounded-lg ${presupuesto.sede === 'polanco' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                <MapPin className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <span className={`block text-sm font-bold ${presupuesto.sede === 'polanco' ? 'text-emerald-900 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}>Polanco</span>
+                                <span className="block text-xs text-slate-500 mt-0.5">Hospital Angeles</span>
+                              </div>
+                              {presupuesto.sede === 'polanco' && (
+                                <div className="absolute top-3 right-3">
+                                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                </div>
+                              )}
+                            </button>
+
+                            <button
+                              onClick={() => setPresupuesto({ ...presupuesto, sede: 'satelite' })}
+                              className={`
+                                relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all hover:shadow-md
+                                ${presupuesto.sede === 'satelite'
+                                  ? 'bg-emerald-50/50 border-emerald-500 ring-1 ring-emerald-500 dark:bg-emerald-500/10 dark:border-emerald-500'
+                                  : 'bg-white border-slate-200 hover:border-emerald-200 dark:bg-slate-900 dark:border-slate-700'}
+                              `}
+                            >
+                              <div className={`p-2 rounded-lg ${presupuesto.sede === 'satelite' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                <MapPin className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <span className={`block text-sm font-bold ${presupuesto.sede === 'satelite' ? 'text-emerald-900 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}>Satélite</span>
+                                <span className="block text-xs text-slate-500 mt-0.5">San Angel Inn</span>
+                              </div>
+                              {presupuesto.sede === 'satelite' && (
+                                <div className="absolute top-3 right-3">
+                                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                </div>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Fecha de Envío</label>
+                          <input
+                            type="date"
+                            value={presupuesto.fechaEnvio}
+                            onChange={(e) => setPresupuesto({ ...presupuesto, fechaEnvio: e.target.value })}
+                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                          />
+                        </div>
+                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Monto (MXN)</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <input
-                        type="number"
-                        value={presupuesto.monto || ''}
-                        onChange={(e) => setPresupuesto({ ...presupuesto, monto: Number(e.target.value) })}
-                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
-                        placeholder="0.00"
+                  {/* Sección 2: Detalles Económicos */}
+                  <div className="space-y-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">2. Detalles del Procedimiento</h4>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2 sm:col-span-2">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipo de Cirugía</label>
+                          <select
+                            value={presupuesto.tipoCirugia || ''}
+                            onChange={(e) => setPresupuesto({ ...presupuesto, tipoCirugia: e.target.value })}
+                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                          >
+                            <option value="">Seleccionar cirugía...</option>
+                            {TIPOS_CIRUGIA.map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Monto Total (MXN)</label>
+                          <div className="relative">
+                            <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                            <input
+                              type="number"
+                              value={presupuesto.monto || ''}
+                              onChange={(e) => setPresupuesto({ ...presupuesto, monto: Number(e.target.value) })}
+                              className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                     </div>
+                  </div>
+                  
+                  {/* Sección 3: Inclusiones */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">3. Inclusiones y Notas</h4>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Items Incluidos</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={nuevoItemInclusion}
+                          onChange={(e) => setNuevoItemInclusion(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddInclusion()}
+                          className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                          placeholder="Ej: Honorarios, Hospitalización..."
+                        />
+                        <button
+                          onClick={handleAddInclusion}
+                          className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors border border-emerald-200"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {presupuesto.inclusiones?.map((item, index) => (
+                          <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm group animate-in zoom-in-95">
+                            <span className="text-slate-600 dark:text-slate-300 text-xs font-medium">
+                              {item}
+                            </span>
+                            <button
+                              onClick={() => handleRemoveInclusion(index)}
+                              className="text-slate-400 hover:text-rose-500 transition-colors rounded-full p-0.5 hover:bg-rose-50"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {(!presupuesto.inclusiones || presupuesto.inclusiones.length === 0) && (
+                          <p className="text-xs text-slate-400 italic py-1">No hay items incluidos.</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 mt-4">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Notas Adicionales</label>
+                      <textarea
+                        value={presupuesto.notas || ''}
+                        onChange={(e) => setPresupuesto({ ...presupuesto, notas: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all min-h-[80px]"
+                        placeholder="Condiciones, validez, forma de pago..."
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Fecha de Envío</label>
-                    <input
-                      type="date"
-                      value={presupuesto.fechaEnvio}
-                      onChange={(e) => setPresupuesto({ ...presupuesto, fechaEnvio: e.target.value })}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Notas del Presupuesto</label>
-                    <textarea
-                      value={presupuesto.notas || ''}
-                      onChange={(e) => setPresupuesto({ ...presupuesto, notas: e.target.value })}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all min-h-[80px]"
-                      placeholder="Incluye hospitalización, honorarios..."
-                    />
+                  {/* Botón Generar PDF */}
+                  <div className="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      onClick={handleGenerarPDF}
+                      disabled={isGeneratingPdf}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group"
+                    >
+                      {isGeneratingPdf ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Generando Documento...
+                        </>
+                      ) : (
+                        <>
+                          <FileDown className="h-5 w-5 group-hover:translate-y-0.5 transition-transform" />
+                          Generar PDF Formal
+                        </>
+                      )}
+                    </button>
+                    <p className="text-[10px] text-slate-400 text-center mt-3 flex items-center justify-center gap-1">
+                      <Send className="h-3 w-3" />
+                      Listo para enviar por WhatsApp
+                    </p>
                   </div>
                 </div>
               </div>

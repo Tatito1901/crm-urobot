@@ -161,7 +161,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                     onClick={() => setIsDestinoModalOpen(true)}
                     className="text-[9px] sm:text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-950/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0"
                   >
-                    EDITAR
+                    NUEVA ACCIÓN
                   </button>
                 </div>
 
@@ -237,6 +237,66 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                 <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Registrar Destino
               </button>
+            )}
+
+            {/* HISTORIAL DE ACCIONES (TIMELINE) */}
+            {paciente.historialAcciones && paciente.historialAcciones.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <h4 className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-3">Historial de Eventos</h4>
+                <div className="space-y-0 relative pl-2">
+                  {/* Línea vertical del timeline */}
+                  <div className="absolute left-[11px] top-1 bottom-0 w-px bg-slate-200 dark:bg-slate-800"></div>
+                  
+                  {paciente.historialAcciones.map((accion) => (
+                    <div key={accion.id} className="relative pl-6 pb-4 last:pb-0 group">
+                      {/* Punto del timeline */}
+                      <div className={`
+                        absolute left-0 top-1 w-6 h-6 rounded-full border-2 bg-white dark:bg-[#0f1623] flex items-center justify-center z-10
+                        ${accion.tipo === 'cirugia_realizada' ? 'border-blue-500 text-blue-500' : 
+                          accion.tipo === 'presupuesto_enviado' ? 'border-amber-500 text-amber-500' :
+                          accion.tipo === 'alta_definitiva' ? 'border-emerald-500 text-emerald-500' :
+                          'border-slate-300 text-slate-400'}
+                      `}>
+                        <div className={`w-2 h-2 rounded-full ${
+                          accion.tipo === 'cirugia_realizada' ? 'bg-blue-500' : 
+                          accion.tipo === 'presupuesto_enviado' ? 'bg-amber-500' :
+                          accion.tipo === 'alta_definitiva' ? 'bg-emerald-500' :
+                          'bg-slate-300'
+                        }`}></div>
+                      </div>
+
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                            {DESTINO_LABELS[accion.tipo]}
+                          </span>
+                          <span className="text-[9px] text-slate-400 dark:text-slate-500">
+                            {new Date(accion.fechaRegistro).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                          </span>
+                        </div>
+                        
+                        {accion.detalles.presupuesto && (
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                            {accion.detalles.presupuesto.tipoCirugia} - {formatCurrency(accion.detalles.presupuesto.monto)}
+                          </p>
+                        )}
+                        
+                        {accion.detalles.cirugia && (
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                            {accion.detalles.cirugia.tipoCirugia} ({new Date(accion.detalles.cirugia.fechaCirugia).toLocaleDateString()})
+                          </p>
+                        )}
+
+                        {accion.detalles.motivoAlta && (
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 italic line-clamp-1">
+                            Alta: {accion.detalles.motivoAlta}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}

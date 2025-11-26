@@ -9,10 +9,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -752,
-        -160
+        -896,
+        96
       ],
-      "id": "697b6587-7ee8-490a-80b8-d308b0c6fa1e",
+      "id": "9ce5bafa-a993-4de5-a8a0-7eea223ffe5f",
       "name": "When executed by another workflow"
     },
     {
@@ -22,10 +22,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
-        -160
+        -448,
+        96
       ],
-      "id": "3bb7534f-1f81-4194-bcfb-87dd644748e4",
+      "id": "754ed401-d691-43ca-87a3-9694987f3b4e",
       "name": "Validate Input"
     },
     {
@@ -42,10 +42,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        -80,
-        -160
+        -224,
+        96
       ],
-      "id": "87fb8a37-f737-4d19-8de3-9207d01ca65f",
+      "id": "94063acd-ce68-43fa-ad28-29c3cf5a1f46",
       "name": "Valid?"
     },
     {
@@ -77,10 +77,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        144,
-        -256
+        0,
+        0
       ],
-      "id": "fc5f0094-adcf-4e44-913a-5a044ec52107",
+      "id": "9947da01-8c0b-4161-b697-ec9743546ded",
       "name": "Return Validation Error"
     },
     {
@@ -92,20 +92,14 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        144,
-        -64
+        0,
+        192
       ],
-      "id": "2e9a88b8-efb3-4c9b-be0b-353992f153bf",
+      "id": "d73ee575-7c28-4b06-88c8-5bb6779e0889",
       "name": "Buscar Consulta (PostgreSQL)",
       "retryOnFail": true,
       "maxTries": 2,
-      "waitBetweenTries": 1000,
-      "credentials": {
-        "postgres": {
-          "id": "k3E9sYtyRqQbgtHs",
-          "name": "UROBOT"
-        }
-      }
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
@@ -114,10 +108,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        368,
-        -64
+        224,
+        192
       ],
-      "id": "14af0423-2845-47e9-b96a-a1665096fc3c",
+      "id": "d33bfbd1-24b3-4a00-9168-e2a81f6f29de",
       "name": "Process Search Result"
     },
     {
@@ -134,10 +128,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        592,
-        -64
+        448,
+        192
       ],
-      "id": "ccccbfd9-b8bd-41ca-be95-b96aa1cceca9",
+      "id": "8dfddca3-d665-4380-8d67-c17f2da4e819",
       "name": "Found?"
     },
     {
@@ -163,10 +157,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        816,
-        -160
+        672,
+        96
       ],
-      "id": "b6275009-0109-4581-8d47-cc246c585dfa",
+      "id": "814580de-83b4-4ac7-ba5d-003481fab7db",
       "name": "Return Not Found"
     },
     {
@@ -176,10 +170,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        816,
-        32
+        672,
+        288
       ],
-      "id": "4671ba71-54ec-4477-9869-cbd9027ead03",
+      "id": "e5ab8ad2-fb1d-45b1-af15-fa8fa8759261",
       "name": "Parse New DateTime"
     },
     {
@@ -189,10 +183,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1040,
-        32
+        896,
+        288
       ],
-      "id": "57d99a18-0680-479d-a705-b58cacaddf9c",
+      "id": "4b846682-dbde-432c-b186-8a30dfc06164",
       "name": "Validate Doctor Schedule"
     },
     {
@@ -209,10 +203,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        1264,
-        32
+        1120,
+        288
       ],
-      "id": "d2099dcc-5453-4b19-9773-6b033e71a8ad",
+      "id": "415ad084-9475-4b18-8056-81577c4064a0",
       "name": "Schedule Valid?"
     },
     {
@@ -238,10 +232,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1488,
-        -64
+        1344,
+        192
       ],
-      "id": "88d339cf-16cb-4de5-abe6-2eb53ff3dc82",
+      "id": "c98fa04c-ed99-4b2f-9177-5e18cf8b1cf7",
       "name": "Return Invalid Schedule"
     },
     {
@@ -260,10 +254,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        1488,
-        128
+        1344,
+        384
       ],
-      "id": "b7834d93-50fe-4e30-95d2-69e2d394caeb",
+      "id": "117e342a-82f7-457f-84aa-10efbe38ef97",
       "name": "Call 'DISPONIBILIDAD_CALENDARIO'",
       "retryOnFail": true,
       "maxTries": 2,
@@ -276,10 +270,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1712,
-        128
+        1568,
+        384
       ],
-      "id": "52fb76d9-3f2f-46b0-89c3-284bcd1d0a6b",
+      "id": "e7e55c33-4b6b-4515-a6f8-1da4a023142c",
       "name": "Check if Available"
     },
     {
@@ -296,10 +290,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        1936,
-        128
+        1792,
+        384
       ],
-      "id": "e6080115-487a-4193-8f19-5a9aebb43a8c",
+      "id": "b806073e-9156-4c4b-90fd-1b49c577e060",
       "name": "Available?"
     },
     {
@@ -325,10 +319,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2160,
-        32
+        2016,
+        288
       ],
-      "id": "31d701d6-4e59-4c07-95b9-67f635af1060",
+      "id": "1f069593-4543-4ed2-ab4d-fd4c53b2d7ab",
       "name": "Return Unavailable"
     },
     {
@@ -347,20 +341,14 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1,
       "position": [
-        2384,
-        128
+        2240,
+        384
       ],
-      "id": "64e94191-c29f-44db-b9f2-10471cf4f449",
+      "id": "78813793-2c6b-4cdb-a2d7-6f204e57eff9",
       "name": "Delete Old Calendar Event",
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 2000,
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "LWCHe5J8QGKC4iFi",
-          "name": "Google Calendar account - Clinicasdelcorazoncdmx@gmail.com"
-        }
-      },
       "continueOnFail": true
     },
     {
@@ -380,20 +368,14 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1,
       "position": [
-        2608,
-        224
+        2464,
+        480
       ],
-      "id": "08af8a97-0131-4307-86d8-d05c911472af",
+      "id": "487c3222-c0df-4d31-88c3-b815de425968",
       "name": "Create New Calendar Event",
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 2000,
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "LWCHe5J8QGKC4iFi",
-          "name": "Google Calendar account - Clinicasdelcorazoncdmx@gmail.com"
-        }
-      }
+      "waitBetweenTries": 2000
     },
     {
       "parameters": {
@@ -402,10 +384,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2832,
-        224
+        2688,
+        480
       ],
-      "id": "bf654c32-a398-4234-97cc-d6215b94cdbb",
+      "id": "f19c288d-4f13-4b09-855d-23ae4c1b31c6",
       "name": "Prepare RPC Call"
     },
     {
@@ -417,20 +399,14 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        3056,
-        224
+        2912,
+        480
       ],
-      "id": "242c0a97-82ea-458f-98cb-6f21d7ff5590",
+      "id": "185fdc22-2548-41e9-9e88-7cdc8a695ec4",
       "name": "Reagendar (PostgreSQL)",
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 2000,
-      "credentials": {
-        "postgres": {
-          "id": "k3E9sYtyRqQbgtHs",
-          "name": "UROBOT"
-        }
-      }
+      "waitBetweenTries": 2000
     },
     {
       "parameters": {
@@ -439,10 +415,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3280,
-        224
+        3136,
+        480
       ],
-      "id": "4087607a-e721-4611-870f-08a2c3ad51d4",
+      "id": "4b223b67-f5fe-4721-86cf-4250b43bbf16",
       "name": "Build Success Response"
     },
     {
@@ -473,10 +449,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2160,
-        224
+        2016,
+        480
       ],
-      "id": "29755ad3-ac13-49dc-b298-022ebe6608c8",
+      "id": "4bd82359-c7d8-4d24-8244-9483f07ba962",
       "name": "If"
     },
     {
@@ -486,10 +462,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2384,
-        320
+        2240,
+        576
       ],
-      "id": "82aa8ffb-773a-4839-a03b-f371271da8e3",
+      "id": "d8ddb0a2-8592-4270-9b85-cf5b5e5fb7ff",
       "name": "Code in JavaScript"
     },
     {
@@ -499,10 +475,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -528,
-        -160
+        -672,
+        96
       ],
-      "id": "ed1886a5-919e-4e40-b8e0-02c757f365b8",
+      "id": "0b50df65-dda0-4782-b6a9-cbb6a9e07231",
       "name": "CARGAR_HORARIOS"
     }
   ],
@@ -768,17 +744,12 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1",
-    "timezone": "America/Mexico_City",
-    "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
-    "errorWorkflow": "adJvsIQtBnYwjl9M"
+    "executionOrder": "v1"
   },
-  "versionId": "55ac5c8f-b57c-488e-8570-24aadcfcfc7b",
+  "versionId": "e00814dc-aa51-438d-8efa-95b8fd97c3a5",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "ab2739af75c0bf0ee034fd37e78576df139d0a4fcd48adc710d9ceec11fc12c5"
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
   },
-  "id": "PVMah1xv97jaXawm",
+  "id": "oEmxZ4fXwr0WDRLh",
   "tags": []
 }

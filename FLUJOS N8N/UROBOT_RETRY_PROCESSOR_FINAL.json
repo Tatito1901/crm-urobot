@@ -1,0 +1,275 @@
+{
+  "name": "UROBOT_RETRY_PROCESSOR_FINAL",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/10 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "979ca1e4-e22b-46b4-ba26-3f979e09646c",
+      "name": "Cron (10 min)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -880,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM reminders_retry_queue \nWHERE retry_at <= NOW() \nAND attempt_count < 3 \nORDER BY created_at ASC \nLIMIT 5;",
+        "options": {}
+      },
+      "id": "b51f6455-c806-4d89-a514-37b264d8371b",
+      "name": "Buscar Fallidos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -672,
+        128
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "00a9d4d1-c3b2-45d2-abaf-b7d9574e439f",
+      "name": "Split (1x1)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.paciente_telefono }}\",\n  \"text\": {{ JSON.stringify($json.mensaje_body) }}\n}",
+        "options": {}
+      },
+      "id": "52fc79bd-70ac-4f24-a2ee-e4b908fb1bfa",
+      "name": "Reenviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        128
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "success",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c54b61b3-0f62-4b36-a23d-c18faf9d3f30",
+      "name": "Exitoso?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=DELETE FROM reminders_retry_queue WHERE id = '{{ $('Split (1x1)').item.json.id }}';\nSELECT marcar_recordatorio_enviado('{{ $('Split (1x1)').item.json.consulta_id_text }}', '{{ $('Split (1x1)').item.json.reminder_type }}');",
+        "options": {}
+      },
+      "id": "277949f1-f45e-4c24-ae63-769f371c21dc",
+      "name": "BD: Limpiar & Marcar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        256,
+        16
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE reminders_retry_queue SET \n  attempt_count = attempt_count + 1,\n  retry_at = NOW() + (INTERVAL '15 minutes' * (attempt_count + 1)),\n  updated_at = NOW()\nWHERE id = '{{ $('Split (1x1)').item.json.id }}';",
+        "options": {}
+      },
+      "id": "c01ddd32-6792-44df-af01-e207e6f36b60",
+      "name": "BD: Reprogramar",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        256,
+        224
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "8a711a3d-b48a-4083-9160-bebc9fe36130",
+      "name": "Esperar 5s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        128
+      ],
+      "webhookId": "a5385d36-84d1-4687-acf1-8fb7280a837d"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron (10 min)": {
+      "main": [
+        [
+          {
+            "node": "Buscar Fallidos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Fallidos": {
+      "main": [
+        [
+          {
+            "node": "Split (1x1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split (1x1)": {
+      "main": [
+        [
+          {
+            "node": "Reenviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reenviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Exitoso?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exitoso?": {
+      "main": [
+        [
+          {
+            "node": "BD: Limpiar & Marcar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "BD: Reprogramar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BD: Limpiar & Marcar": {
+      "main": [
+        [
+          {
+            "node": "Esperar 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BD: Reprogramar": {
+      "main": [
+        [
+          {
+            "node": "Esperar 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 5s": {
+      "main": [
+        [
+          {
+            "node": "Split (1x1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7555f03c-6fce-4af4-88d3-c8deb2d4f4df",
+  "meta": {
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
+  },
+  "id": "PrcWK9MZ5GmAMagz",
+  "tags": []
+}

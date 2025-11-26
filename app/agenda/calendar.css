@@ -1,0 +1,222 @@
+/* Schedule-X Calendar - Estilo Minimalista Doctoralia */
+.sx-react-calendar-wrapper {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: var(--background);
+}
+
+.sx__week-grid-day {
+  border-right: 1px solid var(--border);
+  background: var(--background);
+}
+
+.sx__week-grid-day-name {
+  color: var(--muted-foreground);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.sx__week-grid-day-number {
+  color: var(--foreground);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.sx__week-grid-day--today .sx__week-grid-day-number {
+  background: rgb(59 130 246);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.sx__time-grid-hour {
+  border-bottom: 1px solid var(--border);
+  min-height: 60px;
+}
+
+.sx__time-grid-hour:nth-child(even) {
+  background: var(--muted);
+}
+
+.sx__time-axis-hour {
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  font-weight: 400;
+  padding-right: 0.75rem;
+}
+
+.sx__week-grid-day-border {
+  border-right: 1px solid var(--border);
+}
+
+.sx__event {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: none;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.sx__event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+.sx__event-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sx__event-time {
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sx-event-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sx-event-content__title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgb(255 255 255);
+  letter-spacing: -0.01em;
+}
+
+.sx-event-content__meta {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.85);
+  opacity: 0.9;
+}
+
+.sx-event-content__extra {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.75);
+  opacity: 0.85;
+}
+
+.sx__current-time-line {
+  border-top: 2px solid rgb(59 130 246);
+  z-index: 5;
+}
+
+.sx__current-time-indicator {
+  background: rgb(59 130 246);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: -5px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.sx__date-picker-wrapper {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.sx__date-picker-day {
+  color: var(--foreground);
+  border-radius: 6px;
+  font-weight: 400;
+}
+
+.sx__date-picker-day:hover {
+  background: var(--accent);
+}
+
+.sx__date-picker-day--selected {
+  background: rgb(59 130 246);
+  color: white;
+  font-weight: 500;
+}
+
+.sx__week-grid::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.sx__week-grid::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 4px;
+}
+
+.sx__week-grid::-webkit-scrollbar-thumb {
+  background: rgb(51 65 85);
+  border-radius: 4px;
+}
+
+.sx__week-grid::-webkit-scrollbar-thumb:hover {
+  background: rgb(71 85 105);
+}
+
+.sx__week-grid {
+  background: var(--background);
+}
+
+.sx__time-grid-day {
+  border-right: 1px solid var(--border);
+  background: var(--background);
+}
+
+.sx__event[data-calendar-id="programada"] {
+  background: rgba(59, 130, 246, 0.85);
+  border-left: 3px solid rgb(96 165 250);
+}
+
+.sx__event[data-calendar-id="confirmada"] {
+  background: rgba(16, 185, 129, 0.85);
+  border-left: 3px solid rgb(52 211 153);
+}
+
+.sx__event[data-calendar-id="reagendada"] {
+  background: rgba(245, 158, 11, 0.85);
+  border-left: 3px solid rgb(251 191 36);
+}
+
+.sx__event[data-calendar-id="cancelada"] {
+  background: rgba(107, 114, 128, 0.6);
+  border-left: 3px solid rgb(156 163 175);
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .sx__event-title {
+    font-size: 0.75rem; /* 12px - mejorado de 11.2px */
+  }
+
+  .sx__event-time {
+    font-size: 0.7rem; /* 11.2px - mejorado de 10.24px */
+  }
+
+  .sx__time-axis-hour {
+    font-size: 0.7rem; /* 11.2px - mejorado de 9.92px */
+  }
+
+  .sx__week-grid-day-name {
+    font-size: 0.7rem; /* 11.2px - mejorado de 9.6px */
+  }
+
+  .sx__week-grid-day-number {
+    font-size: 1rem; /* 16px - mejorado de 15.2px */
+  }
+}

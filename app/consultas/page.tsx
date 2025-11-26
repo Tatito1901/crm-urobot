@@ -179,18 +179,13 @@ export default function ConsultasPage() {
             
             {/* Paginación mejorada */}
             {filteredConsultas.length > itemsPerPage && (
-              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-white/60">
-                    Mostrando <span className="font-semibold text-slate-900 dark:text-white">{currentPage * itemsPerPage + 1}</span> - <span className="font-semibold text-slate-900 dark:text-white">{Math.min((currentPage + 1) * itemsPerPage, filteredConsultas.length)}</span> de <span className="font-semibold text-slate-900 dark:text-white">{filteredConsultas.length}</span> consultas
-                  </p>
-                  <Pagination
-                    currentPage={currentPage}
-                    totalItems={filteredConsultas.length}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
+              <div className="p-4 border-t border-border bg-muted/20">
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={filteredConsultas.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             )}
           </ContentLoader>

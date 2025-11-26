@@ -9,35 +9,29 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -928,
-        1344
+        -1552,
+        -192
       ],
-      "id": "418624df-5d62-40b9-b874-347ff5713e5c",
+      "id": "14efc895-d0d6-410e-99f4-02bf271a9600",
       "name": "When called by another workflow"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=SELECT * FROM upsert_lead_interaction(\n  p_nombre_completo := {{ $json.Nombre_Completo ? \"'\" + $json.Nombre_Completo.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n  p_telefono_whatsapp := {{ $json.Telefono_WhatsApp ? \"'\" + $json.Telefono_WhatsApp + \"'\" : \"NULL\" }},\n  p_fuente_lead := {{ $json.Fuente_Lead ? \"'\" + $json.Fuente_Lead + \"'\" : \"'WhatsApp'\" }},\n  p_estado := {{ $json.Estado ? \"'\" + $json.Estado + \"'\" : \"'Nuevo'\" }},\n  p_notas_iniciales := {{ $json.Notas_Iniciales ? \"'\" + $json.Notas_Iniciales.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n  p_session_id := {{ $json.Session_ID ? \"'\" + $json.Session_ID + \"'\" : \"NULL\" }},\n  p_message_id := {{ ($json.messageId || $json.key?.id) ? \"'\" + ($json.messageId || $json.key?.id) + \"'\" : \"NULL\" }},\n  p_paciente_id := {{ $json.Paciente_ID ? \"'\" + $json.Paciente_ID + \"'::UUID\" : \"NULL\" }},\n  p_fecha_conversion := {{ $json.Fecha_Conversion ? \"'\" + $json.Fecha_Conversion + \"'::TIMESTAMPTZ\" : \"NULL\" }}\n);",
+        "query": "=SELECT * FROM upsert_lead_interaction(\n  -- IDENTIDAD / LEAD\n  p_nombre_completo := {{ $json.Nombre_Completo ? \"'\" + $json.Nombre_Completo.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n  p_telefono_whatsapp := {{ $json.Telefono_WhatsApp ? \"'\" + $json.Telefono_WhatsApp + \"'\" : \"NULL\" }},\n\n  -- MARKETING / ORIGEN\n  p_fuente_lead := {{ $json.Fuente_Lead ? \"'\" + $json.Fuente_Lead + \"'\" : \"'WhatsApp'\" }},\n  p_canal_marketing := {{ $json.Canal_Marketing ? \"'\" + $json.Canal_Marketing.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n\n  -- ESTADO DEL LEAD\n  p_estado := {{ $json.Estado ? \"'\" + $json.Estado + \"'\" : \"'Nuevo'\" }},\n  p_notas_iniciales := {{ $json.Notas_Iniciales ? \"'\" + $json.Notas_Iniciales.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n\n  -- SESIÓN / MENSAJE\n  p_session_id := {{ $json.Session_ID ? \"'\" + $json.Session_ID + \"'\" : \"NULL\" }},\n  p_message_id := {{ $json.Conversacion_Mensaje_ID || $json.messageId\n                      ? \"'\" + ($json.Conversacion_Mensaje_ID || $json.messageId) + \"'\"\n                      : \"NULL\"\n                  }},\n\n  -- CONTENIDO DE LA CONVERSACIÓN\n  p_contenido := {{ $json.Conversacion_Texto\n                      ? \"'\" + $json.Conversacion_Texto.replace(/'/g, \"''\") + \"'\"\n                      : \"NULL\"\n                  }},\n  p_tipo_mensaje := {{ $json.Conversacion_Tipo\n                        ? \"'\" + $json.Conversacion_Tipo + \"'\"\n                        : \"'texto'\"\n                    }},\n  p_timestamp_mensaje := {{ $json.Conversacion_Timestamp\n                              ? \"'\" + $json.Conversacion_Timestamp + \"'::TIMESTAMPTZ\"\n                              : \"NOW()\"\n                          }},\n  p_es_bot := FALSE,\n\n  -- VÍNCULO PACIENTE / CONVERSIÓN\n  p_paciente_id := {{ $json.Paciente_ID ? \"'\" + $json.Paciente_ID + \"'::UUID\" : \"NULL\" }},\n  p_fecha_conversion := {{ $json.Fecha_Conversion ? \"'\" + $json.Fecha_Conversion + \"'::TIMESTAMPTZ\" : \"NULL\" }}\n);\n",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -704,
-        1344
+        -1328,
+        -192
       ],
-      "id": "c595c412-e18a-44d9-b6fe-cfdf30ba1ad7",
+      "id": "c754af29-5393-41a1-bfb3-a66d088399e6",
       "name": "Upsert Lead (RPC)",
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000,
-      "credentials": {
-        "postgres": {
-          "id": "k3E9sYtyRqQbgtHs",
-          "name": "UROBOT"
-        }
-      }
+      "waitBetweenTries": 1000
     },
     {
       "parameters": {
@@ -46,10 +40,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -480,
-        1344
+        -1104,
+        -192
       ],
-      "id": "14f96341-f05c-4347-8f39-7faf9302c760",
+      "id": "d9ab5bf9-6406-47da-b53c-6513d52b10d8",
       "name": "Parse Response"
     },
     {
@@ -81,10 +75,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -256,
-        1344
+        -880,
+        -192
       ],
-      "id": "5bfa2efc-4e6e-4561-95be-864289cefc3f",
+      "id": "a3c6d31c-37d2-4871-bef6-8d413f127221",
       "name": "Success?"
     },
     {
@@ -146,10 +140,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -32,
-        1248
+        -656,
+        -288
       ],
-      "id": "c6fa6ade-3e67-4adf-b962-14669fd5f041",
+      "id": "bbb46afc-7df4-438c-9d90-4a881c172679",
       "name": "Return Success"
     },
     {
@@ -193,33 +187,14 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -32,
-        1440
+        -656,
+        -96
       ],
-      "id": "61675c0f-0ab7-4076-87d8-b6dacdc3b0cb",
+      "id": "a339ea22-de37-4057-b7a3-3a55d619f7cd",
       "name": "Return Error"
     }
   ],
-  "pinData": {
-    "When called by another workflow": [
-      {
-        "json": {
-          "Lead_ID": "",
-          "Nombre_Completo": "Fausto Mario Medina",
-          "Telefono_WhatsApp": "+526673184624",
-          "Fuente_Lead": "WhatsApp",
-          "Fecha_Primer_Contacto": "2025-10-16",
-          "Estado": "Nuevo",
-          "Notas_Iniciales": "hola comoe stas",
-          "Session_ID": "94893f82900a22c8ace39a0142c96d8657f4846b260da82ddd44e348063783cd",
-          "ultima_interaccion": "2025-10-16",
-          "total_interacciones": 1,
-          "Paciente_ID": "",
-          "Fecha_Conversion": ""
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
@@ -275,15 +250,13 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1",
-    "timezone": "America/Mexico_City",
-    "callerPolicy": "workflowsFromSameOwner"
+    "executionOrder": "v1"
   },
-  "versionId": "bbb29ec1-4e3c-4506-bede-4cdcbe575673",
+  "versionId": "0e7a01b5-39d1-407f-aea2-4f08c62ddb31",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "ab2739af75c0bf0ee034fd37e78576df139d0a4fcd48adc710d9ceec11fc12c5"
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
   },
-  "id": "yI0ZZsP2n3ocSlCn",
+  "id": "60O0TVKpMILReijq",
   "tags": []
 }

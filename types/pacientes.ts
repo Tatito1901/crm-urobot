@@ -72,6 +72,8 @@ export interface PresupuestoCirugia {
   monto: number;
   moneda: 'MXN';
   fechaEnvio: string;
+  sede?: 'polanco' | 'satelite';
+  inclusiones?: string[]; // Lista de items incluidos
   notas?: string;
 }
 
@@ -103,6 +105,20 @@ export interface DestinoPaciente {
   observaciones?: string;
 }
 
+// Historial de acciones/destino
+export interface AccionPaciente {
+  id: string;
+  tipo: TipoDestino;
+  fechaRegistro: string;
+  usuario?: string;
+  detalles: {
+    motivoAlta?: string;
+    presupuesto?: PresupuestoCirugia;
+    cirugia?: CirugiaRealizada;
+    observaciones?: string;
+  };
+}
+
 export const DESTINO_LABELS: Record<TipoDestino, string> = {
   alta_definitiva: 'Alta Definitiva',
   presupuesto_enviado: 'Presupuesto Enviado',
@@ -128,6 +144,7 @@ export interface PacienteDetallado extends Paciente {
   notas: string | null;
   informacionMedica?: InformacionMedica;
   destino?: DestinoPaciente;
+  historialAcciones?: AccionPaciente[];
   createdAt: string;
   updatedAt: string;
 }
