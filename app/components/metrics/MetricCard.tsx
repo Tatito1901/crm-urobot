@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState, useRef } from 'react';
 
 interface MetricCardProps {
   title: string;
@@ -7,14 +9,64 @@ interface MetricCardProps {
   color?: 'emerald' | 'blue' | 'purple' | 'amber' | 'red' | 'cyan' | 'fuchsia' | 'green' | 'orange' | 'teal';
   icon?: React.ReactNode;
   description?: string;
-  subtitle?: string;  // Alias for description (compatibility)
+  subtitle?: string;
   trend?: {
     value: number;
     isPositive: boolean;
   };
   showProgress?: boolean;
   maxValue?: number;
-  loading?: boolean;  // Support loading state
+  loading?: boolean;
+  /** Animar el valor numérico (solo si es número) */
+  animate?: boolean;
+}
+
+/**
+ * Hook para animar números con efecto de contador
+ * Optimizado para no causar re-renders innecesarios
+ */
+function useAnimatedNumber(targetValue: number, duration = 600, enabled = true) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const previousValue = useRef(0);
+  const frameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!enabled || typeof targetValue !== 'number') {
+      setDisplayValue(targetValue);
+      return;
+    }
+
+    const startValue = previousValue.current;
+    const startTime = performance.now();
+    const difference = targetValue - startValue;
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function: ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentValue = startValue + (difference * eased);
+      
+      setDisplayValue(Math.round(currentValue));
+      
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(animate);
+      } else {
+        previousValue.current = targetValue;
+      }
+    };
+
+    frameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, [targetValue, duration, enabled]);
+
+  return displayValue;
 }
 
 const colorClasses = {
@@ -41,45 +93,57 @@ export const MetricCard = React.memo(({
   trend,
   loading = false,
   maxValue = 100,
+  animate = true,
 }: MetricCardProps) => {
   const finalDescription = description || subtitle;
   const colors = colorClasses[color];
   
+  // Extraer valor numérico para animación
+  const numericValue = typeof value === 'number' ? value : 
+    (typeof value === 'string' ? parseInt(value.replace(/[^0-9]/g, ''), 10) || 0 : 0);
+  
+  // Animar el número cuando no está cargando
+  const animatedValue = useAnimatedNumber(numericValue, 400, animate && !loading);
+  
+  // Mostrar valor formateado
+  const displayValue = loading ? '—' : 
+    (animate && typeof value === 'number') ? animatedValue.toLocaleString('es-MX') : value;
+  
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg dark:hover:shadow-black/20">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-4 sm:p-5 min-h-[120px] transition-all duration-200 hover:border-primary/30 hover:shadow-lg dark:hover:shadow-black/20">
       {/* Decorative gradient subtle */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03]`} />
+      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.03]`} />
       
-      <div className="flex items-start justify-between">
-        <span className="text-sm font-medium text-muted-foreground">{title}</span>
+      <div className="flex items-start justify-between gap-2">
+        <span className="text-xs sm:text-sm font-medium text-muted-foreground leading-tight">{title}</span>
         {icon && (
-          <span className={`rounded-md p-1.5 ${colors.bgLight} ${colors.text} transition-colors group-hover:bg-opacity-20`}>
+          <span className={`rounded-md p-1 sm:p-1.5 shrink-0 ${colors.bgLight} ${colors.text} transition-colors`}>
              {icon} 
           </span>
         )}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-3 sm:mt-4">
         {loading ? (
-          <div className="mb-1 h-8 w-24 animate-pulse rounded-md bg-muted" />
+          <div className="mb-1 h-7 sm:h-8 w-20 sm:w-24 skeleton-pulse rounded-md bg-muted" />
         ) : (
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-card-foreground tabular-nums">
-              {percentage !== undefined ? `${percentage}%` : value}
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap transition-opacity duration-200">
+            <span className="text-2xl sm:text-3xl font-bold tracking-tight text-card-foreground tabular-nums">
+              {percentage !== undefined ? `${percentage}%` : displayValue}
             </span>
             {maxValue > 0 && typeof value === 'number' && (
-              <span className="text-sm font-medium text-muted-foreground">/ {maxValue}</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground">/ {maxValue}</span>
             )}
           </div>
         )}
 
-        <div className="mt-1 flex items-center gap-2 text-sm">
+        <div className="mt-1 flex items-center gap-2 text-xs sm:text-sm">
           {finalDescription && (
-            <p className="font-medium text-muted-foreground truncate max-w-[180px]">{finalDescription}</p>
+            <p className="font-medium text-muted-foreground truncate">{finalDescription}</p>
           )}
           
           {trend && (
-            <div className={`flex items-center gap-0.5 font-medium ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+            <div className={`flex items-center gap-0.5 font-medium shrink-0 ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
               <span>{trend.isPositive ? '↑' : '↓'}</span>
               <span>{Math.abs(trend.value)}%</span>
             </div>

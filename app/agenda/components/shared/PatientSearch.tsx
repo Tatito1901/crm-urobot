@@ -48,7 +48,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
   const filteredPatients = pacientes.filter((p) => {
     const searchTerm = query.toLowerCase();
     return (
-      p.nombre.toLowerCase().includes(searchTerm) ||
+      (p.nombre || '').toLowerCase().includes(searchTerm) ||
       p.telefono.includes(searchTerm) ||
       (p.email && p.email.toLowerCase().includes(searchTerm))
     );
@@ -99,7 +99,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
 
   const handleSelectPatient = (patient: Paciente) => {
     onSelect(patient);
-    setQuery(patient.nombre);
+    setQuery(patient.nombre || '');
     setIsOpen(false);
     setShowNewPatientForm(false);
   };
@@ -165,13 +165,13 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               placeholder="Buscar paciente por nombre, teléfono o email..."
               className={`
                 w-full px-4 py-2.5 pr-10 rounded-xl
-                bg-slate-800/50 border text-slate-100
-                placeholder-slate-500
+                bg-muted/50 border text-foreground
+                placeholder-muted-foreground
                 focus:outline-none focus:ring-2
                 ${
                   touched && error
-                    ? 'border-red-500 focus:ring-red-500/20'
-                    : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'
+                    ? 'border-destructive focus:ring-destructive/20'
+                    : 'border-border focus:border-primary focus:ring-primary/20'
                 }
               `}
             />
@@ -179,10 +179,10 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
             {/* Icono de búsqueda */}
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               {loading ? (
-                <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full" />
+                <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
               ) : (
                 <svg
-                  className="h-5 w-5 text-slate-400"
+                  className="h-5 w-5 text-muted-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -199,13 +199,13 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           </div>
 
           {/* Error */}
-          {touched && error && <p className="mt-1 text-sm text-red-400">{error}</p>}
+          {touched && error && <p className="mt-1 text-sm text-destructive">{error}</p>}
 
           {/* Dropdown de resultados */}
           {isOpen && filteredPatients.length > 0 && (
             <div
               ref={dropdownRef}
-              className="absolute z-50 w-full mt-2 rounded-xl bg-slate-800 border border-slate-700 shadow-2xl max-h-64 overflow-y-auto"
+              className="absolute z-50 w-full mt-2 rounded-xl bg-popover border border-border shadow-2xl max-h-64 overflow-y-auto"
             >
               {filteredPatients.map((patient, index) => (
                 <button
@@ -216,35 +216,35 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
                     w-full px-4 py-3 text-left transition-colors
                     ${
                       index === selectedIndex
-                        ? 'bg-blue-500/10 border-l-2 border-blue-500'
-                        : 'hover:bg-slate-700/50'
+                        ? 'bg-primary/10 border-l-2 border-primary'
+                        : 'hover:bg-accent'
                     }
-                    ${index > 0 ? 'border-t border-slate-700/50' : ''}
+                    ${index > 0 ? 'border-t border-border' : ''}
                   `}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-100 truncate">{patient.nombre}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{patient.nombre}</p>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs text-slate-400">{patient.telefono}</span>
+                        <span className="text-xs text-muted-foreground">{patient.telefono}</span>
                         {patient.email && (
-                          <span className="text-xs text-slate-400 truncate">{patient.email}</span>
+                          <span className="text-xs text-muted-foreground truncate">{patient.email}</span>
                         )}
                       </div>
                     </div>
 
                     {/* Metadata */}
                     <div className="flex flex-col items-end gap-1">
-                      {patient.totalConsultas > 0 && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
+                      {(patient.totalConsultas ?? 0) > 0 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500">
                           {patient.totalConsultas} consultas
                         </span>
                       )}
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full ${
                           patient.estado === 'Activo'
-                            ? 'bg-green-500/10 text-green-400'
-                            : 'bg-slate-500/10 text-slate-400'
+                            ? 'bg-emerald-500/10 text-emerald-500'
+                            : 'bg-slate-500/10 text-slate-500'
                         }`}
                       >
                         {patient.estado}
@@ -260,15 +260,15 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           {isOpen && query && filteredPatients.length === 0 && (
             <div
               ref={dropdownRef}
-              className="absolute z-50 w-full mt-2 rounded-xl bg-slate-800 border border-slate-700 shadow-2xl p-4"
+              className="absolute z-50 w-full mt-2 rounded-xl bg-popover border border-border shadow-2xl p-4"
             >
-              <p className="text-sm text-slate-400 text-center mb-3">
+              <p className="text-sm text-muted-foreground text-center mb-3">
                 No se encontraron pacientes con &ldquo;{query}&rdquo;
               </p>
               <button
                 type="button"
                 onClick={handleCreateNewPatient}
-                className="w-full px-4 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 rounded-lg bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -285,14 +285,14 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
 
           {/* Info del paciente seleccionado */}
           {selectedPatient && (
-            <div className="mt-2 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+            <div className="mt-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-300">
-                    <span className="text-slate-400">Paciente:</span> {selectedPatient.nombre}
+                  <p className="text-sm text-foreground">
+                    <span className="text-muted-foreground">Paciente:</span> {selectedPatient.nombre}
                   </p>
-                  {selectedPatient.totalConsultas > 0 && (
-                    <p className="text-xs text-slate-400 mt-1">
+                  {(selectedPatient.totalConsultas ?? 0) > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
                       {selectedPatient.totalConsultas} consultas previas •{' '}
                       {selectedPatient.ultimaConsulta
                         ? `Última: ${new Date(selectedPatient.ultimaConsulta).toLocaleDateString('es-MX')}`
@@ -306,7 +306,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
                     onSelect(null);
                     setQuery('');
                   }}
-                  className="text-slate-400 hover:text-slate-300"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -325,9 +325,9 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
 
       {/* Formulario para nuevo paciente */}
       {(showNewPatientForm || newPatientData) && (
-        <div className="space-y-3 p-4 rounded-xl bg-green-500/5 border border-green-500/20">
+        <div className="space-y-3 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
+            <h4 className="text-sm font-medium text-emerald-500 flex items-center gap-2">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -342,7 +342,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               <button
                 type="button"
                 onClick={handleCancelNewPatient}
-                className="text-slate-400 hover:text-slate-300"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -357,8 +357,8 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">
-              Nombre completo <span className="text-red-400">*</span>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
+              Nombre completo <span className="text-destructive">*</span>
             </label>
             <input
               type="text"
@@ -368,13 +368,13 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               }
               disabled={!!newPatientData}
               placeholder="Ej: Juan Pérez García"
-              className="w-full px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-green-500 focus:ring-green-500/20 disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:border-emerald-500 focus:ring-emerald-500/20 disabled:opacity-60"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">
-              Teléfono <span className="text-red-400">*</span>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
+              Teléfono <span className="text-destructive">*</span>
             </label>
             <input
               type="tel"
@@ -384,12 +384,12 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               }
               disabled={!!newPatientData}
               placeholder="10 dígitos"
-              className="w-full px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-green-500 focus:ring-green-500/20 disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:border-emerald-500 focus:ring-emerald-500/20 disabled:opacity-60"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
               Email (opcional)
             </label>
             <input
@@ -400,7 +400,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               }
               disabled={!!newPatientData}
               placeholder="ejemplo@correo.com"
-              className="w-full px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-green-500 focus:ring-green-500/20 disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:border-emerald-500 focus:ring-emerald-500/20 disabled:opacity-60"
             />
           </div>
 
@@ -409,7 +409,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               <button
                 type="button"
                 onClick={handleCancelNewPatient}
-                className="flex-1 px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 transition-colors text-sm"
+                className="flex-1 px-3 py-2 rounded-lg border border-border text-muted-foreground hover:bg-accent transition-colors text-sm"
               >
                 Cancelar
               </button>
@@ -417,7 +417,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
                 type="button"
                 onClick={handleNewPatientFormSubmit}
                 disabled={!isNewPatientFormValid}
-                className="flex-1 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                className="flex-1 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
               >
                 Continuar
               </button>
@@ -428,7 +428,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
             <button
               type="button"
               onClick={handleCancelNewPatient}
-              className="w-full px-3 py-2 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 transition-colors text-sm"
+              className="w-full px-3 py-2 rounded-lg border border-border text-muted-foreground hover:bg-accent transition-colors text-sm"
             >
               Cambiar paciente
             </button>

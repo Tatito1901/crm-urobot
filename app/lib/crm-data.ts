@@ -22,7 +22,7 @@ export type SedeType = "POLANCO" | "SATELITE";
 export type LeadRow = Tables<"leads">;
 export type PacienteRow = Tables<"pacientes">;
 export type ConsultaRow = Tables<"consultas">;
-export type RecordatorioRow = Tables<"recordatorios">;
+export type RecordatorioRow = Tables<"notification_queue">;
 
 // ===== TIPOS TRANSFORMADOS PARA UI =====
 export type Lead = {

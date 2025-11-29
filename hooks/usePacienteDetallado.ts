@@ -3,21 +3,25 @@
  * HOOK: usePacienteDetallado
  * ============================================================
  * Obtiene información completa de un paciente incluyendo
- * su historial de consultas desde Supabase
+ * su historial de consultas y destinos desde Supabase
  */
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { PacienteDetallado, DestinoPaciente } from '@/types/pacientes';
+import type { Paciente, PacienteRow, PacienteStatsRow } from '@/types/pacientes';
+import { mapPacienteFromDB } from '@/types/pacientes';
 import type { Consulta } from '@/types/consultas';
-import type { Tables } from '@/types/database';
-import { 
-  mapPacienteFromDB, 
-  enrichPaciente, 
-  mapConsultasFromDB 
-} from '@/lib/mappers';
+import type { DestinoPaciente, DestinoPacienteRow } from '@/types/destinos-pacientes';
+import { mapDestinoPacienteFromDB } from '@/types/destinos-pacientes';
+import { mapConsultasFromDB } from '@/lib/mappers';
 
 const supabase = createClient();
+
+// Tipo extendido para la vista de paciente detallado
+export interface PacienteDetallado extends Paciente {
+  destinos: DestinoPaciente[];
+  destinoActual?: DestinoPaciente;
+}
 
 interface UsePacienteDetalladoResult {
   paciente: PacienteDetallado | null;
@@ -46,105 +50,53 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
         .single();
 
       if (pacienteError) throw pacienteError;
+      if (!pacienteData) throw new Error('Paciente no encontrado');
 
-      if (!pacienteData) {
-        throw new Error('Paciente no encontrado');
-      }
+      // Obtener estadísticas de la vista
+      const { data: statsData } = await supabase
+        .from('paciente_stats')
+        .select('*')
+        .eq('paciente_id', pacienteId)
+        .single();
 
-      // Mapear datos del paciente usando mappers centralizados
-      const pacienteBase = mapPacienteFromDB(pacienteData);
-      const pacienteEnriquecido = enrichPaciente(pacienteBase);
+      // Mapear paciente con sus estadísticas
+      const pacienteMapeado = mapPacienteFromDB(
+        pacienteData as PacienteRow,
+        statsData as PacienteStatsRow | null
+      );
 
-      // Obtener el destino desde la tabla destinos_pacientes
-      // Tabla destinos_pacientes no está en tipos generados aún
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      const { data: destinoData } = await supabase
-        // @ts-ignore
+      // Obtener destinos del paciente
+      const { data: destinosData } = await supabase
         .from('destinos_pacientes')
         .select('*')
         .eq('paciente_id', pacienteId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .order('created_at', { ascending: false });
 
-      // Mapear el destino de la BD al tipo frontend
-      let destino: DestinoPaciente | undefined;
-      if (destinoData) {
-        const data = destinoData as any;
-        destino = {
-          tipo: data.tipo_destino,
-          fechaRegistro: data.fecha_registro,
-          observaciones: data.observaciones || undefined,
-        };
-
-        if (data.tipo_destino === 'alta_definitiva' && data.motivo_alta) {
-          destino.motivoAlta = data.motivo_alta;
-        }
-
-        if (data.tipo_destino === 'presupuesto_enviado' && data.tipo_cirugia) {
-          destino.presupuesto = {
-            tipoCirugia: data.tipo_cirugia,
-            monto: data.monto,
-            moneda: data.moneda,
-            fechaEnvio: data.fecha_evento,
-            notas: data.notas || undefined,
-          };
-        }
-
-        if (data.tipo_destino === 'cirugia_realizada' && data.tipo_cirugia) {
-          destino.cirugia = {
-            tipoCirugia: data.tipo_cirugia,
-            costo: data.monto,
-            moneda: data.moneda,
-            fechaCirugia: data.fecha_evento,
-            sedeOperacion: data.sede_operacion || undefined,
-            notas: data.notas || undefined,
-          };
-        }
-      }
+      const destinos = (destinosData || []).map((row) => 
+        mapDestinoPacienteFromDB(row as DestinoPacienteRow)
+      );
 
       const pacienteDetallado: PacienteDetallado = {
-        ...pacienteEnriquecido,
-        // Asegurar campos obligatorios de PacienteDetallado que vienen de enriquecimiento o defaults
-        id: pacienteEnriquecido.id!,
-        pacienteId: pacienteEnriquecido.pacienteId!,
-        nombre: pacienteEnriquecido.nombre!,
-        telefono: pacienteEnriquecido.telefono!,
-        email: pacienteEnriquecido.email ?? null,
-        fechaRegistro: pacienteEnriquecido.fechaRegistro ?? new Date().toISOString(),
-        fuenteOriginal: pacienteEnriquecido.fuenteOriginal ?? 'WhatsApp',
-        ultimaConsulta: pacienteEnriquecido.ultimaConsulta ?? null,
-        totalConsultas: pacienteEnriquecido.totalConsultas ?? 0,
-        estado: pacienteEnriquecido.estado || 'Activo',
-        notas: pacienteEnriquecido.notas ?? null,
-        
-        // Campos específicos de PacienteDetallado no cubiertos por el mapper base
-        telefonoMx10: pacienteData.telefono_mx10,
-        createdAt: pacienteData.created_at,
-        updatedAt: pacienteData.updated_at,
-        informacionMedica: undefined,
-        destino: destino, // Destino desde tabla destinos_pacientes
+        ...pacienteMapeado,
+        destinos,
+        destinoActual: destinos[0], // El más reciente
       };
 
       setPaciente(pacienteDetallado);
 
-      // Obtener historial de consultas
+      // Obtener consultas del paciente
       const { data: consultasData, error: consultasError } = await supabase
         .from('consultas')
         .select('*')
         .eq('paciente_id', pacienteId)
-        .order('fecha_consulta', { ascending: false });
+        .order('fecha_hora_inicio', { ascending: false });
 
       if (consultasError) throw consultasError;
 
-      // Mapear consultas usando mapper centralizado
-      // Inyectamos el nombre del paciente ya que lo tenemos en memoria
-      const consultasMapeadas = mapConsultasFromDB((consultasData as Tables<'consultas'>[]))
-        .map(c => ({
-          ...c,
-          paciente: pacienteDetallado.nombre,
-          pacienteId: pacienteDetallado.id // Asegurar consistencia de IDs
-        }));
+      const consultasMapeadas = mapConsultasFromDB(
+        consultasData || [],
+        pacienteMapeado.nombre
+      );
 
       setConsultas(consultasMapeadas);
     } catch (err) {

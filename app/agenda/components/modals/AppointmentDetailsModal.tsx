@@ -9,6 +9,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { 
   Clock, Phone, Mail, FileText, 
   Edit2, X, Check, AlertCircle, ExternalLink,
@@ -199,12 +200,21 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
               </div>
               
               <div>
-                <h2 className={cn(
-                  "text-xl font-bold",
-                  isCancelled ? "text-slate-400 line-through" : "text-white"
-                )}>
-                  {appointment.paciente}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className={cn(
+                    "text-xl font-bold",
+                    isCancelled ? "text-slate-400 line-through" : "text-white"
+                  )}>
+                    {appointment.paciente}
+                  </h2>
+                  <Link 
+                    href={`/pacientes/${appointment.pacienteId}`}
+                    className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-all group"
+                    title="Ir al expediente completo"
+                  >
+                    <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  </Link>
+                </div>
                 <div className="flex items-center gap-2 text-sm text-slate-400">
                   <span className="capitalize">{appointment.tipo}</span>
                   <span>•</span>

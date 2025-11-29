@@ -8,12 +8,8 @@
 
 import { createClient } from '@/lib/supabase/client'
 import useSWR from 'swr'
-import {
-  DEFAULT_PACIENTE_ESTADO,
-  type Paciente,
-  isPacienteEstado,
-} from '@/types/pacientes'
-import type { Tables } from '@/types/database'
+import { type Paciente, type PacienteRow, type PacienteStatsRow, mapPacienteFromDB } from '@/types/pacientes'
+import { SWR_CONFIG_STANDARD } from '@/lib/swr-config'
 
 const supabase = createClient()
 
@@ -58,98 +54,43 @@ interface UsePacientesReturn {
   }
 }
 
-type PacienteRow = Tables<'pacientes'>
-
-/**
- * Mapea una fila de la tabla 'pacientes' al tipo Paciente con métricas
- * Valida todos los campos para consistencia con DB
- */
-const mapPaciente = (row: PacienteRow): Paciente => {
-  // Validar estado (debe coincidir con DB)
-  const estado = isPacienteEstado(row.estado) ? row.estado : DEFAULT_PACIENTE_ESTADO
-  const now = new Date()
-  
-  // Calcular días desde última consulta
-  const ultimaConsulta = row.ultima_consulta ? new Date(row.ultima_consulta) : null
-  const diasDesdeUltimaConsulta = ultimaConsulta
-    ? Math.floor((now.getTime() - ultimaConsulta.getTime()) / (1000 * 60 * 60 * 24))
-    : null
-  
-  // Calcular días desde registro
-  const fechaRegistro = row.fecha_registro ? new Date(row.fecha_registro) : row.created_at ? new Date(row.created_at) : null
-  const diasDesdeRegistro = fechaRegistro
-    ? Math.floor((now.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24))
-    : null
-  
-  // Indicadores
-  const totalConsultas = typeof row.total_consultas === 'number' ? row.total_consultas : 0
-  const esReciente = diasDesdeRegistro !== null && diasDesdeRegistro <= 30
-  const requiereAtencion = estado === 'Activo' && diasDesdeUltimaConsulta !== null && diasDesdeUltimaConsulta >= 90
-
-  return {
-    // Campos base (validados contra schema DB)
-    id: row.id, // uuid PK
-    pacienteId: row.paciente_id, // string UNIQUE
-    nombre: row.nombre_completo, // string NOT NULL
-    telefono: row.telefono, // string NOT NULL
-    email: row.email, // string | null
-    
-    // Métricas de consultas
-    totalConsultas,
-    ultimaConsulta: row.ultima_consulta, // timestamptz | null
-    diasDesdeUltimaConsulta,
-    
-    // Estado y metadata
-    estado, // validado con isPacienteEstado()
-    fechaRegistro: row.fecha_registro, // timestamptz | null
-    fuenteOriginal: row.fuente_original ?? 'WhatsApp', // string DEFAULT 'WhatsApp'
-    notas: row.notas, // string | null
-    
-    // Indicadores visuales
-    esReciente,
-    requiereAtencion,
-  }
-}
-
 /**
  * Fetcher para pacientes
- * Campos explícitos según schema de Supabase
+ * ✅ Campos sincronizados con BD real (types/supabase.ts)
+ * ✅ Usa vista paciente_stats para estadísticas calculadas
  */
 const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number }> => {
+  // Query principal de pacientes
   const { data, error, count } = await supabase
     .from('pacientes')
-    .select(`
-      id,
-      paciente_id,
-      nombre_completo,
-      telefono,
-      telefono_mx10,
-      email,
-      fecha_registro,
-      fuente_original,
-      ultima_consulta,
-      total_consultas,
-      estado,
-      notas,
-      created_at,
-      updated_at
-    `, { count: 'exact' })
-    .order('ultima_consulta', { ascending: false, nullsFirst: false })
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('❌ Error fetching pacientes:', error)
     throw error
   }
 
-  // Validar que data existe
   if (!data) {
-    console.warn('⚠️ No data returned from pacientes query')
     return { pacientes: [], count: 0 }
   }
 
-  // Mapear y validar cada paciente
-  const pacientes = data.map(mapPaciente)
-  return { pacientes, count: count || pacientes.length }
+  // Obtener estadísticas de la vista paciente_stats
+  const { data: statsData } = await supabase
+    .from('paciente_stats')
+    .select('*')
+
+  const statsMap = new Map(
+    (statsData || []).map(s => [s.paciente_id, s])
+  )
+
+  // Mapear los pacientes con sus estadísticas
+  const pacientes = (data as PacienteRow[]).map(row => {
+    const stats = statsMap.get(row.id) || null
+    return mapPacienteFromDB(row, stats)
+  })
+  
+  return { pacientes, count: pacientes.length }
 }
 
 /**
@@ -165,88 +106,73 @@ export function usePacientes(): UsePacientesReturn {
   const { data, error, isLoading, mutate } = useSWR<{ pacientes: Paciente[], count: number }>(
     'pacientes',
     fetchPacientes,
-    {
-      // ✅ Revalidar cuando el usuario vuelve a la pestaña
-      revalidateOnFocus: true,
-
-      // ✅ Revalidar si pierde conexión y vuelve (útil en mobile)
-      revalidateOnReconnect: true,
-
-      // ✅ Caché compartido por 5 minutos (evita requests duplicados)
-      dedupingInterval: 5 * 60 * 1000,
-
-      // ✅ NO revalidar automáticamente datos en caché
-      revalidateIfStale: false,
-
-      // ❌ NO polling automático (no necesario con 2 usuarios)
-      refreshInterval: 0,
-
-      // ✅ Mantener datos previos mientras recarga (mejor UX, sin parpadeos)
-      keepPreviousData: true,
-
-      // ✅ Retry automático en caso de error
-      shouldRetryOnError: true,
-      errorRetryCount: 3,
-      errorRetryInterval: 2000,
-    }
+    SWR_CONFIG_STANDARD
   )
 
   const pacientes = data?.pacientes || []
   
-  // Calcular estadísticas básicas
+  // Helpers para cálculos
+  const hace30Dias = new Date();
+  hace30Dias.setDate(hace30Dias.getDate() - 30);
+  const hace180Dias = new Date();
+  hace180Dias.setDate(hace180Dias.getDate() - 180);
+  
+  const esReciente = (p: Paciente) => 
+    p.createdAt && new Date(p.createdAt) >= hace30Dias;
+  
+  const requiereAtencion = (p: Paciente) => 
+    p.estado === 'Activo' && p.ultimaConsulta && new Date(p.ultimaConsulta) < hace180Dias;
+  
+  // Calcular estadísticas básicas (usando campos reales de BD)
   const stats = {
     total: pacientes.length,
     activos: pacientes.filter(p => p.estado === 'Activo').length,
     inactivos: pacientes.filter(p => p.estado === 'Inactivo').length,
-    recientes: pacientes.filter(p => p.esReciente).length,
-    requierenAtencion: pacientes.filter(p => p.requiereAtencion).length,
-    conConsultas: pacientes.filter(p => p.totalConsultas > 0).length,
-    sinConsultas: pacientes.filter(p => p.totalConsultas === 0).length,
+    recientes: pacientes.filter(esReciente).length,
+    requierenAtencion: pacientes.filter(requiereAtencion).length,
+    conConsultas: pacientes.filter(p => (p.totalConsultas ?? 0) > 0).length,
+    sinConsultas: pacientes.filter(p => (p.totalConsultas ?? 0) === 0).length,
   }
   
   // Calcular métricas avanzadas
-  const tasaRetencion = pacientes.length > 0
-    ? Math.round((pacientes.filter(p => p.totalConsultas >= 2).length / pacientes.length) * 100)
-    : 0
+  const pacientesConConsultas = pacientes.filter(p => (p.totalConsultas ?? 0) > 0);
+  const pacientesRetenidos = pacientes.filter(p => (p.totalConsultas ?? 0) >= 2);
+  const tasaRetencion = pacientesConConsultas.length > 0
+    ? Math.round((pacientesRetenidos.length / pacientesConConsultas.length) * 100)
+    : 0;
   
-  const pacientesFrecuentes = pacientes.filter(p => p.totalConsultas >= 5).length
+  const pacientesFrecuentes = pacientes.filter(p => (p.totalConsultas ?? 0) >= 5).length;
   
   const conDatosCompletos = pacientes.filter(p => 
     p.email && p.email.trim() !== '' && p.telefono && p.telefono.trim() !== ''
-  ).length
+  ).length;
   
-  const sinEmail = pacientes.filter(p => !p.email || p.email.trim() === '').length
+  const sinEmail = pacientes.filter(p => !p.email || p.email.trim() === '').length;
   
   // Pacientes en riesgo: activos sin consulta en 180+ días
-  const enRiesgo = pacientes.filter(p => 
-    p.estado === 'Activo' && 
-    p.diasDesdeUltimaConsulta !== null && 
-    p.diasDesdeUltimaConsulta >= 180
-  ).length
+  const enRiesgo = pacientes.filter(requiereAtencion).length;
   
-  // Distribución por fuente
+  // Distribución por fuente (usa origenLead en lugar de fuenteOriginal)
+  const fuenteLower = (f: string | null | undefined) => f?.toLowerCase() || '';
   const porFuente = {
-    whatsapp: pacientes.filter(p => 
-      p.fuenteOriginal?.toLowerCase().includes('whatsapp')
-    ).length,
+    whatsapp: pacientes.filter(p => fuenteLower(p.origenLead).includes('whatsapp')).length,
     referido: pacientes.filter(p => 
-      p.fuenteOriginal?.toLowerCase().includes('referido') ||
-      p.fuenteOriginal?.toLowerCase().includes('recomendación')
+      fuenteLower(p.origenLead).includes('referido') ||
+      fuenteLower(p.origenLead).includes('recomendación')
     ).length,
     web: pacientes.filter(p => 
-      p.fuenteOriginal?.toLowerCase().includes('web') ||
-      p.fuenteOriginal?.toLowerCase().includes('sitio')
+      fuenteLower(p.origenLead).includes('web') ||
+      fuenteLower(p.origenLead).includes('sitio')
     ).length,
-    otros: 0 // Se calcula después
-  }
-  porFuente.otros = pacientes.length - (porFuente.whatsapp + porFuente.referido + porFuente.web)
+    otros: 0,
+  };
+  porFuente.otros = Math.max(0, pacientes.length - (porFuente.whatsapp + porFuente.referido + porFuente.web));
   
   // Nuevos vs recurrentes en el mes
-  const nuevosMes = pacientes.filter(p => p.esReciente).length
+  const nuevosMes = pacientes.filter(esReciente).length;
   const recurrentesMes = pacientes.filter(p => 
-    p.diasDesdeUltimaConsulta !== null && 
-    p.diasDesdeUltimaConsulta <= 30
-  ).length
+    p.ultimaConsulta && new Date(p.ultimaConsulta) >= hace30Dias
+  ).length;
   
   const metricas = {
     tasaRetencion,

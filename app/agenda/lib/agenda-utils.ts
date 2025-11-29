@@ -237,10 +237,10 @@ export const getShortName = (name: string): string => {
 
 export const calculateStats = (consultas: Consulta[]) => {
   const total = consultas.length;
-  const confirmadas = consultas.filter(c => c.estado.toLowerCase() === 'confirmada').length;
-  const programadas = consultas.filter(c => c.estado.toLowerCase() === 'programada').length;
-  const canceladas = consultas.filter(c => c.estado.toLowerCase() === 'cancelada').length;
-  const reagendadas = consultas.filter(c => c.estado.toLowerCase() === 'reagendada').length;
+  const confirmadas = consultas.filter(c => c.estadoCita.toLowerCase() === 'confirmada').length;
+  const programadas = consultas.filter(c => c.estadoCita.toLowerCase() === 'programada').length;
+  const canceladas = consultas.filter(c => c.estadoCita.toLowerCase() === 'cancelada').length;
+  const reagendadas = consultas.filter(c => c.estadoCita.toLowerCase() === 'reagendada').length;
 
   const polanco = consultas.filter(c => c.sede === 'POLANCO').length;
   const satelite = consultas.filter(c => c.sede === 'SATELITE').length;
@@ -264,7 +264,7 @@ export const calculateStats = (consultas: Consulta[]) => {
   }).length;
 
   const pendientesConfirmar = consultas.filter(c =>
-    c.estado.toLowerCase() === 'programada' && !c.confirmadoPaciente
+    c.estadoCita.toLowerCase() === 'programada' && !c.confirmadoPaciente
   ).length;
 
   return {
@@ -303,7 +303,7 @@ export const filterAppointments = (
   if (filters.searchQuery && filters.searchQuery.trim().length > 0) {
     const query = filters.searchQuery.toLowerCase().trim();
     filtered = filtered.filter(c =>
-      c.paciente.toLowerCase().includes(query)
+      (c.paciente || '').toLowerCase().includes(query)
     );
   }
 
@@ -315,7 +315,7 @@ export const filterAppointments = (
   // Filtro por estados
   if (filters.estados && filters.estados.length > 0) {
     filtered = filtered.filter(c =>
-      filters.estados!.includes(c.estado.toLowerCase())
+      filters.estados!.includes(c.estadoCita.toLowerCase())
     );
   }
 
@@ -331,7 +331,7 @@ export const filterAppointments = (
   // Filtro pendientes de confirmar
   if (filters.onlyPendingConfirmation) {
     filtered = filtered.filter(c =>
-      c.estado.toLowerCase() === 'programada' && !c.confirmadoPaciente
+      c.estadoCita.toLowerCase() === 'programada' && !c.confirmadoPaciente
     );
   }
 

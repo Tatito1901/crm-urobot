@@ -1,155 +1,87 @@
-export const PACIENTE_ESTADOS = ['Activo', 'Inactivo'] as const;
+/**
+ * ============================================================
+ * TIPOS PACIENTES - SINCRONIZADO CON BD REAL
+ * ============================================================
+ * Fuente de verdad: Supabase tabla 'pacientes'
+ * Última sync: 2025-11-28
+ */
 
+import type { Tables, Views } from './database';
+
+// ============================================================
+// TIPO BD (automático de Supabase)
+// ============================================================
+export type PacienteRow = Tables<'pacientes'>;
+export type PacienteStatsRow = Views<'paciente_stats'>;
+
+// ============================================================
+// CONSTANTES Y ENUMS
+// ============================================================
+export const PACIENTE_ESTADOS = ['Activo', 'Inactivo', 'Alta'] as const;
 export type PacienteEstado = (typeof PACIENTE_ESTADOS)[number];
 
+// ============================================================
+// INTERFACE FRONTEND (camelCase)
+// ============================================================
+
 export interface Paciente {
+  // === Campos directos de BD ===
   id: string;
-  pacienteId: string; // ID legible (ej: "PAC-123")
-  nombre: string;
-  telefono: string;
-  email: string | null;
+  nombreCompleto: string | null;     // BD: nombre_completo
+  telefono: string;                   // BD: telefono (UNIQUE)
+  email: string | null;               // BD: email
+  fechaNacimiento: string | null;     // BD: fecha_nacimiento
+  origenLead: string | null;          // BD: origen_lead (Default: 'WhatsApp')
+  estado: PacienteEstado;             // BD: estado (Default: 'Activo') ✅ NUEVO
+  notas: string | null;               // BD: notas ✅ NUEVO
+  createdAt: string | null;           // BD: created_at
+  updatedAt: string | null;           // BD: updated_at
   
-  // Métricas de consultas
-  totalConsultas: number;
-  ultimaConsulta: string | null;
-  diasDesdeUltimaConsulta: number | null;
-  
-  // Estado y metadata
-  estado: PacienteEstado;
-  fechaRegistro: string | null;
-  fuenteOriginal: string | null;
-  notas: string | null;
-  
-  // Indicadores visuales
-  esReciente: boolean; // Registrado hace menos de 30 días
-  requiereAtencion: boolean; // Sin consulta en 90+ días y activo
-}
-
-// Información médica extendida del paciente
-export interface InformacionMedica {
-  alergias?: string[];
-  medicacionActual?: string[];
-  antecedentes?: string[];
-  grupoSanguineo?: string;
-  observaciones?: string;
+  // === Campos calculados/UI (de vista paciente_stats) ===
+  nombre: string;                     // Display name
+  totalConsultas?: number;            // Vista: paciente_stats.total_consultas
+  ultimaConsulta?: string | null;     // Vista: paciente_stats.ultima_consulta
+  consultasCompletadas?: number;      // Vista: paciente_stats.consultas_completadas
+  consultasCanceladas?: number;       // Vista: paciente_stats.consultas_canceladas
+  consultasProgramadas?: number;      // Vista: paciente_stats.consultas_programadas
 }
 
 // ============================================================
-// DESTINO DEL PACIENTE - Seguimiento de altas, presupuestos y cirugías
+// MAPPER BD → FRONTEND
 // ============================================================
 
-export const TIPOS_DESTINO = [
-  'alta_definitiva',
-  'presupuesto_enviado',
-  'cirugia_realizada',
-  'seguimiento',
-  'pendiente',
-] as const;
-
-export type TipoDestino = (typeof TIPOS_DESTINO)[number];
-
-export const TIPOS_CIRUGIA = [
-  'Prostatectomía',
-  'Cistectomía',
-  'Nefrectomía',
-  'Ureterolitotomía',
-  'Resección transuretral',
-  'Circuncisión',
-  'Vasectomía',
-  'Varicocelectomía',
-  'Hidrocelelectomía',
-  'Orquidopexia',
-  'Biopsia prostática',
-  'Litotricia',
-  'Otra',
-] as const;
-
-export type TipoCirugia = (typeof TIPOS_CIRUGIA)[number];
-
-// Información de presupuesto enviado
-export interface PresupuestoCirugia {
-  tipoCirugia: string;
-  monto: number;
-  moneda: 'MXN';
-  fechaEnvio: string;
-  sede?: 'polanco' | 'satelite';
-  inclusiones?: string[]; // Lista de items incluidos
-  notas?: string;
-}
-
-// Información de cirugía realizada
-export interface CirugiaRealizada {
-  tipoCirugia: string;
-  costo: number;
-  moneda: 'MXN';
-  fechaCirugia: string;
-  sedeOperacion?: string;
-  notas?: string;
-}
-
-// Destino completo del paciente
-export interface DestinoPaciente {
-  tipo: TipoDestino;
-  fechaRegistro: string;
-  
-  // Solo si es alta definitiva
-  motivoAlta?: string;
-  
-  // Solo si se envió presupuesto
-  presupuesto?: PresupuestoCirugia;
-  
-  // Solo si se realizó cirugía
-  cirugia?: CirugiaRealizada;
-  
-  // Observaciones generales
-  observaciones?: string;
-}
-
-// Historial de acciones/destino
-export interface AccionPaciente {
-  id: string;
-  tipo: TipoDestino;
-  fechaRegistro: string;
-  usuario?: string;
-  detalles: {
-    motivoAlta?: string;
-    presupuesto?: PresupuestoCirugia;
-    cirugia?: CirugiaRealizada;
-    observaciones?: string;
+export function mapPacienteFromDB(
+  row: PacienteRow, 
+  stats?: PacienteStatsRow | null
+): Paciente {
+  return {
+    // Campos directos
+    id: row.id,
+    nombreCompleto: row.nombre_completo,
+    telefono: row.telefono,
+    email: row.email,
+    fechaNacimiento: row.fecha_nacimiento,
+    origenLead: row.origen_lead,
+    estado: isPacienteEstado(row.estado) ? row.estado : 'Activo',
+    notas: row.notas,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    
+    // Calculados
+    nombre: row.nombre_completo || row.telefono,
+    
+    // De vista paciente_stats (opcional)
+    totalConsultas: stats?.total_consultas ?? undefined,
+    ultimaConsulta: stats?.ultima_consulta,
+    consultasCompletadas: stats?.consultas_completadas ?? undefined,
+    consultasCanceladas: stats?.consultas_canceladas ?? undefined,
+    consultasProgramadas: stats?.consultas_programadas ?? undefined,
   };
 }
 
-export const DESTINO_LABELS: Record<TipoDestino, string> = {
-  alta_definitiva: 'Alta Definitiva',
-  presupuesto_enviado: 'Presupuesto Enviado',
-  cirugia_realizada: 'Cirugía Realizada',
-  seguimiento: 'En Seguimiento',
-  pendiente: 'Pendiente',
-};
-
-export const DESTINO_COLORS: Record<TipoDestino, string> = {
-  alta_definitiva: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
-  presupuesto_enviado: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-  cirugia_realizada: 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
-  seguimiento: 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400',
-  pendiente: 'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-400',
-};
-
-// Perfil completo del paciente con información médica y destino
-export interface PacienteDetallado extends Paciente {
-  pacienteId: string; // ID legible (ej: "PAC-123")
-  telefonoMx10: string | null;
-  fechaRegistro: string;
-  fuenteOriginal: string;
-  notas: string | null;
-  informacionMedica?: InformacionMedica;
-  destino?: DestinoPaciente;
-  historialAcciones?: AccionPaciente[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export const DEFAULT_PACIENTE_ESTADO: PacienteEstado = 'Activo';
+// ============================================================
+// TYPE GUARDS
+// ============================================================
 
 export function isPacienteEstado(value: unknown): value is PacienteEstado {
   return typeof value === 'string' && (PACIENTE_ESTADOS as readonly string[]).includes(value);

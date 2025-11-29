@@ -88,7 +88,7 @@ export function useOccupancyHeatmap(): UseOccupancyHeatmapReturn {
     // Contar consultas por día (solo consultas confirmadas/completadas)
     consultas.forEach((consulta) => {
       // Solo contar consultas que no fueron canceladas
-      if (consulta.estado === 'Cancelada') return;
+      if (consulta.estadoCita === 'Cancelada') return;
       
       const dateKey = consulta.fechaConsulta;
       const current = map.get(dateKey) || 0;
@@ -128,7 +128,7 @@ export function useOccupancyHeatmap(): UseOccupancyHeatmapReturn {
     let previous30DaysCount = 0;
 
     consultas.forEach(c => {
-      if (c.estado === 'Cancelada') return;
+      if (c.estadoCita === 'Cancelada') return;
       const date = new Date(c.fechaConsulta);
       const dayIndex = date.getDay(); // 0 = Sunday
       
@@ -188,7 +188,7 @@ export function useOccupancyHeatmap(): UseOccupancyHeatmapReturn {
     }));
 
     consultas.forEach(c => {
-      if (c.estado === 'Cancelada') return;
+      if (c.estadoCita === 'Cancelada') return;
       
       // Parsear hora "HH:mm:ss" o "HH:mm"
       const [hourStr] = c.horaConsulta.split(':');

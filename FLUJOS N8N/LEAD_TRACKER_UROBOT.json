@@ -31,7 +31,13 @@
       "name": "Upsert Lead (RPC)",
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
     },
     {
       "parameters": {
@@ -252,7 +258,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "0e7a01b5-39d1-407f-aea2-4f08c62ddb31",
+  "versionId": "8671bdcc-dd36-44a6-8964-adaf04bccebe",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"

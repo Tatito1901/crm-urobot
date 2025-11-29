@@ -7,7 +7,30 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
-import type { DestinoPaciente } from '@/types/pacientes';
+import { type TipoDestino } from '@/types/destinos-pacientes';
+
+// Tipo local para destino desde el modal de UI
+interface DestinoPacienteUI {
+  tipo: TipoDestino;
+  fechaRegistro?: string;
+  observaciones?: string;
+  motivoAlta?: string;
+  presupuesto?: {
+    tipoCirugia: string;
+    monto: number;
+    moneda: string;
+    fechaEnvio?: string;
+    notas?: string;
+  };
+  cirugia?: {
+    tipoCirugia: string;
+    costo: number;
+    moneda: string;
+    fechaCirugia?: string;
+    sedeOperacion?: string;
+    notas?: string;
+  };
+}
 
 // Instancia del cliente Supabase
 const supabase = createClient();
@@ -22,7 +45,7 @@ interface UpdateResult {
  */
 export async function updatePacienteDestino(
   pacienteId: string,
-  destino: DestinoPaciente
+  destino: DestinoPacienteUI
 ): Promise<UpdateResult> {
   try {
     // Preparar datos para la BD
@@ -55,42 +78,16 @@ export async function updatePacienteDestino(
       destinoData.notas = destino.cirugia.notas || null;
     }
 
-    // Primero verificamos si ya existe un registro de destino para este paciente
-    // Tabla destinos_pacientes no está en tipos generados aún
-    const { data: existingDestino, error: fetchError } = await supabase
-      // @ts-expect-error - Tabla destinos_pacientes no está en tipos generados
+    // Insertar SIEMPRE un nuevo registro para mantener el historial
+    // Esto permite tener un timeline completo de acciones y seguimiento financiero
+    const { error: insertError } = await supabase
       .from('destinos_pacientes')
-      .select('id')
-      .eq('paciente_id', pacienteId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .insert(destinoData as any);
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows
-      console.error('Error al verificar destino existente:', fetchError);
-      return { success: false, error: fetchError.message };
-    }
-
-    let result;
-    if (existingDestino) {
-      // Actualizar el registro existente (tabla no está en tipos generados)
-      result = await supabase
-        // @ts-expect-error - Tabla destinos_pacientes no está en tipos generados
-        .from('destinos_pacientes')
-        .update(destinoData)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .eq('id', (existingDestino as any).id);
-    } else {
-      // Crear nuevo registro (tabla no está en tipos generados)
-      result = await supabase
-        // @ts-expect-error - Tabla destinos_pacientes no está en tipos generados
-        .from('destinos_pacientes')
-        .insert(destinoData);
-    }
-
-    if (result.error) {
-      console.error('Error al guardar destino:', result.error);
-      return { success: false, error: result.error.message };
+    if (insertError) {
+      console.error('Error al guardar historial de destino:', insertError);
+      return { success: false, error: insertError.message };
     }
 
     return { success: true };
@@ -131,5 +128,82 @@ export async function updatePacienteNotas(
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
     };
+  }
+}
+
+/**
+ * Obtiene la nota clínica de una consulta específica
+ */
+export async function getNotaConsulta(consultaId: string): Promise<{ nota: string | null; error?: string }> {
+  try {
+    const { data, error } = await supabase
+      // @ts-expect-error - Tabla consultas_notas no está en tipos generados
+      .from('consultas_notas')
+      .select('nota')
+      .eq('consulta_id', consultaId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error al obtener nota de consulta:', error);
+      return { nota: null, error: error.message };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const notaData = data as any;
+    return { nota: notaData?.nota || null };
+  } catch (error) {
+    console.error('Error inesperado al obtener nota:', error);
+    return { nota: null, error: 'Error desconocido' };
+  }
+}
+
+/**
+ * Guarda o actualiza la nota clínica de una consulta
+ */
+export async function saveNotaConsulta(consultaId: string, nota: string): Promise<UpdateResult> {
+  try {
+    // Verificar si ya existe
+    const { data: existing } = await supabase
+      // @ts-expect-error - Tabla consultas_notas no está en tipos generados
+      .from('consultas_notas')
+      .select('id')
+      .eq('consulta_id', consultaId)
+      .maybeSingle();
+
+    let error;
+
+    if (existing) {
+      const { error: updateError } = await supabase
+        // @ts-expect-error - Tabla consultas_notas no está en tipos generados
+        .from('consultas_notas')
+        .update({ 
+          nota, 
+          updated_at: new Date().toISOString() 
+        })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .eq('id', (existing as any).id);
+      error = updateError;
+    } else {
+      // Tabla consultas_notas no está en tipos generados de Supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: insertError } = await (supabase as any)
+        .from('consultas_notas')
+        .insert({
+          consulta_id: consultaId,
+          nota,
+          created_at: new Date().toISOString()
+        });
+      error = insertError;
+    }
+
+    if (error) {
+      console.error('Error al guardar nota de consulta:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error inesperado al guardar nota:', error);
+    return { success: false, error: 'Error desconocido' };
   }
 }

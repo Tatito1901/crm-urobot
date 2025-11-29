@@ -85,7 +85,7 @@ export default function PacientesPage() {
     
     // Filtrar por término de búsqueda
     return pacientes.filter((paciente) => {
-      const nombre = paciente.nombre.toLowerCase();
+      const nombre = (paciente.nombre || paciente.nombreCompleto || '').toLowerCase();
       const telefono = paciente.telefono;
       const email = (paciente.email || '').toLowerCase();
       

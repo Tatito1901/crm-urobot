@@ -6,10 +6,9 @@ import { Badge, DataTable } from '@/app/components/crm/ui';
 import { Button } from '@/components/ui/button';
 import { HelpIcon } from '@/app/components/common/InfoTooltip';
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
-import { MoreHorizontal, History, Target } from 'lucide-react';
+import { History, Target, MessageCircle } from 'lucide-react';
 import type { Paciente } from '@/types/pacientes';
 import { DestinoPacienteModal } from '../[id]/components/DestinoPacienteModal';
-import type { DestinoPaciente } from '@/types/pacientes';
 import { updatePacienteDestino } from '../[id]/services/paciente-service';
 
 interface PacientesTableProps {
@@ -24,7 +23,6 @@ export const PacientesTable = React.memo(function PacientesTable({
   onHover 
 }: PacientesTableProps) {
   const router = useRouter();
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [destinoModalOpen, setDestinoModalOpen] = useState(false);
   const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -32,10 +30,10 @@ export const PacientesTable = React.memo(function PacientesTable({
   const handleOpenDestino = (paciente: Paciente) => {
     setSelectedPaciente(paciente);
     setDestinoModalOpen(true);
-    setOpenMenuId(null);
   };
 
-  const handleSaveDestino = async (destino: DestinoPaciente) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSaveDestino = async (destino: any) => {
     if (!selectedPaciente?.id) return;
     
     const result = await updatePacienteDestino(selectedPaciente.id, destino);
@@ -92,133 +90,105 @@ export const PacientesTable = React.memo(function PacientesTable({
     { 
       key: 'acciones', 
       label: (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-end gap-1.5">
           <span>Acciones</span>
-          <HelpIcon content="Ver historial completo, agendar nueva consulta o contactar al paciente" side="bottom" />
         </div>
-      )
+      ),
+      align: 'right' as const
     },
   ], []);
 
-  const rows = useMemo(() => pacientes.map((paciente) => ({
-    id: paciente.id,
-    nombre: (
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-foreground">{paciente.nombre}</span>
-          {paciente.esReciente && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 border-blue-200 border dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20">
-              Nuevo
-            </span>
-          )}
+  const rows = useMemo(() => pacientes.map((paciente) => {
+    const estado = paciente.estado || 'Activo';
+    
+    return {
+      id: paciente.id,
+      nombre: (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-foreground">{paciente.nombre || 'Sin nombre'}</span>
+          </div>
+          <span className="text-xs text-muted-foreground">{paciente.telefono}</span>
         </div>
-        <span className="text-xs text-muted-foreground">{paciente.telefono}</span>
-      </div>
-    ),
-    actividad: (
-      <div className="flex flex-col gap-1 text-xs">
-        <div className="flex items-center gap-2">
+      ),
+      actividad: (
+        <div className="flex flex-col gap-1 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-foreground">
+              {paciente.totalConsultas ?? 0} {paciente.totalConsultas === 1 ? 'consulta' : 'consultas'}
+            </span>
+          </div>
+        </div>
+      ),
+      estado: <Badge label={estado} tone={STATE_COLORS[estado]} />,
+      ultimaConsulta: (
+        <div className="flex flex-col gap-1 text-xs">
           <span className="text-foreground">
-            {paciente.totalConsultas} {paciente.totalConsultas === 1 ? 'consulta' : 'consultas'}
+            {paciente.ultimaConsulta ? formatDate(paciente.ultimaConsulta) : 'Sin consulta previa'}
           </span>
-          {paciente.requiereAtencion && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700 border-amber-200 border dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
-              Atención
-            </span>
-          )}
         </div>
-      </div>
-    ),
-    estado: <Badge label={paciente.estado} tone={STATE_COLORS[paciente.estado]} />,
-    ultimaConsulta: (
-      <div className="flex flex-col gap-1 text-xs">
-        <span className="text-foreground">
-          {paciente.ultimaConsulta ? formatDate(paciente.ultimaConsulta) : 'Sin consulta previa'}
-        </span>
-        {paciente.diasDesdeUltimaConsulta !== null && (
-          <span className="text-muted-foreground">
-            Hace {paciente.diasDesdeUltimaConsulta}d
-          </span>
-        )}
-      </div>
-    ),
-    acciones: (
-      <div className="flex items-center gap-2">
-        {/* Dropdown de acciones */}
-        <div className="relative">
+      ),
+      acciones: (
+        <div className="flex items-center justify-end gap-1">
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
-              setOpenMenuId(openMenuId === paciente.id ? null : paciente.id);
+              router.push(`/pacientes/${paciente.id}`);
             }}
-            className="flex items-center gap-1.5"
+            title="Ver historial completo"
+            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
           >
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="hidden sm:inline">Acciones</span>
+            <History className="h-4 w-4" />
           </Button>
-          
-          {openMenuId === paciente.id && (
-            <>
-              {/* Backdrop para cerrar */}
-              <div 
-                className="fixed inset-0 z-40" 
-                onClick={() => setOpenMenuId(null)}
-              />
-              {/* Menu dropdown */}
-              <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenMenuId(null);
-                    router.push(`/pacientes/${paciente.id}`);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <History className="h-4 w-4 text-blue-500" />
-                  Ver historial
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenDestino(paciente);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <Target className="h-4 w-4 text-indigo-500" />
-                  Registrar destino
-                </button>
-              </div>
-            </>
-          )}
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenDestino(paciente);
+            }}
+            title="Registrar destino / cirugía"
+            className="h-8 w-8 p-0 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
+          >
+            <Target className="h-4 w-4" />
+          </Button>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://wa.me/52${paciente.telefono}`, '_blank');
+            }}
+            title="Contactar por WhatsApp"
+            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </Button>
         </div>
-        
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={(e) => {
-            e.stopPropagation();
-            window.open(`https://wa.me/52${paciente.telefono}`, '_blank');
-          }}
-          title="Contactar por WhatsApp"
-        >
-          💬
-        </Button>
-      </div>
-    ),
-  })), [pacientes, router, openMenuId]);
+      ),
+    };
+  }), [pacientes, router]);
 
   return (
     <>
       {/* Notificación Toast */}
       {notification && (
-        <div className={`fixed top-4 right-4 z-[100] flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all animate-in fade-in slide-in-from-top-2 ${
+        <div className={`fixed top-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border transition-all animate-in fade-in slide-in-from-top-4 ${
           notification.type === 'success' 
-            ? 'bg-emerald-600 text-white' 
-            : 'bg-red-600 text-white'
+            ? 'bg-background border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-emerald-500/10' 
+            : 'bg-background border-red-500/20 text-red-600 dark:text-red-400 shadow-red-500/10'
         }`}>
-          <span className="text-sm font-medium">{notification.message}</span>
+          <div className={`p-1 rounded-full ${notification.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+            {notification.type === 'success' 
+              ? <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            }
+          </div>
+          <span className="text-sm font-medium text-foreground">{notification.message}</span>
         </div>
       )}
 
@@ -243,7 +213,7 @@ export const PacientesTable = React.memo(function PacientesTable({
             setSelectedPaciente(null);
           }}
           onSave={handleSaveDestino}
-          pacienteNombre={selectedPaciente.nombre}
+          pacienteNombre={selectedPaciente.nombre || 'Paciente'}
         />
       )}
     </>

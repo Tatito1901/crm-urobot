@@ -1,5 +1,5 @@
 {
-  "name": "UROBOT_PROCESAR_RESPUESTA",
+  "name": "UROBOT_PROCESAR_RESPUESTA_FIXED",
   "nodes": [
     {
       "parameters": {
@@ -7,42 +7,42 @@
         "path": "webhook-whatsapp",
         "options": {}
       },
-      "id": "0e506894-df58-4156-92b9-f6a031b4e885",
+      "id": "4f3e77b8-ac00-427f-8854-b932f3ba2e03",
       "name": "Webhook WhatsApp",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1920,
-        224
+        -2272,
+        -224
       ],
-      "webhookId": "tu-id-unico-aqui"
+      "webhookId": "53f4362b-7f7d-40f9-9b6d-3a33bb4ac4f6"
     },
     {
       "parameters": {
-        "jsCode": "// Extraer datos del mensaje entrante (WaSender / Baileys)\nconst body = $json.body || {};\nconst messageData = body.data?.message || body.message || {};\nconst keyData = body.data?.key || body.key || {};\n\n// Ignorar mensajes enviados por MÍ (el bot)\nif (keyData.fromMe) {\n  return [];\n}\n\nconst telefono = keyData.remoteJid?.split('@')[0] || '';\nconst texto = \n  messageData.conversation || \n  messageData.extendedTextMessage?.text || \n  messageData.buttonsResponseMessage?.selectedDisplayText ||\n  '';\n\nif (!texto) return []; // Ignorar si no es texto (ej. estados, fotos sin caption)\n\nreturn [{\n  json: {\n    telefono_entrante: telefono,\n    mensaje_usuario: texto\n  }\n}];"
+        "jsCode": "// Extraer datos y filtrar mensajes propios\nconst body = $json.body || {};\nconst messageData = body.data?.message || body.message || {};\nconst keyData = body.data?.key || body.key || {};\n\nif (keyData.fromMe) return [];\n\nconst telefono = keyData.remoteJid?.split('@')[0] || '';\nconst texto = \n  messageData.conversation || \n  messageData.extendedTextMessage?.text || \n  messageData.buttonsResponseMessage?.selectedDisplayText ||\n  '';\n\nif (!texto) return [];\n\nreturn [{\n  json: {\n    telefono_entrante: telefono,\n    mensaje_usuario: texto\n  }\n}];"
       },
-      "id": "468ce7f7-c087-41cf-aa5d-70b51063fdb3",
+      "id": "7cd6cebb-6638-4c24-bb0e-4c46f6d042ed",
       "name": "Extraer Datos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1712,
-        224
+        -2064,
+        -224
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=SELECT * FROM identificar_paciente_por_telefono('{{ $json.telefono_entrante }}');",
+        "query": "SELECT * FROM identificar_paciente_por_telefono('{{ $json.telefono_entrante }}');",
         "options": {}
       },
-      "id": "5246e651-16ba-428b-b536-4e826319ae37",
+      "id": "6e9f4fac-c2f2-4259-9c16-a06a6dd2a01b",
       "name": "Buscar Cita Activa",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        -1488,
-        224
+        -1840,
+        -224
       ],
       "credentials": {
         "postgres": {
@@ -75,30 +75,30 @@
         },
         "options": {}
       },
-      "id": "a1987516-5a53-4447-b28c-83cbbd9f93e6",
+      "id": "dbcb85ac-1cdd-4ae9-afb9-30b6412425e6",
       "name": "Tiene Cita?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -1264,
-        224
+        -1616,
+        -224
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Analiza la respuesta del paciente sobre su cita médica.\nMensaje: \"{{ $('Extraer Datos').item.json.mensaje_usuario }}\"\n\nResponde SOLO con una palabra:\n- CONFIRMAR (si dice sí, ok, confirmado, voy a ir, pulgar arriba)\n- CANCELAR (si dice no voy, cancela, ya no quiero)\n- REAGENDAR (si dice cambiar fecha, mover hora, otro día, tarde)\n- DUDA (si pregunta precio, ubicación, doctor, o dice algo ambiguo)\n\nSi no estás seguro, responde DUDA.",
+        "text": "=Analiza la respuesta del paciente sobre su cita médica.\nMensaje: \"{{ $('Extraer Datos').item.json.mensaje_usuario }}\"\n\nResponde SOLO con una palabra:\n- CONFIRMAR (si dice sí, ok, confirmado, voy a ir, pulgar arriba)\n- CANCELAR (si dice no voy, cancela, ya no quiero)\n- IA_HANDOFF (si dice cambiar fecha, mover hora, otro día, tengo dudas, precio, ubicación, o cualquier otra cosa)\n\nSi no es una confirmación o cancelación explícita, responde IA_HANDOFF.",
         "options": {}
       },
-      "id": "770aeb5c-ade6-4809-b54d-70236964b553",
-      "name": "Clasificar Intención (AI)",
+      "id": "d5d542fc-0f2b-411e-9819-8947fddaf5c8",
+      "name": "Clasificar Intención",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
-        -1040,
-        208
+        -1360,
+        -240
       ],
-      "notes": "Usa un modelo rápido (Gemini Flash o GPT-4o-mini)"
+      "notes": "Usar modelo rápido (Gemini Flash)"
     },
     {
       "parameters": {
@@ -106,12 +106,6 @@
           "values": [
             {
               "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.output }}",
@@ -126,12 +120,6 @@
             },
             {
               "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.output }}",
@@ -143,55 +131,36 @@
                   }
                 ]
               }
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.output }}",
-                    "rightValue": "REAGENDAR",
-                    "operator": {
-                      "type": "string",
-                      "operation": "contains"
-                    }
-                  }
-                ]
-              }
             }
           ]
         },
         "options": {
-          "fallbackOutput": 3
+          "fallbackOutput": 2
         }
       },
-      "id": "27282491-019c-4173-a76e-9a6caceab62c",
+      "id": "52f5d81c-b5f4-4e92-ab98-a7c40cfe7e42",
       "name": "Enrutador",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -688,
-        224
-      ]
+        -960,
+        -224
+      ],
+      "notes": "0: Confirmar\n1: Cancelar\nDefault: Pasar a IA (Reagendar/Dudas)"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=UPDATE consultas SET \n  confirmado_paciente = true, \n  estado_confirmacion = 'Confirmada', \n  updated_at = NOW() \nWHERE id = '{{ $('Buscar Cita Activa').item.json.consulta_id }}'::uuid;",
+        "query": "UPDATE consultas SET \n  confirmado_paciente = true, \n  estado_confirmacion = 'Confirmada', \n  updated_at = NOW() \nWHERE id = '{{ $('Buscar Cita Activa').item.json.consulta_id }}'::uuid;",
         "options": {}
       },
-      "id": "d6250f60-c414-49b1-a94b-c0ad11d2398f",
+      "id": "e16ea47c-02c1-4688-89d1-18fb56bf43e5",
       "name": "BD: Confirmar",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        -384,
-        16
+        -656,
+        -448
       ],
       "credentials": {
         "postgres": {
@@ -208,47 +177,37 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": \"{{ $('Extraer Datos').item.json.telefono_entrante }}\",\n  \"text\": \"¡Gracias! Tu asistencia ha sido confirmada ✅. Te esperamos.\"\n}",
+        "jsonBody": "={\n  \"to\": \"{{ $('Extraer Datos').item.json.telefono_entrante }}\",\n  \"text\": \"¡Listo! Tu cita está 100% confirmada ✅. Nos vemos pronto.\"\n}",
         "options": {}
       },
-      "id": "f4d2c03f-2984-46df-9c6c-5dbf48c0e874",
+      "id": "7057e7e5-4d51-4d4a-835b-79766e4fda46",
       "name": "Responder OK",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -192,
-        16
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": "PVMah1xv97jaXawm",
-        "mode": "each",
-        "options": {}
-      },
-      "id": "3bc570cc-3695-4dd1-9e03-2d084240b23f",
-      "name": "Llamar REAGENDAR_CONSULTA",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.1,
-      "position": [
-        -384,
-        224
+        -464,
+        -448
       ],
-      "notes": "Pasa el mensaje del usuario para que el otro flujo maneje la lógica de IA de fechas"
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "BracTxTCVOWFfFBZ",
+          "name": "Header Auth account"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=-- Marcar como cancelada pero mantener registro\nUPDATE consultas SET \n  estado_cita = 'Cancelada', \n  cancelado_por = 'Paciente', \n  updated_at = NOW() \nWHERE id = '{{ $('Buscar Cita Activa').item.json.consulta_id }}'::uuid;",
+        "query": "UPDATE consultas SET \n  estado_cita = 'Cancelada', \n  cancelado_por = 'Paciente', \n  updated_at = NOW() \nWHERE id = '{{ $('Buscar Cita Activa').item.json.consulta_id }}'::uuid;",
         "options": {}
       },
-      "id": "2510ea77-e49e-4f85-a642-39cdecfe247a",
+      "id": "c57cf066-c475-49fc-a41b-319edeea3496",
       "name": "BD: Cancelar",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        -384,
-        416
+        -656,
+        -256
       ],
       "credentials": {
         "postgres": {
@@ -265,38 +224,58 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": \"{{ $('Extraer Datos').item.json.telefono_entrante }}\",\n  \"text\": \"Entendido, hemos cancelado tu cita. Si deseas agendar nuevamente en el futuro, solo escríbenos 👋.\"\n}",
+        "jsonBody": "={\n  \"to\": \"{{ $('Extraer Datos').item.json.telefono_entrante }}\",\n  \"text\": \"Entendido, hemos cancelado tu cita. Si deseas reagendar en el futuro, solo escríbenos por aquí.\"\n}",
         "options": {}
       },
-      "id": "dbdd328b-50fd-4025-bb03-fbe35e0784d7",
+      "id": "4c058b31-e7bc-4356-8a93-26f7b948015b",
       "name": "Responder Cancel",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -192,
-        416
-      ]
+        -464,
+        -256
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "BracTxTCVOWFfFBZ",
+          "name": "Header Auth account"
+        }
+      }
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "EakL64jMzXkPuDfO",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/EakL64jMzXkPuDfO",
-          "cachedResultName": "ESCALAR_ASISTENTE"
-        },
+        "workflowId": "MRdxjt5nxJFilgSV",
+        "mode": "each",
         "options": {}
       },
-      "id": "52b9abf8-fc4f-4d98-b146-284e0f119664",
-      "name": "ESCALAR ASISTENTE",
+      "id": "8afa6e81-77d2-44f0-aefb-6ef7f22e6146",
+      "name": "Pasar a UROBOT (IA)",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -384,
-        624
+        -656,
+        16
       ],
-      "notes": "Si tiene dudas (precios, ubicacion), lo mandamos al bot principal de IA"
+      "notes": "ID del workflow UROBOT principal"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        -32
+      ],
+      "id": "6c40ecd5-5634-4e37-b17e-6fd672040e90",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dlAhoVkOPGtESarh",
+          "name": "GOOGLE UROBOT"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -338,21 +317,21 @@
       "main": [
         [
           {
-            "node": "Clasificar Intención (AI)",
+            "node": "Clasificar Intención",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "ESCALAR ASISTENTE",
+            "node": "Pasar a UROBOT (IA)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Clasificar Intención (AI)": {
+    "Clasificar Intención": {
       "main": [
         [
           {
@@ -375,13 +354,6 @@
         [
           {
             "node": "BD: Cancelar",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Llamar REAGENDAR_CONSULTA",
             "type": "main",
             "index": 0
           }
@@ -409,14 +381,29 @@
           }
         ]
       ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clasificar Intención",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "e67ec9b5-be68-45d7-a393-daf24b293a54",
+  "versionId": "3440e9c2-4fdd-4034-a182-0ae7b30b5106",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
   },
   "id": "vVIFz6fyqEwLWSlL",

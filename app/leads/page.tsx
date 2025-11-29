@@ -57,7 +57,7 @@ export default function LeadsPage() {
     return filtered.filter((lead) => {
       const nombre = lead.nombre.toLowerCase();
       const telefono = lead.telefono;
-      const fuente = lead.fuente.toLowerCase();
+      const fuente = (lead.fuente || '').toLowerCase();
       
       return nombre.includes(term) || telefono.includes(term) || fuente.includes(term);
     });

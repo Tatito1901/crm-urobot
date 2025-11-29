@@ -185,15 +185,17 @@ export const TimeGrid = React.memo(function TimeGrid({
                 <div
                   ref={dayIndex === 0 ? currentTimeRef : null}
                   data-current-time
-                  className="absolute inset-x-0 z-30 pointer-events-none"
+                  className="absolute inset-x-0 z-30 pointer-events-none flex items-center"
                   style={{ 
                     top: `${((currentHour - startHour) * slotHeightPerHour) + (currentMinute * slotHeightPerHour / 60)}px` 
                   }}
                 >
-                  {/* Círculo indicador */}
-                  <div className="absolute -left-[5px] -top-[5px] w-2.5 h-2.5 rounded-full bg-[#ea4335] shadow-sm" />
+                  {/* Círculo indicador con pulso */}
+                  <div className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-red-500 dark:bg-red-400 shadow-sm z-40 ring-2 ring-background">
+                    <div className="absolute inset-0 rounded-full bg-red-500/50 dark:bg-red-400/50 animate-ping" />
+                  </div>
                   {/* Línea */}
-                  <div className="h-[2px] bg-[#ea4335] w-full shadow-sm" />
+                  <div className="h-[2px] bg-red-500 dark:bg-red-400 w-full shadow-sm opacity-80" />
                 </div>
               )}
               

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -39,112 +39,67 @@ export type Database = {
         Row: {
           calendar_event_id: string | null
           calendar_link: string | null
-          canal_origen: string
-          cancelado_por: string | null
-          confirmado_paciente: boolean
-          consulta_id: string
-          created_at: string
-          duracion_minutos: number
-          estado_cita: string
-          estado_confirmacion: string
-          fecha_cancelacion: string | null
-          fecha_confirmacion: string | null
-          fecha_consulta: string
-          fecha_hora_utc: string
-          fecha_limite_confirmacion: string | null
-          historial_cambios: Json
-          hora_consulta: string
+          confirmado_paciente: boolean | null
+          consulta_id: string | null
+          created_at: string | null
+          estado_cita: string | null
+          estado_confirmacion: string | null
+          fecha_hora_fin: string
+          fecha_hora_inicio: string
           id: string
-          idempotency_key: string | null
-          lead_id: string | null
-          motivo_cancelacion: string | null
           motivo_consulta: string | null
-          paciente_id: string
-          rem_24h_enviado: boolean
-          rem_3h_enviado: boolean
-          rem_48h_enviado: boolean
-          rem_confirmacion_inicial_enviado: boolean
-          sede: string
-          slot_guard: boolean
-          timezone: string
-          tipo_cita: string
-          updated_at: string
+          paciente_id: string | null
+          recordatorio_24h_enviado: boolean | null
+          recordatorio_2h_enviado: boolean | null
+          sede: string | null
+          tipo_cita: string | null
+          updated_at: string | null
         }
         Insert: {
           calendar_event_id?: string | null
           calendar_link?: string | null
-          canal_origen?: string
-          cancelado_por?: string | null
-          confirmado_paciente?: boolean
-          consulta_id: string
-          created_at?: string
-          duracion_minutos?: number
-          estado_cita?: string
-          estado_confirmacion?: string
-          fecha_cancelacion?: string | null
-          fecha_confirmacion?: string | null
-          fecha_consulta: string
-          fecha_hora_utc: string
-          fecha_limite_confirmacion?: string | null
-          historial_cambios?: Json
-          hora_consulta: string
+          confirmado_paciente?: boolean | null
+          consulta_id?: string | null
+          created_at?: string | null
+          estado_cita?: string | null
+          estado_confirmacion?: string | null
+          fecha_hora_fin: string
+          fecha_hora_inicio: string
           id?: string
-          idempotency_key?: string | null
-          lead_id?: string | null
-          motivo_cancelacion?: string | null
           motivo_consulta?: string | null
-          paciente_id: string
-          rem_24h_enviado?: boolean
-          rem_3h_enviado?: boolean
-          rem_48h_enviado?: boolean
-          rem_confirmacion_inicial_enviado?: boolean
-          sede: string
-          slot_guard?: boolean
-          timezone?: string
-          tipo_cita?: string
-          updated_at?: string
+          paciente_id?: string | null
+          recordatorio_24h_enviado?: boolean | null
+          recordatorio_2h_enviado?: boolean | null
+          sede?: string | null
+          tipo_cita?: string | null
+          updated_at?: string | null
         }
         Update: {
           calendar_event_id?: string | null
           calendar_link?: string | null
-          canal_origen?: string
-          cancelado_por?: string | null
-          confirmado_paciente?: boolean
-          consulta_id?: string
-          created_at?: string
-          duracion_minutos?: number
-          estado_cita?: string
-          estado_confirmacion?: string
-          fecha_cancelacion?: string | null
-          fecha_confirmacion?: string | null
-          fecha_consulta?: string
-          fecha_hora_utc?: string
-          fecha_limite_confirmacion?: string | null
-          historial_cambios?: Json
-          hora_consulta?: string
+          confirmado_paciente?: boolean | null
+          consulta_id?: string | null
+          created_at?: string | null
+          estado_cita?: string | null
+          estado_confirmacion?: string | null
+          fecha_hora_fin?: string
+          fecha_hora_inicio?: string
           id?: string
-          idempotency_key?: string | null
-          lead_id?: string | null
-          motivo_cancelacion?: string | null
           motivo_consulta?: string | null
-          paciente_id?: string
-          rem_24h_enviado?: boolean
-          rem_3h_enviado?: boolean
-          rem_48h_enviado?: boolean
-          rem_confirmacion_inicial_enviado?: boolean
-          sede?: string
-          slot_guard?: boolean
-          timezone?: string
-          tipo_cita?: string
-          updated_at?: string
+          paciente_id?: string | null
+          recordatorio_24h_enviado?: boolean | null
+          recordatorio_2h_enviado?: boolean | null
+          sede?: string | null
+          tipo_cita?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "consultas_lead_id_fkey"
-            columns: ["lead_id"]
+            foreignKeyName: "consultas_paciente_id_fkey"
+            columns: ["paciente_id"]
             isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
+            referencedRelation: "paciente_stats"
+            referencedColumns: ["paciente_id"]
           },
           {
             foreignKeyName: "consultas_paciente_id_fkey"
@@ -162,154 +117,65 @@ export type Database = {
           },
         ]
       }
-      conversaciones: {
+      destinos_pacientes: {
         Row: {
-          consulta_id: string | null
-          contenido: string
-          created_at: string
-          es_bot: boolean
+          created_at: string | null
+          fecha_evento: string | null
+          fecha_registro: string | null
           id: string
-          intencion: string | null
-          keywords: Json | null
-          lead_id: string
-          mensaje_id: string
-          paciente_id: string | null
-          sentimiento: string | null
-          tiempo_respuesta_segundos: number | null
-          timestamp_mensaje: string
-          tipo_mensaje: string
+          moneda: string | null
+          monto: number | null
+          motivo_alta: string | null
+          notas: string | null
+          observaciones: string | null
+          paciente_id: string
+          sede_operacion: string | null
+          tipo_cirugia: string | null
+          tipo_destino: string
+          updated_at: string | null
         }
         Insert: {
-          consulta_id?: string | null
-          contenido: string
-          created_at?: string
-          es_bot?: boolean
+          created_at?: string | null
+          fecha_evento?: string | null
+          fecha_registro?: string | null
           id?: string
-          intencion?: string | null
-          keywords?: Json | null
-          lead_id: string
-          mensaje_id: string
-          paciente_id?: string | null
-          sentimiento?: string | null
-          tiempo_respuesta_segundos?: number | null
-          timestamp_mensaje?: string
-          tipo_mensaje?: string
+          moneda?: string | null
+          monto?: number | null
+          motivo_alta?: string | null
+          notas?: string | null
+          observaciones?: string | null
+          paciente_id: string
+          sede_operacion?: string | null
+          tipo_cirugia?: string | null
+          tipo_destino: string
+          updated_at?: string | null
         }
         Update: {
-          consulta_id?: string | null
-          contenido?: string
-          created_at?: string
-          es_bot?: boolean
+          created_at?: string | null
+          fecha_evento?: string | null
+          fecha_registro?: string | null
           id?: string
-          intencion?: string | null
-          keywords?: Json | null
-          lead_id?: string
-          mensaje_id?: string
-          paciente_id?: string | null
-          sentimiento?: string | null
-          tiempo_respuesta_segundos?: number | null
-          timestamp_mensaje?: string
-          tipo_mensaje?: string
+          moneda?: string | null
+          monto?: number | null
+          motivo_alta?: string | null
+          notas?: string | null
+          observaciones?: string | null
+          paciente_id?: string
+          sede_operacion?: string | null
+          tipo_cirugia?: string | null
+          tipo_destino?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "conversaciones_consulta_id_fkey"
-            columns: ["consulta_id"]
-            isOneToOne: false
-            referencedRelation: "consultas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversaciones_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversaciones_paciente_id_fkey"
+            foreignKeyName: "destinos_pacientes_paciente_id_fkey"
             columns: ["paciente_id"]
             isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      escalamientos: {
-        Row: {
-          asignado_a: string | null
-          canal: string
-          consulta_id: string | null
-          conversation_snapshot: string | null
-          created_at: string
-          estado: string
-          id: string
-          lead_id: string | null
-          motivo: string
-          paciente_id: string | null
-          prioridad: string
-          resuelto_en: string | null
-          resuelto_por: string | null
-          resumen_contexto: string | null
-          telefono_mx10: string | null
-          updated_at: string
-          whatsapp_message_id: string | null
-        }
-        Insert: {
-          asignado_a?: string | null
-          canal?: string
-          consulta_id?: string | null
-          conversation_snapshot?: string | null
-          created_at?: string
-          estado?: string
-          id?: string
-          lead_id?: string | null
-          motivo: string
-          paciente_id?: string | null
-          prioridad?: string
-          resuelto_en?: string | null
-          resuelto_por?: string | null
-          resumen_contexto?: string | null
-          telefono_mx10?: string | null
-          updated_at?: string
-          whatsapp_message_id?: string | null
-        }
-        Update: {
-          asignado_a?: string | null
-          canal?: string
-          consulta_id?: string | null
-          conversation_snapshot?: string | null
-          created_at?: string
-          estado?: string
-          id?: string
-          lead_id?: string | null
-          motivo?: string
-          paciente_id?: string | null
-          prioridad?: string
-          resuelto_en?: string | null
-          resuelto_por?: string | null
-          resumen_contexto?: string | null
-          telefono_mx10?: string | null
-          updated_at?: string
-          whatsapp_message_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "escalamientos_consulta_id_fkey"
-            columns: ["consulta_id"]
-            isOneToOne: false
-            referencedRelation: "consultas"
-            referencedColumns: ["id"]
+            referencedRelation: "paciente_stats"
+            referencedColumns: ["paciente_id"]
           },
           {
-            foreignKeyName: "escalamientos_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escalamientos_paciente_id_fkey"
+            foreignKeyName: "destinos_pacientes_paciente_id_fkey"
             columns: ["paciente_id"]
             isOneToOne: false
             referencedRelation: "pacientes"
@@ -320,77 +186,60 @@ export type Database = {
       leads: {
         Row: {
           canal_marketing: string | null
-          created_at: string
-          estado: string
+          created_at: string | null
+          estado: string | null
           fecha_conversion: string | null
-          fecha_primer_contacto: string
-          fuente_lead: string
+          fecha_primer_contacto: string | null
+          fuente_lead: string | null
           id: string
-          lead_id: string | null
-          nombre_completo: string
           notas_iniciales: string | null
           paciente_id: string | null
-          puntuacion_lead: number
           session_id: string | null
-          telefono_mx10: string | null
           telefono_whatsapp: string
-          temperatura: string
-          total_interacciones: number
-          total_mensajes_enviados: number
-          total_mensajes_recibidos: number
-          ultima_interaccion: string
-          ultimo_mensaje_id: string | null
-          updated_at: string
+          total_interacciones: number | null
+          ultima_interaccion: string | null
+          updated_at: string | null
         }
         Insert: {
           canal_marketing?: string | null
-          created_at?: string
-          estado?: string
+          created_at?: string | null
+          estado?: string | null
           fecha_conversion?: string | null
-          fecha_primer_contacto?: string
-          fuente_lead?: string
+          fecha_primer_contacto?: string | null
+          fuente_lead?: string | null
           id?: string
-          lead_id?: string | null
-          nombre_completo: string
           notas_iniciales?: string | null
           paciente_id?: string | null
-          puntuacion_lead?: number
           session_id?: string | null
-          telefono_mx10?: string | null
           telefono_whatsapp: string
-          temperatura?: string
-          total_interacciones?: number
-          total_mensajes_enviados?: number
-          total_mensajes_recibidos?: number
-          ultima_interaccion?: string
-          ultimo_mensaje_id?: string | null
-          updated_at?: string
+          total_interacciones?: number | null
+          ultima_interaccion?: string | null
+          updated_at?: string | null
         }
         Update: {
           canal_marketing?: string | null
-          created_at?: string
-          estado?: string
+          created_at?: string | null
+          estado?: string | null
           fecha_conversion?: string | null
-          fecha_primer_contacto?: string
-          fuente_lead?: string
+          fecha_primer_contacto?: string | null
+          fuente_lead?: string | null
           id?: string
-          lead_id?: string | null
-          nombre_completo?: string
           notas_iniciales?: string | null
           paciente_id?: string | null
-          puntuacion_lead?: number
           session_id?: string | null
-          telefono_mx10?: string | null
           telefono_whatsapp?: string
-          temperatura?: string
-          total_interacciones?: number
-          total_mensajes_enviados?: number
-          total_mensajes_recibidos?: number
-          ultima_interaccion?: string
-          ultimo_mensaje_id?: string | null
-          updated_at?: string
+          total_interacciones?: number | null
+          ultima_interaccion?: string | null
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "paciente_stats"
+            referencedColumns: ["paciente_id"]
+          },
           {
             foreignKeyName: "leads_paciente_id_fkey"
             columns: ["paciente_id"]
@@ -400,127 +249,130 @@ export type Database = {
           },
         ]
       }
-      pacientes: {
+      notification_queue: {
         Row: {
-          created_at: string
-          email: string | null
-          estado: string
-          fecha_registro: string
-          fuente_original: string
+          attempt_count: number | null
+          consulta_id: string | null
+          created_at: string | null
+          error_log: string | null
           id: string
-          nombre_completo: string
-          notas: string | null
-          paciente_id: string
-          telefono: string
-          telefono_mx10: string | null
-          total_consultas: number
-          ultima_consulta: string | null
-          updated_at: string
+          message_body: string
+          metadata: Json | null
+          next_attempt_at: string | null
+          phone_number: string
+          status: Database["public"]["Enums"]["notification_status"] | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
-          email?: string | null
-          estado?: string
-          fecha_registro?: string
-          fuente_original?: string
+          attempt_count?: number | null
+          consulta_id?: string | null
+          created_at?: string | null
+          error_log?: string | null
           id?: string
-          nombre_completo: string
-          notas?: string | null
-          paciente_id: string
-          telefono: string
-          telefono_mx10?: string | null
-          total_consultas?: number
-          ultima_consulta?: string | null
-          updated_at?: string
+          message_body: string
+          metadata?: Json | null
+          next_attempt_at?: string | null
+          phone_number: string
+          status?: Database["public"]["Enums"]["notification_status"] | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
-          email?: string | null
-          estado?: string
-          fecha_registro?: string
-          fuente_original?: string
+          attempt_count?: number | null
+          consulta_id?: string | null
+          created_at?: string | null
+          error_log?: string | null
           id?: string
-          nombre_completo?: string
-          notas?: string | null
-          paciente_id?: string
-          telefono?: string
-          telefono_mx10?: string | null
-          total_consultas?: number
-          ultima_consulta?: string | null
-          updated_at?: string
+          message_body?: string
+          metadata?: Json | null
+          next_attempt_at?: string | null
+          phone_number?: string
+          status?: Database["public"]["Enums"]["notification_status"] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
-      recordatorios: {
+      pacientes: {
         Row: {
-          canal: string
-          consulta_id: string
-          created_at: string
-          dedup_hash: string | null
-          entregado: boolean
-          enviado_en: string | null
-          error_mensaje: string | null
-          estado: string
+          created_at: string | null
+          email: string | null
+          estado: string | null
+          fecha_nacimiento: string | null
           id: string
-          idempotency_key: string | null
-          intentos: number
-          leido: boolean
-          mensaje_enviado: string | null
-          plantilla_usada: string | null
-          programado_para: string
-          recordatorio_id: string | null
-          respondido: boolean
-          respuesta_texto: string | null
-          tipo: string
-          updated_at: string
+          nombre_completo: string | null
+          notas: string | null
+          origen_lead: string | null
+          telefono: string
+          updated_at: string | null
         }
         Insert: {
-          canal?: string
-          consulta_id: string
-          created_at?: string
-          dedup_hash?: string | null
-          entregado?: boolean
-          enviado_en?: string | null
-          error_mensaje?: string | null
-          estado?: string
+          created_at?: string | null
+          email?: string | null
+          estado?: string | null
+          fecha_nacimiento?: string | null
           id?: string
-          idempotency_key?: string | null
-          intentos?: number
-          leido?: boolean
-          mensaje_enviado?: string | null
-          plantilla_usada?: string | null
-          programado_para: string
-          recordatorio_id?: string | null
-          respondido?: boolean
-          respuesta_texto?: string | null
-          tipo: string
-          updated_at?: string
+          nombre_completo?: string | null
+          notas?: string | null
+          origen_lead?: string | null
+          telefono: string
+          updated_at?: string | null
         }
         Update: {
-          canal?: string
-          consulta_id?: string
-          created_at?: string
-          dedup_hash?: string | null
-          entregado?: boolean
-          enviado_en?: string | null
-          error_mensaje?: string | null
-          estado?: string
+          created_at?: string | null
+          email?: string | null
+          estado?: string | null
+          fecha_nacimiento?: string | null
           id?: string
-          idempotency_key?: string | null
-          intentos?: number
-          leido?: boolean
-          mensaje_enviado?: string | null
-          plantilla_usada?: string | null
-          programado_para?: string
-          recordatorio_id?: string | null
-          respondido?: boolean
-          respuesta_texto?: string | null
-          tipo?: string
-          updated_at?: string
+          nombre_completo?: string | null
+          notas?: string | null
+          origen_lead?: string | null
+          telefono?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      reminders_retry_queue: {
+        Row: {
+          attempt_count: number | null
+          consulta_id: string | null
+          consulta_id_text: string | null
+          created_at: string | null
+          error_detail: Json | null
+          id: string
+          mensaje_body: string | null
+          paciente_telefono: string
+          reminder_type: string | null
+          retry_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attempt_count?: number | null
+          consulta_id?: string | null
+          consulta_id_text?: string | null
+          created_at?: string | null
+          error_detail?: Json | null
+          id?: string
+          mensaje_body?: string | null
+          paciente_telefono: string
+          reminder_type?: string | null
+          retry_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attempt_count?: number | null
+          consulta_id?: string | null
+          consulta_id_text?: string | null
+          created_at?: string | null
+          error_detail?: Json | null
+          id?: string
+          mensaje_body?: string | null
+          paciente_telefono?: string
+          reminder_type?: string | null
+          retry_at?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "recordatorios_consulta_id_fkey"
+            foreignKeyName: "reminders_retry_queue_consulta_id_fkey"
             columns: ["consulta_id"]
             isOneToOne: false
             referencedRelation: "consultas"
@@ -532,123 +384,90 @@ export type Database = {
         Row: {
           anchor_date: string | null
           anchor_week_type: string | null
-          calendar_id: string
+          calendar_id: string | null
           direccion: string | null
           display_name: string | null
           horario_json: Json | null
           maps_url: string | null
           sede: string
-          telefono: string | null
-          timezone: string
-          whatsapp: string | null
+          timezone: string | null
+          updated_at: string | null
         }
         Insert: {
           anchor_date?: string | null
           anchor_week_type?: string | null
-          calendar_id: string
+          calendar_id?: string | null
           direccion?: string | null
           display_name?: string | null
           horario_json?: Json | null
           maps_url?: string | null
           sede: string
-          telefono?: string | null
-          timezone?: string
-          whatsapp?: string | null
+          timezone?: string | null
+          updated_at?: string | null
         }
         Update: {
           anchor_date?: string | null
           anchor_week_type?: string | null
-          calendar_id?: string
+          calendar_id?: string | null
           direccion?: string | null
           display_name?: string | null
           horario_json?: Json | null
           maps_url?: string | null
           sede?: string
-          telefono?: string | null
-          timezone?: string
-          whatsapp?: string | null
+          timezone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
     }
     Views: {
-      dashboard_metricas: {
+      paciente_stats: {
         Row: {
-          calculated_at: string | null
-          consultas_futuras: number | null
-          consultas_hoy: number | null
-          leads_convertidos: number | null
-          leads_mes: number | null
-          leads_totales: number | null
-          pacientes_activos: number | null
-          pendientes_confirmacion: number | null
-          polanco_futuras: number | null
-          satelite_futuras: number | null
-          tasa_conversion_pct: number | null
-          total_pacientes: number | null
+          consultas_canceladas: number | null
+          consultas_completadas: number | null
+          consultas_programadas: number | null
+          paciente_id: string | null
+          total_consultas: number | null
+          ultima_consulta: string | null
         }
         Relationships: []
       }
     }
     Functions: {
-      buscar_consulta_para_reagendar: {
-        Args: { p_consulta_id?: string; p_telefono?: string }
+      cancelar_citas_sin_confirmar: {
+        Args: never
         Returns: {
-          calendar_event_id: string
-          consulta_id: string
-          created_at: string
-          estado: string
-          fecha_hora_actual: string
-          mensaje_validacion: string
-          motivo_consulta: string
-          notas: string
-          paciente_id: string
-          paciente_nombre: string
-          paciente_telefono: string
-          puede_reagendar: boolean
-          sede_actual: string
+          canceladas: number
+          ids: string[]
         }[]
-      }
-      claim_due_recordatorios: {
-        Args: { p_limit?: number }
-        Returns: {
-          canal: string
-          consulta_id: string
-          created_at: string
-          dedup_hash: string | null
-          entregado: boolean
-          enviado_en: string | null
-          error_mensaje: string | null
-          estado: string
-          id: string
-          idempotency_key: string | null
-          intentos: number
-          leido: boolean
-          mensaje_enviado: string | null
-          plantilla_usada: string | null
-          programado_para: string
-          recordatorio_id: string | null
-          respondido: boolean
-          respuesta_texto: string | null
-          tipo: string
-          updated_at: string
-        }[]
-        SetofOptions: {
-          from: "*"
-          to: "recordatorios"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       get_dashboard_metrics: { Args: never; Returns: Json }
-      mark_recordatorio_enviado: {
-        Args: {
-          p_entregado?: boolean
-          p_leido?: boolean
-          p_mensaje?: string
-          p_recordatorio_id: string
-          p_respondido?: boolean
-        }
+      get_recordatorios_pendientes: {
+        Args: { p_fin: string; p_inicio: string; p_tipo: string }
+        Returns: {
+          consulta_id: string
+          fecha_hora_utc: string
+          id: string
+          paciente_nombre: string
+          paciente_telefono: string
+          primer_nombre: string
+          reminder_type: string
+          sede: string
+        }[]
+      }
+      identificar_paciente_por_telefono: {
+        Args: { p_telefono: string }
+        Returns: {
+          consulta_id: string
+          estado_actual: string
+          fecha_hora_utc: string
+          nombre_paciente: string
+          paciente_id: string
+          sede: string
+        }[]
+      }
+      marcar_recordatorio_enviado: {
+        Args: { p_consulta_id: string; p_tipo: string }
         Returns: undefined
       }
       match_documents: {
@@ -660,20 +479,30 @@ export type Database = {
           similarity: number
         }[]
       }
-      refresh_dashboard_metricas: { Args: never; Returns: undefined }
-      registrar_mensaje_conversacion: {
+      procesar_recordatorios_batch: {
         Args: {
-          p_contenido: string
-          p_es_bot: boolean
-          p_intencion?: string
-          p_lead_id: string
-          p_mensaje_id: string
-          p_sentimiento?: string
-          p_tipo_mensaje?: string
+          p_tipo: string
+          p_ventana_horas_fin: number
+          p_ventana_horas_inicio: number
+        }
+        Returns: number
+      }
+      reagendar_consulta_atomica: {
+        Args: {
+          p_consulta_uuid_anterior: string
+          p_motivo_reagendamiento: string
+          p_nueva_duracion_minutos: number
+          p_nueva_fecha_consulta: string
+          p_nueva_fecha_hora_utc: string
+          p_nueva_hora_consulta: string
+          p_nueva_sede: string
+          p_nuevo_calendar_event_id: string
+          p_nuevo_calendar_link: string
+          p_timezone: string
         }
         Returns: Json
       }
-      to_mx10: { Args: { t: string }; Returns: string }
+      to_mx10: { Args: { input_phone: string }; Returns: string }
       upsert_appointment_atomic_from_calendar: {
         Args: {
           p_calendar_event_id: string
@@ -698,45 +527,49 @@ export type Database = {
           p_timezone?: string
           p_tipo_cita: string
         }
+        Returns: {
+          calendar_link: string
+          consulta_uuid: string
+          error_code: string
+          error_message: string
+          error_type: string
+          idempotency_hash: string
+          is_new_consulta: boolean
+          is_update_consulta: boolean
+          lead_updated: boolean
+          message: string
+          operation_id: string
+          paciente_uuid: string
+          success: boolean
+        }[]
+      }
+      upsert_lead_interaction: {
+        Args: {
+          p_canal_marketing?: string
+          p_contenido?: string
+          p_es_bot?: boolean
+          p_estado?: string
+          p_fecha_conversion?: string
+          p_fuente_lead?: string
+          p_message_id?: string
+          p_nombre_completo: string
+          p_notas_iniciales?: string
+          p_paciente_id?: string
+          p_session_id?: string
+          p_telefono_whatsapp: string
+          p_timestamp_mensaje?: string
+          p_tipo_mensaje?: string
+        }
         Returns: Json
       }
-      upsert_lead_interaction:
-        | {
-            Args: {
-              p_estado?: string
-              p_fecha_conversion?: string
-              p_fuente_lead?: string
-              p_message_id?: string
-              p_nombre_completo: string
-              p_notas_iniciales?: string
-              p_paciente_id?: string
-              p_session_id?: string
-              p_telefono_whatsapp: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_canal_marketing?: string
-              p_contenido?: string
-              p_es_bot?: boolean
-              p_estado?: string
-              p_fecha_conversion?: string
-              p_fuente_lead?: string
-              p_message_id?: string
-              p_nombre_completo: string
-              p_notas_iniciales?: string
-              p_paciente_id?: string
-              p_session_id?: string
-              p_telefono_whatsapp: string
-              p_timestamp_mensaje?: string
-              p_tipo_mensaje?: string
-            }
-            Returns: Json
-          }
     }
     Enums: {
-      [_ in never]: never
+      notification_status:
+        | "pending"
+        | "processing"
+        | "sent"
+        | "failed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -863,6 +696,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      notification_status: [
+        "pending",
+        "processing",
+        "sent",
+        "failed",
+        "cancelled",
+      ],
+    },
   },
 } as const

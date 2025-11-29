@@ -37,6 +37,7 @@ export const HeaderBar = React.memo(function HeaderBar({
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showHourMenu, setShowHourMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const settingsMenuRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -62,6 +63,7 @@ export const HeaderBar = React.memo(function HeaderBar({
         setShowViewMenu(false);
         setShowHourMenu(false);
         setShowSettingsMenu(false);
+        setIsMobileSearchOpen(false);
       }
     };
 
@@ -167,31 +169,67 @@ export const HeaderBar = React.memo(function HeaderBar({
         </div>
 
         {/* Acciones derecha */}
-        <div className="flex items-center gap-2">
-          {/* Buscador global */}
-          <div className="relative flex-1 max-w-[140px] sm:max-w-[220px] md:max-w-xs hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar cita..."
-              className="w-full pl-9 pr-4 py-1.5 text-sm border-none rounded-md bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:bg-accent focus:ring-1 focus:ring-ring transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 md:right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Buscador global - Expandible en mobile */}
+          <div className={`relative transition-all duration-300 ${
+            showViewMenu ? 'w-0 opacity-0 overflow-hidden sm:w-auto sm:opacity-100 sm:overflow-visible' : 'w-auto'
+          }`}>
+             <div className="relative flex items-center">
+                {/* Input Desktop y Mobile Expandido */}
+                <div className={`
+                  relative transition-all duration-200 ease-in-out
+                  ${isMobileSearchOpen 
+                    ? 'fixed inset-x-2 top-2 z-50 w-[calc(100%-16px)] sm:relative sm:inset-auto sm:top-auto sm:w-[140px] md:w-60 sm:block shadow-lg sm:shadow-none' 
+                    : 'hidden sm:block sm:w-[140px] md:w-60'}
+                `}>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar cita..."
+                    autoFocus={isMobileSearchOpen}
+                    className="w-full pl-9 pr-8 py-2 sm:py-1.5 text-sm border border-border sm:border-transparent hover:border-border focus:border-primary/30 rounded-md bg-background sm:bg-muted/50 hover:bg-muted text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                  {/* Botón limpiar / cerrar */}
+                  <button
+                    onClick={() => {
+                      if (searchQuery) {
+                        setSearchQuery('');
+                      } else {
+                        setIsMobileSearchOpen(false);
+                      }
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Backdrop para mobile search */}
+                {isMobileSearchOpen && (
+                  <div 
+                    className="fixed inset-0 bg-black/20 backdrop-blur-[1px] z-40 sm:hidden"
+                    onClick={() => setIsMobileSearchOpen(false)}
+                  />
+                )}
+                
+                {/* Botón Mobile Search Toggle */}
+                {!isMobileSearchOpen && (
+                  <button 
+                    className="sm:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md"
+                    onClick={() => setIsMobileSearchOpen(true)}
+                  >
+                    <Search className="h-5 w-5" />
+                  </button>
+                )}
+             </div>
           </div>
 
           {/* Separador vertical sutil */}
-          <div className="h-4 w-px bg-border mx-1"></div>
+          <div className="h-4 w-px bg-border mx-1 hidden sm:block"></div>
 
           {/* Botón de filtros - estilo Ghost */}
           <button

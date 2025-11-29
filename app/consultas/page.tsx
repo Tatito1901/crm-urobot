@@ -42,7 +42,7 @@ export default function ConsultasPage() {
     
     // Filtrar por término de búsqueda
     return filtered.filter((consulta) => {
-      const paciente = consulta.paciente.toLowerCase();
+      const paciente = (consulta.paciente || '').toLowerCase();
       const id = consulta.id.toLowerCase();
       const motivo = (consulta.motivoConsulta || '').toLowerCase();
       
@@ -116,7 +116,7 @@ export default function ConsultasPage() {
             
             {/* Filtros de sede y botón recargar (Unificados y Responsivos) */}
             <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-              <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1 border border-slate-200 dark:border-slate-700/50">
+              <div className="flex bg-muted rounded-lg p-1 border border-border">
                 {[
                   { key: 'all' as const, label: 'Todas', icon: <Building2 className="h-3.5 w-3.5" /> },
                   { key: 'POLANCO' as const, label: 'Polanco', icon: <MapPin className="h-3.5 w-3.5" /> },
@@ -129,8 +129,8 @@ export default function ConsultasPage() {
                     className={`
                       flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-2
                       ${sedeFilter === option.key
-                        ? 'bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-transparent'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
+                        ? 'bg-background text-foreground shadow-sm border border-border'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
                       }
                     `}
                   >
@@ -144,7 +144,7 @@ export default function ConsultasPage() {
               <button
                 onClick={() => refetch()}
                 disabled={loading}
-                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50 hidden sm:flex"
+                className="p-2 rounded-lg bg-muted text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 hidden sm:flex"
                 title="Recargar datos"
               >
                 <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">

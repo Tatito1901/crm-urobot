@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "description": "=HERRAMIENTA: DISPONIBILIDAD_CALENDARIO\n\nUSO\n- Para consultar horarios/días disponibles cuando el paciente pida horarios, mencione fecha (hoy, mañana, viernes, próxima semana o fecha específica) o sede (Polanco/Satélite).\n- Nunca inventes horarios.\n\nPARÁMETROS\n- timezone: \"America/Mexico_City\".\n- desiredStart (ISO local CDMX sin \"Z\"):\n  - sin fecha → hoy 00:00:00\n  - “mañana” → mañana 00:00:00\n  - “viernes” (u otro día) → próximo ese día 00:00:00\n  - “la próxima semana” → próximo lunes 00:00:00\n- userText: mensaje original del paciente.\n- sedePreferida: POLANCO / SATELITE o ''.\n",
+        "description": "=HERRAMIENTA: DISPONIBILIDAD_CALENDARIO\nDESCRIPCIÓN / USO: Utiliza esta herramienta SIEMPRE que el usuario exprese intención de agendar, consultar disponibilidad o preguntar por días/horas libres.\n\nFunción: Consulta la base de datos en tiempo real para encontrar huecos libres.\n\nRegla de Oro: JAMÁS asumas ni inventes horarios. Si el usuario pregunta \"¿Tienes espacio?\", DEBES llamar a esta herramienta antes de responder.\n\nPARÁMETROS:\n\ntimezone:\n\nValor fijo: \"America/Mexico_City\"\n\ndesiredStart (string, formato ISO 8601 Local YYYY-MM-DDTHH:mm:ss):\n\nCalcula la fecha de inicio de búsqueda basándote en FECHA_ACTUAL.\n\nSiempre inicia a las 00:00:00 del día calculado.\n\nLógica de Cálculo:\n\n\"Hoy\" o sin fecha específica → {{ $today }}T00:00:00\n\n\"El lunes\" (si hoy es viernes) → Calcular fecha del próximo lunes + T00:00:00\n\n\"La próxima semana\" → Próximo lunes + T00:00:00\n\nEjemplo: Si hoy es 2025-11-28 y piden \"mañana\", envía \"2025-11-29T00:00:00\".\n\nsedePreferida (string):\n\nNormaliza la intención del usuario a uno de estos dos valores exactos:\n\n\"POLANCO\" (Si menciona: Polanco, Ángeles, Santa Mónica, Ejército Nacional).\n\n\"SATELITE\" (Si menciona: Satélite, Naucalpan, San Ángel Inn, Norte).\n\nSi no especifica ninguna, envía cadena vacía: \"\".\n\nuserText (string):\n\nEl mensaje completo y original que envió el usuario.",
         "workflowId": {
           "__rl": true,
           "value": "9mpErXIgA9uOnzrE",
@@ -21,8 +21,8 @@
             "userText": "={{ $fromAI('userText', $json.mensajeUsuario)}}",
             "sedePreferida": "={{ $fromAI('sedePreferida', '', 'string').toUpperCase() }}",
             "timezone": "America/Mexico_City",
-            "windowDays": 14,
-            "maxResults": 50,
+            "windowDays": 7,
+            "maxResults": 10,
             "requestId": "={{ $now.toMillis() }}-{{ Math.random().toString(36).substr(2, 9) }}",
             "source": "urobot_whatsapp"
           },
@@ -151,8 +151,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        1600,
-        688
+        464,
+        704
       ],
       "id": "392049a7-5e74-4cf4-8976-3ee1f7df1393",
       "name": "call'GET_DISPONIBILIDAD_CALENDARIOS"
@@ -160,19 +160,18 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.chatInput }}",
+        "text": "={{ $json.mensajeUsuario }}",
         "options": {
-          "systemMessage": "=UroBot – asistente clínico de urología del Dr. Mario Martínez Thomas.\n\nFECHA_ACTUAL: {{ $today.setZone('America/Mexico_City').toFormat('dd/MM/yyyy') }}\nHORA_ACTUAL: {{ $now.setZone('America/Mexico_City').toFormat('HH:mm') }}\n\nROL\nEres UroBot, asistente clínico (no vendedor) del Dr. Mario. Tu misión es:\n1) Entender rápido la situación.\n2) Dar claridad y tranquilidad con info general.\n3) Explicar cómo puede ayudar el Dr. Mario.\n4) Solo después, ofrecer ver horarios si tiene sentido.\n\nESTILO\n- Español neutro mexicano, de “tú”, tono cálido tipo WhatsApp.\n- Respuestas de 2–5 líneas, claras y concretas.\n- Máx 1 emoji 🙂 si suma calidez.\n- No des diagnósticos (“tienes X”), pronósticos ni medicamentos.\n- No digas que eres IA ni menciones herramientas o flujos internos.\n\nURGENCIAS (SIEMPRE ANTES DE TODO)\nSi el mensaje indica:\n- No puede orinar, con muchas ganas y dolor.\n- Orina con mucha sangre o coágulos.\n- Dolor testicular súbito e intenso, con o sin náusea/vómito.\n\nEntonces responde EXACTAMENTE y nada más:\n\n\"🚨 ATENCIÓN MÉDICA URGENTE\nTus síntomas indican una posible urgencia urológica que requiere atención inmediata.\n1. Acude YA a Urgencias de Hospital Ángeles (Polanco) o San Ángel Inn (Satélite) (abiertos 24h).\n2. No esperes a una consulta agendada. Tu seguridad es primero. Si es crítico, llama al 911.\"\n\nFLUJO (CUANDO NO ES URGENCIA)\n1) Agradece y valida en 1 línea:\n   - “Gracias por escribirme, entiendo que esto preocupe mucho 😊”.\n2) Haz MÁXIMO 2 preguntas cortas para entender:\n   - Prioriza: para quién es, síntoma principal, desde cuándo.\n3) Con esa info, explica en lenguaje simple:\n   - Qué podría significar en general (sin decir que sí tiene o no tiene cáncer/enfermedad).\n   - Qué suele valorar un urólogo y qué estudios ayudan a aclarar (por ejemplo, tacto rectal, ultrasonido, PSA, biopsia, etc. cuando aplique).\n   - Señales de alarma que debe vigilar, sin asustar.\n   Usa la herramienta de contenido educativo si está disponible.\n\n4) Conecta con el Dr. Mario:\n   - Explica qué haría el Dr. Mario con un caso así: cómo revisaría, qué estudios podría solicitar y cómo eso ayuda a decidir si requiere cirugía o no.\n   - Enfatiza que la consulta sirve para tomar una decisión informada y con calma.\n\n5) Cierra SIEMPRE con una invitación suave o pregunta:\n   - “¿Te gustaría que te ayude a ver horarios para que el Dr. Mario revise tu caso con calma?”\n   - o “Si prefieres, seguimos resolviendo tus dudas por aquí 🙂”.\n\nCOSTOS BÁSICOS (OPCIONAL SI PREGUNTA)\n- Consulta presencial: $1,200 MXN.\n- Sedes: Polanco (Ángeles Santa Mónica: Lun, Mar, Vie) y Satélite (San Ángel Inn: Mié, Jue, Sáb).\n- Cirugías aproximadas: vasectomía ~ $12,500 MXN, circuncisión ~ $16,000 MXN.\nAclara que los precios de cirugía son aproximados y requieren valoración presencial.\n",
-          "returnIntermediateSteps": false,
-          "batching": {},
+          "systemMessage": "=UroBot – asistente clínico de urología del Dr. Mario Martínez Thomas.\n\nFECHA_ACTUAL: {{ $today.setZone('America/Mexico_City').toFormat('dd/MM/yyyy') }}\nHORA_ACTUAL: {{ $now.setZone('America/Mexico_City').toFormat('HH:mm') }}\n\nROL\nEres UroBot, la mano derecha del Dr. Mario. Tu objetivo es convertir dudas en tranquilidad y citas confirmadas.\nNo eres un vendedor agresivo, eres un asistente clínico empático y eficiente.\n\nESTILO\n- Español neutro mexicano, cálido y profesional. Usa \"tú\".\n- Respuestas concisas (máximo 3-4 líneas por bloque).\n- Usa emojis con moderación (🙂, 🙏, 📍) para suavizar el tono.\n- CERO DRAMA: Si no hay horarios, ofreces alternativas con naturalidad.\n\n🚨 PROTOCOLO DE URGENCIA (PRIORIDAD ABSOLUTA)\nSi detectas: No puede orinar (retención), mucha sangre en orina (coágulos), o dolor testicular insoportable.\nRESPONDE SOLO ESTO:\n\"🚨 ATENCIÓN MÉDICA URGENTE: Tus síntomas requieren valoración inmediata. Por favor acude YA a Urgencias del Hospital Ángeles Polanco o San Ángel Inn Satélite (24h). No esperes cita. Si es crítico llama al 911.\"\n\n🧠 DIRECTRICES DE AGENDAMIENTO (REGLAS DE ORO)\n1. LA VERDAD ESTÁ EN LA HERRAMIENTA:\n   - JAMÁS inventes horarios. Si la herramienta `DISPONIBILIDAD_CALENDARIO` no devuelve opciones, significa que ESTÁ LLENO o CERRADO.\n   - Si el usuario pide un horario específico (ej. \"Lunes 9am\") y la herramienta no lo muestra, di: \"Ese horario específico ya está ocupado, pero tengo disponible a las [opción real]...\".\n   - Nunca digas \"El doctor no trabaja ese día\" a menos que la herramienta te indique 0 disponibilidad en todo el día. Mejor di: \"Para este lunes ya no tengo espacio, pero...\".\n\n2. INTERPRETACIÓN DE DATOS:\n   - Lee el campo `executiveSummary` que te devuelve la herramienta para dar la respuesta hablada.\n   - Lee `primaryOption` y `alternativeDays` para proponer alternativas concretas.\n\n3. CONOCIMIENTO DE BASE (SEDES):\n   - Polanco (H. Ángeles): Usualmente Lunes (mañana), Martes (tarde), Viernes (tarde).\n   - Satélite (H. San Ángel Inn): Usualmente Miércoles, Jueves, Sábado.\n   *Nota: Estos son los días habituales, pero la herramienta manda sobre esta regla.*\n\nFLUJO DE CONVERSACIÓN\n\nCASO A: EL PACIENTE PREGUNTA DISPONIBILIDAD DIRECTAMENTE\n1. Llama a la herramienta `DISPONIBILIDAD_CALENDARIO` con los datos que te dio (sede, fecha aprox).\n2. Si hay opciones: \"¡Claro! En [Sede] tengo disponible este [Día] a las [Hora 1] o [Hora 2]. ¿Cuál prefieres?\"\n3. Si NO hay opciones exactas: \"Para ese horario ya está todo ocupado, pero tengo disponibilidad el [Día Alternativo] a las [Horas]. ¿Te sirve?\"\n\nCASO B: EL PACIENTE TIENE DUDAS MÉDICAS / SÍNTOMAS\n1. Validar: \"Entiendo, es normal preocuparse por eso.\"\n2. Indagar (Máx 2 preguntas): \"¿Desde cuándo te pasa? ¿Es para ti?\"\n3. Explicar (General): \"Generalmente esto se relaciona con X. El Dr. Mario suele revisarlo con [estudio/examen] para descartar problemas.\"\n4. Puente a Cita: \"Lo ideal es revisarlo en consulta para darte un tratamiento exacto y que te quedes tranquilo. ¿Te busco un espacio en Polanco o Satélite?\"\n\nCOSTOS (SOLO SI PREGUNTAN)\n- Consulta: $1,200 MXN.\n- Procedimientos (aprox): Vasectomía ~$12.5k, Circuncisión ~$16k (requieren valoración).",
+          "returnIntermediateSteps": true,
           "enableStreaming": false
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        1744,
-        368
+        640,
+        336
       ],
       "id": "31a2cc38-4402-4773-b734-96c3cd52ef16",
       "name": "Urobot"
@@ -184,8 +183,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2480,
-        368
+        1184,
+        336
       ],
       "id": "3b4eda12-cfee-4c9a-856b-7c233ad56d74",
       "name": "Limpiar respuesta de agente1",
@@ -208,78 +207,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1120,
-        272
+        0,
+        400
       ],
       "id": "08c71048-fca9-4c54-8e07-be49e1978350",
       "name": "Mapear Mensaje1"
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $('Webhook1').item.json.body.data.messages.message.audioMessage }}",
-                    "rightValue": true,
-                    "operator": {
-                      "type": "object",
-                      "operation": "notEmpty",
-                      "singleValue": true
-                    },
-                    "id": "4d9ae069-2fd0-49e8-b69b-d91e745af3e8"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Audio"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "id": "24fd1f58-d0a5-4116-80c0-4f0ba4b4f828",
-                    "leftValue": "={{ $('Webhook1').item.json.body.data.messages.message }}",
-                    "rightValue": "",
-                    "operator": {
-                      "type": "object",
-                      "operation": "notEmpty",
-                      "singleValue": true
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Texto"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.2,
-      "position": [
-        0,
-        272
-      ],
-      "id": "700109cc-6f6d-4269-8caa-14ff5c1f9dfe",
-      "name": "Switch1"
     },
     {
       "parameters": {
@@ -317,7 +249,7 @@
       "typeVersion": 3.4,
       "position": [
         -224,
-        176
+        208
       ],
       "id": "5d98e090-b1ad-4ff7-a5b1-dea771590fa5",
       "name": "Edit Fields1"
@@ -334,7 +266,7 @@
       "typeVersion": 2.1,
       "position": [
         -448,
-        176
+        208
       ],
       "id": "a15d3200-a96a-49ca-a9db-746f702b64d6",
       "name": "Webhook1",
@@ -344,14 +276,14 @@
       "parameters": {
         "modelName": "models/gemini-2.5-pro",
         "options": {
-          "maxOutputTokens": 2048
+          "maxOutputTokens": 4010
         }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        1216,
-        640
+        48,
+        720
       ],
       "id": "29298ffe-ef39-440c-9eaf-6c1cc064ae47",
       "name": "Google Gemini Chat Model",
@@ -377,8 +309,8 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
       "typeVersion": 1.3,
       "position": [
-        1792,
-        736
+        672,
+        672
       ],
       "id": "54ea7f42-d6f8-4646-afb4-9a92bb3ae74a",
       "name": "Supabase Vector Store",
@@ -394,8 +326,8 @@
       "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
       "typeVersion": 1,
       "position": [
-        1920,
-        912
+        784,
+        960
       ],
       "id": "df0dda8e-804a-4714-8fb8-1c30a7dee253",
       "name": "Embeddings Google Gemini",
@@ -419,10 +351,10 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "nombrePaciente": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nombrePaciente', ``, 'string') }}",
-            "telefono": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('telefono', ``, 'string') }}",
-            "motivo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('motivo', ``, 'string') }}",
-            "contexto": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('contexto', ``, 'string') }}"
+            "nombrePaciente": "={{ $fromAI('nombrePaciente', ``, 'string') }}",
+            "telefono": "={{ $fromAI('telefono', ``, 'string') }}",
+            "motivo": "={{ $fromAI('motivo', ``, 'string') }}",
+            "contexto": "={{ $fromAI('contexto', ``, 'string') }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -470,108 +402,21 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        2016,
-        592
+        960,
+        736
       ],
       "id": "64422342-407f-43ea-921e-038f29b54bb9",
       "name": "ESCALAR_HUMANO"
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://wasenderapi.com/api/decrypt-media",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ data: { messages: $(\"Webhook1\").item.json.body.data.messages } }) }}\n",
-        "options": {}
-      },
-      "id": "9021a984-c873-495d-aaae-c677b5d2153b",
-      "name": "Decrypt Media (Wasender)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        224,
-        192
-      ]
-    },
-    {
-      "parameters": {
-        "url": "={{ $(\"Decrypt Media (Wasender)\").item.json.publicUrl }}\n",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
-        "options": {}
-      },
-      "id": "295b1470-478a-4bde-8238-cee59538dc8b",
-      "name": "Descargar Decrypt (OGG)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        448,
-        192
-      ]
-    },
-    {
-      "parameters": {
-        "keepOnlySet": true,
-        "values": {
-          "string": [
-            {
-              "name": "transcripcion",
-              "value": "={{$json.text}}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "6a72e7ef-489a-4433-9f80-bbb64b6ba2c6",
-      "name": "Armar Respuesta",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [
-        896,
-        192
-      ]
-    },
-    {
-      "parameters": {
-        "resource": "audio",
-        "operation": "transcribe",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
-      "position": [
-        672,
-        192
-      ],
-      "id": "7e0ee1a8-1cf3-4876-ad57-68f332477cc0",
-      "name": "Transcribe a recording"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        1120,
-        464
-      ],
-      "id": "a9540aae-15be-42d9-ac70-6bef47049431",
-      "name": "When chat message received",
-      "webhookId": "aea3f6f5-6dbf-4bf7-9620-6ab470f82e22"
-    },
-    {
-      "parameters": {
-        "jsCode": "/**\n * LEAD_CAPTURE v4.1 – SUPABASE EDITION (Alineado a esquema)\n * - Telefono_WhatsApp: 10 dígitos MX (sin +) para matching y UNIQUE\n * - Fechas: ISO completo (timestamptz friendly)\n * - Saneo de UUID/fechas nulas\n * - Corrige snake_case de existing.estado\n */\n\nconst src = $input.first().json;\n\n// ---------- CONFIG ----------\nconst COOLDOWN_MIN = 10;\nconst USE_MSG_ID_DEDUP = false;\n\n// ---------- HELPERS ----------\nconst trim = (v) => (v == null ? '' : String(v).trim());\n\nfunction digitsOnly(s) {\n  s = String(s || '');\n  let out = '';\n  for (let i = 0; i < s.length; i++) {\n    const c = s.charCodeAt(i);\n    if (c >= 48 && c <= 57) out += s[i];\n  }\n  return out;\n}\n\n// Canon MX 10 dígitos (últimos 10); útil para tu columna telefono_whatsapp\nfunction toMX10(anyPhone) {\n  const d = digitsOnly(anyPhone);\n  if (!d) return '';\n  // toma últimos 10 dígitos (comportamiento típico MX)\n  return d.length >= 10 ? d.slice(-10) : d; \n}\n\n// E.164 rápido (por si lo quieres usar en otra capa)\nfunction toE164Fast(anyPhone, cc='52') {\n  const d = digitsOnly(anyPhone);\n  if (!d) return '';\n  // si ya viene con 52XXXXXXXXXX (12 dígitos) o 10 dígitos nacionales\n  if (d.length === 10) return `+${cc}${d}`;\n  if (d.length === 12 && d.startsWith(cc)) return `+${d}`;\n  return `+${d}`; // fallback\n}\n\n// A ISO completo (timestamptz). Si viene \"YYYY-MM-DD\", subo a T00:00:00Z\nfunction toISODateTime(x) {\n  if (!x) return null;\n  if (x instanceof Date && !isNaN(x)) return x.toISOString();\n  const s = trim(x);\n  if (!s) return null;\n  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(s)) return `${s}T00:00:00Z`;\n  const dt = new Date(s);\n  return isNaN(dt) ? null : dt.toISOString();\n}\n\nfunction titleCaseFast(name){\n  let s = trim(name);\n  if (!s) return '';\n  if (s.length <= 24 && /[A-ZÁÉÍÓÚÑÜ]/.test(s)) return s;\n  s = s.toLowerCase();\n  const parts = s.split(' ');\n  for (let i=0;i<parts.length;i++){\n    const w = parts[i]; if (w) parts[i] = w[0].toUpperCase() + w.slice(1);\n  }\n  return parts.join(' ');\n}\n\nfunction isUuid(v){\n  if (v == null) return false;\n  const s = String(v).trim();\n  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);\n}\nfunction cleanUuidOrNull(v){\n  const s = trim(v);\n  if (!s || s.toLowerCase() === 'null') return null;\n  return isUuid(s) ? s : null;\n}\n\n// ---------- INPUTS ----------\nconst numeroRemitente = src.numeroRemitente || (src.body?.data?.messages?.key?.remoteJid) || src.Telefono_WhatsApp || '';\nconst nombreUsuario   = src.nombreUsuario || src.Nombre_Completo || 'Desconocido';\nconst mensajeUsuario  = src.mensajeUsuario || src.Notas_Iniciales || '';\nconst sessionId       = src.body?.sessionId || src.Session_ID || '';\n\nconst telefonoCanon10 = toMX10(numeroRemitente);          // <-- el que guardamos y usamos para duplicados\n// const telefonoE164    = toE164Fast(numeroRemitente);    // <-- opcional si quisieras guardarlo aparte\n\nif (!telefonoCanon10) return [];\n\n// ---------- GATING ----------\nconst existing = src._existing || null;\nconst isCreate = !existing;\n\nconst sMsg = trim(mensajeUsuario);\nconst lowMsg = sMsg.toLowerCase();\nconst stops = new Set(['ok','va','sale','gracias','de nada','hola','👍','👌','😀','😃','😄','😁','👍🏻','👍🏽','👍🏿','buenos dias','buenas tardes','buenas noches']);\nconst msgIsNoise = sMsg && (sMsg.length <= 2 || stops.has(lowMsg));\nconst kws = ['cita','agenda','disponibilidad','horario','hora','costo','precio','ubicación','polanco','satélite','satelite','consulta','urgencia'];\nconst msgHasSignal = !!kws.find(k => lowMsg.includes(k));\n\nlet cooldownPassed = true;\nif (existing && (existing.ultima_interaccion || existing.ultima_interaccion === 0)){\n  const last = new Date(existing.ultima_interaccion);\n  if (!isNaN(last)) {\n    const diffMin = (Date.now() - last.getTime()) / 60000;\n    cooldownPassed = diffMin >= COOLDOWN_MIN;\n  }\n}\n\nif (!isCreate && !(msgHasSignal || cooldownPassed)) {\n  return [];\n}\n\n// ---------- BUILD OUTPUT ----------\nconst nowISO = new Date().toISOString();        // ISO completo\nconst leadId = trim(src.Lead_ID || null) || null;\n\n// OJO: existing viene de BD con snake_case\nconst estadoBD = existing?.estado || null;\nconst estado = msgHasSignal ? 'Calificado' : (isCreate ? 'Nuevo' : (estadoBD || 'Contactado'));\n\nlet notas = trim(sMsg);\nif (notas.length > 200) notas = notas.slice(0,200);\n\n// Si hay existente, preserva su fecha de primer contacto; si no, usa ahora\nconst fechaPrimerContacto = isCreate\n  ? nowISO\n  : (toISODateTime(existing?.fecha_primer_contacto) || nowISO);\n\nreturn [{\n  json: {\n    // Identidad\n    Lead_ID: leadId,                              // puede ser null (UNIQUE nullable)\n    Nombre_Completo: titleCaseFast(nombreUsuario),\n\n    // TELEFONO: la forma canónica que usa tu Search Duplicate y UNIQUE\n    Telefono_WhatsApp: telefonoCanon10,           // <-- 10 dígitos MX\n\n    // Meta\n    Fuente_Lead: 'WhatsApp',\n    Fecha_Primer_Contacto: fechaPrimerContacto,   // timestamptz ISO\n    Estado: estado,\n    Notas_Iniciales: notas,\n    Session_ID: sessionId,\n\n    // Interacciones\n    ultima_interaccion: nowISO,                   // timestamptz ISO\n    total_interacciones: isCreate ? 1 : (Number(existing?.total_interacciones ?? 0) + 1),\n\n    // Conversión / vínculo paciente (saneados)\n    Paciente_ID: cleanUuidOrNull(existing?.paciente_id),\n    Fecha_Conversion: toISODateTime(existing?.fecha_conversion)\n  }\n}];\n"
+        "jsCode": "/**\n * LEAD_CAPTURE v5.1\n * - Limpieza de teléfono\n * - Detección de Atribución (Ads vs Orgánico)\n * - Prepara datos para la RPC\n */\n\nconst src = $input.first().json;\n\n// --- HELPERS ---\nconst trim = (v) => (v == null ? '' : String(v).trim());\n\nfunction toMX10(anyPhone) {\n  const d = String(anyPhone || '').replace(/\\D/g, '');\n  return d.length >= 10 ? d.slice(-10) : ''; \n}\n\nfunction titleCaseFast(name){\n  let s = trim(name);\n  if (!s) return 'Paciente';\n  s = s.toLowerCase();\n  return s.replace(/\\b\\w/g, l => l.toUpperCase());\n}\n\nfunction toISODateTime(x) {\n  if (!x) return null;\n  const s = trim(x);\n  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(s)) return `${s}T00:00:00Z`;\n  const dt = new Date(s);\n  return isNaN(dt) ? null : dt.toISOString();\n}\n\nfunction cleanUuidOrNull(v){\n  const s = trim(v);\n  return /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(s) ? s : null;\n}\n\n// --- DATOS DE ENTRADA ---\n// Priorizamos el remitente del mensaje real\nconst numeroRemitente = src.numeroRemitente || src.body?.data?.messages?.key?.remoteJid || src.Telefono_WhatsApp || '';\nconst nombreUsuario   = src.nombreUsuario || src.Nombre_Completo || 'Desconocido';\nconst mensajeUsuario  = src.mensajeUsuario || src.Notas_Iniciales || '';\nconst sessionId       = src.body?.sessionId || src.Session_ID || '';\n\n// Limpieza de teléfono (CRÍTICO para que funcione el UNIQUE en DB)\nconst telefonoCanon10 = toMX10(numeroRemitente);\n\n// Si no hay teléfono válido, detenemos el flujo devolviendo vacío\nif (!telefonoCanon10) return [];\n\n// --- ATRIBUCIÓN DE MARKETING ---\nlet fuente = 'Orgánico';\nlet canal = null;\n\n// Intentar detectar Ads desde metadata de WhatsApp\nconst referral = src.body?.data?.messages?.message?.extendedTextMessage?.contextInfo?.externalAdReply || \n                 src.body?.data?.messages?.referral;\n\nif (referral) {\n    fuente = 'Paid Media';\n    if (referral.sourceUrl?.includes('facebook') || referral.headline?.includes('Facebook')) canal = 'Facebook Ads';\n    else if (referral.sourceUrl?.includes('instagram')) canal = 'Instagram Ads';\n    else canal = 'Meta Ads';\n}\n\n// --- DATOS EXISTENTES (Si hubieras hecho una búsqueda previa) ---\nconst existing = src._existing || null;\nconst isCreate = !existing;\n\n// Estado: Si menciona \"agenda\" o \"cita\", lo consideramos Interesado\nconst lowMsg = trim(mensajeUsuario).toLowerCase();\nconst esInteresado = ['cita', 'agenda', 'precio', 'costo', 'ubicacion', 'doctor'].some(k => lowMsg.includes(k));\nconst estadoBD = existing?.estado || null;\nconst estado = esInteresado ? 'Interesado' : (isCreate ? 'Nuevo' : (estadoBD || 'Contactado'));\n\nlet notas = trim(mensajeUsuario);\nif (notas.length > 300) notas = notas.slice(0,300) + '...';\n\nreturn [{\n  json: {\n    // Identidad\n    Nombre_Completo: titleCaseFast(nombreUsuario),\n    Telefono_WhatsApp: telefonoCanon10,\n\n    // Marketing\n    Fuente_Lead: fuente,\n    Canal_Marketing: canal,\n\n    // Contexto\n    Estado: estado,\n    Notas_Iniciales: notas,\n    Session_ID: sessionId,\n\n    // Trazabilidad (Si ya existe, mantenemos la original, si no, es hoy)\n    Fecha_Primer_Contacto: existing?.fecha_primer_contacto ? toISODateTime(existing.fecha_primer_contacto) : new Date().toISOString(),\n    \n    // Vínculos\n    Paciente_ID: cleanUuidOrNull(existing?.paciente_id),\n    Fecha_Conversion: toISODateTime(existing?.fecha_conversion),\n    \n    // Nota: Total_interacciones NO se calcula aquí, lo hace la DB con seguridad.\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        0
+        16,
+        96
       ],
       "id": "f36600ca-7411-49ee-a435-a4b5ca116aab",
       "name": "LEAD_CAPTURE"
@@ -580,24 +425,24 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "yI0ZZsP2n3ocSlCn",
+          "value": "60O0TVKpMILReijq",
           "mode": "list",
-          "cachedResultUrl": "/workflow/yI0ZZsP2n3ocSlCn",
+          "cachedResultUrl": "/workflow/60O0TVKpMILReijq",
           "cachedResultName": "LEAD_TRACKER_UROBOT"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "Telefono_WhatsApp": "={{ $json.Telefono_WhatsApp }}",
+            "total_interacciones": "={{ $json.total_interacciones }}",
+            "Lead_ID": "={{ $json.Lead_ID }}",
             "Nombre_Completo": "={{ $json.Nombre_Completo }}",
+            "Telefono_WhatsApp": "={{ $json.Telefono_WhatsApp }}",
             "Fuente_Lead": "={{ $json.Fuente_Lead }}",
             "Fecha_Primer_Contacto": "={{ $json.Fecha_Primer_Contacto }}",
             "Estado": "={{ $json.Estado }}",
             "Notas_Iniciales": "={{ $json.Notas_Iniciales }}",
             "Session_ID": "={{ $json.Session_ID }}",
             "ultima_interaccion": "={{ $json.ultima_interaccion }}",
-            "total_interacciones": "={{ $json.total_interacciones }}",
-            "Lead_ID": "={{ $json.Lead_ID }}",
             "Paciente_ID": "={{ $json.Paciente_ID }}",
             "Fecha_Conversion": "={{ $json.Fecha_Conversion }}"
           },
@@ -609,8 +454,7 @@
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
+              "canBeUsedToMatch": true
             },
             {
               "id": "Nombre_Completo",
@@ -619,8 +463,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "Telefono_WhatsApp",
@@ -629,8 +472,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "Fuente_Lead",
@@ -639,8 +481,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "Fecha_Primer_Contacto",
@@ -649,8 +490,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "Estado",
@@ -659,8 +499,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "Notas_Iniciales",
@@ -669,8 +508,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "Session_ID",
@@ -679,8 +517,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "ultima_interaccion",
@@ -689,8 +526,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "total_interacciones",
@@ -699,8 +535,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
+              "type": "number"
             },
             {
               "id": "Paciente_ID",
@@ -708,8 +543,7 @@
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
+              "canBeUsedToMatch": true
             },
             {
               "id": "Fecha_Conversion",
@@ -717,8 +551,7 @@
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
+              "canBeUsedToMatch": true
             }
           ],
           "attemptToConvertTypes": true,
@@ -732,8 +565,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        224,
-        0
+        240,
+        80
       ],
       "id": "55df3628-264b-443d-a375-c8ace4683697",
       "name": "Call 'LEAD_TRACKER'1",
@@ -756,14 +589,14 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": {{ JSON.stringify($('Webhook1').item.json.body.data.messages.key.remoteJid) }},\n  \"text\": {{ JSON.stringify($json.text ?? $json.whatsapp ?? $json.cleaned) }}\n}\n",
+        "jsonBody": "={\n  \"to\": {{ JSON.stringify($('Webhook1').item.json.body.data.messages.key.remoteJid) }},\n  \"text\": {{ JSON.stringify($json.output) }}\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2432,
-        112
+        1456,
+        336
       ],
       "id": "f9dff412-1728-4643-ba86-5978ac224dfa",
       "name": "Enviar Respuesta de Asistente",
@@ -778,13 +611,13 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "hj7b"
+        "sessionKey": "mi9aaa1aaaaaadfaaa"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        1408,
-        672
+        288,
+        720
       ],
       "id": "bec02cc8-ee9b-43ef-b4f0-143716313e4d",
       "name": "Simple Memory"
@@ -809,7 +642,7 @@
             "paciente": "={{ $fromAI('paciente', {}, 'json') }}",
             "tipoCita": "={{ $fromAI('tipoCita', 'primera_vez', 'string') }}",
             "motivoConsulta": "={{ $fromAI('motivoConsulta', '', 'string') }}",
-            "lead_telefono": "={{ $json.lead_telefono }}"
+            "lead_telefono": "="
           },
           "matchingColumns": [],
           "schema": [
@@ -901,8 +734,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        2224,
-        592
+        1168,
+        704
       ],
       "id": "c11f149e-6457-4d72-8537-6731512b64be",
       "name": "AGENDAR_CONSULTA'"
@@ -995,8 +828,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        2432,
-        592
+        1392,
+        688
       ],
       "id": "1c05f333-7246-49a7-ae06-33b576af402f",
       "name": "REAGENDAR_CONSULTA"
@@ -1037,34 +870,16 @@
         ]
       ]
     },
-    "Switch1": {
-      "main": [
-        [
-          {
-            "node": "Decrypt Media (Wasender)",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Mapear Mensaje1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Edit Fields1": {
       "main": [
         [
           {
-            "node": "Switch1",
+            "node": "LEAD_CAPTURE",
             "type": "main",
             "index": 0
           },
           {
-            "node": "LEAD_CAPTURE",
+            "node": "Mapear Mensaje1",
             "type": "main",
             "index": 0
           }
@@ -1126,61 +941,6 @@
         ]
       ]
     },
-    "Decrypt Media (Wasender)": {
-      "main": [
-        [
-          {
-            "node": "Descargar Decrypt (OGG)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Descargar Decrypt (OGG)": {
-      "main": [
-        [
-          {
-            "node": "Transcribe a recording",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Transcribe a recording": {
-      "main": [
-        [
-          {
-            "node": "Armar Respuesta",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Armar Respuesta": {
-      "main": [
-        [
-          {
-            "node": "Mapear Mensaje1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "When chat message received": {
-      "main": [
-        [
-          {
-            "node": "Urobot",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "LEAD_CAPTURE": {
       "main": [
         [
@@ -1224,6 +984,22 @@
           }
         ]
       ]
+    },
+    "Limpiar respuesta de agente1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta de Asistente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Respuesta de Asistente": {
+      "main": [
+        []
+      ]
     }
   },
   "active": true,
@@ -1233,8 +1009,9 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "0d223d5a-d76a-4d4e-b3cf-a70c73949c72",
+  "versionId": "6815c54b-88db-4061-9b29-26d99f6f368a",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
   },
   "id": "MRdxjt5nxJFilgSV",

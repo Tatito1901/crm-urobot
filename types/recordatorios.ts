@@ -1,53 +1,104 @@
-import type { ConsultaEstado, ConsultaSede } from './consultas';
+/**
+ * ============================================================
+ * TIPOS NOTIFICACIONES/RECORDATORIOS - SINCRONIZADO CON BD REAL
+ * ============================================================
+ * Fuente de verdad: Supabase tabla 'notification_queue'
+ * Última sync: 2025-11-28
+ * 
+ * NOTA: La BD usa 'notification_queue' en lugar de 'recordatorios'.
+ * Los recordatorios son generados por funciones RPC:
+ * - procesar_recordatorios_batch(ventana_inicio, ventana_fin, tipo)
+ * - get_recordatorios_pendientes(p_inicio, p_fin, p_tipo)
+ */
 
-export const RECORDATORIO_TIPOS = ['confirmacion_inicial', '48h', '24h', '3h'] as const;
-export const RECORDATORIO_ESTADOS = ['pendiente', 'procesando', 'enviado', 'error'] as const;
-export const RECORDATORIO_CANALES = ['whatsapp', 'sms', 'email'] as const;
+import type { Tables, Enums } from './database';
+
+// ============================================================
+// TIPO BD (automático de Supabase)
+// ============================================================
+export type NotificationQueueRow = Tables<'notification_queue'>;
+export type NotificationStatus = Enums<'notification_status'>;
+
+// ============================================================
+// CONSTANTES Y ENUMS
+// ============================================================
+
+// Estados de notification_queue (enum en BD)
+export const NOTIFICATION_ESTADOS = ['pending', 'processing', 'sent', 'failed', 'cancelled'] as const;
+
+// Tipos de recordatorio (usado en metadata)
+export const RECORDATORIO_TIPOS = ['24h', '2h', 'confirmacion'] as const;
+
+// Canales (siempre WhatsApp para este CRM)
+export const RECORDATORIO_CANALES = ['whatsapp'] as const;
 
 export type RecordatorioTipo = (typeof RECORDATORIO_TIPOS)[number];
-export type RecordatorioEstado = (typeof RECORDATORIO_ESTADOS)[number];
 export type RecordatorioCanal = (typeof RECORDATORIO_CANALES)[number];
 
-export interface Recordatorio {
+// Alias para compatibilidad con código existente
+export type RecordatorioEstado = NotificationStatus;
+
+// ============================================================
+// INTERFACE FRONTEND (camelCase)
+// ============================================================
+
+export interface Notificacion {
   id: string;
-  recordatorio_id: string | null;
-  consulta_id: string | null;
-  tipo: RecordatorioTipo;
-  programado_para: string;
-  enviado_en: string | null;
-  estado: RecordatorioEstado;
-  canal: RecordatorioCanal | null;
-  mensaje_enviado?: string | null;
-  plantilla_usada?: string | null;
-  entregado?: boolean | null;
-  leido?: boolean | null;
-  respondido?: boolean | null;
-  respuesta_texto?: string | null;
-  intentos?: number | null;
-  error_mensaje?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  consultaId: string | null;        // BD: consulta_id
+  phoneNumber: string;               // BD: phone_number
+  messageBody: string;               // BD: message_body
+  status: NotificationStatus;        // BD: status
+  attemptCount: number;              // BD: attempt_count
+  nextAttemptAt: string | null;      // BD: next_attempt_at
+  metadata: Record<string, unknown> | null; // BD: metadata (JSONB)
+  errorLog: string | null;           // BD: error_log
+  createdAt: string | null;          // BD: created_at
+  updatedAt: string | null;          // BD: updated_at
 }
 
-export interface RecordatorioDetalle extends Recordatorio {
-  consulta: {
-    id: string;
-    consulta_id: string | null;
-    sede: ConsultaSede | null;
-    estado_cita: ConsultaEstado | null;
-  } | null;
-  paciente: {
-    id: string;
-    nombre_completo: string;
-  } | null;
+// Alias para compatibilidad
+export type Recordatorio = Notificacion;
+
+export interface RecordatorioDetalle extends Notificacion {
+  // Datos enriquecidos via JOIN
+  pacienteNombre?: string;
+  sede?: string;
+  fechaConsulta?: string;
 }
 
-export const DEFAULT_RECORDATORIO_ESTADO: RecordatorioEstado = 'pendiente';
-export const DEFAULT_RECORDATORIO_TIPO: RecordatorioTipo = 'confirmacion_inicial';
+// ============================================================
+// DEFAULTS
+// ============================================================
+export const DEFAULT_RECORDATORIO_ESTADO: NotificationStatus = 'pending';
+export const DEFAULT_RECORDATORIO_TIPO: RecordatorioTipo = '24h';
 export const DEFAULT_RECORDATORIO_CANAL: RecordatorioCanal = 'whatsapp';
 
-export function isRecordatorioEstado(value: unknown): value is RecordatorioEstado {
-  return typeof value === 'string' && (RECORDATORIO_ESTADOS as readonly string[]).includes(value);
+// ============================================================
+// MAPPER BD → FRONTEND
+// ============================================================
+
+export function mapNotificacionFromDB(row: NotificationQueueRow): Notificacion {
+  return {
+    id: row.id,
+    consultaId: row.consulta_id,
+    phoneNumber: row.phone_number,
+    messageBody: row.message_body,
+    status: row.status ?? 'pending',
+    attemptCount: row.attempt_count ?? 0,
+    nextAttemptAt: row.next_attempt_at,
+    metadata: row.metadata as Record<string, unknown> | null,
+    errorLog: row.error_log,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+// ============================================================
+// TYPE GUARDS
+// ============================================================
+
+export function isRecordatorioEstado(value: unknown): value is NotificationStatus {
+  return typeof value === 'string' && (NOTIFICATION_ESTADOS as readonly string[]).includes(value);
 }
 
 export function isRecordatorioTipo(value: unknown): value is RecordatorioTipo {

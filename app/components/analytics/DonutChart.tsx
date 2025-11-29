@@ -47,21 +47,32 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
     );
   }
 
+  // Tamaño responsivo
+  const responsiveSize = Math.min(size, 200);
+  const responsiveThickness = Math.min(thickness, 35);
+
   return (
-    <div className="relative flex flex-col items-center gap-4">
+    <div className="relative flex flex-col items-center gap-3 sm:gap-4 w-full">
       {/* Gráfico */}
-      <div className="relative" style={{ width: size, height: size }}>
+      <div 
+        className="relative mx-auto"
+        style={{ 
+          width: '100%', 
+          maxWidth: responsiveSize, 
+          aspectRatio: '1 / 1' 
+        }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={validData}
               cx="50%"
               cy="50%"
-              innerRadius={size / 2 - thickness}
-              outerRadius={size / 2}
+              innerRadius="60%"
+              outerRadius="100%"
               paddingAngle={2}
               dataKey="value"
-              animationDuration={1000}
+              animationDuration={800}
               animationBegin={0}
               stroke="none"
             >
@@ -76,35 +87,35 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
         {(centerText || centerSubtext) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
             {centerText && (
-              <div className="text-3xl font-bold text-slate-900 dark:text-white tabular-nums">{centerText}</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white tabular-nums">{centerText}</div>
             )}
             {centerSubtext && (
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{centerSubtext}</div>
+              <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{centerSubtext}</div>
             )}
           </div>
         )}
       </div>
 
-      {/* Leyenda */}
-      <div className="flex flex-col gap-2 w-full max-w-[240px]">
+      {/* Leyenda responsiva */}
+      <div className="flex flex-col gap-1.5 sm:gap-2 w-full">
         {validData.map((item) => {
-          const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+          const percentage = total > 0 ? ((item.value / total) * 100).toFixed(0) : '0';
           
           return (
             <div
               key={item.label}
-              className="flex items-center justify-between text-xs group hover:bg-slate-100 dark:hover:bg-slate-800/30 rounded px-2 py-1.5 transition-colors cursor-default"
+              className="flex items-center justify-between text-[11px] sm:text-xs group hover:bg-slate-100 dark:hover:bg-slate-800/30 rounded px-2 py-1 sm:py-1.5 transition-colors cursor-default"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <div
-                  className="w-2.5 h-2.5 rounded-full ring-2 ring-white/5"
+                  className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[100px]">{item.label}</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium truncate">{item.label}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2">
                 <span className="text-slate-900 dark:text-white font-semibold tabular-nums">{item.value}</span>
-                <span className="text-slate-500 text-[10px]">({percentage}%)</span>
+                <span className="text-slate-500 text-[9px] sm:text-[10px]">({percentage}%)</span>
               </div>
             </div>
           );

@@ -10,9 +10,42 @@
 
 import React, { useState } from 'react';
 import { Phone, Mail, Calendar, AlertCircle, Pill, FileText, ChevronDown, ChevronUp, Target, CheckCircle, Scissors, DollarSign, Plus } from 'lucide-react';
-import type { PacienteDetallado, InformacionMedica, DestinoPaciente } from '@/types/pacientes';
-import { DESTINO_LABELS, DESTINO_COLORS } from '@/types/pacientes';
+import { type PacienteDetallado } from '@/hooks/usePacienteDetallado';
+import { DESTINO_LABELS, DESTINO_COLORS, type TipoDestino } from '@/types/destinos-pacientes';
 import { DestinoPacienteModal } from './DestinoPacienteModal';
+
+// Tipos locales para el sidebar (compatibilidad con UI existente)
+interface InformacionMedica {
+  alergias?: string[];
+  medicamentos?: string[];
+  condiciones?: string[];
+}
+
+interface PresupuestoUI {
+  monto: number;
+  tipoCirugia: string;
+  fechaEnvio?: string;
+  notas?: string;
+}
+
+interface CirugiaUI {
+  tipoCirugia: string;
+  costo: number;
+  fechaCirugia?: string;
+  sedeOperacion?: string;
+  notas?: string;
+}
+
+interface DestinoPacienteUI {
+  tipo: TipoDestino;
+  fechaRegistro: string;
+  observaciones?: string;
+  motivoAlta?: string;
+  presupuesto?: PresupuestoUI;
+  cirugia?: CirugiaUI;
+}
+
+type DestinoPaciente = DestinoPacienteUI;
 
 interface PatientSidebarProps {
   paciente: PacienteDetallado;
@@ -31,7 +64,33 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
   const [isEditingNotas, setIsEditingNotas] = useState(false);
   const [notas, setNotas] = useState(paciente.notas || '');
   const [isDestinoModalOpen, setIsDestinoModalOpen] = useState(false);
-  const [destinoActual, setDestinoActual] = useState<DestinoPaciente | undefined>(paciente.destino);
+  
+  // Convertir destino de BD a formato UI si existe
+  const convertDestinoToUI = (): DestinoPaciente | undefined => {
+    const destino = paciente.destinoActual;
+    if (!destino) return undefined;
+    return {
+      tipo: destino.tipoDestino,
+      fechaRegistro: destino.fechaRegistro || new Date().toISOString(),
+      observaciones: destino.observaciones || undefined,
+      motivoAlta: destino.motivoAlta || undefined,
+      presupuesto: destino.tipoDestino === 'presupuesto_enviado' && destino.tipoCirugia ? {
+        monto: destino.monto || 0,
+        tipoCirugia: destino.tipoCirugia,
+        fechaEnvio: destino.fechaEvento || undefined,
+        notas: destino.notas || undefined,
+      } : undefined,
+      cirugia: destino.tipoDestino === 'cirugia_realizada' && destino.tipoCirugia ? {
+        tipoCirugia: destino.tipoCirugia,
+        costo: destino.monto || 0,
+        fechaCirugia: destino.fechaEvento || undefined,
+        sedeOperacion: destino.sedeOperacion || undefined,
+        notas: destino.notas || undefined,
+      } : undefined,
+    };
+  };
+  
+  const [destinoActual, setDestinoActual] = useState<DestinoPaciente | undefined>(convertDestinoToUI());
 
   const handleSaveDestino = (destino: DestinoPaciente) => {
     setDestinoActual(destino);
@@ -60,7 +119,8 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       .toUpperCase();
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return 'No registrada';
     return new Date(dateString).toLocaleDateString('es-MX', {
       day: 'numeric',
       month: 'long',
@@ -69,36 +129,36 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
   };
 
   return (
-    <aside className="w-full lg:w-[320px] h-full bg-white dark:bg-[#0f1623] border-r border-slate-200 dark:border-blue-900/20 flex flex-col overflow-y-auto transition-colors">
+    <aside className="w-full lg:w-[320px] h-full bg-background border-r border-border flex flex-col overflow-y-auto transition-colors">
       {/* Header con avatar y nombre */}
-      <div className="p-6 border-b border-slate-200 dark:border-blue-900/20">
+      <div className="p-6 border-b border-border">
         {/* Avatar circular con iniciales */}
         <div className="flex flex-col items-center gap-3 mb-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <span className="text-2xl font-bold text-white">{getInitials(paciente.nombre)}</span>
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg shadow-primary/20">
+            <span className="text-2xl font-bold text-primary-foreground">{getInitials(paciente.nombre || '')}</span>
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{paciente.nombre}</h2>
-            <p className="text-sm text-slate-500 dark:text-blue-300/60 font-medium">N° {paciente.pacienteId}</p>
+            <h2 className="text-xl font-bold text-foreground">{paciente.nombre}</h2>
+            <p className="text-sm text-muted-foreground font-medium">N° {paciente.id.slice(0, 8)}</p>
           </div>
         </div>
 
         {/* Botones de acción */}
         <div className="flex items-center justify-center gap-2 mb-4">
           <button
-            className="p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 dark:bg-blue-950/30 dark:border-blue-900/30 dark:hover:bg-blue-900/40 dark:text-blue-200 transition-all"
+            className="p-2 rounded-lg bg-secondary/50 border border-border hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
             title="Enviar mensaje"
           >
             <Mail className="h-4 w-4" />
           </button>
           <button
-            className="p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 dark:bg-blue-950/30 dark:border-blue-900/30 dark:hover:bg-blue-900/40 dark:text-blue-200 transition-all"
+            className="p-2 rounded-lg bg-secondary/50 border border-border hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
             title="Ver calendario"
           >
             <Calendar className="h-4 w-4" />
           </button>
           <button
-            className="p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 dark:bg-blue-950/30 dark:border-blue-900/30 dark:hover:bg-blue-900/40 dark:text-blue-200 transition-all"
+            className="p-2 rounded-lg bg-secondary/50 border border-border hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
             title="Descargar historial"
           >
             <FileText className="h-4 w-4" />
@@ -108,19 +168,19 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
         {/* Información de contacto */}
         <div className="space-y-3">
           <div className="flex items-center gap-3 text-sm group cursor-pointer">
-            <div className="p-1.5 rounded-md bg-slate-100 dark:bg-blue-950/30 text-slate-500 dark:text-blue-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+            <div className="p-1.5 rounded-md bg-secondary text-muted-foreground group-hover:text-primary transition-colors">
               <Phone className="h-3.5 w-3.5" />
             </div>
-            <a href={`tel:${paciente.telefono}`} className="text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-white transition-colors font-medium">
+            <a href={`tel:${paciente.telefono}`} className="text-muted-foreground group-hover:text-primary transition-colors font-medium">
               {paciente.telefono}
             </a>
           </div>
           {paciente.email && (
             <div className="flex items-center gap-3 text-sm group cursor-pointer">
-              <div className="p-1.5 rounded-md bg-slate-100 dark:bg-blue-950/30 text-slate-500 dark:text-blue-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+              <div className="p-1.5 rounded-md bg-secondary text-muted-foreground group-hover:text-primary transition-colors">
                 <Mail className="h-3.5 w-3.5" />
               </div>
-              <a href={`mailto:${paciente.email}`} className="text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-white transition-colors font-medium truncate">
+              <a href={`mailto:${paciente.email}`} className="text-muted-foreground group-hover:text-primary transition-colors font-medium truncate">
                 {paciente.email}
               </a>
             </div>
@@ -129,19 +189,19 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       </div>
 
       {/* Destino del Paciente */}
-      <div className="border-b border-slate-200 dark:border-blue-900/20">
+      <div className="border-b border-border">
         <button
           onClick={() => setShowDestino(!showDestino)}
-          className="w-full px-4 py-3 flex items-center justify-between bg-white dark:bg-[#0f1623] hover:bg-slate-50 dark:hover:bg-[#131b2b] transition-colors"
+          className="w-full px-4 py-3 flex items-center justify-between bg-background hover:bg-muted/30 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Target className="h-4 w-4 text-indigo-500" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-300/70">Destino del Paciente</h3>
+            <Target className="h-4 w-4 text-primary" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Destino del Paciente</h3>
           </div>
           {showDestino ? (
-            <ChevronUp className="h-4 w-4 text-slate-400" />
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           )}
         </button>
 
@@ -159,7 +219,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                   </span>
                   <button
                     onClick={() => setIsDestinoModalOpen(true)}
-                    className="text-[9px] sm:text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-950/30 px-1.5 sm:px-2 py-0.5 rounded shrink-0"
+                    className="text-[9px] sm:text-[10px] font-medium text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-1.5 sm:px-2 py-0.5 rounded shrink-0 transition-colors"
                   >
                     NUEVA ACCIÓN
                   </button>
@@ -167,7 +227,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
 
                 {/* Detalles del presupuesto */}
                 {destinoActual.presupuesto && (
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 space-y-1.5 sm:space-y-2">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 space-y-1.5 sm:space-y-2">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-amber-700 dark:text-amber-400">
                       <DollarSign className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                       <span className="text-xs sm:text-sm font-semibold truncate">
@@ -190,7 +250,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
 
                 {/* Detalles de la cirugía realizada */}
                 {destinoActual.cirugia && (
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-500/5 border border-blue-200 dark:border-blue-500/20 space-y-1.5 sm:space-y-2">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30 space-y-1.5 sm:space-y-2">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-blue-700 dark:text-blue-400">
                       <Scissors className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                       <span className="text-xs sm:text-sm font-semibold line-clamp-1">{destinoActual.cirugia.tipoCirugia}</span>
@@ -215,7 +275,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
 
                 {/* Alta definitiva */}
                 {destinoActual.tipo === 'alta_definitiva' && destinoActual.motivoAlta && (
-                  <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20">
+                  <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30">
                     <p className="text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-300 line-clamp-3">
                       {destinoActual.motivoAlta}
                     </p>
@@ -224,7 +284,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
 
                 {/* Observaciones */}
                 {destinoActual.observaciones && (
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 italic line-clamp-2">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground italic line-clamp-2">
                     {destinoActual.observaciones}
                   </p>
                 )}
@@ -232,64 +292,58 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
             ) : (
               <button
                 onClick={() => setIsDestinoModalOpen(true)}
-                className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-indigo-50 dark:bg-indigo-500/5 hover:bg-indigo-100 dark:hover:bg-indigo-500/10 border border-dashed border-indigo-300 dark:border-indigo-500/30 rounded-lg text-indigo-600 dark:text-indigo-400 text-xs sm:text-sm font-medium transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-primary/5 hover:bg-primary/10 border border-dashed border-primary/30 rounded-lg text-primary text-xs sm:text-sm font-medium transition-colors"
               >
                 <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Registrar Destino
               </button>
             )}
 
-            {/* HISTORIAL DE ACCIONES (TIMELINE) */}
-            {paciente.historialAcciones && paciente.historialAcciones.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <h4 className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-3">Historial de Eventos</h4>
+            {/* HISTORIAL DE DESTINOS (TIMELINE) */}
+            {paciente.destinos && paciente.destinos.length > 1 && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <h4 className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider mb-3">Historial de Eventos</h4>
                 <div className="space-y-0 relative pl-2">
                   {/* Línea vertical del timeline */}
-                  <div className="absolute left-[11px] top-1 bottom-0 w-px bg-slate-200 dark:bg-slate-800"></div>
+                  <div className="absolute left-[11px] top-1 bottom-0 w-px bg-border"></div>
                   
-                  {paciente.historialAcciones.map((accion) => (
-                    <div key={accion.id} className="relative pl-6 pb-4 last:pb-0 group">
+                  {paciente.destinos.slice(1).map((destino) => (
+                    <div key={destino.id} className="relative pl-6 pb-4 last:pb-0 group">
                       {/* Punto del timeline */}
                       <div className={`
-                        absolute left-0 top-1 w-6 h-6 rounded-full border-2 bg-white dark:bg-[#0f1623] flex items-center justify-center z-10
-                        ${accion.tipo === 'cirugia_realizada' ? 'border-blue-500 text-blue-500' : 
-                          accion.tipo === 'presupuesto_enviado' ? 'border-amber-500 text-amber-500' :
-                          accion.tipo === 'alta_definitiva' ? 'border-emerald-500 text-emerald-500' :
-                          'border-slate-300 text-slate-400'}
+                        absolute left-0 top-1 w-6 h-6 rounded-full border-2 bg-background flex items-center justify-center z-10
+                        ${destino.tipoDestino === 'cirugia_realizada' ? 'border-blue-500 text-blue-500' : 
+                          destino.tipoDestino === 'presupuesto_enviado' ? 'border-amber-500 text-amber-500' :
+                          destino.tipoDestino === 'alta_definitiva' ? 'border-emerald-500 text-emerald-500' :
+                          'border-muted-foreground text-muted-foreground'}
                       `}>
                         <div className={`w-2 h-2 rounded-full ${
-                          accion.tipo === 'cirugia_realizada' ? 'bg-blue-500' : 
-                          accion.tipo === 'presupuesto_enviado' ? 'bg-amber-500' :
-                          accion.tipo === 'alta_definitiva' ? 'bg-emerald-500' :
-                          'bg-slate-300'
+                          destino.tipoDestino === 'cirugia_realizada' ? 'bg-blue-500' : 
+                          destino.tipoDestino === 'presupuesto_enviado' ? 'bg-amber-500' :
+                          destino.tipoDestino === 'alta_definitiva' ? 'bg-emerald-500' :
+                          'bg-muted-foreground'
                         }`}></div>
                       </div>
 
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                            {DESTINO_LABELS[accion.tipo]}
+                          <span className="text-[10px] font-bold text-foreground">
+                            {destino.label}
                           </span>
-                          <span className="text-[9px] text-slate-400 dark:text-slate-500">
-                            {new Date(accion.fechaRegistro).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                          <span className="text-[9px] text-muted-foreground">
+                            {destino.fechaRegistro ? new Date(destino.fechaRegistro).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : ''}
                           </span>
                         </div>
                         
-                        {accion.detalles.presupuesto && (
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                            {accion.detalles.presupuesto.tipoCirugia} - {formatCurrency(accion.detalles.presupuesto.monto)}
-                          </p>
-                        )}
-                        
-                        {accion.detalles.cirugia && (
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                            {accion.detalles.cirugia.tipoCirugia} ({new Date(accion.detalles.cirugia.fechaCirugia).toLocaleDateString()})
+                        {destino.tipoCirugia && destino.monto && (
+                          <p className="text-[10px] text-muted-foreground">
+                            {destino.tipoCirugia} - {formatCurrency(destino.monto)}
                           </p>
                         )}
 
-                        {accion.detalles.motivoAlta && (
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 italic line-clamp-1">
-                            Alta: {accion.detalles.motivoAlta}
+                        {destino.motivoAlta && (
+                          <p className="text-[10px] text-muted-foreground italic line-clamp-1">
+                            Alta: {destino.motivoAlta}
                           </p>
                         )}
                       </div>
@@ -303,13 +357,13 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       </div>
 
       {/* Notas */}
-      <div className="p-4 border-b border-slate-200 dark:border-blue-900/20">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-300/70">Notas Privadas</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notas Privadas</h3>
           {!isEditingNotas && (
             <button
               onClick={() => setIsEditingNotas(true)}
-              className="text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-950/30 px-2 py-0.5 rounded"
+              className="text-[10px] font-medium text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded transition-colors"
             >
               EDITAR
             </button>
@@ -321,12 +375,12 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               placeholder="Agrega notas sobre el paciente..."
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0a0f18] border border-slate-200 dark:border-blue-900/30 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 min-h-[80px] resize-none"
+              className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none"
             />
             <div className="flex gap-2">
               <button
                 onClick={handleSaveNotas}
-                className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors shadow-sm"
+                className="flex-1 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-lg transition-colors shadow-sm"
               >
                 Guardar
               </button>
@@ -335,15 +389,15 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                   setIsEditingNotas(false);
                   setNotas(paciente.notas || '');
                 }}
-                className="flex-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 text-xs font-medium rounded-lg transition-colors"
+                className="flex-1 px-3 py-1.5 bg-muted hover:bg-accent text-muted-foreground hover:text-foreground text-xs font-medium rounded-lg transition-colors"
               >
                 Cancelar
               </button>
             </div>
           </div>
         ) : (
-          <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#0a0f18] border border-slate-100 dark:border-blue-900/10">
-            <p className="text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">
+          <div className="p-3 rounded-lg bg-muted/30 border border-border">
+            <p className="text-sm text-muted-foreground italic leading-relaxed">
               {paciente.notas || 'Sin notas registradas.'}
             </p>
           </div>
@@ -354,13 +408,13 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       <div className="flex-1">
         <button
           onClick={() => setShowMedicalInfo(!showMedicalInfo)}
-          className="w-full px-4 py-3 flex items-center justify-between bg-white dark:bg-[#0f1623] hover:bg-slate-50 dark:hover:bg-[#131b2b] transition-colors border-b border-slate-200 dark:border-blue-900/20"
+          className="w-full px-4 py-3 flex items-center justify-between bg-background hover:bg-muted/30 transition-colors border-b border-border"
         >
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-300/70">Ficha Médica</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ficha Médica</h3>
           {showMedicalInfo ? (
-            <ChevronUp className="h-4 w-4 text-slate-400" />
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           )}
         </button>
 
@@ -370,70 +424,50 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <AlertCircle className="h-3.5 w-3.5 text-rose-500" />
-                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-200">Alergias</h4>
+                <h4 className="text-xs font-semibold text-foreground">Alergias</h4>
               </div>
-              {paciente.informacionMedica?.alergias && paciente.informacionMedica.alergias.length > 0 ? (
-                <ul className="space-y-1.5">
-                  {paciente.informacionMedica.alergias.map((alergia, index) => (
-                    <li key={index} className="text-sm text-slate-600 dark:text-slate-400 pl-5 relative before:absolute before:left-1.5 before:top-2 before:w-1 before:h-1 before:rounded-full before:bg-rose-400">{alergia}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-slate-400 dark:text-slate-500 pl-5">No registra alergias conocidas</p>
-              )}
+              <p className="text-xs text-muted-foreground pl-5">No registra alergias conocidas</p>
             </div>
 
             {/* Medicación */}
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Pill className="h-3.5 w-3.5 text-blue-500" />
-                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-200">Medicación Actual</h4>
+                <h4 className="text-xs font-semibold text-foreground">Medicación Actual</h4>
               </div>
-              {paciente.informacionMedica?.medicacionActual && paciente.informacionMedica.medicacionActual.length > 0 ? (
-                <ul className="space-y-1.5">
-                  {paciente.informacionMedica.medicacionActual.map((med, index) => (
-                    <li key={index} className="text-sm text-slate-600 dark:text-slate-400 pl-5 relative before:absolute before:left-1.5 before:top-2 before:w-1 before:h-1 before:rounded-full before:bg-blue-400">{med}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-slate-400 dark:text-slate-500 pl-5">No registra medicación activa</p>
-              )}
+              <p className="text-xs text-muted-foreground pl-5">No registra medicación activa</p>
             </div>
 
             {/* Antecedentes médicos */}
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="h-3.5 w-3.5 text-emerald-500" />
-                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-200">Antecedentes</h4>
+                <h4 className="text-xs font-semibold text-foreground">Antecedentes</h4>
               </div>
-              {paciente.informacionMedica?.antecedentes && paciente.informacionMedica.antecedentes.length > 0 ? (
-                <ul className="space-y-1.5">
-                  {paciente.informacionMedica.antecedentes.map((antecedente, index) => (
-                    <li key={index} className="text-sm text-slate-600 dark:text-slate-400 pl-5 relative before:absolute before:left-1.5 before:top-2 before:w-1 before:h-1 before:rounded-full before:bg-emerald-400">{antecedente}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-slate-400 dark:text-slate-500 pl-5">Sin antecedentes relevantes</p>
-              )}
+              <p className="text-xs text-muted-foreground pl-5">Sin antecedentes relevantes</p>
             </div>
+            
+            <p className="text-[10px] text-muted-foreground/60 italic text-center">
+              Información médica no disponible en BD actual
+            </p>
           </div>
         )}
       </div>
 
       {/* Footer con metadata */}
-      <div className="p-4 border-t border-slate-200 dark:border-blue-900/20 bg-slate-50 dark:bg-[#0a0f18]">
+      <div className="p-4 border-t border-border bg-muted/10">
         <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-[10px] sm:text-xs">
           <div>
-            <p className="text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Registro</p>
-            <p className="text-slate-700 dark:text-slate-300 font-medium">{formatDate(paciente.fechaRegistro)}</p>
+            <p className="text-muted-foreground uppercase tracking-wider mb-0.5">Registro</p>
+            <p className="text-foreground font-medium">{formatDate(paciente.createdAt)}</p>
           </div>
           <div>
-            <p className="text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Fuente</p>
-            <p className="text-slate-700 dark:text-slate-300 font-medium truncate">{paciente.fuenteOriginal}</p>
+            <p className="text-muted-foreground uppercase tracking-wider mb-0.5">Fuente</p>
+            <p className="text-foreground font-medium truncate">{paciente.origenLead || 'WhatsApp'}</p>
           </div>
-          <div className="col-span-2 pt-2 border-t border-slate-200 dark:border-blue-900/20 mt-1 flex justify-between items-center">
-            <span className="text-slate-500 dark:text-slate-400">Total de consultas</span>
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-full font-bold">
+          <div className="col-span-2 pt-2 border-t border-border mt-1 flex justify-between items-center">
+            <span className="text-muted-foreground">Total de consultas</span>
+            <span className="px-2 py-0.5 bg-secondary text-secondary-foreground rounded-full font-bold">
               {paciente.totalConsultas}
             </span>
           </div>
@@ -443,9 +477,11 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       <DestinoPacienteModal
         isOpen={isDestinoModalOpen}
         onClose={() => setIsDestinoModalOpen(false)}
-        onSave={handleSaveDestino}
-        destinoActual={destinoActual}
-        pacienteNombre={paciente.nombre}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onSave={handleSaveDestino as any}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        destinoActual={destinoActual as any}
+        pacienteNombre={paciente.nombre || ''}
       />
     </aside>
   );

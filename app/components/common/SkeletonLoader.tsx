@@ -176,7 +176,7 @@ export function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
 }
 
 /**
- * Empty state component
+ * Empty state component - Responsivo
  */
 export function EmptyState({
   icon = '📭',
@@ -190,11 +190,11 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
-      <div className="text-6xl mb-4 opacity-50">{icon}</div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-      {description && <p className="text-sm text-muted-foreground mb-4 max-w-md">{description}</p>}
-      {action && <div className="mt-4">{action}</div>}
+    <div className="flex flex-col items-center justify-center min-h-[180px] sm:min-h-[250px] p-4 sm:p-8 text-center">
+      <div className="text-4xl sm:text-5xl lg:text-6xl mb-3 sm:mb-4 opacity-50">{icon}</div>
+      <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-foreground mb-1 sm:mb-2">{title}</h3>
+      {description && <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 max-w-xs sm:max-w-md">{description}</p>}
+      {action && <div className="mt-3 sm:mt-4">{action}</div>}
     </div>
   );
 }

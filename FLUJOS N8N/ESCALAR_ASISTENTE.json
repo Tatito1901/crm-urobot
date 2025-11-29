@@ -44,7 +44,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": \"521XXXXXXXXXX\", \n  \"text\": {{ JSON.stringify($('Formato Mensaje Asistente').item.json.mensaje_alerta) }}\n}",
+        "jsonBody": "={\n  \"to\": \"+526674492872\", \n  \"text\": {{ JSON.stringify($('Formato Mensaje Asistente').item.json.mensaje_alerta) }}\n}",
         "options": {}
       },
       "id": "c2562b5d-e05b-40d1-81b7-08df6e68141e",
@@ -55,10 +55,27 @@
         80,
         112
       ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "BracTxTCVOWFfFBZ",
+          "name": "Header Auth account"
+        }
+      },
       "notes": "⚠️ CAMBIAR EL NÚMERO 'to' POR EL DE LA ASISTENTE REAL"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "nombrePaciente": "Fausto",
+          "telefono": "5512345678",
+          "motivo": "Error técnico persistente al intentar agendar cita.",
+          "contexto": "El paciente Fausto (5512345678) ha intentado agendar una cita para el lunes 1 de diciembre a las 9:00 am en Polanco. La herramienta AGENDAR_CONSULTA ha fallado repetidamente con un error técnico. El paciente insistió en reintentar varias veces, mencionando que habló con soporte. El último intento también falló. Es necesario contactarlo para confirmar su cita manualmente."
+        }
+      }
+    ]
+  },
   "connections": {
     "When Executed by Another Workflow": {
       "main": [
@@ -87,7 +104,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "789e6d63-0de1-49ff-b327-fa08c88f46b0",
+  "versionId": "3868b718-c7e5-476f-9075-2e5544e75f53",
   "meta": {
     "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
   },

@@ -1,0 +1,259 @@
+{
+  "name": "UROBOT_DISPATCHER",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "* * * * *"
+            }
+          ]
+        }
+      },
+      "id": "d021098c-407a-4cc9-a7b0-434766488bc8",
+      "name": "Cada Minuto",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -896,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.notification_queue\nSET status = 'processing', updated_at = NOW()\nWHERE id IN (\n    SELECT id FROM public.notification_queue\n    WHERE status IN ('pending', 'failed')\n    AND next_attempt_at <= NOW()\n    AND attempt_count < 3\n    LIMIT 20\n    FOR UPDATE SKIP LOCKED\n)\nRETURNING id, phone_number, message_body, consulta_id, attempt_count;",
+        "options": {}
+      },
+      "id": "2363299f-dc06-4d6e-b59e-f1e1aecb8984",
+      "name": "Obtener Jobs Pendientes",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -672,
+        192
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "02afaf3c-b723-46a9-969f-477949bc8be0",
+      "name": "Split Jobs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wasenderapi.com/api/send-message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.phone_number }}\",\n  \"text\": {{ JSON.stringify($json.message_body) }}\n}",
+        "options": {}
+      },
+      "id": "e7e065ef-7aa6-439b-b570-c0b97642f4a7",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "BracTxTCVOWFfFBZ",
+          "name": "Header Auth account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "success_check",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "063fb243-e2ae-42ad-b495-6727d61aedd2",
+      "name": "¿Enviado OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE public.notification_queue \nSET status = 'sent', sent_at = NOW(), updated_at = NOW() \nWHERE id = '{{ $('Split Jobs').item.json.id }}'::uuid;",
+        "options": {}
+      },
+      "id": "23661211-8cc1-48d5-bded-f4a76a5e1d53",
+      "name": "Marcar EXITOSO",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        48
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE public.notification_queue \nSET status = CASE WHEN attempt_count >= 2 THEN 'cancelled' ELSE 'failed' END,\n    attempt_count = attempt_count + 1,\n    next_attempt_at = NOW() + (INTERVAL '5 minutes' * (attempt_count + 1)),\n    error_log = '{{ $json.error.message || JSON.stringify($json) }}',\n    updated_at = NOW()\nWHERE id = '{{ $('Split Jobs').item.json.id }}'::uuid;",
+        "options": {}
+      },
+      "id": "df069123-38f0-4c15-a2f3-97a253e0ba10",
+      "name": "Marcar FALLIDO",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        224,
+        240
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cada Minuto": {
+      "main": [
+        [
+          {
+            "node": "Obtener Jobs Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Jobs Pendientes": {
+      "main": [
+        [
+          {
+            "node": "Split Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Jobs": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "¿Enviado OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Enviado OK?": {
+      "main": [
+        [
+          {
+            "node": "Marcar EXITOSO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marcar FALLIDO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar EXITOSO": {
+      "main": [
+        [
+          {
+            "node": "Split Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar FALLIDO": {
+      "main": [
+        [
+          {
+            "node": "Split Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2a096778-bff6-4f47-ac13-d80aeba3b558",
+  "meta": {
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
+  },
+  "id": "E5JCGc5M1ylxL9Sv",
+  "tags": []
+}

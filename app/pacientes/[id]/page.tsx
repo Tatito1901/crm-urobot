@@ -16,7 +16,7 @@ import { PatientSidebar } from './components/PatientSidebar';
 import { PatientHistory } from './components/PatientHistory';
 import { ErrorState } from '@/app/components/common/ErrorState';
 import { updatePacienteDestino, updatePacienteNotas } from './services/paciente-service';
-import type { DestinoPaciente } from '@/types/pacientes';
+// DestinoPaciente imported from hook
 
 export default function PacientePerfilPage() {
   const params = useParams();
@@ -25,11 +25,15 @@ export default function PacientePerfilPage() {
 
   const { paciente, consultas, loading, error, refetch } = usePacienteDetallado(pacienteId);
   
+  // Estado para tabs en móvil
+  const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
+  
   // Estado para notificaciones
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Handler para actualizar el destino
-  const handleUpdateDestino = useCallback(async (destino: DestinoPaciente) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleUpdateDestino = useCallback(async (destino: any) => {
     if (!paciente?.id) return;
     
     const result = await updatePacienteDestino(paciente.id, destino);
@@ -96,25 +100,27 @@ export default function PacientePerfilPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 dark:bg-[#0b101a] transition-colors">
+    <div className="h-screen flex flex-col bg-background transition-colors">
       {/* Notificación Toast */}
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all animate-in fade-in slide-in-from-top-2 ${
+        <div className={`fixed top-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border transition-all animate-in fade-in slide-in-from-top-4 ${
           notification.type === 'success' 
-            ? 'bg-emerald-600 text-white' 
-            : 'bg-red-600 text-white'
+            ? 'bg-background border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-emerald-500/10' 
+            : 'bg-background border-red-500/20 text-red-600 dark:text-red-400 shadow-red-500/10'
         }`}>
-          <CheckCircle className="h-4 w-4" />
-          <span className="text-sm font-medium">{notification.message}</span>
+          <div className={`p-1 rounded-full ${notification.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+            <CheckCircle className="w-4 h-4" />
+          </div>
+          <span className="text-sm font-medium text-foreground">{notification.message}</span>
         </div>
       )}
 
       {/* Header superior */}
-      <header className="border-b border-slate-200 dark:border-blue-900/20 bg-white/80 dark:bg-[#0b101a]/80 backdrop-blur-md px-6 py-4 z-10">
+      <header className="border-b border-border bg-background/80 backdrop-blur-md px-6 py-4 z-10">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push('/pacientes')}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg transition-all shadow-sm dark:shadow-none"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-background hover:bg-accent border border-border rounded-lg transition-all"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Volver a Pacientes</span>
@@ -122,22 +128,22 @@ export default function PacientePerfilPage() {
           </button>
 
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{paciente.nombre}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Perfil de paciente • N° {paciente.pacienteId}</p>
+            <h1 className="text-xl font-bold text-foreground">{paciente.nombre}</h1>
+            <p className="text-sm text-muted-foreground">Perfil de paciente • N° {paciente.id}</p>
           </div>
 
           <div className="hidden lg:flex items-center gap-6 text-sm">
             <div className="text-right">
-              <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-0.5">Total de citas</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{paciente.totalConsultas}</p>
+              <p className="text-muted-foreground text-xs uppercase tracking-wider mb-0.5">Total de citas</p>
+              <p className="text-2xl font-bold text-foreground leading-none">{paciente.totalConsultas}</p>
             </div>
-            <div className="h-10 w-px bg-slate-200 dark:bg-slate-700"></div>
+            <div className="h-10 w-px bg-border"></div>
             <div className="text-right">
-              <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-0.5">Estado</p>
+              <p className="text-muted-foreground text-xs uppercase tracking-wider mb-0.5">Estado</p>
               <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                 paciente.estado === 'Activo' 
-                  ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' 
-                  : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' 
+                  : 'bg-muted text-muted-foreground border-border'
               }`}>
                 {paciente.estado}
               </div>
@@ -147,13 +153,13 @@ export default function PacientePerfilPage() {
       </header>
 
       {/* Tabs móvil */}
-      <div className="lg:hidden flex border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101a]">
+      <div className="lg:hidden flex border-b border-border bg-background">
         <button
           onClick={() => setActiveTab('info')}
           className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'info'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground'
           }`}
         >
           Información
@@ -162,8 +168,8 @@ export default function PacientePerfilPage() {
           onClick={() => setActiveTab('history')}
           className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'history'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground'
           }`}
         >
           Historial Clínico
@@ -171,10 +177,10 @@ export default function PacientePerfilPage() {
       </div>
 
       {/* Layout principal: Sidebar + Historial */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative bg-muted/5">
         {/* Sidebar - Visible en desktop o si activeTab es 'info' */}
         <div className={`
-          w-full lg:w-auto lg:block absolute inset-0 lg:static z-20 bg-white dark:bg-[#0b101a] lg:bg-transparent transition-transform duration-300 ease-in-out
+          w-full lg:w-auto lg:block absolute inset-0 lg:static z-20 bg-background lg:bg-transparent transition-transform duration-300 ease-in-out
           ${activeTab === 'info' ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <PatientSidebar 
@@ -186,7 +192,7 @@ export default function PacientePerfilPage() {
 
         {/* Panel de historial - Visible en desktop o si activeTab es 'history' */}
         <div className={`
-          flex-1 w-full absolute inset-0 lg:static z-10 transition-transform duration-300 ease-in-out bg-slate-50 dark:bg-[#0b101a]
+          flex-1 w-full absolute inset-0 lg:static z-10 transition-transform duration-300 ease-in-out bg-muted/5
           ${activeTab === 'history' ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         `}>
           <PatientHistory
@@ -202,8 +208,6 @@ export default function PacientePerfilPage() {
           />
         </div>
       </div>
-
-      {/* Vista móvil: Sidebar como modal o sección colapsable (Eliminado placeholder) */}
     </div>
   );
 }

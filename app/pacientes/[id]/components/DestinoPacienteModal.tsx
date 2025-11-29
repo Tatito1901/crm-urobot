@@ -12,18 +12,42 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle, FileText, Scissors, Clock, DollarSign, MapPin, AlertCircle, Save, Plus, Trash2, Send, FileDown, Loader2 } from 'lucide-react';
-import type { 
-  DestinoPaciente, 
-  TipoDestino, 
-  PresupuestoCirugia, 
-  CirugiaRealizada 
-} from '@/types/pacientes';
+import { X, CheckCircle, FileText, Scissors, Clock, DollarSign, MapPin, AlertCircle, Save, Plus, Send, FileDown, Loader2 } from 'lucide-react';
 import { 
+  type TipoDestino,
   TIPOS_DESTINO, 
   TIPOS_CIRUGIA, 
   DESTINO_LABELS 
-} from '@/types/pacientes';
+} from '@/types/destinos-pacientes';
+
+// Tipos locales para el modal (UI)
+interface PresupuestoCirugia {
+  tipoCirugia?: string;
+  monto?: number;
+  moneda: 'MXN' | 'USD';
+  fechaEnvio?: string;
+  inclusiones?: string[];
+  notas?: string;
+  sede?: 'polanco' | 'satelite';
+}
+
+interface CirugiaRealizada {
+  tipoCirugia?: string;
+  costo?: number;
+  moneda: 'MXN' | 'USD';
+  fechaCirugia?: string;
+  sedeOperacion?: string;
+  notas?: string;
+}
+
+interface DestinoPaciente {
+  tipo: TipoDestino;
+  fechaRegistro: string;
+  observaciones?: string;
+  motivoAlta?: string;
+  presupuesto?: PresupuestoCirugia;
+  cirugia?: CirugiaRealizada;
+}
 
 // Import dinámico para jspdf (para evitar errores en build si no se usa)
 // Nota: Requiere instalar jspdf y jspdf-autotable
@@ -159,11 +183,9 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
       // CONFIGURACIÓN DE ESTILO
       // ==========================================
       // Colores basados en la imagen proporcionada (Verde URODEX)
-      const primaryColor = [14, 77, 67]; // #0E4D43 (Verde oscuro elegante)
-      const accentColor = [20, 184, 166]; // Teal claro para detalles
-      const textDark = [30, 41, 59]; // Slate 800
-      const textGray = [100, 116, 139]; // Slate 500
-      const bgLight = [248, 250, 252]; // Slate 50
+      const primaryColor: [number, number, number] = [14, 77, 67]; // #0E4D43 (Verde oscuro elegante)
+      const textDark: [number, number, number] = [30, 41, 59]; // Slate 800
+      const textGray: [number, number, number] = [100, 116, 139]; // Slate 500
 
       // ==========================================
       // HEADER (Diseño Minimalista y Formal)
@@ -277,7 +299,6 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
       // ==========================================
       // TABLA DE COSTOS (Estilo Formal / Financiero)
       // ==========================================
-      // @ts-ignore
       autoTable(doc, {
         startY: row2Y + 20,
         head: [['CONCEPTO', 'IMPORTE']],
@@ -295,7 +316,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
           halign: 'left',
           cellPadding: { top: 5, bottom: 5, left: 0, right: 0 },
           lineWidth: { top: 0.5, bottom: 0.5 }, // Líneas arriba y abajo del header
-          lineColor: primaryColor as [number, number, number]
+          lineColor: primaryColor
         },
         bodyStyles: {
           textColor: textDark,
@@ -311,7 +332,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
         margin: { left: 20, right: 20 }
       });
 
-      // @ts-ignore
+      // @ts-expect-error - lastAutoTable added by plugin
       let finalY = doc.lastAutoTable.finalY + 15;
 
       // ==========================================

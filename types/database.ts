@@ -17,7 +17,6 @@
 export type {
   Json,
   Database,
-  Enums
 } from './supabase';
 
 // Importar Database para crear aliases simples
@@ -42,3 +41,6 @@ export type Updatable<TableName extends keyof Database['public']['Tables']> =
 
 export type Views<ViewName extends keyof Database['public']['Views']> = 
   Database['public']['Views'][ViewName] extends { Row: infer R } ? R : never;
+
+export type Enums<EnumName extends keyof Database['public']['Enums']> = 
+  Database['public']['Enums'][EnumName];

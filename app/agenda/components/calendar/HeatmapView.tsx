@@ -30,14 +30,14 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
   // Filtrar consultas por sede
   const filteredConsultas = useMemo(() => {
     if (sedeFilter === 'ALL') return consultas;
-    return consultas.filter(c => c.sede === sedeFilter && c.estado !== 'Cancelada');
+    return consultas.filter(c => c.sede === sedeFilter && c.estadoCita !== 'Cancelada');
   }, [consultas, sedeFilter]);
 
   // Calcular ocupación por día para la sede seleccionada
   const getDayOccupancyForSede = useMemo(() => {
     const map = new Map<string, number>();
     filteredConsultas.forEach((consulta) => {
-      if (consulta.estado === 'Cancelada') return;
+      if (consulta.estadoCita === 'Cancelada') return;
       const dateKey = consulta.fechaConsulta;
       map.set(dateKey, (map.get(dateKey) || 0) + 1);
     });
@@ -156,8 +156,8 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
   // Análisis comparativo por sede
   const sedeComparison = useMemo(() => {
-    const polanco = consultas.filter(c => c.sede === 'POLANCO' && c.estado !== 'Cancelada');
-    const satelite = consultas.filter(c => c.sede === 'SATELITE' && c.estado !== 'Cancelada');
+    const polanco = consultas.filter(c => c.sede === 'POLANCO' && c.estadoCita !== 'Cancelada');
+    const satelite = consultas.filter(c => c.sede === 'SATELITE' && c.estadoCita !== 'Cancelada');
 
     return {
       polanco: {
@@ -521,7 +521,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-muted-foreground">% del total</span>
                     <span className="text-lg font-semibold text-foreground">
-                      {((sedeComparison.polanco.total / consultas.filter(c => c.estado !== 'Cancelada').length) * 100).toFixed(1)}%
+                      {((sedeComparison.polanco.total / consultas.filter(c => c.estadoCita !== 'Cancelada').length) * 100).toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -555,7 +555,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-muted-foreground">% del total</span>
                     <span className="text-lg font-semibold text-foreground">
-                      {((sedeComparison.satelite.total / consultas.filter(c => c.estado !== 'Cancelada').length) * 100).toFixed(1)}%
+                      {((sedeComparison.satelite.total / consultas.filter(c => c.estadoCita !== 'Cancelada').length) * 100).toFixed(1)}%
                     </span>
                   </div>
                 </div>

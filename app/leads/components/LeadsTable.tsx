@@ -104,21 +104,18 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
       ),
       conversion: (
         <div className="flex flex-col gap-1 text-xs">
-          {lead.esCliente && lead.paciente ? (
+          {lead.estado === 'Convertido' && lead.pacienteId ? (
             <div className="group">
               <Link
-                href={`/pacientes/${lead.paciente.id}`}
+                href={`/pacientes/${lead.pacienteId}`}
                 className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium flex items-center gap-1 transition-colors"
               >
                 Ver perfil
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </Link>
-              <span className="text-muted-foreground block mt-0.5">
-                {lead.paciente.totalConsultas} {lead.paciente.totalConsultas === 1 ? 'consulta' : 'consultas'}
-              </span>
-              {lead.diasDesdeConversion !== null && (
+              {lead.fechaConversion && (
                 <span className="text-muted-foreground text-[10px]">
-                  Hace {lead.diasDesdeConversion}d
+                  Convertido
                 </span>
               )}
             </div>

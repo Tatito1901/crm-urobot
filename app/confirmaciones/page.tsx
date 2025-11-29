@@ -44,22 +44,31 @@ export default function ConfirmacionesPage() {
       fechaLimite = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
+    // Helper para extraer tipo de metadata
+    const getTipo = (r: typeof recordatorios[0]) => {
+      return (r.metadata as { tipo?: string } | null)?.tipo || '';
+    };
+
     // Aplicar todos los filtros en una sola pasada
     const result = recordatorios.filter((r) => {
       // Filtro por rango de fechas
-      if (fechaLimite && new Date(r.programado_para) < fechaLimite) {
+      const fechaNotif = r.nextAttemptAt ? new Date(r.nextAttemptAt) : new Date(r.createdAt || 0);
+      if (fechaLimite && fechaNotif < fechaLimite) {
         return false;
       }
 
-      // Filtro por tipo de recordatorio
-      if (tipoFiltro !== 'ALL' && r.tipo !== tipoFiltro) {
-        return false;
+      // Filtro por tipo de recordatorio (extraído de metadata)
+      if (tipoFiltro !== 'ALL') {
+        const tipo = getTipo(r);
+        if (tipo !== tipoFiltro) {
+          return false;
+        }
       }
 
       // Filtro por búsqueda
       if (term) {
-        const nombrePaciente = (r.paciente?.nombre_completo || '').toLowerCase();
-        const consultaId = (r.consulta?.consulta_id || '').toLowerCase();
+        const nombrePaciente = (r.pacienteNombre || '').toLowerCase();
+        const consultaId = (r.consultaId || '').toLowerCase();
         if (!nombrePaciente.includes(term) && !consultaId.includes(term)) {
           return false;
         }
@@ -72,10 +81,12 @@ export default function ConfirmacionesPage() {
     if (soloUltimo) {
       const consultaMap = new Map<string, typeof result[0]>();
       result.forEach((r) => {
-        const consultaId = r.consulta?.consulta_id;
+        const consultaId = r.consultaId;
         if (consultaId) {
           const existing = consultaMap.get(consultaId);
-          if (!existing || new Date(r.programado_para) > new Date(existing.programado_para)) {
+          const fechaR = r.nextAttemptAt ? new Date(r.nextAttemptAt) : new Date(0);
+          const fechaExisting = existing?.nextAttemptAt ? new Date(existing.nextAttemptAt) : new Date(0);
+          if (!existing || fechaR > fechaExisting) {
             consultaMap.set(consultaId, r);
           }
         }
@@ -90,18 +101,22 @@ export default function ConfirmacionesPage() {
   const paginatedData = useMemo(() => {
     const start = currentPage * itemsPerPage;
     const end = start + itemsPerPage;
-    // Ordenar antes de paginar para consistencia
+    // Ordenar antes de paginar por nextAttemptAt o createdAt
     return [...filtered]
-      .sort((a, b) => new Date(b.programado_para).getTime() - new Date(a.programado_para).getTime())
+      .sort((a, b) => {
+        const fechaA = a.nextAttemptAt ? new Date(a.nextAttemptAt).getTime() : 0;
+        const fechaB = b.nextAttemptAt ? new Date(b.nextAttemptAt).getTime() : 0;
+        return fechaB - fechaA;
+      })
       .slice(start, end);
   }, [filtered, currentPage, itemsPerPage]);
 
-  // Calcular estadísticas en una sola pasada
+  // Calcular estadísticas en una sola pasada (usa status, no estado)
   const stats = useMemo(() => {
     return filtered.reduce((acc, item) => {
-      if (item.estado === 'pendiente') acc.pendientes++;
-      else if (item.estado === 'enviado') acc.enviados++;
-      else if (item.estado === 'error') acc.errores++;
+      if (item.status === 'pending') acc.pendientes++;
+      else if (item.status === 'sent') acc.enviados++;
+      else if (item.status === 'failed') acc.errores++;
       return acc;
     }, { pendientes: 0, enviados: 0, errores: 0 });
   }, [filtered]);

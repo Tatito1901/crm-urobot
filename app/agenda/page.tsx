@@ -46,26 +46,32 @@ const MobileSidebar = lazy(() => import('./components/calendar/Sidebar').then(m 
 const ModalLoader = () => <div className="flex items-center justify-center p-4"><div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full" /></div>;
 
 // Adaptador: Convierte Consulta a Appointment
+// ✅ SINCRONIZADO: Usa campos reales de Consulta (fechaHoraInicio = fecha_hora_utc de BD)
 function consultaToAppointment(consulta: Consulta): Appointment {
   let startDateTime: Temporal.ZonedDateTime;
 
   try {
-    // Preferir fecha_hora_utc (consulta.fecha) y convertirla al timezone local
-    if (consulta.fecha) {
+    // Usar fechaHoraInicio (viene de fecha_hora_utc en BD)
+    if (consulta.fechaHoraInicio) {
       // Sanitizar fecha (reemplazar espacio por T si es necesario)
-      // Formato esperado: 2025-05-23 09:30:00+00
+      // Formato esperado de BD: 2025-05-23 09:30:00+00
       // Formato Temporal: 2025-05-23T09:30:00+00:00
-      let sanitizedDate = consulta.fecha.trim().replace(' ', 'T');
+      let sanitizedDate = consulta.fechaHoraInicio.trim().replace(' ', 'T');
       
-      // Asegurar que tenga offset o Z. Si termina en +00, añadir :00
+      // Asegurar que tenga offset o Z. Si termina en +00, añadir :00 si falta
       if (sanitizedDate.endsWith('+00')) {
         sanitizedDate += ':00';
       }
       
+      // Si no tiene offset ni Z, asumir UTC (Z)
+      if (!sanitizedDate.includes('+') && !sanitizedDate.endsWith('Z')) {
+          sanitizedDate += 'Z';
+      }
+      
       const instant = Temporal.Instant.from(sanitizedDate);
-      startDateTime = instant.toZonedDateTimeISO(consulta.timezone);
+      startDateTime = instant.toZonedDateTimeISO('America/Mexico_City');
     } else {
-      throw new Error('Missing fecha');
+      throw new Error('Missing fechaHoraInicio');
     }
   } catch {
     // Fallback: usar fechaConsulta + horaConsulta como hora local
@@ -73,7 +79,7 @@ function consultaToAppointment(consulta: Consulta): Appointment {
     const [hourStr, minuteStr, secondStr] = consulta.horaConsulta.split(':');
 
     startDateTime = Temporal.ZonedDateTime.from({
-      timeZone: consulta.timezone,
+      timeZone: 'America/Mexico_City',
       year: parseInt(yearStr),
       month: parseInt(monthStr),
       day: parseInt(dayStr),
@@ -87,36 +93,36 @@ function consultaToAppointment(consulta: Consulta): Appointment {
 
   return {
     id: consulta.id,
-    uuid: consulta.uuid,
+    uuid: consulta.id,
     pacienteId: consulta.pacienteId || '',
-    paciente: consulta.paciente,
+    paciente: consulta.paciente || '',
     telefono: null,
     email: null,
     start: startDateTime,
     end: endDateTime,
-    timezone: consulta.timezone,
+    timezone: 'America/Mexico_City',
     duracionMinutos: consulta.duracionMinutos,
-    sede: consulta.sede,
+    sede: consulta.sede || 'POLANCO',
     consultorio: null,
-    tipo: consulta.tipo,
+    tipo: consulta.tipoCita || 'Primera Vez',
     prioridad: 'normal',
     modalidad: 'presencial',
     motivoConsulta: consulta.motivoConsulta,
     notasInternas: null,
     requisitosEspeciales: null,
-    estado: consulta.estado,
-    estadoConfirmacion: consulta.estadoConfirmacion,
-    confirmadoPaciente: consulta.confirmadoPaciente,
+    estado: consulta.estadoCita || 'Programada',
+    estadoConfirmacion: consulta.estadoConfirmacion || 'Pendiente',
+    confirmadoPaciente: consulta.confirmadoPaciente || false,
     confirmadoEn: null,
-    canalOrigen: consulta.canalOrigen || 'Sistema',
+    canalOrigen: 'Sistema',
     calendarEventId: consulta.calendarEventId,
-    calendarLink: consulta.calendarLink,
-    canceladoPor: consulta.canceladoPor || null,
+    calendarLink: consulta.calendarLink || null,
+    canceladoPor: null,
     canceladoEn: null,
-    motivoCancelacion: consulta.motivoCancelacion || null,
+    motivoCancelacion: null,
     creadoPor: null,
-    createdAt: consulta.createdAt,
-    updatedAt: consulta.updatedAt,
+    createdAt: consulta.createdAt || '',
+    updatedAt: consulta.updatedAt || '',
   };
 }
 

@@ -9,8 +9,9 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useIsMobile, useSlowConnection } from './useIsMobile';
 
 /**
  * Mapa de rutas que se deben prefetchear automáticamente
@@ -60,35 +61,21 @@ const PREFETCH_MAP: Record<string, string[]> = {
 export function usePrefetchRoutes() {
   const pathname = usePathname();
   const router = useRouter();
-  const [shouldPrefetch, setShouldPrefetch] = useState(true);
+  const isMobile = useIsMobile();
+  const isSlowConnection = useSlowConnection();
 
   useEffect(() => {
-    // Detectar conexión lenta o datos ahorrados
-    if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-      const nav = navigator as unknown as { connection: { effectiveType: string; saveData: boolean } };
-      const conn = nav.connection;
-      if (conn) {
-        // No prefetch en conexiones lentas (2G, slow-2g) o con ahorro de datos
-        const isSlowConnection = conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g';
-        const isSaveData = conn.saveData === true;
-        setShouldPrefetch(!isSlowConnection && !isSaveData);
-      }
-    }
-
-    // Detectar si es móvil por tamaño de pantalla
-    const isMobile = window.innerWidth < 1024; // lg breakpoint
-    
-    // Si es móvil, esperar más tiempo antes de prefetch
-    const delay = isMobile ? 500 : 100;
-
-    if (!pathname || !shouldPrefetch) return;
+    // No prefetch en conexiones lentas
+    if (isSlowConnection || !pathname) return;
 
     // Obtener rutas a prefetchear para la ruta actual
     const routesToPrefetch = PREFETCH_MAP[pathname] || [];
+    if (routesToPrefetch.length === 0) return;
 
-    // Limitar prefetch en móviles (solo las 2 primeras rutas)
+    // Configurar según dispositivo
+    const delay = isMobile ? 500 : 100;
     const routesToLoad = isMobile 
-      ? routesToPrefetch.slice(0, 2) 
+      ? routesToPrefetch.slice(0, 2) // Limitar en móviles
       : routesToPrefetch;
 
     // Prefetchear después de un delay para no bloquear el render inicial
@@ -99,5 +86,5 @@ export function usePrefetchRoutes() {
     }, delay);
 
     return () => clearTimeout(timeoutId);
-  }, [pathname, router, shouldPrefetch]);
+  }, [pathname, router, isMobile, isSlowConnection]);
 }

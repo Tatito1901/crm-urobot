@@ -163,54 +163,40 @@ export interface ConsultDurationRule {
 // ========== CONFIGURACIÓN DE DURACIONES ==========
 
 export const CONSULT_DURATION_RULES: Record<ConsultaTipo, Omit<ConsultDurationRule, 'tipo'>> = {
-  primera_vez: {
+  'Primera Vez': {
     duracionDefecto: 45,
     duracionMinima: 30,
     duracionMaxima: 60,
     bufferPre: 0,
     bufferPost: 5,
   },
-  subsecuente: {
+  'Seguimiento': {
     duracionDefecto: 30,
     duracionMinima: 15,
     duracionMaxima: 45,
     bufferPre: 0,
     bufferPost: 0,
   },
-  control_post_op: {
-    duracionDefecto: 30,
-    duracionMinima: 15,
-    duracionMaxima: 45,
-    bufferPre: 0,
-    bufferPost: 5,
-  },
-  urgencia: {
+  'Urgencia': {
     duracionDefecto: 30,
     duracionMinima: 15,
     duracionMaxima: 60,
     bufferPre: 0,
     bufferPost: 0,
   },
-  procedimiento_menor: {
+  'Procedimiento': {
     duracionDefecto: 60,
     duracionMinima: 45,
     duracionMaxima: 120,
     bufferPre: 15,
     bufferPost: 15,
   },
-  valoracion_prequirurgica: {
+  'Valoración': {
     duracionDefecto: 45,
     duracionMinima: 30,
     duracionMaxima: 60,
     bufferPre: 0,
     bufferPost: 5,
-  },
-  teleconsulta: {
-    duracionDefecto: 30,
-    duracionMinima: 15,
-    duracionMaxima: 45,
-    bufferPre: 0,
-    bufferPost: 0,
   },
 };
 

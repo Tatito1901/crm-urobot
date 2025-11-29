@@ -1,0 +1,978 @@
+{
+  "name": "AGENDAR_CONSULTA",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"slotId\": \"slot_12345\",\n  \"sede\": \"POLANCO\",\n  \"start\": \"2025-11-23T16:00:00.000Z\",\n  \"end\": \"2025-11-23T16:30:00.000Z\",\n  \"paciente\": {\n    \"nombre\": \"Fausto Medina\",\n    \"telefono\": \"6673184624\",\n    \"email\": \"fausto@example.com\"\n  },\n  \"tipoCita\": \"primera_vez\",\n  \"motivoConsulta\": \"Dolor de ingle\",\n  \"lead_telefono\": \"526673184624\"\n}\n"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -13040,
+        880
+      ],
+      "id": "f03d2a76-26af-4d3b-93b5-4928353d083e",
+      "name": "When executed by another workflow",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// INIT: Genera trace_id + consulta_id único\n// ========================================\nconst input = $input.first().json;\nconst now = Date.now();\nconst randomId = Math.random().toString(36).substring(2, 10);\n\nconst trace_id = `${now}-${randomId}`;\n\n// Extraer teléfono normalizado\nconst phoneRaw = input.paciente?.telefono || input.lead_telefono || input.phone || input.wa_id || '';\nconst phone = phoneRaw.replace(/\\D/g, '');\n\n// Extraer fecha inicio\nconst startTime = input.start || input.startTime || '';\nconst endTime = input.end || input.endTime || '';\n\n// consulta_id único para idempotencia\nconst sede = (input.sede || '').toUpperCase().trim();\nconst startDate = startTime ? new Date(startTime).toISOString().replace(/[-:]/g, '').substring(0, 15) : '';\nconst consulta_id = `${sede}_${phone}_${startDate}`;\n\nconsole.log(`[${trace_id}] INIT - consulta_id: ${consulta_id}`);\n\nreturn {\n  json: {\n    phone,\n    phoneOriginal: phoneRaw,\n    sede,\n    startTime,\n    endTime,\n    patientName: input.paciente?.nombre || input.patientName || input.nombre || 'Paciente',\n    patientEmail: input.paciente?.email || input.email || null,\n    motivo: input.motivoConsulta || input.motivo || 'Consulta',\n    tipoCita: input.tipoCita || 'Primera Vez',\n    slotId: input.slotId || '',\n    _trace_id: trace_id,\n    _consulta_id: consulta_id,\n    _started_at: new Date().toISOString()\n  }\n};"
+      },
+      "id": "89778c8b-2943-4fd9-9dbc-c84c9273ee7e",
+      "name": "Init & Normalize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -12816,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// VALIDATE INPUT\n// ========================================\nconst input = $input.first().json;\nconst trace_id = input._trace_id;\nconst problems = [];\n\nif (!input.phone || input.phone.length < 10) problems.push('MISSING_PHONE');\nif (!input.sede) problems.push('MISSING_SEDE');\nif (!input.startTime || !input.endTime) problems.push('MISSING_SLOT');\n\nif (input.startTime) {\n  const d = new Date(input.startTime);\n  if (isNaN(d.getTime())) problems.push('INVALID_START_DATE');\n}\n\nif (input.endTime) {\n  const d = new Date(input.endTime);\n  if (isNaN(d.getTime())) problems.push('INVALID_END_DATE');\n}\n\nconsole.log(`[${trace_id}] VALIDATE - Problems: ${problems.length}`);\n\nif (problems.length > 0) {\n  return {\n    json: {\n      ...input,\n      success: false,\n      error: 'VALIDATION_FAILED',\n      problems,\n      _stage: 'validation_failed'\n    }\n  };\n}\n\nreturn {\n  json: {\n    ...input,\n    success: true,\n    _validated_at: new Date().toISOString(),\n    _stage: 'validated'\n  }\n};"
+      },
+      "id": "845581db-da74-4d61-ae98-8bca2da3b587",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -12592,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "validation-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "87058409-bab8-45c8-8e56-cb011582c020",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -12368,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"SELECT sede, display_name, direccion, maps_url, calendar_id, timezone FROM sedes WHERE sede = '\" + $json.sede + \"' LIMIT 1\" }}",
+        "options": {}
+      },
+      "id": "1cde8c24-50df-458d-9fbc-41a26d15ddd9",
+      "name": "Get Sede Config",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -12144,
+        784
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// PROCESS SEDE\n// ========================================\nconst context = $('Validate Input').first().json;\nconst sedeResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(sedeResult) ? sedeResult : [sedeResult];\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].calendar_id) {\n  console.log(`[${trace_id}] SEDE - NOT FOUND`);\n  return {\n    json: {\n      ...context,\n      error: 'SEDE_NOT_FOUND',\n      _stage: 'sede_error'\n    }\n  };\n}\n\nconst sede = rows[0];\nconsole.log(`[${trace_id}] SEDE - Found: ${sede.display_name}`);\n\nreturn {\n  json: {\n    ...context,\n    calendar_id: sede.calendar_id,\n    sedeDisplayName: sede.display_name,\n    sedeDireccion: sede.direccion,\n    sedeMapsUrl: sede.maps_url,\n    timezone: sede.timezone || 'America/Mexico_City',\n    _stage: 'sede_ok'\n  }\n};"
+      },
+      "id": "0dfe2b15-7135-47fc-aadf-d5c26eb824fc",
+      "name": "Process Sede",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -11920,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "sede-found",
+              "leftValue": "={{ $json.calendar_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e7c56ce7-4758-464e-8720-cbb4d10eabf8",
+      "name": "Sede OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -11696,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  c.id, \n  c.consulta_id, \n  c.calendar_event_id \nFROM consultas c \nJOIN pacientes p ON c.paciente_id = p.id \nWHERE \n  p.telefono = $1 \n  AND c.fecha_hora_inicio = $2::timestamptz \n  AND c.estado_cita NOT IN ('Cancelada', 'No Asistió') \nLIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $json.phone }}, {{ $json.startTime }}"
+        }
+      },
+      "id": "b5d4720e-4b8b-4e78-a559-0975c29c641a",
+      "name": "Check Duplicate",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -11472,
+        688
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// PROCESS DUPLICATE CHECK\n// ========================================\nconst context = $('Process Sede').first().json;\nconst dbResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\nconst isDuplicate = rows.length > 0 && rows[0] && rows[0].id;\n\nif (isDuplicate) {\n  console.log(`[${trace_id}] DUPLICATE - FOUND: ${rows[0].consulta_id}`);\n  return {\n    json: {\n      ...context,\n      isDuplicate: true,\n      existingConsultaId: rows[0].consulta_id,\n      existingEventId: rows[0].calendar_event_id,\n      error: 'DUPLICATE_APPOINTMENT',\n      _stage: 'duplicate_found'\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] DUPLICATE - None found`);\nreturn {\n  json: {\n    ...context,\n    isDuplicate: false,\n    _stage: 'no_duplicate'\n  }\n};"
+      },
+      "id": "1ed60f97-17cd-4886-b3ac-6ba1f0c6bac4",
+      "name": "Process Duplicate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -11248,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "not-duplicate",
+              "leftValue": "={{ $json.isDuplicate }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "eb5f806a-5d79-44f0-adf4-792bf491017b",
+      "name": "Not Duplicate?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -11024,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.calendar_id }}"
+        },
+        "timeMin": "={{ $json.startTime }}",
+        "timeMax": "={{ $json.endTime }}",
+        "options": {}
+      },
+      "id": "23e39731-7597-4892-990b-138cf1b42d54",
+      "name": "Check FreeBusy",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -10800,
+        592
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Hm8ggB0P1TTFp0A0",
+          "name": "GOOGLE UROBOT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// PROCESS FREEBUSY\n// ========================================\nconst context = $('Process Duplicate').first().json;\nconst freebusyResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconsole.log(`[${trace_id}] FREEBUSY - Processing`);\n\n// Check for API error\nif (freebusyResult.error || freebusyResult.message) {\n  console.log(`[${trace_id}] FREEBUSY - API Error`);\n  return {\n    json: {\n      ...context,\n      isFree: false,\n      error: 'CALENDAR_API_ERROR',\n      errorDetails: freebusyResult.error || freebusyResult.message,\n      _stage: 'freebusy_error'\n    }\n  };\n}\n\n// Extract busy periods\nlet busyPeriods = [];\nif (freebusyResult.calendars && freebusyResult.calendars[context.calendar_id]) {\n  busyPeriods = freebusyResult.calendars[context.calendar_id].busy || [];\n} else if (freebusyResult.busy) {\n  busyPeriods = freebusyResult.busy;\n}\n\nconst isFree = busyPeriods.length === 0;\nconsole.log(`[${trace_id}] FREEBUSY - isFree: ${isFree}`);\n\nreturn {\n  json: {\n    ...context,\n    isFree,\n    _stage: isFree ? 'slot_free' : 'slot_taken'\n  }\n};"
+      },
+      "id": "c381cafc-2e60-4f91-affe-5e024f3fbc28",
+      "name": "Process FreeBusy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10576,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-free",
+              "leftValue": "={{ $json.isFree }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4443b0ed-efc4-4ce3-9c67-5e588bda0015",
+      "name": "Slot Free?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -10352,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"INSERT INTO pacientes (telefono, nombre_completo, email, origen_lead) VALUES ('\" + $json.phone + \"', '\" + $json.patientName.replace(/'/g, \"''\") + \"', \" + ($json.patientEmail ? \"'\" + $json.patientEmail + \"'\" : \"NULL\") + \", 'WhatsApp') ON CONFLICT (telefono) DO UPDATE SET nombre_completo = CASE WHEN '\" + $json.patientName + \"' != 'Paciente' THEN '\" + $json.patientName.replace(/'/g, \"''\") + \"' ELSE pacientes.nombre_completo END, updated_at = NOW() RETURNING id, telefono, nombre_completo\" }}",
+        "options": {}
+      },
+      "id": "9a35dd08-b398-421a-9666-1401839eadde",
+      "name": "Upsert Paciente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -10128,
+        496
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// PROCESS PACIENTE\n// ========================================\nconst context = $('Process FreeBusy').first().json;\nconst dbResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n  console.log(`[${trace_id}] PACIENTE - FAILED`);\n  return {\n    json: {\n      ...context,\n      error: 'PACIENTE_UPSERT_FAILED',\n      _stage: 'paciente_error'\n    }\n  };\n}\n\nconst paciente = rows[0];\nconsole.log(`[${trace_id}] PACIENTE - OK: ${paciente.id}`);\n\nreturn {\n  json: {\n    ...context,\n    paciente_id: paciente.id,\n    _stage: 'paciente_ok'\n  }\n};"
+      },
+      "id": "6c416f89-c0be-4a60-8985-cfbd8d0fea07",
+      "name": "Process Paciente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9904,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "paciente-ok",
+              "leftValue": "={{ $json.paciente_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "eb6528c5-9540-4c59-a8d0-a1582fff6672",
+      "name": "Paciente OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -9680,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.calendar_id }}"
+        },
+        "start": "={{ $json.startTime }}",
+        "end": "={{ $json.endTime }}",
+        "additionalFields": {
+          "description": "={{ \n'👤 PACIENTE: ' + $json.patientName + '\\n' +\n'📱 WhatsApp: https://wa.me/52' + $json.phoneOriginal + '\\n\\n' +\n\n'📋 DETALLES CITA\\n' +\n'Tipo: ' + $json.tipoCita + '\\n' +\n'Motivo: ' + $json.motivo + '\\n\\n' +\n\n'📍 UBICACIÓN (' + $json.sede + ')\\n' +\n$json.sedeDisplayName + '\\n' +\n$json.sedeMapsUrl + '\\n\\n' +\n\n'---\\nID: ' + $json._consulta_id \n}}",
+          "guestsCanModify": false,
+          "location": "={{ $json.sedeDireccion }}",
+          "sendUpdates": "none",
+          "summary": "={{ 'Consulta: ' + $json.patientName }}"
+        }
+      },
+      "id": "c380e487-01f2-4978-9885-1b0dcc670cee",
+      "name": "Create Calendar Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -9456,
+        400
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Hm8ggB0P1TTFp0A0",
+          "name": "GOOGLE UROBOT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// PROCESS EVENT CREATION\n// ========================================\nconst context = $('Process Paciente').first().json;\nconst eventResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nif (!eventResult || eventResult.error || !eventResult.id) {\n  console.log(`[${trace_id}] EVENT - FAILED`);\n  return {\n    json: {\n      ...context,\n      eventCreated: false,\n      error: 'EVENT_CREATION_FAILED',\n      errorDetails: eventResult?.error || 'No event ID',\n      _stage: 'event_failed'\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] EVENT - Created: ${eventResult.id}`);\n\nreturn {\n  json: {\n    ...context,\n    eventCreated: true,\n    event_id: eventResult.id,\n    event_link: eventResult.htmlLink || '',\n    _stage: 'event_ok'\n  }\n};"
+      },
+      "id": "92a3a3a0-5f26-487e-b974-beddea359c45",
+      "name": "Process Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9232,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "event-ok",
+              "leftValue": "={{ $json.eventCreated }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "878868ae-53f0-4255-a869-f22ed0bdd2e7",
+      "name": "Event OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -9008,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"INSERT INTO consultas (consulta_id, paciente_id, sede, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita) VALUES ('\" + $json._consulta_id + \"', '\" + $json.paciente_id + \"'::uuid, '\" + $json.sede + \"', '\" + $json.startTime + \"'::timestamptz, '\" + $json.endTime + \"'::timestamptz, 'Programada', '\" + $json.event_id + \"', '\" + $json.event_link + \"', '\" + $json.motivo.replace(/'/g, \"''\") + \"', '\" + $json.tipoCita + \"') ON CONFLICT (consulta_id) DO UPDATE SET calendar_event_id = EXCLUDED.calendar_event_id, calendar_link = EXCLUDED.calendar_link, updated_at = NOW() RETURNING id, consulta_id, calendar_event_id\" }}",
+        "options": {}
+      },
+      "id": "6f2b4757-5adf-4059-ac7d-2d9de2e37245",
+      "name": "Insert Consulta",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -8784,
+        304
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// VALIDATE DB SAVE\n// ========================================\nconst context = $('Process Event').first().json;\nconst dbResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n  console.log(`[${trace_id}] DB - FAILED`);\n  return {\n    json: {\n      ...context,\n      dbSaved: false,\n      error: 'DB_SAVE_FAILED',\n      _stage: 'db_failed',\n      _needs_rollback: true\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] DB - OK: ${rows[0].id}`);\n\nreturn {\n  json: {\n    ...context,\n    dbSaved: true,\n    db_id: rows[0].id,\n    db_consulta_id: rows[0].consulta_id,\n    _stage: 'db_ok'\n  }\n};"
+      },
+      "id": "7a14c75f-863f-4bbd-9119-e458e989efde",
+      "name": "Validate DB Save",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8560,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "db-ok",
+              "leftValue": "={{ $json.dbSaved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "41d94c8a-73be-48b3-bb21-12452a7933bd",
+      "name": "DB OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -8336,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// SUCCESS\n// ========================================\nconst ctx = $input.first().json;\nconst duration = Date.now() - new Date(ctx._started_at).getTime();\n\nconsole.log(`[${ctx._trace_id}] SUCCESS - ${duration}ms`);\n\nreturn {\n  json: {\n    success: true,\n    message: 'Cita agendada exitosamente',\n    data: {\n      consultaId: ctx.db_consulta_id,\n      eventId: ctx.event_id,\n      eventLink: ctx.event_link,\n      paciente: ctx.patientName,\n      telefono: ctx.phoneOriginal,\n      sede: ctx.sede,\n      sedeNombre: ctx.sedeDisplayName,\n      sedeDireccion: ctx.sedeDireccion,\n      sedeMaps: ctx.sedeMapsUrl,\n      fechaInicio: ctx.startTime,\n      fechaFin: ctx.endTime,\n      tipoCita: ctx.tipoCita,\n      motivo: ctx.motivo\n    },\n    meta: {\n      trace_id: ctx._trace_id,\n      consulta_id: ctx._consulta_id,\n      duration_ms: duration\n    }\n  }\n};"
+      },
+      "id": "3da4e4b7-824b-45d6-bec3-ce65b27ba0d2",
+      "name": "Return Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8112,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.calendar_id }}"
+        },
+        "eventId": "={{ $json.event_id }}",
+        "options": {
+          "sendUpdates": "none"
+        }
+      },
+      "id": "ff3c78ba-46a0-4bd4-88a2-8393b3a60b32",
+      "name": "ROLLBACK Delete Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -8112,
+        400
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Hm8ggB0P1TTFp0A0",
+          "name": "GOOGLE UROBOT"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Validate DB Save').first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'DB_SAVE_FAILED',\n    message: 'Error al guardar. Horario liberado.',\n    rollback: { attempted: true, event_id: ctx.event_id },\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+      },
+      "id": "525d9621-56a0-4af0-bf7b-a2ad987b8d4b",
+      "name": "Return Rollback Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7888,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'VALIDATION_FAILED',\n    problems: ctx.problems || [],\n    message: 'Datos incompletos.',\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+      },
+      "id": "3f03b1a8-c449-486d-aa32-64d48261b862",
+      "name": "Return Validation Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -12144,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'SEDE_NOT_FOUND',\n    message: `Sede '${ctx.sede}' no existe.`,\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+      },
+      "id": "9b6a5d29-9757-42fa-9f26-755defe0743b",
+      "name": "Return Sede Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -11472,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'DUPLICATE_APPOINTMENT',\n    message: 'Ya existe cita en ese horario.',\n    existingId: ctx.existingConsultaId,\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+      },
+      "id": "bf76a17f-b921-4990-9c29-69da6cd3ec20",
+      "name": "Return Duplicate Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10800,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'SLOT_NOT_AVAILABLE',\n    message: 'Horario no disponible.',\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+      },
+      "id": "fe915c0a-26d7-4b40-9a66-16d6de439092",
+      "name": "Return Slot Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10128,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'PACIENTE_ERROR',\n    message: 'Error con datos del paciente.',\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+      },
+      "id": "49433d47-9a8d-41a1-827d-66eb50dc62ba",
+      "name": "Return Paciente Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9456,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'EVENT_CREATION_FAILED',\n    message: 'Error al crear evento en calendario.',\n    details: ctx.errorDetails,\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+      },
+      "id": "5fa09355-5bc3-47b0-91a9-a9e2c34da828",
+      "name": "Return Event Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8784,
+        496
+      ]
+    }
+  ],
+  "pinData": {
+    "When executed by another workflow": [
+      {
+        "json": {
+          "slotId": "slot_POLANCO_2025-12-01T15:00:00.000Z",
+          "sede": "POLANCO",
+          "start": "2025-12-01T15:00:00.000Z",
+          "end": "2025-12-01T15:30:00.000Z",
+          "paciente": {
+            "nombre": "Fausto Medina",
+            "telefono": "5512345678"
+          },
+          "tipoCita": "primera_vez",
+          "motivoConsulta": "Revisión general",
+          "lead_telefono": "525512345678"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When executed by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Init & Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init & Normalize": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Get Sede Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sede Config": {
+      "main": [
+        [
+          {
+            "node": "Process Sede",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Sede": {
+      "main": [
+        [
+          {
+            "node": "Sede OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sede OK?": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Sede Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Process Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Not Duplicate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not Duplicate?": {
+      "main": [
+        [
+          {
+            "node": "Check FreeBusy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Duplicate Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check FreeBusy": {
+      "main": [
+        [
+          {
+            "node": "Process FreeBusy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process FreeBusy": {
+      "main": [
+        [
+          {
+            "node": "Slot Free?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slot Free?": {
+      "main": [
+        [
+          {
+            "node": "Upsert Paciente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Slot Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Paciente": {
+      "main": [
+        [
+          {
+            "node": "Process Paciente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Paciente": {
+      "main": [
+        [
+          {
+            "node": "Paciente OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paciente OK?": {
+      "main": [
+        [
+          {
+            "node": "Create Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Paciente Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Process Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Event": {
+      "main": [
+        [
+          {
+            "node": "Event OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event OK?": {
+      "main": [
+        [
+          {
+            "node": "Insert Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Event Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Consulta": {
+      "main": [
+        [
+          {
+            "node": "Validate DB Save",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate DB Save": {
+      "main": [
+        [
+          {
+            "node": "DB OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB OK?": {
+      "main": [
+        [
+          {
+            "node": "Return Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ROLLBACK Delete Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ROLLBACK Delete Event": {
+      "main": [
+        [
+          {
+            "node": "Return Rollback Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "80e46e6f-d770-4324-9042-e2f6da3bdd2d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
+  },
+  "id": "xrycvZgtHqlz9Wh3",
+  "tags": []
+}

@@ -8,8 +8,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, FileText, FileDown, AlertCircle, MapPin, Edit, Eye } from 'lucide-react';
+import { Calendar, FileText, FileDown, MapPin, Edit, Eye, StickyNote } from 'lucide-react';
 import type { Consulta } from '@/types/consultas';
+import { NotaConsultaModal } from './NotaConsultaModal';
+import { getNotaConsulta, saveNotaConsulta } from '../services/paciente-service';
 
 interface PatientHistoryProps {
   consultas: Consulta[];
@@ -25,6 +27,25 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
   onVerEpisodio
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('citas');
+  
+  // Estado para notas
+  const [selectedConsultaId, setSelectedConsultaId] = useState<string | null>(null);
+  const [notaActual, setNotaActual] = useState('');
+  const [isNotaModalOpen, setIsNotaModalOpen] = useState(false);
+
+  const handleOpenNota = async (consultaId: string) => {
+    setSelectedConsultaId(consultaId);
+    // Cargar nota existente
+    const { nota } = await getNotaConsulta(consultaId);
+    setNotaActual(nota || '');
+    setIsNotaModalOpen(true);
+  };
+
+  const handleSaveNota = async (nota: string) => {
+    if (selectedConsultaId) {
+      await saveNotaConsulta(selectedConsultaId, nota);
+    }
+  };
 
   const getStatusColor = (estado: string) => {
     switch (estado) {
@@ -142,51 +163,39 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
                   {/* Tipo y estado */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-sm text-slate-600 dark:text-slate-300 capitalize">
-                      {consulta.tipo.replace(/_/g, ' ')}
+                      {consulta.tipoCita}
                     </span>
                     <span className="text-slate-400 dark:text-slate-600">•</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border ${getStatusColor(consulta.estado)}`}>
-                      {consulta.estado}
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${getStatusColor(consulta.estadoCita)}`}>
+                      {consulta.estadoCita}
                     </span>
                   </div>
 
-                  {/* Estado de la cita */}
-                  {consulta.estado === 'No Asistió' ? (
-                    <div className="flex items-center gap-2 text-sm text-red-700 bg-red-100 border border-red-200 dark:text-red-400 dark:bg-red-500/10 dark:border-red-500/20 rounded-lg px-3 py-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>No ha venido</span>
-                    </div>
-                  ) : consulta.estado === 'Completada' ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-100 border border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20 rounded-lg px-3 py-2">
-                        <span>Vista realizada</span>
-                      </div>
-                      
-                      {/* Botones de episodio clínico */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => onVerEpisodio?.(consulta.id)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 dark:bg-slate-800/60 dark:border-slate-700/50 dark:hover:bg-slate-700/60 dark:text-slate-300 rounded-lg text-sm transition-colors shadow-sm dark:shadow-none"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Ver episodio
-                        </button>
-                        <button
-                          onClick={() => onVerEpisodio?.(consulta.id)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 border border-blue-100 hover:bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500/30 dark:hover:bg-blue-500/20 dark:text-blue-400 rounded-lg text-sm transition-colors"
-                        >
-                          <Edit className="h-4 w-4" />
-                          Editar episodio
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      onClick={() => handleOpenNota(consulta.id)}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 rounded-lg text-sm transition-colors"
+                    >
+                      <StickyNote className="h-4 w-4 text-amber-500" />
+                      Notas Clínicas
+                    </button>
+                    
+                    {consulta.estadoCita === 'Completada' && (
+                      <button
+                        onClick={() => onVerEpisodio?.(consulta.id)}
+                        className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500/20 dark:hover:bg-blue-500/20 dark:text-blue-400 rounded-lg text-sm transition-colors"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
 
                   {/* Motivo de consulta */}
                   {consulta.motivoConsulta && (
-                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800/50">
-                      <p className="text-xs text-slate-500 mb-1">Motivo de consulta:</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">{consulta.motivoConsulta}</p>
+                    <div className="mt-3">
+                      <p className="text-xs text-slate-500 mb-1">Motivo:</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 italic">&quot;{consulta.motivoConsulta}&quot;</p>
                     </div>
                   )}
 
@@ -240,6 +249,15 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal de Notas */}
+      <NotaConsultaModal
+        isOpen={isNotaModalOpen}
+        onClose={() => setIsNotaModalOpen(false)}
+        onSave={handleSaveNota}
+        notaInicial={notaActual}
+        titulo={selectedConsultaId ? `Consulta del ${formatDate(consultas.find(c => c.id === selectedConsultaId)?.fechaConsulta || '')}` : ''}
+      />
     </div>
   );
 };
