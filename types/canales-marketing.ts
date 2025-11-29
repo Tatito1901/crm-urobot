@@ -76,3 +76,63 @@ export function isCanalMarketing(value: unknown): value is CanalMarketing {
  * Obtiene el canal por defecto si no existe
  */
 export const DEFAULT_CANAL: CanalMarketing = 'Otro';
+
+/**
+ * Normaliza valores de canal que pueden venir de n8n con diferentes formatos
+ */
+export function normalizeCanalMarketing(value: string | null | undefined): CanalMarketing {
+  if (!value) return 'Otro';
+  
+  const normalized = value.toLowerCase().trim();
+  
+  // Mapeo de variantes comunes a valores estándar
+  const mappings: Record<string, CanalMarketing> = {
+    // Facebook
+    'facebook': 'Facebook Ads',
+    'facebook ads': 'Facebook Ads',
+    'fb': 'Facebook Ads',
+    'fb ads': 'Facebook Ads',
+    'meta': 'Facebook Ads',
+    'meta ads': 'Facebook Ads',
+    
+    // Google
+    'google': 'Google Ads',
+    'google ads': 'Google Ads',
+    'adwords': 'Google Ads',
+    'sem': 'Google Ads',
+    
+    // Instagram
+    'instagram': 'Instagram Ads',
+    'instagram ads': 'Instagram Ads',
+    'ig': 'Instagram Ads',
+    'ig ads': 'Instagram Ads',
+    
+    // Orgánico
+    'organico': 'Orgánico',
+    'orgánico': 'Orgánico',
+    'organic': 'Orgánico',
+    'seo': 'Orgánico',
+    
+    // Referido
+    'referido': 'Referido',
+    'referral': 'Referido',
+    'referencia': 'Referido',
+    'recomendacion': 'Referido',
+    'recomendación': 'Referido',
+    
+    // WhatsApp
+    'whatsapp': 'WhatsApp Directo',
+    'whatsapp directo': 'WhatsApp Directo',
+    'wa': 'WhatsApp Directo',
+    'wsp': 'WhatsApp Directo',
+    'directo': 'WhatsApp Directo',
+    
+    // Otro
+    'otro': 'Otro',
+    'other': 'Otro',
+    'desconocido': 'Otro',
+    'unknown': 'Otro',
+  };
+  
+  return mappings[normalized] || 'Otro';
+}

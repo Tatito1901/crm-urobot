@@ -89,7 +89,7 @@ export function AuthClient() {
 
         <Button 
           type="submit" 
-          className="w-full h-11 mt-2 bg-slate-950 hover:bg-slate-900 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500 dark:text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed" 
+          className="w-full h-11 mt-2 bg-slate-950 hover:bg-slate-900 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500 dark:text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed" 
           disabled={isPending}
         >
           {isPending ? (

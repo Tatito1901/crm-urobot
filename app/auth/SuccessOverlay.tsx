@@ -53,7 +53,7 @@ export const SuccessOverlay = memo(() => {
     >
       <div className="relative space-y-6 text-center animate-in zoom-in-95 duration-500">
         {/* Checkmark animado */}
-        <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-2xl shadow-emerald-500/50 animate-pulse">
+        <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-2xl shadow-emerald-500/50 ">
           <CheckmarkIcon />
         </div>
         

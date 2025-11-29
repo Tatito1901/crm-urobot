@@ -21,14 +21,14 @@ export default function DashboardLoading() {
         <header className="space-y-3 sm:space-y-4 lg:space-y-3">
           <div className="flex items-center gap-2">
             <div className="h-1 w-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-400" />
-            <div className="h-3 w-32 bg-white/10 rounded animate-pulse" />
+            <div className="h-3 w-32 bg-white/10 rounded " />
           </div>
           <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between lg:items-center">
             <div className="space-y-1 sm:space-y-1.5 lg:space-y-1">
-              <div className="h-10 w-64 bg-white/10 rounded animate-pulse" />
-              <div className="h-4 w-96 bg-white/10 rounded animate-pulse max-w-full" />
+              <div className="h-10 w-64 bg-white/10 rounded " />
+              <div className="h-4 w-96 bg-white/10 rounded  max-w-full" />
             </div>
-            <div className="h-11 w-32 bg-white/10 rounded-xl animate-pulse" />
+            <div className="h-11 w-32 bg-white/10 rounded-xl " />
           </div>
         </header>
 
@@ -47,10 +47,10 @@ export default function DashboardLoading() {
           <div className="bg-white/[0.05] border border-white/10 rounded-xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <div className="h-5 w-32 bg-white/10 rounded animate-pulse" />
-                <div className="h-3 w-48 bg-white/10 rounded animate-pulse" />
+                <div className="h-5 w-32 bg-white/10 rounded " />
+                <div className="h-3 w-48 bg-white/10 rounded " />
               </div>
-              <div className="h-6 w-16 bg-white/10 rounded-full animate-pulse" />
+              <div className="h-6 w-16 bg-white/10 rounded-full " />
             </div>
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
@@ -63,10 +63,10 @@ export default function DashboardLoading() {
           <div className="bg-white/[0.05] border border-white/10 rounded-xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <div className="h-5 w-40 bg-white/10 rounded animate-pulse" />
-                <div className="h-3 w-36 bg-white/10 rounded animate-pulse" />
+                <div className="h-5 w-40 bg-white/10 rounded " />
+                <div className="h-3 w-36 bg-white/10 rounded " />
               </div>
-              <div className="h-6 w-20 bg-white/10 rounded-full animate-pulse" />
+              <div className="h-6 w-20 bg-white/10 rounded-full " />
             </div>
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (

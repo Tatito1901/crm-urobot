@@ -16,12 +16,12 @@ import { EmptyState } from '@/app/components/common/SkeletonLoader';
 
 // Lazy load de gráficos pesados para mejorar rendimiento mobile y reducir TBT (Total Blocking Time)
 const DonutChart = dynamicImport(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
-  loading: () => <div className="h-[220px] w-full animate-pulse bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-center justify-center"><div className="h-32 w-32 rounded-full bg-slate-200 dark:bg-slate-700" /></div>,
+  loading: () => <div className="h-[220px] w-full bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-center justify-center"><div className="h-32 w-32 rounded-full bg-slate-200 dark:bg-slate-700" /></div>,
   ssr: false,
 });
 
 const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart').then(mod => ({ default: mod.BarChart })), {
-  loading: () => <div className="h-[250px] w-full animate-pulse bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-end justify-around p-4 gap-2"><div className="h-1/3 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /><div className="h-2/3 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /><div className="h-1/2 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /></div>,
+  loading: () => <div className="h-[250px] w-full bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-end justify-around p-4 gap-2"><div className="h-1/3 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /><div className="h-2/3 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /><div className="h-1/2 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /></div>,
   ssr: false,
 });
 
@@ -172,11 +172,9 @@ export default function DashboardPage() {
             <button
               onClick={handleRefresh}
               disabled={isLoadingAny}
-              className="group flex items-center justify-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-medium text-blue-600 dark:text-blue-200 border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/20 hover:border-blue-300 dark:hover:border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95 sm:hover:scale-105 min-h-[36px]"
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-medium text-blue-600 dark:text-blue-200 border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px]"
             >
-              <span className="transition-transform group-hover:rotate-180 duration-500">
-                {isLoadingAny ? '⟳' : '↻'}
-              </span>
+              <span>{isLoadingAny ? '⟳' : '↻'}</span>
               <span>{isLoadingAny ? 'Actualizando...' : 'Actualizar'}</span>
             </button>
           </div>
@@ -226,7 +224,7 @@ export default function DashboardPage() {
           {activeTab === 'actividad' ? (
             <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Leads recientes */}
-              <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
                 <div className="flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate">
@@ -269,7 +267,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Consultas próximas */}
-              <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+              <div className="flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">
                 <div className="flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate">
@@ -314,7 +312,7 @@ export default function DashboardPage() {
           ) : (
             <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Gráfico de leads por estado */}
-              <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm min-h-[380px] sm:min-h-[420px]">
+              <div className="flex flex-col rounded-2xl border border-border/50 bg-card shadow-sm min-h-[380px] sm:min-h-[420px]">
                 <div className="flex items-start justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground">Leads por Estado</h3>
@@ -369,7 +367,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Gráfico de consultas por sede */}
-              <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm min-h-[380px] sm:min-h-[420px]">
+              <div className="flex flex-col rounded-2xl border border-border/50 bg-card shadow-sm min-h-[380px] sm:min-h-[420px]">
                 <div className="border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <h3 className="font-semibold text-sm sm:text-base text-card-foreground">Consultas por Sede</h3>
                   <p className="text-[10px] sm:text-xs text-muted-foreground">Próximas 4 semanas</p>

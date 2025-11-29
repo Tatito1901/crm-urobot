@@ -35,16 +35,16 @@ export const Badge = memo(function Badge({
 
 export const StatCard = memo(function StatCard({ title, value, hint }: { title: string; value: string; hint?: string }) {
   return (
-    <Card className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-transparent shadow-sm dark:shadow-none">
-      <CardHeader className="space-y-3 pb-2">
-        <CardDescription className="text-[0.68rem] uppercase tracking-[0.28em] text-slate-500 dark:text-white/50">
+    <Card className="bg-card border-border/50">
+      <CardHeader className="space-y-2 pb-2">
+        <CardDescription className="text-[0.7rem] uppercase tracking-widest text-muted-foreground/70">
           {title}
         </CardDescription>
-        <CardTitle className="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{value}</CardTitle>
+        <CardTitle className="text-2xl font-semibold text-foreground tabular-nums">{value}</CardTitle>
       </CardHeader>
       {hint && (
         <CardContent className="pt-0">
-          <p className="text-xs text-slate-500 dark:text-white/50">{hint}</p>
+          <p className="text-xs text-muted-foreground">{hint}</p>
         </CardContent>
       )}
     </Card>
@@ -102,30 +102,30 @@ export function DataTable({
 
   return (
     <div className="space-y-4">
-      <div className="hidden w-full overflow-x-auto rounded-xl border border-border bg-card md:block shadow-sm">
-        <table className="min-w-full divide-y divide-border text-left text-sm text-foreground">
-          <thead className="bg-muted text-xs uppercase tracking-[0.2em] text-muted-foreground">
+      <div className="hidden w-full overflow-x-auto rounded-2xl border border-border/50 bg-card md:block">
+        <table className="min-w-full divide-y divide-border/50 text-left text-sm text-foreground">
+          <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground">
             <tr>
               {headers.map((header) => (
-                <th key={header.key} scope="col" className={cn("px-3 py-3 font-semibold", getAlignmentClasses(header.align))}>
+                <th key={header.key} scope="col" className={cn("px-4 py-3.5 font-medium", getAlignmentClasses(header.align))}>
                   {header.label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/30">
             {rows.map((row) => (
               <tr
                 key={row.id}
                 className={cn(
-                  "transition hover:bg-muted/50",
+                  "hover:bg-muted/30",
                   onRowClick && "cursor-pointer"
                 )}
                 onClick={onRowClick ? () => onRowClick(row.id) : undefined}
                 onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
               >
                 {headers.map((header) => (
-                  <td key={header.key} className={cn("px-3 py-3 align-top", getAlignmentClasses(header.align))}>
+                  <td key={header.key} className={cn("px-4 py-3.5 align-top", getAlignmentClasses(header.align))}>
                     {row[header.key] ?? "—"}
                   </td>
                 ))}
@@ -148,28 +148,21 @@ export function DataTable({
               onClick={onRowClick ? () => onRowClick(row.id) : undefined}
               onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
               className={cn(
-                "rounded-xl border border-border bg-card p-4 transition-all duration-200 active:scale-[0.98] min-h-[80px] flex flex-col justify-center shadow-sm",
-                onRowClick && "cursor-pointer active:bg-muted/50 active:border-primary/30"
+                "rounded-2xl border border-border/50 bg-card p-4 min-h-[80px] flex flex-col justify-center",
+                onRowClick && "cursor-pointer active:bg-muted/30"
               )}
             >
-              <div className="mb-3">
+              <div className="mb-2">
                 {primary && <div className="text-base font-semibold text-foreground leading-tight">{primary}</div>}
-                {secondary && <div className="mt-1.5 text-sm text-muted-foreground">{secondary}</div>}
+                {secondary && <div className="mt-1 text-sm text-muted-foreground">{secondary}</div>}
               </div>
               {metadata.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                  {metadata.map((key) => {
-                    // Encontrar header correspondiente para label si es necesario, 
-                    // pero en mobile a veces es mejor inferir o mostrar directo el valor si es un componente rico (Badge)
-                    // Si row[key] es un componente complejo (Badge), el label "Estado" sobra visualmente.
-                    
-                    return (
-                      <div key={key} className="flex flex-col justify-center">
-                         {/* Renderizamos el contenido directamente. Si es Badge, se encarga de su estilo. */}
-                         <div className="text-foreground font-medium flex items-center">{row[key]}</div>
-                      </div>
-                    );
-                  })}
+                <div className="mt-3 pt-3 border-t border-border/30 grid grid-cols-2 gap-y-2.5 gap-x-4 text-sm">
+                  {metadata.map((key) => (
+                    <div key={key} className="flex flex-col justify-center">
+                      <div className="text-foreground font-medium flex items-center">{row[key]}</div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

@@ -161,7 +161,7 @@ export const Sidebar = React.memo(function Sidebar({
                 setSedeColor(colorMenu.sede, color.value);
                 setColorMenu(null);
               }}
-              className={`w-6 h-6 rounded-full hover:scale-110 transition-transform border-2 ${color.value} ${
+              className={`w-6 h-6 rounded-full  border-2 ${color.value} ${
                 sedeColors[colorMenu.sede] === color.value ? 'border-white scale-110' : 'border-transparent hover:border-white/30'
               }`}
               title={color.name}

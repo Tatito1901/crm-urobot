@@ -30,7 +30,7 @@ const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, load
     return (
       <div className="flex gap-2 flex-wrap">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-8 w-24 bg-muted rounded animate-pulse" />
+          <div key={i} className="h-8 w-24 bg-muted rounded " />
         ))}
       </div>
     );

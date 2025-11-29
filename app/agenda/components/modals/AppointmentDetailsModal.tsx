@@ -212,7 +212,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                     className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-all group"
                     title="Ir al expediente completo"
                   >
-                    <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <ExternalLink className="w-4 h-4 " />
                   </Link>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-400">

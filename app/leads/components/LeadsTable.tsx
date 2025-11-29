@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Badge, DataTable } from '@/app/components/crm/ui';
-import { CANAL_COLORS, type CanalMarketing } from '@/types/canales-marketing';
+import { CANAL_COLORS } from '@/types/canales-marketing';
 import { STATE_COLORS } from '@/app/lib/crm-data';
 import { GLOSARIO } from '@/app/lib/glosario-medico';
 import { WrapTooltip } from '@/app/components/common/InfoTooltip';
@@ -28,8 +28,9 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
 
   // Transformación de filas memoizada
   const rows = React.useMemo(() => leads.map((lead) => {
-    const canal = (lead.canalMarketing || 'Otro') as CanalMarketing;
-    const canalStyle = CANAL_COLORS[canal] || CANAL_COLORS['Otro'];
+    // Usar fuente (fuente_lead normalizado) para el badge de origen
+    const origen = lead.fuente;
+    const origenStyle = CANAL_COLORS[origen];
 
     return {
       id: lead.id,
@@ -38,24 +39,20 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
           <div className="flex items-center gap-2">
             <span className="font-medium text-foreground">{lead.nombre}</span>
             {lead.esCaliente && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 animate-pulse border">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 border">
                 🔥
               </span>
             )}
           </div>
           <span className="text-xs text-muted-foreground font-mono">{lead.telefono}</span>
-          <span className="text-[10px] text-muted-foreground/80 truncate max-w-[150px]">{lead.fuente}</span>
+          {lead.canalMarketing && <span className="text-[10px] text-muted-foreground/80 truncate max-w-[150px]">{lead.canalMarketing}</span>}
         </div>
       ),
       origen: (
-        <WrapTooltip content={GLOSARIO.canales[canal]} side="right">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border cursor-help transition-transform hover:scale-105 ${
-            // Adaptar colores de canal si no son dinámicos (asumiendo que CANAL_COLORS devuelve clases fijas oscuras, las forzamos o ajustamos)
-            // Idealmente CANAL_COLORS debería ser revisado, pero por ahora aplicamos opacidad en light mode si es posible o confiamos en el diseño
-            canalStyle.bg
-          } ${canalStyle.text} ${canalStyle.border}`}>
-            <span>{canalStyle.icon}</span>
-            <span>{canal}</span>
+        <WrapTooltip content={GLOSARIO.canales[origen]} side="right">
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border cursor-help ${origenStyle.bg} ${origenStyle.text} ${origenStyle.border}`}>
+            <span>{origenStyle.icon}</span>
+            <span>{origen}</span>
           </span>
         </WrapTooltip>
       ),
@@ -97,7 +94,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
           } 
           side="right"
         >
-          <div className="inline-block cursor-help transition-transform hover:scale-105">
+          <div className="inline-block cursor-help">
             <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />
           </div>
         </WrapTooltip>

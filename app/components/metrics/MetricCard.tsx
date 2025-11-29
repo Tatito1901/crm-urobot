@@ -110,9 +110,7 @@ export const MetricCard = React.memo(({
     (animate && typeof value === 'number') ? animatedValue.toLocaleString('es-MX') : value;
   
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-4 sm:p-5 min-h-[120px] transition-all duration-200 hover:border-primary/30 hover:shadow-lg dark:hover:shadow-black/20">
-      {/* Decorative gradient subtle */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.03]`} />
+    <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/50 bg-card p-4 sm:p-5 min-h-[120px]">
       
       <div className="flex items-start justify-between gap-2">
         <span className="text-xs sm:text-sm font-medium text-muted-foreground leading-tight">{title}</span>

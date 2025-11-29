@@ -72,7 +72,7 @@ export const ColorPicker: React.FC = () => {
                 <button
                   key={`pol-${color.value}`}
                   onClick={() => setSedeColor('POLANCO', color.value)}
-                  className={`w-8 h-8 rounded border-2 transition-transform hover:scale-110 ${
+                  className={`w-8 h-8 rounded border-2 ${
                     sedeColors.POLANCO === color.value 
                       ? 'border-slate-900 dark:border-white ring-2 ring-slate-900/30 dark:ring-white/30 scale-110' 
                       : 'border-slate-200 dark:border-slate-700'
@@ -95,7 +95,7 @@ export const ColorPicker: React.FC = () => {
                 <button
                   key={`sat-${color.value}`}
                   onClick={() => setSedeColor('SATELITE', color.value)}
-                  className={`w-8 h-8 rounded border-2 transition-transform hover:scale-110 ${
+                  className={`w-8 h-8 rounded border-2 ${
                     sedeColors.SATELITE === color.value 
                       ? 'border-slate-900 dark:border-white ring-2 ring-slate-900/30 dark:ring-white/30 scale-110' 
                       : 'border-slate-200 dark:border-slate-700'

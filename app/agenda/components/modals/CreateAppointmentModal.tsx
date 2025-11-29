@@ -207,7 +207,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             }}
             selectedPatientId={formData.patientId === 'new-patient' ? undefined : formData.patientId}
             newPatientData={newPatientData}
-            error={errors.patient}
+            error={errors.patientId}
             touched={touched.patientName}
           />
         </div>

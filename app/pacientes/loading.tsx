@@ -19,10 +19,10 @@ export default function PacientesLoading() {
       headerSlot={
         <Card className="bg-white/[0.03]">
           <CardHeader className="pb-2">
-            <div className="h-4 w-16 bg-white/10 rounded animate-pulse" />
+            <div className="h-4 w-16 bg-white/10 rounded " />
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="h-10 w-full bg-white/10 rounded animate-pulse" />
+            <div className="h-10 w-full bg-white/10 rounded " />
           </CardContent>
         </Card>
       }
@@ -39,10 +39,10 @@ export default function PacientesLoading() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-2">
-              <div className="h-5 w-40 bg-white/10 rounded animate-pulse" />
-              <div className="h-4 w-64 bg-white/10 rounded animate-pulse" />
+              <div className="h-5 w-40 bg-white/10 rounded " />
+              <div className="h-4 w-64 bg-white/10 rounded " />
             </div>
-            <div className="h-8 w-8 bg-white/10 rounded animate-pulse" />
+            <div className="h-8 w-8 bg-white/10 rounded " />
           </div>
         </CardHeader>
         <CardContent>

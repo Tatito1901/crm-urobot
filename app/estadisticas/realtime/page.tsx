@@ -16,7 +16,7 @@ export default function RealtimePage() {
     >
       <div className="flex flex-col items-center justify-center py-20 space-y-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/50">
         <div className="p-4 bg-blue-100 dark:bg-blue-500/10 rounded-full">
-          <Activity className="w-8 h-8 text-blue-500 dark:text-blue-400 animate-pulse" />
+          <Activity className="w-8 h-8 text-blue-500 dark:text-blue-400" />
         </div>
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Monitoreo en tiempo real</h3>
         <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md text-center">

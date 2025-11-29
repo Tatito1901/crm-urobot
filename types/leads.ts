@@ -6,7 +6,7 @@
  * Última sync: 2025-11-28
  */
 
-import type { CanalMarketing } from './canales-marketing';
+import { type CanalMarketing, normalizeCanalMarketing } from './canales-marketing';
 import type { Tables } from './database';
 
 // ============================================================
@@ -36,8 +36,8 @@ export interface Lead {
   pacienteId: string | null;           // BD: paciente_id
   telefono: string;                     // BD: telefono_whatsapp
   estado: LeadEstado;                   // BD: estado
-  fuente: string | null;                // BD: fuente_lead
-  canalMarketing: CanalMarketing | null; // BD: canal_marketing
+  fuente: CanalMarketing;                 // BD: fuente_lead (normalizado, usado para badges)
+  canalMarketing: string | null;          // BD: canal_marketing (dato adicional)
   notas: string | null;                 // BD: notas_iniciales
   sessionId: string | null;             // BD: session_id
   primerContacto: string | null;        // BD: fecha_primer_contacto
@@ -84,8 +84,8 @@ export function mapLeadFromDB(row: LeadRow, pacienteNombre?: string): Lead {
     pacienteId: row.paciente_id,
     telefono: row.telefono_whatsapp,
     estado: isLeadEstado(row.estado) ? row.estado : 'Nuevo',
-    fuente: row.fuente_lead,
-    canalMarketing: row.canal_marketing as CanalMarketing | null,
+    fuente: normalizeCanalMarketing(row.fuente_lead),
+    canalMarketing: row.canal_marketing,
     notas: row.notas_iniciales,
     sessionId: row.session_id,
     primerContacto: row.fecha_primer_contacto,

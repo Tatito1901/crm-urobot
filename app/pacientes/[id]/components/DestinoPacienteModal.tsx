@@ -555,7 +555,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                             <button
                               onClick={() => setPresupuesto({ ...presupuesto, sede: 'polanco' })}
                               className={`
-                                relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all hover:shadow-md
+                                relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all
                                 ${presupuesto.sede === 'polanco'
                                   ? 'bg-emerald-50/50 border-emerald-500 ring-1 ring-emerald-500 dark:bg-emerald-500/10 dark:border-emerald-500'
                                   : 'bg-white border-slate-200 hover:border-emerald-200 dark:bg-slate-900 dark:border-slate-700'}
@@ -578,7 +578,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                             <button
                               onClick={() => setPresupuesto({ ...presupuesto, sede: 'satelite' })}
                               className={`
-                                relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all hover:shadow-md
+                                relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all
                                 ${presupuesto.sede === 'satelite'
                                   ? 'bg-emerald-50/50 border-emerald-500 ring-1 ring-emerald-500 dark:bg-emerald-500/10 dark:border-emerald-500'
                                   : 'bg-white border-slate-200 hover:border-emerald-200 dark:bg-slate-900 dark:border-slate-700'}
@@ -713,7 +713,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                         </>
                       ) : (
                         <>
-                          <FileDown className="h-5 w-5 group-hover:translate-y-0.5 transition-transform" />
+                          <FileDown className="h-5 w-5" />
                           Generar PDF Formal
                         </>
                       )}

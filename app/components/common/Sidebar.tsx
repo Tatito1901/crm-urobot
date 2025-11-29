@@ -70,7 +70,7 @@ export function Sidebar() {
           {isEstadisticas && (
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-300 hover:bg-blue-500/20 hover:border-blue-500/40 transition-all"
+              className="flex items-center gap-2 rounded-2xl border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-300 hover:bg-blue-500/20 hover:border-blue-500/40 transition-all"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -105,7 +105,7 @@ export function Sidebar() {
                           href={seccion.href}
                           prefetch={true}
                           className={cn(
-                            "w-full group flex items-center gap-2.5 rounded-xl border px-3 py-2.5 font-medium transition-all text-left",
+                            "w-full group flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 font-medium transition-all text-left",
                             "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
                             isActive 
                               ? `${colorClass} shadow-sm` 
@@ -136,7 +136,7 @@ export function Sidebar() {
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
                           // ✅ Touch target optimizado desktop
-                          "group flex items-center gap-3 rounded-xl border border-transparent px-3 py-3 font-medium transition-colors",
+                          "group flex items-center gap-3 rounded-2xl border border-transparent px-3 py-3 font-medium transition-colors",
                           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
                           isActive 
                             ? "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-500/15 dark:text-white dark:border-white/10 shadow-sm"
@@ -184,7 +184,7 @@ export function Sidebar() {
             <button
               type="submit"
               className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-xl border border-sidebar-border bg-sidebar px-4 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-all duration-100",
+                "w-full flex items-center justify-center gap-2 rounded-2xl border border-sidebar-border bg-sidebar px-4 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-all duration-100",
                 "hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-200",
                 "active:bg-red-100 dark:active:bg-red-500/15 active:scale-95",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
@@ -337,7 +337,7 @@ export function MobileSidebar() {
                         href={item.href}
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
-                          "flex items-center justify-between rounded-xl border border-transparent px-3 py-2.5 font-medium transition-colors",
+                          "flex items-center justify-between rounded-2xl border border-transparent px-3 py-2.5 font-medium transition-colors",
                           "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
                           isActive 
                             ? "border-blue-100 bg-blue-50 text-blue-700 dark:border-white/25 dark:bg-white/12 dark:text-white"
@@ -357,7 +357,7 @@ export function MobileSidebar() {
                 <button
                   type="submit"
                   className={cn(
-                    "w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-base font-medium text-foreground transition-all duration-100",
+                    "w-full flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-base font-medium text-foreground transition-all duration-100",
                     "hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-200",
                     "active:bg-red-100 dark:active:bg-red-500/15 active:scale-95",
                     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"

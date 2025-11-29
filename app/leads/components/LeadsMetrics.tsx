@@ -25,7 +25,7 @@ export const LeadsMetrics = React.memo(function LeadsMetrics({ stats, loading }:
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-24 bg-muted/50 rounded-lg animate-pulse" />
+          <div key={i} className="h-24 bg-muted/50 rounded-lg" />
         ))}
       </div>
     );
@@ -52,7 +52,7 @@ export const LeadsMetrics = React.memo(function LeadsMetrics({ stats, loading }:
         </div>
         <div>
           <div className="text-xs text-blue-500 dark:text-blue-300 mb-1 font-medium flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
             Nuevos
           </div>
           <div className="text-2xl font-bold text-foreground">{stats.nuevo}</div>

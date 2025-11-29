@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 @import "./agenda/calendar.css";
+/* tw-animate-css removido - performance */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -234,52 +234,7 @@
   background: radial-gradient(circle at top, #1a2f52, #050b18 70%);
 }
 
-/* ============================================
-   ANIMACIONES ELEGANTES - DASHBOARD
-   ============================================ */
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.6s ease-out forwards;
-}
+/* Animaciones removidas - performance optimizada */
 
 /* Optimizar viewport */
 html, body {
@@ -295,76 +250,14 @@ html, body {
   }
 }
 
-/* ============================================
-   OPTIMIZACIONES ANTI-PARPADEO
-   ============================================ */
-
-/* Contenido que carga debe mantener espacio */
-.content-placeholder {
-  min-height: inherit;
-  will-change: contents;
-}
-
-/* Transiciones suaves sin layout shift */
-.smooth-transition {
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-}
-
-/* Prevent layout shift on load */
+/* Utilidades de layout */
 .prevent-shift {
   contain: layout;
 }
 
-/* Optimización de repaint */
-.optimize-repaint {
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Skeleton con mejor performance */
-@keyframes skeleton-pulse {
-  0%, 100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
+/* Skeleton simple - sin animación */
 .skeleton-animate {
-  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Content loader transitions */
-.content-enter {
-  animation: fade-in-up 0.4s ease-out;
-}
-
-/* Bar Chart animations */
-@keyframes bar-slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.animate-bar {
-  animation: bar-slide-up 0.8s ease-out both;
-}
-
-/* Prevent FOUC (Flash of Unstyled Content) */
-.ssr-loading {
-  opacity: 0;
-}
-
-.ssr-loaded {
-  opacity: 1;
-  transition: opacity 0.3s ease-in;
+  opacity: 0.5;
 }
 
 
@@ -426,89 +319,16 @@ html {
 }
 
 /* ===========================================
-   PERFORMANCE & UX OPTIMIZATIONS
+   ESTILOS ESENCIALES - SIN ANIMACIONES
    =========================================== */
 
-/* GPU acceleration for smooth animations */
-.gpu-accelerated {
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* Smooth page transitions */
-.page-transition {
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Content loading shimmer effect */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255,255,255,0.08) 50%, 
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-/* Optimized skeleton pulse */
-.skeleton-pulse {
-  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Fast fade for data updates */
-.data-update {
-  transition: opacity 0.15s ease-out;
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Smooth scroll everywhere */
-* {
-  scroll-behavior: smooth;
-}
-
-/* Optimized focus states */
+/* Focus visible para accesibilidad */
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
-  transition: outline-offset 0.1s ease;
 }
 
-/* Card hover optimization */
-.card-interactive {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card-interactive:hover {
-  transform: translateY(-1px);
-}
-
-/* Optimized touch targets for mobile */
+/* Touch targets para móviles */
 @media (pointer: coarse) {
   button, a, [role="button"] {
     min-height: 44px;
@@ -516,20 +336,7 @@ html {
   }
 }
 
-/* Loading state indicator */
-.loading-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #3b82f6, #10b981, #3b82f6);
-  background-size: 200% 100%;
-  animation: loadingBar 1s ease-in-out infinite;
-  z-index: 9999;
-}
-
-@keyframes loadingBar {
-  0% { background-position: 0% 0; }
-  100% { background-position: 200% 0; }
+/* Skeleton estático */
+.skeleton-pulse {
+  opacity: 0.5;
 }

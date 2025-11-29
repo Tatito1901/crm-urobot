@@ -20,7 +20,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-lg bg-muted',
+        'rounded-lg bg-muted/60',
         className
       )}
     />
@@ -32,7 +32,7 @@ export function Skeleton({ className }: SkeletonProps) {
  */
 export function MetricCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="rounded-2xl border border-border/50 bg-card p-4">
       <Skeleton className="h-4 w-20 mb-3" />
       <Skeleton className="h-8 w-16 mb-2" />
       <Skeleton className="h-3 w-24" />
@@ -75,7 +75,7 @@ export function MobileCardsSkeleton({ count = 5 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-border bg-card p-3"
+          className="rounded-2xl border border-border/50 bg-card p-3"
         >
           <Skeleton className="h-5 w-3/4 mb-2" />
           <Skeleton className="h-4 w-1/2 mb-3" />
@@ -106,7 +106,7 @@ export function DataTableSkeleton({ rows = 5 }: { rows?: number }) {
  */
 export function ListItemSkeleton() {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-3.5">
+    <div className="flex items-center justify-between rounded-2xl border border-border/50 bg-card p-3.5">
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-3 w-24" />
@@ -170,7 +170,8 @@ export function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
 
   return (
     <div
-      className={`${sizeClasses[size]} border-blue-400/30 border-t-blue-400 rounded-full animate-spin`}
+      className={`${sizeClasses[size]} border-blue-400/40 border-t-blue-500 rounded-full`}
+      style={{ animation: 'spin 1s linear infinite' }}
     />
   );
 }

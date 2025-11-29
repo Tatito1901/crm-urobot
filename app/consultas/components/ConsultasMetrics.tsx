@@ -27,12 +27,12 @@ const StatCard = memo(({ label, value, color, icon, className = '' }: StatCardPr
   };
 
   return (
-    <div className={`rounded-xl border p-3 sm:p-4 shadow-sm transition-colors ${colorClasses[color]} ${className}`}>
+    <div className={`rounded-2xl border p-3 sm:p-4 ${colorClasses[color]} ${className}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs sm:text-sm font-medium opacity-80">{label}</span>
-        <span className="opacity-80">{icon}</span>
+        <span className="opacity-70">{icon}</span>
       </div>
-      <div className="text-2xl sm:text-3xl font-bold">{value}</div>
+      <div className="text-2xl sm:text-3xl font-bold tabular-nums">{value}</div>
     </div>
   );
 });

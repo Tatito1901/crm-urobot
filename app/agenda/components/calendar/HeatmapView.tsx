@@ -346,7 +346,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                                 w-3 h-3 rounded-sm transition-all cursor-pointer group relative
                                 ${isTodayDate ? 'ring-1 ring-emerald-500 z-10' : ''}
                                 ${dayCount > 0 ? colors.indicator : 'bg-muted hover:bg-muted/80'}
-                                hover:scale-125 hover:z-20 hover:ring-1 hover:ring-ring
+                                hover:z-20 hover:ring-1 hover:ring-ring
                               `}
                             >
                               {/* Tooltip mejorado */}

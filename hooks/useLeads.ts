@@ -37,8 +37,7 @@ interface UseLeadsReturn {
 type LeadRowWithPaciente = LeadRow & {
   paciente: {
     id: string
-    // paciente_id: string // No existe en todos los registros
-    nombre_completo: string
+    nombre_completo: string | null
     telefono: string
     email: string | null
   } | null
@@ -49,13 +48,16 @@ type LeadRowWithPaciente = LeadRow & {
  * Usa mapper centralizado + enriquece con datos de paciente
  */
 const mapLead = (row: LeadRowWithPaciente): Lead => {
+  // Obtener nombre del paciente si existe
+  const pacienteNombre = row.paciente?.nombre_completo || undefined;
+  
   // Usar mapper centralizado (convierte snake_case → camelCase)
-  const leadBase = mapLeadFromDB(row);
+  const leadBase = mapLeadFromDB(row, pacienteNombre);
   
   // Enriquecer con cálculos (días, esCaliente, esInactivo)
   const leadEnriquecido = enrichLead(leadBase);
   
-  // Retornar lead enriquecido (datos de paciente disponibles via pacienteId)
+  // Retornar lead enriquecido
   return leadEnriquecido;
 }
 
@@ -68,30 +70,21 @@ const fetchLeads = async (): Promise<{ leads: Lead[], count: number }> => {
     .from('leads')
     .select(`
       id,
-      lead_id,
       paciente_id,
-      nombre_completo,
       telefono_whatsapp,
-      telefono_mx10,
       estado,
       fuente_lead,
       canal_marketing,
-      temperatura,
-      puntuacion_lead,
       notas_iniciales,
       session_id,
       fecha_primer_contacto,
       ultima_interaccion,
       fecha_conversion,
       total_interacciones,
-      total_mensajes_enviados,
-      total_mensajes_recibidos,
-      ultimo_mensaje_id,
       created_at,
       updated_at,
       paciente:pacientes (
         id,
-        paciente_id,
         nombre_completo,
         telefono,
         email
@@ -112,6 +105,9 @@ const fetchLeads = async (): Promise<{ leads: Lead[], count: number }> => {
 
   // Mapear y validar cada lead
   const leads = (data as unknown as LeadRowWithPaciente[]).map(mapLead)
+  
+  console.log(`✅ Leads fetched: ${leads.length} (total in DB: ${count})`)
+  
   return { leads, count: count || leads.length }
 }
 

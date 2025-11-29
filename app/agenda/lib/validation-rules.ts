@@ -1,11 +1,8 @@
 /**
- * ============================================================
- * REGLAS DE VALIDACIÓN - Validaciones para formularios
- * ============================================================
- * Funciones de validación para crear/editar citas
+ * Reglas de validación para formulario de citas
  */
 
-import type { TimeSlot } from '@/types/agenda';
+import type { ConsultaTipo, ConsultaSede } from '@/types/consultas';
 
 export interface AppointmentFormData {
   patientId: string;
@@ -13,91 +10,56 @@ export interface AppointmentFormData {
   tipo: string;
   motivoConsulta: string;
   duracionMinutos: number;
-  sede: 'POLANCO' | 'SATELITE';
-  modalidad: 'presencial' | 'teleconsulta' | 'hibrida';
-  prioridad: 'normal' | 'alta' | 'urgente';
-  notasInternas: string;
+  sede: ConsultaSede;
+  modalidad: 'presencial' | 'teleconsulta';
+  prioridad: 'normal' | 'urgente' | 'alta';
+  notasInternas?: string;
 }
 
-export interface FormErrors {
-  [key: string]: string;
-}
+export type FormErrors = Partial<Record<keyof AppointmentFormData, string>>;
 
 /**
  * Valida el formulario de cita
  */
-export function validateAppointmentForm(
-  data: AppointmentFormData,
-  slot?: TimeSlot
-): FormErrors {
+export function validateAppointmentForm(data: AppointmentFormData): FormErrors {
   const errors: FormErrors = {};
 
-  // Validar paciente
-  if (!data.patientId || !data.patientName) {
-    errors.patient = 'Debe seleccionar un paciente';
+  if (!data.patientId) {
+    errors.patientId = 'Selecciona un paciente';
   }
 
-  // Validar tipo de consulta
-  if (!data.tipo || data.tipo.trim() === '') {
-    errors.tipo = 'Debe seleccionar un tipo de consulta';
+  if (!data.tipo) {
+    errors.tipo = 'Selecciona el tipo de cita';
   }
 
-  // Validar motivo (opcional pero recomendado)
-  if (data.motivoConsulta && data.motivoConsulta.length > 500) {
-    errors.motivoConsulta = 'El motivo no puede exceder 500 caracteres';
+  if (!data.motivoConsulta?.trim()) {
+    errors.motivoConsulta = 'Ingresa el motivo de consulta';
   }
 
-  // Validar duración
-  const validDurations = [15, 30, 45, 60, 90, 120];
-  if (!validDurations.includes(data.duracionMinutos)) {
-    errors.duracionMinutos = 'Duración inválida';
-  }
-
-  // Validar sede
-  if (!['POLANCO', 'SATELITE'].includes(data.sede)) {
-    errors.sede = 'Sede inválida';
-  }
-
-  // Validar slot si se proporciona
-  if (slot && !slot.available) {
-    errors.slot = 'El horario seleccionado ya no está disponible';
+  if (data.duracionMinutos < 15 || data.duracionMinutos > 120) {
+    errors.duracionMinutos = 'La duración debe ser entre 15 y 120 minutos';
   }
 
   return errors;
 }
 
 /**
- * Obtiene duraciones válidas según tipo de consulta
- */
-export function getValidDurations(tipo: string): number[] {
-  const defaultDurations = [15, 30, 45, 60];
-
-  const durationsByType: Record<string, number[]> = {
-    primera_vez: [30, 45, 60],
-    subsecuente: [15, 30, 45],
-    urgencia: [15, 30, 45],
-    procedimiento_menor: [45, 60, 90, 120],
-    control_post_op: [15, 30, 45],
-    teleconsulta: [15, 30, 45],
-    valoracion_prequirurgica: [30, 45, 60],
-  };
-
-  return durationsByType[tipo] || defaultDurations;
-}
-
-/**
- * Obtiene duración por defecto según tipo de consulta
+ * Obtiene la duración por defecto según el tipo de cita
  */
 export function getDefaultDuration(tipo: string): number {
-  const defaultByType: Record<string, number> = {
-    primera_vez: 45,
-    subsecuente: 30,
-    urgencia: 30,
-    procedimiento_menor: 60,
-    control_post_op: 30,
-    teleconsulta: 30,
-    valoracion_prequirurgica: 45,
+  const durations: Record<string, number> = {
+    'Primera Vez': 45,
+    'Seguimiento': 30,
+    'Urgencia': 30,
+    'Procedimiento': 60,
+    'Valoración': 45,
+    // Legacy values
+    'primera_vez': 45,
+    'subsecuente': 30,
+    'urgencia': 30,
+    'procedimiento_menor': 60,
+    'valoracion_prequirurgica': 45,
   };
 
-  return defaultByType[tipo] || 45;
+  return durations[tipo] || 30;
 }

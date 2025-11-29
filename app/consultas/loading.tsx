@@ -19,21 +19,21 @@ export default function ConsultasLoading() {
         <div className="grid w-full gap-3 sm:grid-cols-2">
           <Card className="border-white/10 bg-white/[0.04]">
             <CardHeader className="pb-2">
-              <div className="h-3 w-16 bg-white/10 rounded animate-pulse" />
-              <div className="h-2 w-24 bg-white/10 rounded animate-pulse mt-1" />
+              <div className="h-3 w-16 bg-white/10 rounded " />
+              <div className="h-2 w-24 bg-white/10 rounded  mt-1" />
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="h-10 w-full bg-white/10 rounded animate-pulse" />
+              <div className="h-10 w-full bg-white/10 rounded " />
             </CardContent>
           </Card>
           <Card className="border-white/10 bg-white/[0.04]">
             <CardHeader className="pb-2">
-              <div className="h-3 w-12 bg-white/10 rounded animate-pulse" />
+              <div className="h-3 w-12 bg-white/10 rounded " />
             </CardHeader>
             <CardContent className="flex gap-2 pt-0">
-              <div className="h-8 flex-1 bg-white/10 rounded animate-pulse" />
-              <div className="h-8 flex-1 bg-white/10 rounded animate-pulse" />
-              <div className="h-8 flex-1 bg-white/10 rounded animate-pulse" />
+              <div className="h-8 flex-1 bg-white/10 rounded " />
+              <div className="h-8 flex-1 bg-white/10 rounded " />
+              <div className="h-8 flex-1 bg-white/10 rounded " />
             </CardContent>
           </Card>
         </div>
@@ -52,10 +52,10 @@ export default function ConsultasLoading() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-2">
-              <div className="h-5 w-40 bg-white/10 rounded animate-pulse" />
-              <div className="h-4 w-64 bg-white/10 rounded animate-pulse" />
+              <div className="h-5 w-40 bg-white/10 rounded " />
+              <div className="h-4 w-64 bg-white/10 rounded " />
             </div>
-            <div className="h-8 w-8 bg-white/10 rounded animate-pulse" />
+            <div className="h-8 w-8 bg-white/10 rounded " />
           </div>
         </CardHeader>
         <CardContent>

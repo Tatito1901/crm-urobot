@@ -86,7 +86,7 @@ export function useAppointmentForm(options: UseAppointmentFormOptions = {}) {
    * Validar formulario completo
    */
   const validate = useCallback(() => {
-    const validationErrors = validateAppointmentForm(formData, initialSlot);
+    const validationErrors = validateAppointmentForm(formData);
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;
   }, [formData, initialSlot]);

@@ -10,8 +10,8 @@ const BrandingSection = memo(() => (
     <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
     
     {/* Efectos de luz ambiental animados */}
-    <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-[100px] animate-pulse duration-[4000ms]" />
-    <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[100px] animate-pulse duration-[5000ms] delay-1000" />
+    <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-[100px]  duration-[4000ms]" />
+    <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[100px]  duration-[5000ms] delay-1000" />
     
     <div className="relative z-20 flex items-center justify-between w-full">
       <div className="flex items-center text-lg font-medium tracking-tight">
