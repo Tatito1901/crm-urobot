@@ -10,11 +10,10 @@
 
 import React, { useCallback, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, CheckCircle, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { usePacienteDetallado } from '@/hooks/usePacienteDetallado';
 import { PatientSidebar } from './components/PatientSidebar';
 import { PatientHistory } from './components/PatientHistory';
-import { ConversacionesPanel } from './components/ConversacionesPanel';
 import { ErrorState } from '@/app/components/common/ErrorState';
 import { updatePacienteDestino, updatePacienteNotas } from './services/paciente-service';
 // DestinoPaciente imported from hook
@@ -27,7 +26,7 @@ export default function PacientePerfilPage() {
   const { paciente, consultas, loading, error, refetch } = usePacienteDetallado(pacienteId);
   
   // Estado para tabs en móvil
-  const [activeTab, setActiveTab] = useState<'info' | 'history' | 'chat'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
   
   // Estado para notificaciones
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -175,20 +174,9 @@ export default function PacientePerfilPage() {
         >
           Historial
         </button>
-        <button
-          onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-            activeTab === 'chat'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground'
-          }`}
-        >
-          <MessageCircle className="h-4 w-4" />
-          Chat
-        </button>
       </div>
 
-      {/* Layout principal: Sidebar + Historial + Chat */}
+      {/* Layout principal: Sidebar + Historial */}
       <div className="flex-1 flex overflow-hidden relative bg-muted/5">
         {/* Sidebar - Visible en desktop o si activeTab es 'info' */}
         <div className={`
@@ -206,7 +194,6 @@ export default function PacientePerfilPage() {
         <div className={`
           flex-1 w-full absolute inset-0 lg:static z-10 transition-transform duration-300 ease-in-out bg-muted/5
           ${activeTab === 'history' ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
-          ${activeTab === 'chat' ? 'lg:block hidden' : ''}
         `}>
           <PatientHistory
             consultas={consultas}
@@ -218,18 +205,6 @@ export default function PacientePerfilPage() {
               console.log('Ver episodio:', consultaId);
               // TODO: Abrir episodio clínico
             }}
-          />
-        </div>
-
-        {/* Panel de conversaciones - Visible en desktop siempre, en móvil si activeTab es 'chat' */}
-        <div className={`
-          w-full lg:w-[380px] absolute inset-0 lg:static z-10 transition-transform duration-300 ease-in-out
-          lg:border-l lg:border-border bg-background
-          ${activeTab === 'chat' ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
-        `}>
-          <ConversacionesPanel 
-            telefono={paciente.telefono}
-            nombrePaciente={paciente.nombre}
           />
         </div>
       </div>

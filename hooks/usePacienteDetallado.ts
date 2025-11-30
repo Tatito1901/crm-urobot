@@ -53,11 +53,15 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       if (!pacienteData) throw new Error('Paciente no encontrado');
 
       // Obtener estadísticas de la vista
-      const { data: statsData } = await supabase
+      const { data: statsData, error: statsError } = await supabase
         .from('paciente_stats')
         .select('*')
         .eq('paciente_id', pacienteId)
         .single();
+
+      if (statsError && statsError.code !== 'PGRST116') { // PGRST116 es "Results contain 0 rows" para .single(), lo cual es aceptable si no hay stats
+        console.warn('Error fetching paciente stats:', statsError);
+      }
 
       // Mapear paciente con sus estadísticas
       const pacienteMapeado = mapPacienteFromDB(
@@ -66,11 +70,16 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       );
 
       // Obtener destinos del paciente
-      const { data: destinosData } = await supabase
+      const { data: destinosData, error: destinosError } = await supabase
         .from('destinos_pacientes')
         .select('*')
         .eq('paciente_id', pacienteId)
         .order('created_at', { ascending: false });
+      
+      if (destinosError) {
+        console.error('Error fetching destinos:', destinosError);
+        // No lanzamos error aquí para permitir mostrar el paciente aunque fallen los destinos
+      }
 
       const destinos = (destinosData || []).map((row) => 
         mapDestinoPacienteFromDB(row as DestinoPacienteRow)
@@ -99,8 +108,14 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       );
 
       setConsultas(consultasMapeadas);
-    } catch (err) {
-      console.error('Error fetching paciente detallado:', err);
+    } catch (err: any) {
+      console.error('Error fetching paciente detallado:', {
+        message: err.message,
+        code: err.code,
+        details: err.details,
+        hint: err.hint,
+        fullError: err
+      });
       setError(err instanceof Error ? err : new Error('Error desconocido'));
     } finally {
       setLoading(false);

@@ -49,7 +49,6 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
 
   // Tamaño responsivo
   const responsiveSize = Math.min(size, 200);
-  const responsiveThickness = Math.min(thickness, 35);
 
   return (
     <div className="relative flex flex-col items-center gap-3 sm:gap-4 w-full">

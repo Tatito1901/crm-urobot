@@ -47,6 +47,11 @@ const SedesChart = dynamic(() => import('./components/dashboard/DashboardSedesCh
   ssr: false
 });
 
+const DestinosChart = dynamic(() => import('./components/dashboard/DashboardDestinosChart').then(mod => mod.DashboardDestinosChart), {
+  loading: () => <Skeleton className="h-[220px] w-full" />,
+  ssr: false
+});
+
 // Componente para tarjeta KPI pequeña
 function KpiCard({ 
   title, 
@@ -92,6 +97,7 @@ export default function EstadisticasPage() {
     funnelLeads, 
     fuentesCaptacion,
     metricasMensajeria,
+    destinosPacientes,
     loading 
   } = useStats();
 
@@ -186,7 +192,7 @@ export default function EstadisticasPage() {
       </div>
 
       {/* Gráficos Secundarios - Fila 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
         {/* Marketing: Fuentes */}
         <Card className={cards.base}>
@@ -227,6 +233,20 @@ export default function EstadisticasPage() {
           </CardHeader>
           <CardContent>
             <SedesChart data={consultasPorSede} />
+          </CardContent>
+        </Card>
+
+        {/* Destinos */}
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Target className="w-4 h-4 text-amber-500" />
+              Destinos de Pacientes
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Resolución de casos</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DestinosChart data={destinosPacientes} />
           </CardContent>
         </Card>
 

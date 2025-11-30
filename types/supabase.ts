@@ -216,6 +216,7 @@ export type Database = {
           fecha_primer_contacto: string | null
           fuente_lead: string | null
           id: string
+          nombre_completo: string | null
           notas_iniciales: string | null
           paciente_id: string | null
           session_id: string | null

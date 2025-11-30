@@ -9,7 +9,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Phone, Mail, Calendar, ChevronDown, ChevronUp, Target, CheckCircle, Scissors, DollarSign, Plus, FileText } from 'lucide-react';
+import { Phone, Mail, Calendar, ChevronDown, ChevronUp, Target, CheckCircle, Scissors, DollarSign, Plus, FileText, MessageCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { type PacienteDetallado } from '@/hooks/usePacienteDetallado';
 import { DESTINO_LABELS, DESTINO_COLORS, type TipoDestino } from '@/types/destinos-pacientes';
 import { DestinoPacienteModal } from './DestinoPacienteModal';
@@ -51,6 +52,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
   onUpdateNotas,
   onUpdateDestino,
 }) => {
+  const router = useRouter();
   const [showDestino, setShowDestino] = useState(true);
   const [isEditingNotas, setIsEditingNotas] = useState(false);
   const [notas, setNotas] = useState(paciente.notas || '');
@@ -137,10 +139,14 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
         {/* Botones de acción */}
         <div className="flex items-center justify-center gap-2 mb-4">
           <button
-            className="p-2 rounded-lg bg-secondary/50 border border-border hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
-            title="Enviar mensaje"
+            onClick={() => {
+              const telefono = paciente.telefono.replace(/\D/g, '').slice(-10);
+              router.push(`/conversaciones?telefono=${telefono}`);
+            }}
+            className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 transition-all"
+            title="Ver conversación de WhatsApp"
           >
-            <Mail className="h-4 w-4" />
+            <MessageCircle className="h-4 w-4" />
           </button>
           <button
             className="p-2 rounded-lg bg-secondary/50 border border-border hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"

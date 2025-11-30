@@ -12,6 +12,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle, FileText, Scissors, Clock, DollarSign, MapPin, AlertCircle, Save, Plus, Send, FileDown, Loader2 } from 'lucide-react';
 import { 
   type TipoDestino,
@@ -445,68 +446,84 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
     onClose();
   };
 
-  if (!isOpen) return null;
+  // Evitar renderizado en servidor para createPortal
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
       
       {/* Modal Window */}
-      <div className="relative w-full sm:max-w-2xl md:max-w-3xl bg-white dark:bg-[#0f1623] sm:rounded-2xl rounded-t-2xl shadow-2xl border border-slate-200 dark:border-blue-900/30 flex flex-col max-h-[92vh] sm:max-h-[88vh] transition-transform animate-in slide-in-from-bottom-4 duration-300">
+      <div className="relative w-full max-w-[100vw] sm:max-w-5xl md:max-w-6xl bg-white dark:bg-[#0f1623] rounded-t-2xl sm:rounded-2xl shadow-2xl shadow-black/50 border-x-0 sm:border border-t border-b-0 sm:border-b border-slate-200 dark:border-blue-900/30 flex flex-col h-[92vh] sm:h-[85vh] max-h-[100vh] transition-transform animate-in slide-in-from-bottom-8 zoom-in-95 duration-300">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-blue-900/20 shrink-0">
-          <div className="min-w-0 flex-1 mr-2">
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <TargetIcon className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500 shrink-0" />
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 dark:border-blue-900/20 shrink-0 bg-slate-50/50 dark:bg-[#0f1623]">
+          <div className="min-w-0 flex-1 mr-4">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <div className="p-1.5 sm:p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
+                <TargetIcon className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              </div>
               <span className="truncate">Destino del Paciente</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">
-              Registrar resultado para <span className="font-medium text-slate-700 dark:text-slate-300">{pacienteNombre}</span>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1 truncate ml-1">
+              Acción para <span className="font-medium text-slate-900 dark:text-slate-200">{pacienteNombre}</span>
             </p>
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
           >
             <X className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 scroll-smooth overscroll-contain">
           
-          {/* Selección de Tipo */}
+          {/* Selección de Tipo - Grid optimizado móvil */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
             {TIPOS_DESTINO.map((tipo) => (
               <button
                 key={tipo}
                 onClick={() => setTipoDestino(tipo)}
                 className={`
-                  relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-200 gap-1.5 sm:gap-2 min-h-[80px] sm:min-h-[90px]
+                  relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 gap-1.5 sm:gap-2 min-h-[85px] sm:min-h-[100px] group
                   ${tipoDestino === tipo 
-                    ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-600/10 dark:border-blue-500' 
-                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'}
+                    ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10 dark:border-indigo-500 shadow-md shadow-indigo-500/10 scale-[1.02]' 
+                    : 'border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:shadow-sm'}
                 `}
               >
                 <div className={`
-                  p-1.5 sm:p-2 rounded-full shrink-0
-                  ${tipoDestino === tipo ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}
+                  p-2 sm:p-2.5 rounded-xl shrink-0 transition-colors duration-300
+                  ${tipoDestino === tipo 
+                    ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300' 
+                    : 'bg-slate-100 text-slate-400 dark:bg-slate-800/80 dark:text-slate-500 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10'}
                 `}>
                   <div className="h-4 w-4 sm:h-5 sm:w-5">
                     {getIconForType(tipo)}
                   </div>
                 </div>
-                <span className={`text-[10px] sm:text-xs font-bold text-center leading-tight ${tipoDestino === tipo ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'}`}>
+                <span className={`text-[10px] sm:text-xs font-bold text-center leading-tight transition-colors ${
+                  tipoDestino === tipo 
+                    ? 'text-indigo-700 dark:text-indigo-300' 
+                    : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'
+                }`}>
                   {DESTINO_LABELS[tipo]}
                 </span>
+                
                 {tipoDestino === tipo && (
-                  <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2">
-                    <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
+                  <div className="absolute -top-1.5 -right-1.5 bg-white dark:bg-[#0f1623] rounded-full p-0.5 shadow-sm z-10">
+                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500 fill-white dark:fill-[#0f1623]" />
                   </div>
                 )}
               </button>
@@ -831,24 +848,25 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-blue-900/20 bg-slate-50 dark:bg-[#0f1623]/50 flex flex-col sm:flex-row gap-2 sm:gap-3 shrink-0">
-          <button
-            onClick={onClose}
-            className="flex-1 sm:flex-none sm:min-w-[120px] px-4 py-2.5 sm:py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm order-2 sm:order-1"
-          >
-            Cancelar
-          </button>
+        <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-blue-900/20 bg-slate-50/80 dark:bg-[#0f1623]/80 backdrop-blur-md flex flex-col sm:flex-row gap-3 shrink-0 rounded-b-none sm:rounded-b-2xl pb-6 sm:pb-6">
           <button
             onClick={handleSave}
-            className="flex-1 sm:flex-[2] px-4 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm order-1 sm:order-2"
+            className="w-full sm:w-auto sm:flex-[2] px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 text-sm order-1 sm:order-2"
           >
-            <Save className="h-4 w-4" />
-            Guardar Destino
+            <Save className="h-5 w-5" />
+            Confirmar Destino
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full sm:w-auto sm:flex-none sm:min-w-[140px] px-5 py-3.5 bg-white dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all text-sm order-2 sm:order-1 shadow-sm hover:shadow"
+          >
+            Cancelar
           </button>
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

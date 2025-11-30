@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, FileText, FileDown, MapPin, Edit, Eye, StickyNote } from 'lucide-react';
+import { Calendar, MapPin, Edit, Eye, StickyNote } from 'lucide-react';
 import type { Consulta } from '@/types/consultas';
 import { NotaConsultaModal } from './NotaConsultaModal';
 import { getNotaConsulta, saveNotaConsulta } from '../services/paciente-service';
@@ -19,7 +19,7 @@ interface PatientHistoryProps {
   onVerEpisodio?: (consultaId: string) => void;
 }
 
-type TabType = 'episodios' | 'citas' | 'documentos' | 'datos';
+type TabType = 'citas' | 'datos';
 
 export const PatientHistory: React.FC<PatientHistoryProps> = ({
   consultas,
@@ -81,9 +81,7 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
   };
 
   const tabs = [
-    { id: 'episodios' as TabType, label: 'Episodios clínicos', count: 0 },
     { id: 'citas' as TabType, label: 'Citas', count: consultas.length },
-    { id: 'documentos' as TabType, label: 'Documentos', count: 0 },
     { id: 'datos' as TabType, label: 'Datos del paciente', count: 0 },
   ];
 
@@ -212,26 +210,6 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
                 </div>
               ))
             )}
-          </div>
-        )}
-
-        {activeTab === 'episodios' && (
-          <div className="text-center py-12">
-            <FileText className="h-16 w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-500 dark:text-slate-400">No hay episodios clínicos registrados</p>
-            <button className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors shadow-sm">
-              Comenzar episodio
-            </button>
-          </div>
-        )}
-
-        {activeTab === 'documentos' && (
-          <div className="text-center py-12">
-            <FileDown className="h-16 w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-500 dark:text-slate-400">No hay documentos registrados</p>
-            <button className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors shadow-sm">
-              Subir documento
-            </button>
           </div>
         )}
 

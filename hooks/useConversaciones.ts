@@ -2,7 +2,7 @@
  * ============================================================
  * HOOK: useConversaciones
  * ============================================================
- * Hook para gestionar conversaciones de WhatsApp estilo WhatsApp Web
+ * Hook para gestionar conversaciones usando tabla 'conversaciones'
  * ✅ SWR: Caché y revalidación
  * ✅ Realtime: Actualizaciones en vivo
  */
@@ -10,101 +10,88 @@
 import { useEffect, useState, useCallback } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import type { Mensaje, Conversacion, MensajeRow } from '@/types/mensajes'
-import { mapMensajeFromDB } from '@/types/mensajes'
 import { SWR_CONFIG_STANDARD } from '@/lib/swr-config'
+import type { Tables } from '@/types/supabase'
 
 const supabase = createClient()
 
+type ConversacionRow = Tables<'conversaciones'>
+
+// Tipos para la UI
+interface Mensaje {
+  id: string
+  telefono: string
+  contenido: string
+  rol: 'usuario' | 'asistente'
+  createdAt: Date
+}
+
+interface Conversacion {
+  telefono: string
+  nombreContacto: string | null
+  ultimoMensaje: string
+  ultimaFecha: Date
+  mensajesNoLeidos: number
+  tipoContacto: 'paciente' | 'lead' | 'desconocido'
+}
+
 interface UseConversacionesReturn {
-  // Lista de conversaciones (sidebar)
   conversaciones: Conversacion[]
-  
-  // Mensajes de la conversación activa
   mensajesActivos: Mensaje[]
-  
-  // Teléfono seleccionado
   telefonoActivo: string | null
   setTelefonoActivo: (telefono: string | null) => void
-  
-  // Estados
   isLoading: boolean
   isLoadingMensajes: boolean
   error: Error | null
-  
-  // Acciones
   marcarComoLeido: (telefono: string) => Promise<void>
   enviarMensaje: (telefono: string, contenido: string) => Promise<void>
   refetch: () => Promise<void>
-  
-  // Métricas
   totalNoLeidos: number
 }
 
-// Tipo para el resultado del JOIN
-interface MensajeConContacto {
-  telefono: string
-  contenido: string
-  created_at: string
-  leido_por_doctor: boolean
-  paciente_id: string | null
-  lead_id: string | null
-  pacientes: { nombre_completo: string } | null
-  leads: { nombre_completo: string } | null
-}
-
 /**
- * Fetcher para lista de conversaciones agrupadas
- * Nota: Usamos casting porque types/supabase.ts no tiene la tabla 'mensajes' todavía
+ * Fetcher para lista de conversaciones agrupadas por teléfono
+ * Incluye JOIN con pacientes para obtener nombres
  */
 const fetchConversaciones = async (): Promise<Conversacion[]> => {
-  // Query para obtener últimos mensajes por teléfono con info del contacto
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
-    .from('mensajes')
-    .select(`
-      telefono,
-      contenido,
-      created_at,
-      leido_por_doctor,
-      paciente_id,
-      lead_id,
-      pacientes:paciente_id ( nombre_completo ),
-      leads:lead_id ( nombre_completo )
-    `)
+  // 1. Obtener conversaciones
+  const { data: convData, error: convError } = await supabase
+    .from('conversaciones')
+    .select('telefono, mensaje, rol, created_at')
     .order('created_at', { ascending: false })
 
-  if (error) throw error
+  if (convError) throw convError
 
-  // Agrupar por teléfono y tomar el último mensaje
+  // 2. Obtener pacientes para hacer match por teléfono
+  const { data: pacientesData } = await supabase
+    .from('pacientes')
+    .select('telefono, nombre_completo')
+
+  // Crear mapa de teléfonos a nombres (últimos 10 dígitos como key)
+  const pacientesMap = new Map<string, string>()
+  for (const p of pacientesData || []) {
+    if (p.telefono && p.nombre_completo) {
+      const tel10 = p.telefono.replace(/\D/g, '').slice(-10)
+      pacientesMap.set(tel10, p.nombre_completo)
+    }
+  }
+
+  // 3. Agrupar conversaciones por teléfono
   const conversacionesMap = new Map<string, Conversacion>()
   
-  for (const msg of (data || []) as MensajeConContacto[]) {
+  for (const msg of convData || []) {
     if (!conversacionesMap.has(msg.telefono)) {
-      // Determinar nombre del contacto
-      const nombreContacto = msg.pacientes?.nombre_completo || msg.leads?.nombre_completo || null
+      const tel10 = msg.telefono.replace(/\D/g, '').slice(-10)
+      const nombrePaciente = pacientesMap.get(tel10)
       
-      // Determinar tipo de contacto
-      let tipoContacto: 'paciente' | 'lead' | 'desconocido' = 'desconocido'
-      if (msg.paciente_id) tipoContacto = 'paciente'
-      else if (msg.lead_id) tipoContacto = 'lead'
-
       conversacionesMap.set(msg.telefono, {
         telefono: msg.telefono,
-        nombreContacto,
-        ultimoMensaje: msg.contenido,
+        nombreContacto: nombrePaciente || null,
+        ultimoMensaje: msg.mensaje,
         ultimaFecha: new Date(msg.created_at),
         mensajesNoLeidos: 0,
-        pacienteId: msg.paciente_id,
-        leadId: msg.lead_id,
-        tipoContacto,
+        tipoContacto: nombrePaciente ? 'paciente' : 'desconocido',
       })
-    }
-    
-    // Contar no leídos
-    if (!msg.leido_por_doctor) {
-      const conv = conversacionesMap.get(msg.telefono)!
-      conv.mensajesNoLeidos++
     }
   }
 
@@ -115,16 +102,21 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
  * Fetcher para mensajes de un teléfono específico
  */
 const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
-    .from('mensajes')
+  const { data, error } = await supabase
+    .from('conversaciones')
     .select('*')
     .eq('telefono', telefono)
     .order('created_at', { ascending: true })
 
   if (error) throw error
   
-  return ((data || []) as MensajeRow[]).map(mapMensajeFromDB)
+  return (data || []).map((row: ConversacionRow) => ({
+    id: row.id,
+    telefono: row.telefono,
+    contenido: row.mensaje,
+    rol: row.rol,
+    createdAt: new Date(row.created_at),
+  }))
 }
 
 export function useConversaciones(): UseConversacionesReturn {
@@ -136,7 +128,7 @@ export function useConversaciones(): UseConversacionesReturn {
     error: errorConversaciones, 
     isLoading: isLoadingConversaciones,
     mutate: mutateConversaciones 
-  } = useSWR('conversaciones', fetchConversaciones, SWR_CONFIG_STANDARD)
+  } = useSWR('conversaciones-list', fetchConversaciones, SWR_CONFIG_STANDARD)
 
   // SWR para mensajes del teléfono activo
   const {
@@ -145,29 +137,28 @@ export function useConversaciones(): UseConversacionesReturn {
     isLoading: isLoadingMensajes,
     mutate: mutateMensajes
   } = useSWR(
-    telefonoActivo ? `mensajes-${telefonoActivo}` : null,
+    telefonoActivo ? `conv-mensajes-${telefonoActivo}` : null,
     () => fetchMensajesPorTelefono(telefonoActivo!),
     SWR_CONFIG_STANDARD
   )
 
-  // ✅ Suscripción Realtime a tabla 'mensajes'
+  // ✅ Suscripción Realtime a tabla 'conversaciones'
   useEffect(() => {
     const channel = supabase
-      .channel('mensajes-changes')
+      .channel('conversaciones-changes')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
-          table: 'mensajes',
+          table: 'conversaciones',
         },
         (payload) => {
-          console.log('💬 Nuevo mensaje detectado:', payload.eventType)
+          console.log('💬 Nuevo mensaje:', payload.new)
           mutateConversaciones()
           
-          // Si el mensaje es del teléfono activo, actualizar también esos mensajes
-          const newRecord = payload.new as MensajeRow | undefined
-          if (newRecord && newRecord.telefono === telefonoActivo) {
+          const newRecord = payload.new as ConversacionRow
+          if (newRecord.telefono === telefonoActivo) {
             mutateMensajes()
           }
         }
@@ -179,55 +170,30 @@ export function useConversaciones(): UseConversacionesReturn {
     }
   }, [mutateConversaciones, mutateMensajes, telefonoActivo])
 
-  // Marcar mensajes como leídos
-  const marcarComoLeido = useCallback(async (telefono: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any)
-      .from('mensajes')
-      .update({ 
-        leido_por_doctor: true, 
-        leido_at: new Date().toISOString() 
-      })
-      .eq('telefono', telefono)
-      .eq('leido_por_doctor', false)
+  // Marcar como leído (no-op por ahora, la tabla no tiene ese campo)
+  const marcarComoLeido = useCallback(async (_telefono: string) => {
+    // La tabla conversaciones no tiene campo leido_por_doctor
+    // Se podría agregar si se necesita
+  }, [])
 
-    if (error) {
-      console.error('Error marcando como leído:', error)
-      return
-    }
-
-    // Actualizar caché local
-    mutateConversaciones()
-  }, [mutateConversaciones])
-
-  // Enviar mensaje (para cuando el doctor responde manualmente)
+  // Enviar mensaje usando RPC
   const enviarMensaje = useCallback(async (telefono: string, contenido: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any)
-      .from('mensajes')
-      .insert({
-        telefono,
-        contenido,
-        direccion: 'saliente',
-        tipo_contenido: 'texto',
-        respondido_por: 'humano',
-        leido_por_doctor: true,
-      })
+    const { error } = await supabase.rpc('guardar_mensaje', {
+      p_telefono: telefono,
+      p_rol: 'asistente',
+      p_mensaje: contenido,
+    })
 
     if (error) throw error
 
-    // Actualizar cachés
     mutateConversaciones()
     if (telefono === telefonoActivo) {
       mutateMensajes()
     }
   }, [mutateConversaciones, mutateMensajes, telefonoActivo])
 
-  // Calcular total de no leídos
-  const totalNoLeidos = (conversaciones || []).reduce(
-    (sum, c) => sum + c.mensajesNoLeidos, 
-    0
-  )
+  // Total no leídos (siempre 0 por ahora)
+  const totalNoLeidos = 0
 
   return {
     conversaciones: conversaciones || [],

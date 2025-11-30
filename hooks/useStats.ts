@@ -59,6 +59,12 @@ interface RawLead {
   total_interacciones: number;
 }
 
+interface RawDestino {
+  id: string;
+  tipo_destino: string;
+  created_at: string;
+}
+
 interface StatsData {
   kpi: KPIData;
   consultasPorSede: ChartData[];
@@ -67,6 +73,7 @@ interface StatsData {
   funnelLeads: ChartData[];
   fuentesCaptacion: ChartData[];
   metricasMensajeria: ChartData[];
+  destinosPacientes: ChartData[];
 }
 
 // Valores por defecto para carga inicial instantánea
@@ -94,21 +101,25 @@ const fetchStats = async (): Promise<StatsData> => {
   const [
     { data: pacientes, error: errPacientes },
     { data: consultas, error: errConsultas },
-    { data: leads, error: errLeads }
+    { data: leads, error: errLeads },
+    { data: destinos, error: errDestinos }
   ] = await Promise.all([
     supabase.from('pacientes').select('id, created_at'),
     supabase.from('consultas').select('id, fecha_hora_inicio, sede, estado_cita'),
-    supabase.from('leads').select('id, estado, created_at, fuente_lead, canal_marketing, total_interacciones')
+    supabase.from('leads').select('id, estado, created_at, fuente_lead, canal_marketing, total_interacciones'),
+    supabase.from('destinos_pacientes').select('id, tipo_destino, created_at')
   ]);
 
   if (errPacientes) throw errPacientes;
   if (errConsultas) throw errConsultas;
   if (errLeads) throw errLeads;
+  if (errDestinos) throw errDestinos;
 
   // Casteo seguro de tipos
   const safePacientes = (pacientes || []) as unknown as RawPaciente[];
   const safeConsultas = (consultas || []) as unknown as RawConsulta[];
   const safeLeads = (leads || []) as unknown as RawLead[];
+  const safeDestinos = (destinos || []) as unknown as RawDestino[];
 
   // --- CALCULOS KPI ---
   const pacientesNuevos = safePacientes.filter(p => p.created_at >= firstDayOfMonth).length;
@@ -212,6 +223,37 @@ const fetchStats = async (): Promise<StatsData> => {
     };
   });
 
+  // --- CHARTS: Destinos de Pacientes ---
+  const destinosMap = safeDestinos.reduce((acc: Record<string, number>, curr) => {
+    const tipo = curr.tipo_destino || 'pendiente';
+    acc[tipo] = (acc[tipo] || 0) + 1;
+    return acc;
+  }, {});
+
+  const destinoColors: Record<string, string> = {
+    'alta_definitiva': '#10b981', // emerald-500
+    'presupuesto_enviado': '#f59e0b', // amber-500
+    'cirugia_realizada': '#3b82f6', // blue-500
+    'seguimiento': '#6366f1', // indigo-500
+    'pendiente': '#94a3b8' // slate-400
+  };
+
+  const destinoLabels: Record<string, string> = {
+    'alta_definitiva': 'Alta Definitiva',
+    'presupuesto_enviado': 'Presupuesto',
+    'cirugia_realizada': 'Cirugía',
+    'seguimiento': 'Seguimiento',
+    'pendiente': 'Pendiente'
+  };
+
+  const destinosPacientes: ChartData[] = Object.entries(destinosMap)
+    .map(([tipo, value]) => ({
+      name: destinoLabels[tipo] || tipo,
+      value,
+      fill: destinoColors[tipo] || '#94a3b8'
+    }))
+    .sort((a, b) => b.value - a.value);
+
   return {
     kpi,
     consultasPorSede,
@@ -219,7 +261,8 @@ const fetchStats = async (): Promise<StatsData> => {
     evolucionMensual,
     funnelLeads,
     fuentesCaptacion,
-    metricasMensajeria
+    metricasMensajeria,
+    destinosPacientes
   };
 };
 
@@ -247,5 +290,6 @@ export function useStats() {
     funnelLeads: data?.funnelLeads || [],
     fuentesCaptacion: data?.fuentesCaptacion || [],
     metricasMensajeria: data?.metricasMensajeria || [],
+    destinosPacientes: data?.destinosPacientes || [],
   };
 }

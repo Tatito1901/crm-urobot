@@ -109,6 +109,29 @@ export async function createPatient(
       return { success: false, error: insertError.message || 'Error al crear el paciente' };
     }
 
+    // Actualizar Lead asociado si existe
+    try {
+      const { data: existingLead } = await supabase
+        .from('leads')
+        .select('id')
+        .eq('telefono_whatsapp', normalizedPhone)
+        .maybeSingle();
+
+      if (existingLead) {
+        await supabase
+          .from('leads')
+          .update({
+            estado: 'Convertido',
+            paciente_id: newPatient.id,
+            fecha_conversion: new Date().toISOString()
+          })
+          .eq('id', existingLead.id);
+      }
+    } catch (leadError) {
+      // No bloqueamos la creación del paciente si falla la actualización del lead
+      console.warn('Error al actualizar lead asociado:', leadError);
+    }
+
     // Mapear a tipo Paciente
     const paciente = mapPacienteFromDB(newPatient as unknown as PacienteRow);
 

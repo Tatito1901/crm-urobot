@@ -2,7 +2,7 @@
  * Reglas de validación para formulario de citas
  */
 
-import type { ConsultaTipo, ConsultaSede } from '@/types/consultas';
+import type { ConsultaSede } from '@/types/consultas';
 
 export interface AppointmentFormData {
   patientId: string;
