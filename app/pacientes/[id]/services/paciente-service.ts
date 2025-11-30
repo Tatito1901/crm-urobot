@@ -136,21 +136,23 @@ export async function updatePacienteNotas(
  */
 export async function getNotaConsulta(consultaId: string): Promise<{ nota: string | null; error?: string }> {
   try {
-    const { data, error } = await supabase
-      // @ts-expect-error - Tabla consultas_notas no está en tipos generados
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any)
       .from('consultas_notas')
       .select('nota')
       .eq('consulta_id', consultaId)
       .maybeSingle();
 
     if (error) {
+      // Si el error es que no existe la tabla, retornar null sin error (caso normal de primera nota)
+      if (error.code === 'PGRST116' || error.message?.includes('does not exist')) {
+        return { nota: null };
+      }
       console.error('Error al obtener nota de consulta:', error);
       return { nota: null, error: error.message };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const notaData = data as any;
-    return { nota: notaData?.nota || null };
+    return { nota: data?.nota || null };
   } catch (error) {
     console.error('Error inesperado al obtener nota:', error);
     return { nota: null, error: 'Error desconocido' };
@@ -159,42 +161,24 @@ export async function getNotaConsulta(consultaId: string): Promise<{ nota: strin
 
 /**
  * Guarda o actualiza la nota clínica de una consulta
+ * Usa UPSERT para simplificar la lógica
  */
 export async function saveNotaConsulta(consultaId: string, nota: string): Promise<UpdateResult> {
   try {
-    // Verificar si ya existe
-    const { data: existing } = await supabase
-      // @ts-expect-error - Tabla consultas_notas no está en tipos generados
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
       .from('consultas_notas')
-      .select('id')
-      .eq('consulta_id', consultaId)
-      .maybeSingle();
-
-    let error;
-
-    if (existing) {
-      const { error: updateError } = await supabase
-        // @ts-expect-error - Tabla consultas_notas no está en tipos generados
-        .from('consultas_notas')
-        .update({ 
-          nota, 
-          updated_at: new Date().toISOString() 
-        })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .eq('id', (existing as any).id);
-      error = updateError;
-    } else {
-      // Tabla consultas_notas no está en tipos generados de Supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: insertError } = await (supabase as any)
-        .from('consultas_notas')
-        .insert({
+      .upsert(
+        {
           consulta_id: consultaId,
           nota,
-          created_at: new Date().toISOString()
-        });
-      error = insertError;
-    }
+          updated_at: new Date().toISOString()
+        },
+        { 
+          onConflict: 'consulta_id',
+          ignoreDuplicates: false 
+        }
+      );
 
     if (error) {
       console.error('Error al guardar nota de consulta:', error);
@@ -205,5 +189,98 @@ export async function saveNotaConsulta(consultaId: string, nota: string): Promis
   } catch (error) {
     console.error('Error inesperado al guardar nota:', error);
     return { success: false, error: 'Error desconocido' };
+  }
+}
+
+// ============================================================
+// CONVERSACIONES
+// ============================================================
+
+/**
+ * Guarda un mensaje en la tabla de conversaciones usando RPC
+ * Útil para enviar mensajes desde el CRM (futura funcionalidad)
+ */
+export async function guardarMensaje(
+  telefono: string,
+  rol: 'usuario' | 'asistente',
+  mensaje: string
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const { data, error } = await supabase.rpc('guardar_mensaje', {
+      p_telefono: telefono,
+      p_rol: rol,
+      p_mensaje: mensaje,
+    });
+
+    if (error) {
+      console.error('Error al guardar mensaje:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data as string };
+  } catch (error) {
+    console.error('Error inesperado al guardar mensaje:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    };
+  }
+}
+
+/**
+ * Obtiene el contexto completo de UroBot para un paciente
+ * Incluye historial, cita pendiente e información del paciente
+ */
+export async function obtenerContextoUrobot(telefono: string): Promise<{
+  success: boolean;
+  contexto?: {
+    historialConversacion: string;
+    tieneCitaPendiente: boolean;
+    infoCita: string;
+    nombrePaciente: string;
+    esPacienteConocido: boolean;
+  };
+  error?: string;
+}> {
+  try {
+    const { data, error } = await supabase.rpc('obtener_contexto_urobot', {
+      p_telefono: telefono,
+    });
+
+    if (error) {
+      console.error('Error al obtener contexto:', error);
+      return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { 
+        success: true, 
+        contexto: {
+          historialConversacion: 'Primera conversación con este paciente.',
+          tieneCitaPendiente: false,
+          infoCita: '',
+          nombrePaciente: '',
+          esPacienteConocido: false,
+        }
+      };
+    }
+
+    const row = data[0];
+    return {
+      success: true,
+      contexto: {
+        historialConversacion: row.historial_conversacion || '',
+        tieneCitaPendiente: row.tiene_cita_pendiente || false,
+        infoCita: row.info_cita || '',
+        nombrePaciente: row.nombre_paciente || '',
+        esPacienteConocido: row.es_paciente_conocido || false,
+      }
+    };
+  } catch (error) {
+    console.error('Error inesperado al obtener contexto:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    };
   }
 }

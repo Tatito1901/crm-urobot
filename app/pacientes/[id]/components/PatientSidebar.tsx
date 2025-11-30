@@ -9,17 +9,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Phone, Mail, Calendar, AlertCircle, Pill, FileText, ChevronDown, ChevronUp, Target, CheckCircle, Scissors, DollarSign, Plus } from 'lucide-react';
+import { Phone, Mail, Calendar, ChevronDown, ChevronUp, Target, CheckCircle, Scissors, DollarSign, Plus, FileText } from 'lucide-react';
 import { type PacienteDetallado } from '@/hooks/usePacienteDetallado';
 import { DESTINO_LABELS, DESTINO_COLORS, type TipoDestino } from '@/types/destinos-pacientes';
 import { DestinoPacienteModal } from './DestinoPacienteModal';
-
-// Tipos locales para el sidebar (compatibilidad con UI existente)
-interface InformacionMedica {
-  alergias?: string[];
-  medicamentos?: string[];
-  condiciones?: string[];
-}
 
 interface PresupuestoUI {
   monto: number;
@@ -50,7 +43,6 @@ type DestinoPaciente = DestinoPacienteUI;
 interface PatientSidebarProps {
   paciente: PacienteDetallado;
   onUpdateNotas?: (notas: string) => void;
-  onUpdateInfoMedica?: (info: InformacionMedica) => void;
   onUpdateDestino?: (destino: DestinoPaciente) => void;
 }
 
@@ -59,7 +51,6 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
   onUpdateNotas,
   onUpdateDestino,
 }) => {
-  const [showMedicalInfo, setShowMedicalInfo] = useState(true);
   const [showDestino, setShowDestino] = useState(true);
   const [isEditingNotas, setIsEditingNotas] = useState(false);
   const [notas, setNotas] = useState(paciente.notas || '');
@@ -404,55 +395,6 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
         )}
       </div>
 
-      {/* Información médica */}
-      <div className="flex-1">
-        <button
-          onClick={() => setShowMedicalInfo(!showMedicalInfo)}
-          className="w-full px-4 py-3 flex items-center justify-between bg-background hover:bg-muted/30 transition-colors border-b border-border"
-        >
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ficha Médica</h3>
-          {showMedicalInfo ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
-
-        {showMedicalInfo && (
-          <div className="p-4 space-y-5">
-            {/* Alergias */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="h-3.5 w-3.5 text-rose-500" />
-                <h4 className="text-xs font-semibold text-foreground">Alergias</h4>
-              </div>
-              <p className="text-xs text-muted-foreground pl-5">No registra alergias conocidas</p>
-            </div>
-
-            {/* Medicación */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Pill className="h-3.5 w-3.5 text-blue-500" />
-                <h4 className="text-xs font-semibold text-foreground">Medicación Actual</h4>
-              </div>
-              <p className="text-xs text-muted-foreground pl-5">No registra medicación activa</p>
-            </div>
-
-            {/* Antecedentes médicos */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <FileText className="h-3.5 w-3.5 text-emerald-500" />
-                <h4 className="text-xs font-semibold text-foreground">Antecedentes</h4>
-              </div>
-              <p className="text-xs text-muted-foreground pl-5">Sin antecedentes relevantes</p>
-            </div>
-            
-            <p className="text-[10px] text-muted-foreground/60 italic text-center">
-              Información médica no disponible en BD actual
-            </p>
-          </div>
-        )}
-      </div>
 
       {/* Footer con metadata */}
       <div className="p-4 border-t border-border bg-muted/10">

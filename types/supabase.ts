@@ -35,6 +35,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversaciones: {
+        Row: {
+          id: string
+          telefono: string
+          rol: "usuario" | "asistente"
+          mensaje: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          telefono: string
+          rol: "usuario" | "asistente"
+          mensaje: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          telefono?: string
+          rol?: "usuario" | "asistente"
+          mensaje?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       consultas: {
         Row: {
           calendar_event_id: string | null
@@ -442,6 +466,26 @@ export type Database = {
         }[]
       }
       get_dashboard_metrics: { Args: never; Returns: Json }
+      guardar_mensaje: {
+        Args: {
+          p_telefono: string
+          p_rol: string
+          p_mensaje: string
+        }
+        Returns: string
+      }
+      obtener_contexto_urobot: {
+        Args: {
+          p_telefono: string
+        }
+        Returns: {
+          historial_conversacion: string
+          tiene_cita_pendiente: boolean
+          info_cita: string
+          nombre_paciente: string
+          es_paciente_conocido: boolean
+        }[]
+      }
       get_recordatorios_pendientes: {
         Args: { p_fin: string; p_inicio: string; p_tipo: string }
         Returns: {

@@ -29,21 +29,25 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('citas');
   
   // Estado para notas
-  const [selectedConsultaId, setSelectedConsultaId] = useState<string | null>(null);
+  const [selectedConsulta, setSelectedConsulta] = useState<Consulta | null>(null);
   const [notaActual, setNotaActual] = useState('');
   const [isNotaModalOpen, setIsNotaModalOpen] = useState(false);
+  const [isLoadingNota, setIsLoadingNota] = useState(false);
 
-  const handleOpenNota = async (consultaId: string) => {
-    setSelectedConsultaId(consultaId);
-    // Cargar nota existente
-    const { nota } = await getNotaConsulta(consultaId);
-    setNotaActual(nota || '');
+  const handleOpenNota = async (consulta: Consulta) => {
+    setSelectedConsulta(consulta);
+    setIsLoadingNota(true);
     setIsNotaModalOpen(true);
+    
+    // Cargar nota existente
+    const { nota } = await getNotaConsulta(consulta.id);
+    setNotaActual(nota || '');
+    setIsLoadingNota(false);
   };
 
   const handleSaveNota = async (nota: string) => {
-    if (selectedConsultaId) {
-      await saveNotaConsulta(selectedConsultaId, nota);
+    if (selectedConsulta) {
+      await saveNotaConsulta(selectedConsulta.id, nota);
     }
   };
 
@@ -174,7 +178,7 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
                   {/* Botones de acción */}
                   <div className="flex gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                     <button
-                      onClick={() => handleOpenNota(consulta.id)}
+                      onClick={() => handleOpenNota(consulta)}
                       className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 rounded-lg text-sm transition-colors"
                     >
                       <StickyNote className="h-4 w-4 text-amber-500" />
@@ -253,10 +257,18 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
       {/* Modal de Notas */}
       <NotaConsultaModal
         isOpen={isNotaModalOpen}
-        onClose={() => setIsNotaModalOpen(false)}
+        onClose={() => {
+          setIsNotaModalOpen(false);
+          setSelectedConsulta(null);
+        }}
         onSave={handleSaveNota}
-        notaInicial={notaActual}
-        titulo={selectedConsultaId ? `Consulta del ${formatDate(consultas.find(c => c.id === selectedConsultaId)?.fechaConsulta || '')}` : ''}
+        notaInicial={isLoadingNota ? '' : notaActual}
+        titulo={selectedConsulta ? `Consulta del ${formatDate(selectedConsulta.fechaConsulta)}` : ''}
+        consulta={selectedConsulta ? {
+          tipoCita: selectedConsulta.tipoCita || undefined,
+          motivoConsulta: selectedConsulta.motivoConsulta || undefined,
+          sede: selectedConsulta.sede || undefined,
+        } : undefined}
       />
     </div>
   );

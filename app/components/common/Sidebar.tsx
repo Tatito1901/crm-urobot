@@ -14,6 +14,7 @@ type NavItem = { readonly label: string; readonly href: string };
 const navItems: readonly NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Agenda", href: "/agenda" },
+  { label: "Conversaciones", href: "/conversaciones" },
   { label: "Leads", href: "/leads" },
   { label: "Pacientes", href: "/pacientes" },
   { label: "Consultas", href: "/consultas" },
