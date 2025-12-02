@@ -1,16 +1,15 @@
 'use client';
 
-import { useMemo, useState, useCallback, memo } from 'react';
+import { useCallback, memo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent } from '@/components/ui/card';
-import { usePacientes } from '@/hooks/usePacientes';
+import { usePacientesPaginated } from '@/hooks/usePacientesPaginated';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
-import { Pagination } from '@/app/components/common/Pagination';
+import { PaginationControls } from '@/app/components/common/PaginationControls';
 import { cards } from '@/app/lib/design-system';
-import { Users, UserCheck, UserPlus, AlertCircle, Search, RefreshCw } from 'lucide-react';
+import { Users, UserCheck, UserPlus, AlertCircle, Search, RefreshCw, Loader2 } from 'lucide-react';
 import { PacientesTable } from './components/PacientesTable';
 
 // Interface para las estadísticas
@@ -19,7 +18,6 @@ interface PacientesStats {
   activos: number;
   inactivos: number;
   recientes: number;
-  requierenAtencion: number;
   conConsultas: number;
   sinConsultas: number;
 }
@@ -30,17 +28,17 @@ const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, load
     return (
       <div className="flex gap-2 flex-wrap">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-8 w-24 bg-muted rounded " />
+          <div key={i} className="h-8 w-24 bg-muted rounded animate-pulse" />
         ))}
       </div>
     );
   }
 
   const metrics = [
-    { icon: Users, value: stats.total, label: 'Total', color: 'text-slate-600 dark:text-slate-300' },
+    { icon: Users, value: stats.total, label: 'Total', color: 'text-foreground' },
     { icon: UserCheck, value: stats.activos, label: 'Activos', color: 'text-emerald-600 dark:text-emerald-400' },
-    { icon: UserPlus, value: stats.recientes, label: 'Nuevos', color: 'text-blue-600 dark:text-blue-400' },
-    { icon: AlertCircle, value: stats.requierenAtencion, label: 'Atención', color: 'text-amber-600 dark:text-amber-400' },
+    { icon: UserPlus, value: stats.recientes, label: 'Nuevos (30d)', color: 'text-blue-600 dark:text-blue-400' },
+    { icon: AlertCircle, value: stats.sinConsultas, label: 'Sin citas', color: 'text-amber-600 dark:text-amber-400' },
   ];
 
   return (
@@ -48,7 +46,7 @@ const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, load
       {metrics.map((m) => (
         <div key={m.label} className="flex items-center gap-2 text-sm">
           <m.icon className={`w-4 h-4 ${m.color}`} />
-          <span className="font-semibold text-foreground">{m.value}</span>
+          <span className="font-semibold text-foreground">{m.value.toLocaleString()}</span>
           <span className="text-muted-foreground text-xs">{m.label}</span>
         </div>
       ))}
@@ -58,63 +56,34 @@ const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, load
 PacientesMetrics.displayName = 'PacientesMetrics';
 
 export default function PacientesPage() {
-  const [search, setSearch] = useState('');
-  const [inputValue, setInputValue] = useState('');
-  const [currentPage, setCurrentPage] = useState(0);
   const router = useRouter();
 
-  // ✅ OPTIMIZACIÓN: Debounce para búsqueda (300ms)
-  const debouncedSearch = useDebouncedCallback(useCallback((value: string) => {
-    setSearch(value);
-    setCurrentPage(0); // Resetear a primera página al buscar
-  }, []), 300);
-
-  // ✅ Datos reales de Supabase con estadísticas y métricas
-  const { pacientes, loading, error, refetch, stats } = usePacientes();
+  // ✅ OPTIMIZADO: Paginación del servidor (no carga todos los registros)
+  const { 
+    pacientes,
+    stats,
+    currentPage,
+    totalPages,
+    totalCount,
+    pageSize,
+    goToPage,
+    search,
+    setSearch,
+    estadoFilter,
+    setEstadoFilter,
+    isLoading,
+    isSearching,
+    error,
+    refresh,
+  } = usePacientesPaginated({ pageSize: 25 });
 
   const handlePacienteHover = useCallback((pacienteId: string) => {
     router.prefetch(`/pacientes/${pacienteId}`);
   }, [router]);
 
-  // ✅ OPTIMIZACIÓN: Filtrado eficiente con memoización
-  const filteredPacientes = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    
-    // Si no hay búsqueda, retornar directo
-    if (!term) return pacientes;
-    
-    // Filtrar por término de búsqueda
-    return pacientes.filter((paciente) => {
-      const nombre = (paciente.nombre || paciente.nombreCompleto || '').toLowerCase();
-      const telefono = paciente.telefono;
-      const email = (paciente.email || '').toLowerCase();
-      
-      return nombre.includes(term) || telefono.includes(term) || email.includes(term);
-    });
-  }, [search, pacientes]);
-
-  // Paginación con 10 items por página
-  const itemsPerPage = 10;
-  
-  // Estado filter
-  const [estadoFilter, setEstadoFilter] = useState<'all' | 'Activo' | 'Inactivo'>('all');
-  
-  // Filtrado por estado
-  const filteredByEstado = useMemo(() => {
-    if (estadoFilter === 'all') return filteredPacientes;
-    return filteredPacientes.filter(p => p.estado === estadoFilter);
-  }, [filteredPacientes, estadoFilter]);
-  
-  // Paginación
-  const paginatedPacientes = useMemo(() => {
-    const start = currentPage * itemsPerPage;
-    return filteredByEstado.slice(start, start + itemsPerPage);
-  }, [filteredByEstado, currentPage]);
-  
-  const handleEstadoFilterChange = useCallback((newFilter: typeof estadoFilter) => {
+  const handleEstadoFilterChange = useCallback((newFilter: '' | 'Activo' | 'Inactivo') => {
     setEstadoFilter(newFilter);
-    setCurrentPage(0);
-  }, []);
+  }, [setEstadoFilter]);
 
   return (
     <PageShell
@@ -130,22 +99,22 @@ export default function PacientesPage() {
         {/* Barra superior: Búsqueda + Métricas + Filtros */}
         <div className="p-4 border-b border-border bg-muted/30">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-            {/* Barra de búsqueda larga */}
+            {/* Barra de búsqueda con indicador de loading */}
             <div className="relative flex-1 max-w-xl">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
-                value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value);
-                  debouncedSearch(e.target.value);
-                }}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por nombre, teléfono o correo..."
-                className="w-full pl-10 pr-4 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                className="w-full pl-10 pr-10 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
               />
+              {isSearching && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />
+              )}
             </div>
 
-            {/* Métricas inline */}
-            <PacientesMetrics stats={stats} loading={loading} />
+            {/* Métricas inline (calculadas en servidor) */}
+            <PacientesMetrics stats={stats} loading={isLoading && !pacientes.length} />
           </div>
 
           {/* Filtros y acciones */}
@@ -154,12 +123,12 @@ export default function PacientesPage() {
               {/* Filtros de estado */}
               <div className="flex bg-muted rounded-lg p-0.5 border border-border">
                 {[
-                  { key: 'all' as const, label: 'Todos' },
+                  { key: '' as const, label: 'Todos' },
                   { key: 'Activo' as const, label: 'Activos' },
                   { key: 'Inactivo' as const, label: 'Inactivos' },
                 ].map((option) => (
                   <button
-                    key={option.key}
+                    key={option.key || 'all'}
                     type="button"
                     onClick={() => handleEstadoFilterChange(option.key)}
                     className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
@@ -174,17 +143,17 @@ export default function PacientesPage() {
               </div>
 
               <span className="text-xs text-muted-foreground">
-                {filteredByEstado.length} pacientes
+                {totalCount.toLocaleString()} pacientes
               </span>
             </div>
 
             <button
-              onClick={() => refetch()}
-              disabled={loading}
+              onClick={() => refresh()}
+              disabled={isLoading}
               className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
               title="Recargar datos"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -192,10 +161,10 @@ export default function PacientesPage() {
         {/* Tabla */}
         <CardContent className="p-0">
           <ContentLoader
-            loading={loading}
+            loading={isLoading && !pacientes.length}
             error={error}
-            onRetry={refetch}
-            isEmpty={filteredPacientes.length === 0}
+            onRetry={refresh}
+            isEmpty={pacientes.length === 0 && !isLoading}
             minHeight="min-h-[300px]"
             skeleton={<TableContentSkeleton rows={5} />}
             emptyState={
@@ -208,18 +177,20 @@ export default function PacientesPage() {
             }
           >
             <PacientesTable
-              pacientes={paginatedPacientes}
+              pacientes={pacientes}
               emptyMessage={search ? 'Sin coincidencias.' : 'No hay pacientes.'}
               onHover={handlePacienteHover}
             />
             
-            {/* Paginación Reutilizable Consistente */}
+            {/* Paginación del servidor */}
             <div className="px-4 py-3 border-t border-border bg-muted/20">
-              <Pagination
+              <PaginationControls
                 currentPage={currentPage}
-                totalItems={filteredByEstado.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={goToPage}
+                isLoading={isLoading}
               />
             </div>
           </ContentLoader>

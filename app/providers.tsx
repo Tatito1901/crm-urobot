@@ -4,38 +4,47 @@ import { ReactNode } from 'react'
 import { SWRConfig } from 'swr'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ThemeProvider } from '@/components/providers/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
+import { localStorageProvider } from '@/lib/swr-config'
 
 /**
- * Configuración global SWR - Base conservadora
- * Los hooks individuales pueden hacer override con configs más específicas
+ * ============================================================
+ * CONFIGURACIÓN GLOBAL SWR - OPTIMIZADA PARA AHORRO DE API
+ * ============================================================
  * 
- * IMPORTANTE: Esta config aplica como fallback para hooks sin config propia
+ * ESTRATEGIA:
+ * 1. Cache persistente en localStorage (sobrevive recargas)
+ * 2. Deduplicación agresiva (15 min)
+ * 3. NO revalidación automática (solo manual o Realtime)
+ * 4. Retry mínimo para no saturar en errores
  */
 const swrConfig = {
-  // ✅ Deduplicación: Previene múltiples requests al mismo endpoint
-  dedupingInterval: 5 * 60 * 1000, // 5 minutos - sincronizado con hooks
+  // ✅ Cache persistente en localStorage
+  provider: localStorageProvider,
   
-  // ✅ Throttle: Limita frecuencia de revalidación al volver al tab
-  focusThrottleInterval: 60 * 1000, // 1 minuto mínimo entre revalidaciones
+  // ✅ Deduplicación agresiva: 15 minutos
+  dedupingInterval: 15 * 60 * 1000,
   
-  // ✅ Comportamiento conservador por defecto (hooks pueden override)
+  // ✅ Throttle al volver al tab: 5 minutos mínimo
+  focusThrottleInterval: 5 * 60 * 1000,
+  
+  // ❌ NO revalidar automáticamente (ahorro masivo)
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
   revalidateIfStale: false,
   
-  // ✅ Mantener datos previos para evitar parpadeos
+  // ✅ Mantener datos previos (UX sin parpadeos)
   keepPreviousData: true,
   
-  // ✅ Retry con backoff para errores de red
+  // ✅ Retry mínimo (1 intento, esperar 5s)
   shouldRetryOnError: true,
-  errorRetryCount: 2,
+  errorRetryCount: 1,
   errorRetryInterval: 5000,
   
-  // Handler de errores global (para monitoring)
+  // Handler de errores (solo dev)
   onError: (error: Error, key: string) => {
-    // Solo loguear en desarrollo
     if (process.env.NODE_ENV === 'development') {
-      console.error('SWR Error:', key, error.message)
+      console.warn('[SWR]', key, error.message)
     }
   },
 }
@@ -50,6 +59,7 @@ export function Providers({ children }: ProvidersProps) {
       <SWRConfig value={swrConfig}>
         <TooltipProvider delayDuration={200}>
           {children}
+          <Toaster position="top-right" richColors closeButton />
         </TooltipProvider>
       </SWRConfig>
     </ThemeProvider>

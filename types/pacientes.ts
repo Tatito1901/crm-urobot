@@ -3,7 +3,7 @@
  * TIPOS PACIENTES - SINCRONIZADO CON BD REAL
  * ============================================================
  * Fuente de verdad: Supabase tabla 'pacientes'
- * Última sync: 2025-11-28
+ * Última sync: 2025-12-01
  */
 
 import type { Tables, Views } from './database';

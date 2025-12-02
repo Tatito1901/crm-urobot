@@ -22,7 +22,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
         {payload?.map((p: { name: string; value: number | string; payload: { fill: string } }, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1 last:mb-0 min-w-[120px]">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.payload.fill }} />
-            <span className="text-slate-500 dark:text-slate-400">{p.name}:</span>
+            <span className="text-foreground">{p.name}:</span>
             <span className="font-medium text-slate-900 dark:text-white ml-auto">{p.value}</span>
           </div>
         ))}

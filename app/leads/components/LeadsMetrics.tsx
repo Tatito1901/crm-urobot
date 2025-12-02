@@ -51,7 +51,7 @@ export const LeadsMetrics = React.memo(function LeadsMetrics({ stats, loading }:
           <UserPlus className="w-12 h-12 text-blue-400" />
         </div>
         <div>
-          <div className="text-xs text-blue-500 dark:text-blue-300 mb-1 font-medium flex items-center gap-1">
+          <div className="text-xs text-foreground mb-1 font-medium flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
             Nuevos
           </div>

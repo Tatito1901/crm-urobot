@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { Temporal } from '@js-temporal/polyfill';
 import { formatTimeRange, getStatusConfig } from '../../lib/agenda-utils';
 import { useColorPreferences } from '../../hooks/useColorPreferences';
@@ -27,6 +27,14 @@ export const ListView: React.FC<ListViewProps> = ({
   const todayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { sedeColors } = useColorPreferences();
+  
+  // Estado para fecha actual (evitar hydration mismatch)
+  const [todayDate, setTodayDate] = useState<{year: number, month: number, day: number} | null>(null);
+  
+  useEffect(() => {
+    const now = new Date();
+    setTodayDate({ year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() });
+  }, []);
   
   // Agrupar citas por fecha
   const groupedAppointments = useMemo(() => {
@@ -84,8 +92,8 @@ export const ListView: React.FC<ListViewProps> = ({
             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
           />
         </svg>
-        <p className="text-lg text-slate-400 font-medium">No hay consultas en este rango</p>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-lg text-foreground font-medium">No hay consultas en este rango</p>
+        <p className="text-sm text-muted-foreground mt-1">
           {new Date(dateRange.start).toLocaleDateString('es-MX')} -{' '}
           {new Date(dateRange.end).toLocaleDateString('es-MX')}
         </p>
@@ -122,10 +130,11 @@ export const ListView: React.FC<ListViewProps> = ({
         } de ${date.year}`;
         
         // Verificar si es hoy
-        const today = new Date();
-        const isToday = date.year === today.getFullYear() && 
-                       date.month === (today.getMonth() + 1) && 
-                       date.day === today.getDate();
+        const isToday = todayDate ? (
+          date.year === todayDate.year && 
+          date.month === todayDate.month && 
+          date.day === todayDate.day
+        ) : false;
         
         const viewDensity = 'comfortable' as 'comfortable' | 'compact';
 

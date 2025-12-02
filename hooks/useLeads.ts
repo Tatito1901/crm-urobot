@@ -7,6 +7,7 @@
  * ✅ Realtime: Actualización automática cuando n8n modifica la tabla
  */
 
+import { useMemo } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { type Lead, type LeadRow } from '@/types/leads'
@@ -93,20 +94,15 @@ const fetchLeads = async (): Promise<{ leads: Lead[], count: number }> => {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('❌ Error fetching leads:', error)
     throw error
   }
 
-  // Validar que data existe
   if (!data) {
-    console.warn('⚠️ No data returned from leads query')
     return { leads: [], count: 0 }
   }
 
   // Mapear y validar cada lead
   const leads = (data as unknown as LeadRowWithPaciente[]).map(mapLead)
-  
-  console.log(`✅ Leads fetched: ${leads.length} (total in DB: ${count})`)
   
   return { leads, count: count || leads.length }
 }
@@ -129,17 +125,40 @@ export function useLeads(): UseLeadsReturn {
 
   const leads = data?.leads || []
   
-  // Calcular estadísticas (usando estados reales de BD)
-  const stats = {
-    total: leads.length,
-    nuevos: leads.filter(l => l.estado === 'Nuevo').length,
-    enSeguimiento: leads.filter(l => ['Contactado', 'Interesado', 'Calificado'].includes(l.estado)).length,
-    convertidos: leads.filter(l => l.estado === 'Convertido').length,
-    descartados: leads.filter(l => ['No_Interesado', 'Perdido'].includes(l.estado)).length,
-    clientes: leads.filter(l => l.esCliente).length,
-    calientes: leads.filter(l => l.esCaliente).length,
-    inactivos: leads.filter(l => l.esInactivo).length,
-  }
+  // ✅ OPTIMIZACIÓN: Single-pass memoizado para todas las estadísticas
+  const stats = useMemo(() => {
+    let nuevos = 0, enSeguimiento = 0, convertidos = 0, descartados = 0
+    let clientes = 0, calientes = 0, inactivos = 0
+    
+    for (const l of leads) {
+      // Estado
+      switch (l.estado) {
+        case 'Nuevo': nuevos++; break
+        case 'Contactado':
+        case 'Interesado':
+        case 'Calificado': enSeguimiento++; break
+        case 'Convertido': convertidos++; break
+        case 'No_Interesado':
+        case 'Perdido': descartados++; break
+      }
+      
+      // Flags
+      if (l.esCliente) clientes++
+      if (l.esCaliente) calientes++
+      if (l.esInactivo) inactivos++
+    }
+    
+    return {
+      total: leads.length,
+      nuevos,
+      enSeguimiento,
+      convertidos,
+      descartados,
+      clientes,
+      calientes,
+      inactivos,
+    }
+  }, [leads])
 
   return {
     leads,

@@ -115,14 +115,14 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
               <span className="text-white font-semibold">
                 {startTime} - {endTime}
               </span>
-              <span className="text-slate-500 text-[10px]">
+              <span className="text-muted-foreground">
                 ({appointment.duracionMinutos} min)
               </span>
             </div>
           </div>
 
           {/* Separador */}
-          <div className="border-t border-slate-700/50" />
+          <div className="border-border/50" />
 
           {/* Detalles */}
           <div className="space-y-2">
@@ -136,7 +136,7 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
             {appointment.tipo && (
               <div className="flex items-center gap-2 text-xs">
                 <User className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                <span className="text-slate-300 capitalize bg-slate-800 px-1.5 py-0.5 rounded">
+                <span className="text-foreground px-1.5 py-0.5 rounded">
                   {appointment.tipo.replace(/_/g, ' ')}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export const AppointmentTooltip: React.FC<AppointmentTooltipProps> = ({
           {/* Contacto rápido */}
           {(appointment.telefono || appointment.email) && (
             <>
-              <div className="border-t border-slate-700/50" />
+              <div className="border-border/50" />
               <div className="space-y-1.5">
                 {appointment.telefono && (
                   <div className="flex items-center gap-2 text-[11px]">

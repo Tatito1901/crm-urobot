@@ -10,7 +10,7 @@ const STATUS_COLORS = {
   sent: 'border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-400/60 dark:bg-emerald-500/15 dark:text-emerald-300',
   failed: 'border-red-200 bg-red-100 text-red-700 dark:border-red-400/60 dark:bg-red-500/15 dark:text-red-300',
   processing: 'border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-400/60 dark:bg-blue-500/15 dark:text-blue-300',
-  cancelled: 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-400/60 dark:bg-slate-500/15 dark:text-slate-300',
+  cancelled: 'border-slate-200 bg-slate-100 text-foreground/60 dark:bg-slate-500/15 dark:text-slate-300',
 } as const;
 
 const STATUS_LABELS: Record<string, string> = {
@@ -62,16 +62,16 @@ export const ConfirmacionesTable = React.memo(function ConfirmacionesTable({
     ),
     paciente: (
       <div className="flex flex-col gap-0.5 sm:gap-1 min-w-[140px] sm:min-w-[180px]">
-        <span className="font-medium text-slate-900 dark:text-white text-xs sm:text-sm leading-tight">
+        <span className="font-medium text-foreground text-xs sm:text-sm leading-tight">
           {recordatorio.pacienteNombre || 'Sin paciente'}
         </span>
-        <span className="text-[9px] sm:text-[10px] text-slate-500 dark:text-white/40 uppercase tracking-wide">
+        <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">
           {recordatorio.sede || ''}
         </span>
       </div>
     ),
     consulta: (
-      <span className="font-mono text-[10px] text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-transparent">
+      <span className="font-mono text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-transparent">
         {recordatorio.consultaId?.slice(0, 8) || 'N/A'}
       </span>
     ),
@@ -90,7 +90,7 @@ export const ConfirmacionesTable = React.memo(function ConfirmacionesTable({
     ),
     canal: (
       <div className="flex justify-center sm:justify-start">
-        <Badge label="WhatsApp" variant="outline" className="border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400" />
+        <Badge label="WhatsApp" variant="outline" className="border-border text-muted-foreground" />
       </div>
     ),
   })), [recordatorios]);

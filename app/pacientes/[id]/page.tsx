@@ -197,12 +197,10 @@ export default function PacientePerfilPage() {
         `}>
           <PatientHistory
             consultas={consultas}
-            onModificarCita={(consultaId) => {
-              console.log('Modificar cita:', consultaId);
+            onModificarCita={() => {
               // TODO: Abrir modal de edición de cita
             }}
-            onVerEpisodio={(consultaId) => {
-              console.log('Ver episodio:', consultaId);
+            onVerEpisodio={() => {
               // TODO: Abrir episodio clínico
             }}
           />

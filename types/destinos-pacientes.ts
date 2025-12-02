@@ -3,7 +3,7 @@
  * TIPOS DESTINOS PACIENTES - HISTORIAL DE ACCIONES
  * ============================================================
  * Fuente de verdad: Supabase tabla 'destinos_pacientes'
- * Última sync: 2025-11-28
+ * Última sync: 2025-12-01
  */
 
 import type { Tables } from './database';

@@ -14,48 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
-      conocimiento_procedimientos_urologia_v2: {
+      conocimiento_procedimientos_urologia: {
         Row: {
           content: string | null
           embedding: string | null
           id: string
           metadata: Json | null
+          tsv: unknown
         }
         Insert: {
           content?: string | null
           embedding?: string | null
           id?: string
           metadata?: Json | null
+          tsv?: unknown
         }
         Update: {
           content?: string | null
           embedding?: string | null
           id?: string
           metadata?: Json | null
-        }
-        Relationships: []
-      }
-      conversaciones: {
-        Row: {
-          id: string
-          telefono: string
-          rol: "usuario" | "asistente"
-          mensaje: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          telefono: string
-          rol: "usuario" | "asistente"
-          mensaje: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          telefono?: string
-          rol?: "usuario" | "asistente"
-          mensaje?: string
-          created_at?: string
+          tsv?: unknown
         }
         Relationships: []
       }
@@ -63,6 +42,7 @@ export type Database = {
         Row: {
           calendar_event_id: string | null
           calendar_link: string | null
+          cancelado_por: string | null
           confirmado_paciente: boolean | null
           consulta_id: string | null
           created_at: string | null
@@ -75,6 +55,7 @@ export type Database = {
           paciente_id: string | null
           recordatorio_24h_enviado: boolean | null
           recordatorio_2h_enviado: boolean | null
+          recordatorio_48h_enviado: boolean | null
           sede: string | null
           tipo_cita: string | null
           updated_at: string | null
@@ -82,6 +63,7 @@ export type Database = {
         Insert: {
           calendar_event_id?: string | null
           calendar_link?: string | null
+          cancelado_por?: string | null
           confirmado_paciente?: boolean | null
           consulta_id?: string | null
           created_at?: string | null
@@ -94,6 +76,7 @@ export type Database = {
           paciente_id?: string | null
           recordatorio_24h_enviado?: boolean | null
           recordatorio_2h_enviado?: boolean | null
+          recordatorio_48h_enviado?: boolean | null
           sede?: string | null
           tipo_cita?: string | null
           updated_at?: string | null
@@ -101,6 +84,7 @@ export type Database = {
         Update: {
           calendar_event_id?: string | null
           calendar_link?: string | null
+          cancelado_por?: string | null
           confirmado_paciente?: boolean | null
           consulta_id?: string | null
           created_at?: string | null
@@ -113,6 +97,7 @@ export type Database = {
           paciente_id?: string | null
           recordatorio_24h_enviado?: boolean | null
           recordatorio_2h_enviado?: boolean | null
+          recordatorio_48h_enviado?: boolean | null
           sede?: string | null
           tipo_cita?: string | null
           updated_at?: string | null
@@ -140,6 +125,62 @@ export type Database = {
             referencedColumns: ["sede"]
           },
         ]
+      }
+      consultas_notas: {
+        Row: {
+          consulta_id: string
+          created_at: string | null
+          id: string
+          nota: string
+          updated_at: string | null
+        }
+        Insert: {
+          consulta_id: string
+          created_at?: string | null
+          id?: string
+          nota: string
+          updated_at?: string | null
+        }
+        Update: {
+          consulta_id?: string
+          created_at?: string | null
+          id?: string
+          nota?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultas_notas_consulta_id_fkey"
+            columns: ["consulta_id"]
+            isOneToOne: true
+            referencedRelation: "consultas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversaciones: {
+        Row: {
+          created_at: string | null
+          id: string
+          mensaje: string
+          rol: string
+          telefono: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mensaje: string
+          rol: string
+          telefono: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mensaje?: string
+          rol?: string
+          telefono?: string
+        }
+        Relationships: []
       }
       destinos_pacientes: {
         Row: {
@@ -233,6 +274,7 @@ export type Database = {
           fecha_primer_contacto?: string | null
           fuente_lead?: string | null
           id?: string
+          nombre_completo?: string | null
           notas_iniciales?: string | null
           paciente_id?: string | null
           session_id?: string | null
@@ -249,6 +291,7 @@ export type Database = {
           fecha_primer_contacto?: string | null
           fuente_lead?: string | null
           id?: string
+          nombre_completo?: string | null
           notas_iniciales?: string | null
           paciente_id?: string | null
           session_id?: string | null
@@ -274,6 +317,24 @@ export type Database = {
           },
         ]
       }
+      n8n_chat_histories: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
       notification_queue: {
         Row: {
           attempt_count: number | null
@@ -285,6 +346,9 @@ export type Database = {
           metadata: Json | null
           next_attempt_at: string | null
           phone_number: string
+          priority: number | null
+          reminder_type: string | null
+          sent_at: string | null
           status: Database["public"]["Enums"]["notification_status"] | null
           updated_at: string | null
         }
@@ -298,6 +362,9 @@ export type Database = {
           metadata?: Json | null
           next_attempt_at?: string | null
           phone_number: string
+          priority?: number | null
+          reminder_type?: string | null
+          sent_at?: string | null
           status?: Database["public"]["Enums"]["notification_status"] | null
           updated_at?: string | null
         }
@@ -311,6 +378,9 @@ export type Database = {
           metadata?: Json | null
           next_attempt_at?: string | null
           phone_number?: string
+          priority?: number | null
+          reminder_type?: string | null
+          sent_at?: string | null
           status?: Database["public"]["Enums"]["notification_status"] | null
           updated_at?: string | null
         }
@@ -413,6 +483,7 @@ export type Database = {
           direccion: string | null
           display_name: string | null
           horario_json: Json | null
+          instrucciones_llegada: string | null
           maps_url: string | null
           sede: string
           timezone: string | null
@@ -425,6 +496,7 @@ export type Database = {
           direccion?: string | null
           display_name?: string | null
           horario_json?: Json | null
+          instrucciones_llegada?: string | null
           maps_url?: string | null
           sede: string
           timezone?: string | null
@@ -437,6 +509,7 @@ export type Database = {
           direccion?: string | null
           display_name?: string | null
           horario_json?: Json | null
+          instrucciones_llegada?: string | null
           maps_url?: string | null
           sede?: string
           timezone?: string | null
@@ -460,31 +533,41 @@ export type Database = {
     }
     Functions: {
       cancelar_citas_sin_confirmar: {
-        Args: never
+        Args: Record<string, never>
         Returns: {
           canceladas: number
           ids: string[]
         }[]
       }
-      get_dashboard_metrics: { Args: never; Returns: Json }
-      guardar_mensaje: {
-        Args: {
-          p_telefono: string
-          p_rol: string
-          p_mensaje: string
-        }
-        Returns: string
-      }
-      obtener_contexto_urobot: {
-        Args: {
-          p_telefono: string
-        }
+      get_consultas_stats: {
+        Args: Record<string, never>
         Returns: {
-          historial_conversacion: string
-          tiene_cita_pendiente: boolean
-          info_cita: string
-          nombre_paciente: string
-          es_paciente_conocido: boolean
+          confirmadas: number
+          hoy: number
+          pendientes: number
+          total: number
+        }[]
+      }
+      get_dashboard_metrics: {
+        Args: Record<string, never>
+        Returns: Json
+      }
+      get_leads_stats: {
+        Args: Record<string, never>
+        Returns: {
+          calientes: number
+          convertidos: number
+          nuevos: number
+          total: number
+        }[]
+      }
+      get_pacientes_stats: {
+        Args: Record<string, never>
+        Returns: {
+          activos: number
+          nuevos_mes: number
+          recurrentes: number
+          total: number
         }[]
       }
       get_recordatorios_pendientes: {
@@ -499,6 +582,10 @@ export type Database = {
           reminder_type: string
           sede: string
         }[]
+      }
+      guardar_mensaje: {
+        Args: { p_mensaje: string; p_rol: string; p_telefono: string }
+        Returns: string
       }
       identificar_paciente_por_telefono: {
         Args: { p_telefono: string }
@@ -515,13 +602,57 @@ export type Database = {
         Args: { p_consulta_id: string; p_tipo: string }
         Returns: undefined
       }
-      match_documents: {
-        Args: { filter: Json; match_count: number; query_embedding: string }
+      match_documents:
+        | {
+            Args: { filter: Json; match_count: number; query_embedding: string }
+            Returns: {
+              content: string
+              id: string
+              metadata: Json
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              match_count?: number
+              match_threshold?: number
+              query_embedding: string
+            }
+            Returns: {
+              content: string
+              id: string
+              metadata: Json
+              similarity: number
+            }[]
+          }
+      match_documents_hybrid: {
+        Args: {
+          keyword_weight?: number
+          match_count?: number
+          query_embedding: string
+          query_text: string
+          semantic_weight?: number
+        }
         Returns: {
           content: string
           id: string
+          match_type: string
           metadata: Json
           similarity: number
+        }[]
+      }
+      normalizar_telefono: {
+        Args: { p_telefono: string }
+        Returns: string
+      }
+      obtener_contexto_urobot: {
+        Args: { p_telefono: string }
+        Returns: {
+          es_paciente_conocido: boolean
+          historial_conversacion: string
+          info_cita: string
+          nombre_paciente: string
+          tiene_cita_pendiente: boolean
         }[]
       }
       procesar_recordatorios_batch: {
@@ -531,6 +662,27 @@ export type Database = {
           p_ventana_horas_inicio: number
         }
         Returns: number
+      }
+      procesar_recordatorios_batch_v2: {
+        Args: {
+          p_horas_max: number
+          p_horas_min: number
+          p_tipo_recordatorio: string
+        }
+        Returns: {
+          insertados: number
+          tipo: string
+        }[]
+      }
+      procesar_respuesta_rapida: {
+        Args: { p_mensaje: string; p_telefono: string }
+        Returns: {
+          accion: string
+          calendar_event_id: string
+          calendar_id: string
+          es_accion_rapida: boolean
+          respuesta: string
+        }[]
       }
       reagendar_consulta_atomica: {
         Args: {
@@ -547,7 +699,46 @@ export type Database = {
         }
         Returns: Json
       }
-      to_mx10: { Args: { input_phone: string }; Returns: string }
+      registrar_paciente_confirmado: {
+        Args: { p_nombre_real: string; p_telefono: string }
+        Returns: Json
+      }
+      search_leads: {
+        Args: {
+          p_estado?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
+        Returns: {
+          data: Json
+          total_count: number
+        }[]
+      }
+      search_pacientes: {
+        Args: {
+          p_estado?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
+        Returns: {
+          data: Json
+          total_count: number
+        }[]
+      }
+      show_limit: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
+      }
+      to_mx10: {
+        Args: { input_phone: string }
+        Returns: string
+      }
       upsert_appointment_atomic_from_calendar: {
         Args: {
           p_calendar_event_id: string

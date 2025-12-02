@@ -12,6 +12,10 @@ import { MessageBubble } from './components/MessageBubble'
 export default function ConversacionesPage() {
   const searchParams = useSearchParams()
   const telefonoParam = searchParams.get('telefono')
+  
+  // Estado para evitar hydration mismatch
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const {
     conversaciones,
@@ -21,7 +25,9 @@ export default function ConversacionesPage() {
     isLoading,
     isLoadingMensajes,
     refetch,
+    error,
   } = useConversaciones()
+  
 
   // Auto-seleccionar teléfono si viene en URL
   useEffect(() => {
@@ -85,7 +91,7 @@ export default function ConversacionesPage() {
   const getTipoBadge = (tipo: string) => {
     if (tipo === 'paciente') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-foreground border border-blue-200 dark:border-blue-800">
           <UserCheck className="w-3 h-3" />
           Paciente
         </span>
@@ -109,7 +115,7 @@ export default function ConversacionesPage() {
         <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border bg-background flex items-center justify-between">
           <h1 className="text-lg font-bold text-foreground tracking-tight">Mensajes</h1>
           <button onClick={() => refetch()} className="p-2">
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${mounted && isLoading ? 'animate-spin' : ''}`} />
           </button>
         </header>
       )}
@@ -128,7 +134,7 @@ export default function ConversacionesPage() {
           <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-border/50">
             <h2 className="font-semibold">Mensajes</h2>
             <button onClick={() => refetch()} title="Actualizar" className="text-muted-foreground hover:text-foreground">
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${mounted && isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
@@ -150,7 +156,18 @@ export default function ConversacionesPage() {
 
           {/* Lista Virtualizada (Simulada con map simple pero memoizada) */}
           <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-muted/50 hover:scrollbar-thumb-muted">
-            {isLoading ? (
+            {error ? (
+              <div className="p-4 text-center text-red-500">
+                <p className="text-sm font-medium">Error al cargar</p>
+                <p className="text-xs mt-1 opacity-70">{error.message}</p>
+                <button 
+                  onClick={() => refetch()}
+                  className="mt-2 px-3 py-1 bg-red-100 dark:bg-red-900/30 rounded text-xs"
+                >
+                  Reintentar
+                </button>
+              </div>
+            ) : !mounted || isLoading ? (
               <div className="p-4 space-y-4">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="flex items-center gap-3 animate-pulse">
@@ -180,6 +197,9 @@ export default function ConversacionesPage() {
                     ultimoMensaje={conv.ultimoMensaje}
                     ultimaFecha={conv.ultimaFecha}
                     tipoContacto={conv.tipoContacto}
+                    estadoLead={conv.estadoLead}
+                    citasValidas={conv.citasValidas}
+                    totalMensajes={conv.totalMensajes}
                     isActive={conv.telefono === telefonoActivo}
                     onSelect={handleSelectConversation}
                   />

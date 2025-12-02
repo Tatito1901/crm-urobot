@@ -105,7 +105,6 @@ export async function createPatient(
       .single();
 
     if (insertError) {
-      console.error('Error al crear paciente:', insertError);
       return { success: false, error: insertError.message || 'Error al crear el paciente' };
     }
 
@@ -127,9 +126,8 @@ export async function createPatient(
           })
           .eq('id', existingLead.id);
       }
-    } catch (leadError) {
+    } catch {
       // No bloqueamos la creación del paciente si falla la actualización del lead
-      console.warn('Error al actualizar lead asociado:', leadError);
     }
 
     // Mapear a tipo Paciente
@@ -137,7 +135,6 @@ export async function createPatient(
 
     return { success: true, data: paciente };
   } catch (error) {
-    console.error('Error inesperado al crear paciente:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido al crear el paciente',

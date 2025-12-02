@@ -10,7 +10,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import { SWR_CONFIG_STANDARD } from '@/lib/swr-config'
+import { SWR_CONFIG_REALTIME, CACHE_KEYS } from '@/lib/swr-config'
 import type { Tables } from '@/types/supabase'
 
 const supabase = createClient()
@@ -33,6 +33,10 @@ interface Conversacion {
   ultimaFecha: Date
   mensajesNoLeidos: number
   tipoContacto: 'paciente' | 'lead' | 'desconocido'
+  // Campos adicionales para UI enriquecida
+  estadoLead: string | null // 'Nuevo', 'Convertido', etc.
+  citasValidas: number
+  totalMensajes: number
 }
 
 interface UseConversacionesReturn {
@@ -51,10 +55,17 @@ interface UseConversacionesReturn {
 
 /**
  * Fetcher para lista de conversaciones agrupadas por teléfono
- * Incluye JOIN con pacientes para obtener nombres
+ * Incluye JOIN con pacientes, leads y consultas para determinar tipo correcto
+ * 
+ * Lógica de clasificación MEJORADA:
+ * - PACIENTE: Tiene al menos 1 cita NO cancelada (Programada, Completada, Confirmada)
+ * - LEAD: Existe en tabla leads O pacientes pero SIN citas válidas
+ * - DESCONOCIDO: Teléfono no está en ninguna tabla (visitante anónimo)
+ * 
+ * Prioridad de nombre: pacientes.nombre_completo > leads.nombre_completo
  */
 const fetchConversaciones = async (): Promise<Conversacion[]> => {
-  // 1. Obtener conversaciones
+  // 1. Obtener conversaciones (solo último mensaje por teléfono para optimizar)
   const { data: convData, error: convError } = await supabase
     .from('conversaciones')
     .select('telefono, mensaje, rol, created_at')
@@ -62,35 +73,119 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
 
   if (convError) throw convError
 
-  // 2. Obtener pacientes para hacer match por teléfono
+  // 2. Obtener pacientes con conteo de citas VÁLIDAS (excluyendo canceladas)
   const { data: pacientesData } = await supabase
     .from('pacientes')
-    .select('telefono, nombre_completo')
+    .select(`
+      id,
+      telefono, 
+      nombre_completo,
+      consultas:consultas(id, estado_cita)
+    `)
 
-  // Crear mapa de teléfonos a nombres (últimos 10 dígitos como key)
-  const pacientesMap = new Map<string, string>()
+  // 3. Obtener leads con estado y paciente_id para verificar conversiones
+  const { data: leadsData } = await supabase
+    .from('leads')
+    .select('telefono_whatsapp, nombre_completo, paciente_id, estado, fecha_conversion')
+
+  // Crear mapa de pacientes con conteo de citas VÁLIDAS
+  const pacientesMap = new Map<string, { 
+    id: string;
+    nombre: string; 
+    citasValidas: number;
+    citasTotales: number;
+  }>()
+  
   for (const p of pacientesData || []) {
-    if (p.telefono && p.nombre_completo) {
+    if (p.telefono) {
       const tel10 = p.telefono.replace(/\D/g, '').slice(-10)
-      pacientesMap.set(tel10, p.nombre_completo)
+      const citas = Array.isArray(p.consultas) ? p.consultas : []
+      
+      // Filtrar citas válidas (no canceladas)
+      const citasValidas = citas.filter((c: { estado_cita: string | null }) => 
+        c.estado_cita && !['Cancelada', 'No asistió'].includes(c.estado_cita)
+      ).length
+      
+      pacientesMap.set(tel10, {
+        id: p.id,
+        nombre: p.nombre_completo || '',
+        citasValidas,
+        citasTotales: citas.length
+      })
     }
   }
 
-  // 3. Agrupar conversaciones por teléfono
+  // Crear mapa de leads con info completa
+  const leadsMap = new Map<string, { 
+    nombre: string | null;
+    pacienteId: string | null;
+    estado: string | null;
+    fechaConversion: string | null;
+  }>()
+  
+  for (const l of leadsData || []) {
+    if (l.telefono_whatsapp) {
+      const tel10 = l.telefono_whatsapp.replace(/\D/g, '').slice(-10)
+      leadsMap.set(tel10, {
+        nombre: l.nombre_completo || null,
+        pacienteId: l.paciente_id || null,
+        estado: l.estado || null,
+        fechaConversion: l.fecha_conversion || null
+      })
+    }
+  }
+
+  // 4. Filtrar mensajes válidos y contar por teléfono
+  const mensajesValidos = ['undefined', 'Interacción registrada', 'null', '']
+  const convDataFiltrado = (convData || []).filter(msg => {
+    const texto = msg.mensaje?.trim()
+    return texto && !mensajesValidos.includes(texto)
+  })
+  
+  const mensajesPorTelefono = new Map<string, number>()
+  for (const msg of convDataFiltrado) {
+    const count = mensajesPorTelefono.get(msg.telefono) || 0
+    mensajesPorTelefono.set(msg.telefono, count + 1)
+  }
+
+  // 5. Agrupar conversaciones por teléfono (solo primer mensaje válido = más reciente)
   const conversacionesMap = new Map<string, Conversacion>()
   
-  for (const msg of convData || []) {
+  for (const msg of convDataFiltrado) {
     if (!conversacionesMap.has(msg.telefono)) {
       const tel10 = msg.telefono.replace(/\D/g, '').slice(-10)
-      const nombrePaciente = pacientesMap.get(tel10)
+      const pacienteInfo = pacientesMap.get(tel10)
+      const leadInfo = leadsMap.get(tel10)
+      
+      // Determinar tipo y nombre con lógica mejorada
+      let tipoContacto: 'paciente' | 'lead' | 'desconocido' = 'desconocido'
+      let nombreContacto: string | null = null
+      
+      // PACIENTE: Tiene al menos 1 cita válida (no cancelada)
+      if (pacienteInfo?.citasValidas && pacienteInfo.citasValidas > 0) {
+        tipoContacto = 'paciente'
+        nombreContacto = pacienteInfo.nombre || leadInfo?.nombre || null
+      }
+      // LEAD: Existe en leads O en pacientes (sin citas válidas)
+      else if (leadInfo || pacienteInfo) {
+        tipoContacto = 'lead'
+        // Priorizar nombre de paciente si existe, luego lead
+        nombreContacto = pacienteInfo?.nombre || leadInfo?.nombre || null
+      }
+      // DESCONOCIDO: No está en ninguna tabla
+      // tipoContacto ya es 'desconocido' por defecto
       
       conversacionesMap.set(msg.telefono, {
         telefono: msg.telefono,
-        nombreContacto: nombrePaciente || null,
+        nombreContacto,
         ultimoMensaje: msg.mensaje,
-        ultimaFecha: new Date(msg.created_at),
+        ultimaFecha: msg.created_at ? new Date(msg.created_at) : new Date(),
         mensajesNoLeidos: 0,
-        tipoContacto: nombrePaciente ? 'paciente' : 'desconocido',
+        tipoContacto,
+        // Campos adicionales
+        estadoLead: leadInfo?.estado || null,
+        citasValidas: pacienteInfo?.citasValidas || 0,
+        totalMensajes: mensajesPorTelefono.get(msg.telefono) || 0,
       })
     }
   }
@@ -100,7 +195,15 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
 
 /**
  * Fetcher para mensajes de un teléfono específico
+ * Filtra mensajes inválidos (undefined, logs de sistema, etc.)
  */
+const MENSAJES_INVALIDOS = [
+  'undefined',
+  'Interacción registrada',
+  'null',
+  '',
+]
+
 const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> => {
   const { data, error } = await supabase
     .from('conversaciones')
@@ -110,13 +213,19 @@ const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> =>
 
   if (error) throw error
   
-  return (data || []).map((row: ConversacionRow) => ({
-    id: row.id,
-    telefono: row.telefono,
-    contenido: row.mensaje,
-    rol: row.rol,
-    createdAt: new Date(row.created_at),
-  }))
+  return (data || [])
+    // Filtrar mensajes basura/inválidos
+    .filter((row: ConversacionRow) => {
+      const mensaje = row.mensaje?.trim()
+      return mensaje && !MENSAJES_INVALIDOS.includes(mensaje)
+    })
+    .map((row: ConversacionRow) => ({
+      id: row.id,
+      telefono: row.telefono,
+      contenido: row.mensaje,
+      rol: row.rol as 'usuario' | 'asistente',
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+    }))
 }
 
 export function useConversaciones(): UseConversacionesReturn {
@@ -128,7 +237,7 @@ export function useConversaciones(): UseConversacionesReturn {
     error: errorConversaciones, 
     isLoading: isLoadingConversaciones,
     mutate: mutateConversaciones 
-  } = useSWR('conversaciones-list', fetchConversaciones, SWR_CONFIG_STANDARD)
+  } = useSWR(CACHE_KEYS.CONVERSACIONES, fetchConversaciones, SWR_CONFIG_REALTIME)
 
   // SWR para mensajes del teléfono activo
   const {
@@ -139,7 +248,7 @@ export function useConversaciones(): UseConversacionesReturn {
   } = useSWR(
     telefonoActivo ? `conv-mensajes-${telefonoActivo}` : null,
     () => fetchMensajesPorTelefono(telefonoActivo!),
-    SWR_CONFIG_STANDARD
+    SWR_CONFIG_REALTIME
   )
 
   // ✅ Suscripción Realtime a tabla 'conversaciones'
@@ -154,7 +263,6 @@ export function useConversaciones(): UseConversacionesReturn {
           table: 'conversaciones',
         },
         (payload) => {
-          console.log('💬 Nuevo mensaje:', payload.new)
           mutateConversaciones()
           
           const newRecord = payload.new as ConversacionRow

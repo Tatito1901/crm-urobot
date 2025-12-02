@@ -357,8 +357,8 @@ export default function DashboardPage() {
                           <div className="text-lg sm:text-xl font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">{leadsStats.convertidos}</div>
                         </div>
                         <div className="rounded-lg bg-blue-500/10 p-2 sm:p-3 text-center">
-                          <div className="text-[9px] sm:text-[10px] font-medium uppercase text-blue-600 dark:text-blue-400">En Proceso</div>
-                          <div className="text-lg sm:text-xl font-bold text-blue-700 dark:text-blue-300 tabular-nums">{leadsStats.enProceso}</div>
+                          <div className="text-[9px] sm:text-[10px] font-medium uppercase text-muted-foreground">En Proceso</div>
+                          <div className="text-lg sm:text-xl font-bold text-foreground tabular-nums">{leadsStats.enProceso}</div>
                         </div>
                       </div>
                     </>

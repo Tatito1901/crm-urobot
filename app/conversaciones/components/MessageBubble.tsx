@@ -21,25 +21,30 @@ export const MessageBubble = memo(function MessageBubble({
     <div className={`flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
       <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${isAsistente ? 'items-start' : 'items-end'}`}>
         
+        {/* Etiqueta de remitente (solo primer mensaje de serie) */}
+        {!isConsecutive && (
+          <div className={`flex items-center gap-1 mb-1 px-1 ${isAsistente ? '' : 'flex-row-reverse'}`}>
+            <div className={`
+              w-4 h-4 rounded-full flex items-center justify-center
+              ${isAsistente 
+                ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white' 
+                : 'bg-blue-500 text-white'}
+            `}>
+              {isAsistente ? <Bot className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+            </div>
+            <span className={`text-[10px] font-semibold ${isAsistente ? 'text-purple-600 dark:text-purple-400' : 'text-blue-600'}`}>
+              {isAsistente ? 'UroBot' : 'Paciente'}
+            </span>
+          </div>
+        )}
+        
         {/* Bubble */}
         <div className={`
           relative px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm
           ${isAsistente 
-            ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-none' 
+            ? 'bg-white dark:bg-slate-800 border-l-4 border-l-purple-500 border border-slate-200 dark:border-slate-700 text-foreground rounded-tl-sm' 
             : 'bg-blue-600 text-white rounded-tr-none border border-blue-600'}
         `}>
-          {/* Icono flotante para el primer mensaje de la serie */}
-          {!isConsecutive && (
-            <div className={`
-              absolute -top-2.5 w-5 h-5 rounded-full flex items-center justify-center border text-xs
-              ${isAsistente 
-                ? '-left-2 bg-slate-100 border-slate-200 text-slate-600 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300' 
-                : '-right-2 bg-blue-500 border-blue-400 text-white'}
-            `}>
-              {isAsistente ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
-            </div>
-          )}
-
           <p className="whitespace-pre-wrap break-words">{contenido}</p>
         </div>
 

@@ -9,6 +9,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../shared/Modal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { formatShortTime } from '../../lib/agenda-utils';
 import type { Appointment } from '@/types/agenda';
 import type { ConsultaTipo } from '@/types/consultas';
@@ -156,32 +160,35 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
         </div>
 
         {/* Tipo de consulta */}
-        <div>
-          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Tipo de consulta <span className="text-destructive">*</span>
-          </label>
-          <select
+          </Label>
+          <Select
             value={formData.tipo}
-            onChange={(e) => setFormData({ ...formData, tipo: e.target.value as ConsultaTipo })}
-            className="w-full px-3.5 py-2.5 rounded-md bg-muted/50 border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary/20 transition-colors"
+            onValueChange={(value) => setFormData({ ...formData, tipo: value as ConsultaTipo })}
           >
-            {TIPOS_CONSULTA.map((tipo) => (
-              <option key={tipo.value} value={tipo.value}>
-                {tipo.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar tipo..." />
+            </SelectTrigger>
+            <SelectContent>
+              {TIPOS_CONSULTA.map((tipo) => (
+                <SelectItem key={tipo.value} value={tipo.value}>
+                  {tipo.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Motivo de consulta */}
-        <div>
-          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Motivo de la consulta</label>
-          <textarea
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Motivo de la consulta</Label>
+          <Textarea
             value={formData.motivoConsulta}
             onChange={(e) => setFormData({ ...formData, motivoConsulta: e.target.value })}
             placeholder="Ej: Evaluación de próstata, dolor abdominal, etc."
             rows={3}
-            className="w-full px-3.5 py-2.5 rounded-md bg-muted/50 border border-border text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary/20 resize-none transition-colors"
           />
         </div>
 
@@ -220,14 +227,13 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
         </div>
 
         {/* Notas internas */}
-        <div>
-          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Notas internas (opcional)</label>
-          <textarea
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notas internas (opcional)</Label>
+          <Textarea
             value={formData.notasInternas}
             onChange={(e) => setFormData({ ...formData, notasInternas: e.target.value })}
             placeholder="Notas privadas para el equipo médico..."
             rows={2}
-            className="w-full px-3.5 py-2.5 rounded-md bg-muted/50 border border-border text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary/20 resize-none transition-colors"
           />
         </div>
 
@@ -243,21 +249,22 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
 
         {/* Botones */}
         <div className="flex gap-3 pt-5 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex-1 px-4 py-2.5 rounded-md border border-border text-muted-foreground text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 px-4 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex-1"
           >
             {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

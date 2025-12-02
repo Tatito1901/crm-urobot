@@ -22,11 +22,11 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { name
   if (active && payload && payload.length) {
     return (
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs shadow-lg">
-        <p className="font-bold text-slate-900 dark:text-white mb-2">{payload[0].name}</p>
+        <p className="font-bold text-foreground dark:text-white mb-2">{payload[0].name}</p>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />
-          <span className="text-slate-500 dark:text-slate-400">Total:</span>
-          <span className="font-medium text-slate-900 dark:text-white ml-auto">{payload[0].value}</span>
+          <span className="text-foreground">Total:</span>
+          <span className="font-medium text-foreground dark:text-white ml-auto">{payload[0].value}</span>
         </div>
       </div>
     );

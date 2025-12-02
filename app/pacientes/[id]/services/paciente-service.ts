@@ -86,13 +86,11 @@ export async function updatePacienteDestino(
       .insert(destinoData as any);
 
     if (insertError) {
-      console.error('Error al guardar historial de destino:', insertError);
       return { success: false, error: insertError.message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error inesperado al actualizar destino:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
@@ -117,13 +115,11 @@ export async function updatePacienteNotas(
       .eq('id', pacienteId);
 
     if (updateError) {
-      console.error('Error al actualizar notas:', updateError);
       return { success: false, error: updateError.message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error inesperado al actualizar notas:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
@@ -148,13 +144,11 @@ export async function getNotaConsulta(consultaId: string): Promise<{ nota: strin
       if (error.code === 'PGRST116' || error.message?.includes('does not exist')) {
         return { nota: null };
       }
-      console.error('Error al obtener nota de consulta:', error);
       return { nota: null, error: error.message };
     }
 
     return { nota: data?.nota || null };
-  } catch (error) {
-    console.error('Error inesperado al obtener nota:', error);
+  } catch {
     return { nota: null, error: 'Error desconocido' };
   }
 }
@@ -181,13 +175,11 @@ export async function saveNotaConsulta(consultaId: string, nota: string): Promis
       );
 
     if (error) {
-      console.error('Error al guardar nota de consulta:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true };
-  } catch (error) {
-    console.error('Error inesperado al guardar nota:', error);
+  } catch {
     return { success: false, error: 'Error desconocido' };
   }
 }
@@ -213,13 +205,11 @@ export async function guardarMensaje(
     });
 
     if (error) {
-      console.error('Error al guardar mensaje:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true, messageId: data as string };
   } catch (error) {
-    console.error('Error inesperado al guardar mensaje:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
@@ -248,7 +238,6 @@ export async function obtenerContextoUrobot(telefono: string): Promise<{
     });
 
     if (error) {
-      console.error('Error al obtener contexto:', error);
       return { success: false, error: error.message };
     }
 
@@ -277,7 +266,6 @@ export async function obtenerContextoUrobot(telefono: string): Promise<{
       }
     };
   } catch (error) {
-    console.error('Error inesperado al obtener contexto:', error);
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 

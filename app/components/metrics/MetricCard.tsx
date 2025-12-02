@@ -72,7 +72,7 @@ function useAnimatedNumber(targetValue: number, duration = 600, enabled = true) 
 const colorClasses = {
   emerald: { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500', border: 'border-emerald-500/30', bgLight: 'bg-emerald-50 dark:bg-emerald-500/10' },
   green: { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500', border: 'border-emerald-500/30', bgLight: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  blue: { text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-500', border: 'border-blue-500/30', bgLight: 'bg-blue-50 dark:bg-blue-500/10' },
+  blue: { text: 'text-foreground', bg: 'bg-blue-500', border: 'border-blue-500/30', bgLight: 'bg-blue-50 dark:bg-blue-500/10' },
   purple: { text: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500', border: 'border-purple-500/30', bgLight: 'bg-purple-50 dark:bg-purple-500/10' },
   amber: { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500', border: 'border-amber-500/30', bgLight: 'bg-amber-50 dark:bg-amber-500/10' },
   orange: { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500', border: 'border-amber-500/30', bgLight: 'bg-amber-50 dark:bg-amber-500/10' },

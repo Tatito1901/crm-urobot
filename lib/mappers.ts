@@ -2,7 +2,7 @@
  * ============================================================
  * MAPPERS - Conversión BD → Frontend
  * ============================================================
- * SINCRONIZADO CON BD REAL: 2025-11-28
+ * SINCRONIZADO CON BD REAL: 2025-12-01
  * 
  * Los mappers individuales están en cada archivo de tipos:
  * - types/consultas.ts → mapConsultaFromDB

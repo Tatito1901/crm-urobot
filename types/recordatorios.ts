@@ -3,7 +3,7 @@
  * TIPOS NOTIFICACIONES/RECORDATORIOS - SINCRONIZADO CON BD REAL
  * ============================================================
  * Fuente de verdad: Supabase tabla 'notification_queue'
- * Última sync: 2025-11-28
+ * Última sync: 2025-12-01
  * 
  * NOTA: La BD usa 'notification_queue' en lugar de 'recordatorios'.
  * Los recordatorios son generados por funciones RPC:
@@ -26,8 +26,8 @@ export type NotificationStatus = Enums<'notification_status'>;
 // Estados de notification_queue (enum en BD)
 export const NOTIFICATION_ESTADOS = ['pending', 'processing', 'sent', 'failed', 'cancelled'] as const;
 
-// Tipos de recordatorio (usado en metadata)
-export const RECORDATORIO_TIPOS = ['24h', '2h', 'confirmacion'] as const;
+// Tipos de recordatorio (usado en reminder_type)
+export const RECORDATORIO_TIPOS = ['24h', '2h', '48h', 'confirmacion'] as const;
 
 // Canales (siempre WhatsApp para este CRM)
 export const RECORDATORIO_CANALES = ['whatsapp'] as const;
@@ -52,6 +52,9 @@ export interface Notificacion {
   nextAttemptAt: string | null;      // BD: next_attempt_at
   metadata: Record<string, unknown> | null; // BD: metadata (JSONB)
   errorLog: string | null;           // BD: error_log
+  priority: number | null;           // BD: priority ✅ NUEVO
+  reminderType: string | null;       // BD: reminder_type ✅ NUEVO
+  sentAt: string | null;             // BD: sent_at ✅ NUEVO
   createdAt: string | null;          // BD: created_at
   updatedAt: string | null;          // BD: updated_at
 }
@@ -88,6 +91,9 @@ export function mapNotificacionFromDB(row: NotificationQueueRow): Notificacion {
     nextAttemptAt: row.next_attempt_at,
     metadata: row.metadata as Record<string, unknown> | null,
     errorLog: row.error_log,
+    priority: row.priority,
+    reminderType: row.reminder_type,
+    sentAt: row.sent_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

@@ -105,7 +105,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
             <div className="group">
               <Link
                 href={`/pacientes/${lead.pacienteId}`}
-                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium flex items-center gap-1 transition-colors"
+                className="text-foreground hover:text-emerald-700 dark:hover:text-emerald-300 font-medium flex items-center gap-1 transition-colors"
               >
                 Ver perfil
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>

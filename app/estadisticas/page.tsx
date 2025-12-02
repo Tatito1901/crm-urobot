@@ -15,7 +15,10 @@ import {
   Activity, 
   PieChart as PieChartIcon,
   MessageSquare,
-  Share2
+  Share2,
+  BarChart3,
+  Flame,
+  Clock
 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
@@ -49,6 +52,22 @@ const SedesChart = dynamic(() => import('./components/dashboard/DashboardSedesCh
 
 const DestinosChart = dynamic(() => import('./components/dashboard/DashboardDestinosChart').then(mod => mod.DashboardDestinosChart), {
   loading: () => <Skeleton className="h-[220px] w-full" />,
+  ssr: false
+});
+
+// Nuevos componentes de análisis
+const DashboardHeatmap = dynamic(() => import('./components/dashboard/DashboardHeatmap').then(mod => mod.DashboardHeatmap), {
+  loading: () => <Skeleton className="h-[200px] w-full" />,
+  ssr: false
+});
+
+const DashboardPredictive = dynamic(() => import('./components/dashboard/DashboardPredictive').then(mod => mod.DashboardPredictive), {
+  loading: () => <Skeleton className="h-[200px] w-full" />,
+  ssr: false
+});
+
+const DashboardHourlyPatterns = dynamic(() => import('./components/dashboard/DashboardHourlyPatterns').then(mod => mod.DashboardHourlyPatterns), {
+  loading: () => <Skeleton className="h-[280px] w-full" />,
   ssr: false
 });
 
@@ -191,6 +210,37 @@ export default function EstadisticasPage() {
 
       </div>
 
+      {/* Análisis de Ocupación y Predicciones - NUEVO */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Heatmap de Ocupación */}
+        <Card className={`${cards.base} lg:col-span-2`}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Flame className="w-4 h-4 text-orange-500" />
+              Mapa de Ocupación
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Histórico de consultas estilo GitHub</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DashboardHeatmap monthsToShow={6} />
+          </CardContent>
+        </Card>
+
+        {/* Análisis Predictivo */}
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-indigo-500" />
+              Análisis Predictivo
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Tendencias y proyecciones</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DashboardPredictive />
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Gráficos Secundarios - Fila 2 */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
@@ -250,6 +300,78 @@ export default function EstadisticasPage() {
           </CardContent>
         </Card>
 
+      </div>
+
+      {/* Patrones de Horarios - NUEVO */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Clock className="w-4 h-4 text-cyan-500" />
+              Patrones de Demanda
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Horas pico por día de la semana</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DashboardHourlyPatterns />
+          </CardContent>
+        </Card>
+
+        {/* Métricas de Asistencia */}
+        <Card className={cards.base}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Activity className="w-4 h-4 text-green-500" />
+              Métricas de Asistencia
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Tasas de confirmación y asistencia</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Tasa de Asistencia */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Tasa de Asistencia</span>
+                  <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{kpi.tasaAsistencia}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all"
+                    style={{ width: `${kpi.tasaAsistencia}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Tasa de Conversión */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Tasa de Conversión</span>
+                  <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{kpi.tasaConversion}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all"
+                    style={{ width: `${kpi.tasaConversion}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Consultas Confirmadas */}
+              <div className="pt-3 border-t border-border">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">{kpi.consultasConfirmadasMes}</div>
+                    <div className="text-[11px] text-muted-foreground uppercase tracking-wide">Confirmadas</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">{kpi.leadsNuevosMes}</div>
+                    <div className="text-[11px] text-muted-foreground uppercase tracking-wide">Leads Nuevos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </PageShell>
   );

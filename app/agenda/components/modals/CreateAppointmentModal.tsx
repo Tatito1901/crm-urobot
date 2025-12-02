@@ -10,6 +10,9 @@
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../shared/Modal';
 import { PatientSearch } from '../shared/PatientSearch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { useAppointmentForm } from '../../hooks/useAppointmentForm';
 import { formatShortTime } from '../../lib/agenda-utils';
 import { createPatient } from '../../services/patients-service';
@@ -213,97 +216,85 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
         </div>
 
         {/* Tipo de consulta */}
-        <div>
-          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Tipo de consulta <span className="text-destructive">*</span>
-          </label>
-          <select
+          </Label>
+          <Select
             value={formData.tipo}
-            onChange={(e) => updateField('tipo', e.target.value)}
-            onBlur={() => touchField('tipo')}
-            className={`
-              w-full px-3.5 py-2.5 rounded-md
-              bg-muted/50 border text-foreground text-sm
-              focus:outline-none focus:ring-1
-              transition-colors
-              ${
-                touched.tipo && errors.tipo
-                  ? 'border-destructive/50 focus:border-destructive focus:ring-destructive/20'
-                  : 'border-border focus:border-primary focus:ring-primary/20'
-              }
-            `}
+            onValueChange={(value) => updateField('tipo', value)}
           >
-            {TIPOS_CONSULTA.map((tipo) => (
-              <option key={tipo.value} value={tipo.value}>
-                {tipo.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className={touched.tipo && errors.tipo ? 'border-destructive' : ''}>
+              <SelectValue placeholder="Seleccionar tipo..." />
+            </SelectTrigger>
+            <SelectContent>
+              {TIPOS_CONSULTA.map((tipo) => (
+                <SelectItem key={tipo.value} value={tipo.value}>
+                  {tipo.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {touched.tipo && errors.tipo && (
-            <p className="mt-1 text-xs text-destructive font-medium">{errors.tipo}</p>
+            <p className="text-xs text-destructive font-medium">{errors.tipo}</p>
           )}
         </div>
 
         {/* Motivo de consulta */}
-        <div>
-          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Motivo de la consulta
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             value={formData.motivoConsulta}
             onChange={(e) => updateField('motivoConsulta', e.target.value)}
             onBlur={() => touchField('motivoConsulta')}
             placeholder="Ej: Evaluación de próstata, dolor abdominal, etc."
             rows={3}
-            className={`
-              w-full px-3.5 py-2.5 rounded-md
-              bg-muted/50 border text-foreground text-sm
-              placeholder-muted-foreground
-              focus:outline-none focus:ring-1
-              resize-none transition-colors
-              ${
-                touched.motivoConsulta && errors.motivoConsulta
-                  ? 'border-destructive/50 focus:border-destructive focus:ring-destructive/20'
-                  : 'border-border focus:border-primary focus:ring-primary/20'
-              }
-            `}
+            className={touched.motivoConsulta && errors.motivoConsulta ? 'border-destructive' : ''}
           />
           {touched.motivoConsulta && errors.motivoConsulta && (
-            <p className="mt-1 text-xs text-destructive font-medium">{errors.motivoConsulta}</p>
+            <p className="text-xs text-destructive font-medium">{errors.motivoConsulta}</p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-5">
           {/* Duración */}
-          <div>
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Duración</label>
-            <select
-              value={formData.duracionMinutos}
-              onChange={(e) => updateField('duracionMinutos', parseInt(e.target.value))}
-              className="w-full px-3.5 py-2.5 rounded-md bg-muted/50 border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary/20 transition-colors"
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Duración</Label>
+            <Select
+              value={formData.duracionMinutos.toString()}
+              onValueChange={(value) => updateField('duracionMinutos', parseInt(value))}
             >
-              {DURACIONES.map((dur) => (
-                <option key={dur.value} value={dur.value}>
-                  {dur.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Duración" />
+              </SelectTrigger>
+              <SelectContent>
+                {DURACIONES.map((dur) => (
+                  <SelectItem key={dur.value} value={dur.value.toString()}>
+                    {dur.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Modalidad */}
-          <div>
-            <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Modalidad</label>
-            <select
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Modalidad</Label>
+            <Select
               value={formData.modalidad}
-              onChange={(e) =>
-                updateField('modalidad', e.target.value as 'presencial' | 'teleconsulta')
-              }
-              className="w-full px-3.5 py-2.5 rounded-md bg-muted/50 border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:border-primary focus:ring-primary/20 transition-colors"
+              onValueChange={(value) => updateField('modalidad', value as 'presencial' | 'teleconsulta')}
             >
-              <option value="presencial">Presencial</option>
-              <option value="teleconsulta">Teleconsulta</option>
-              <option value="hibrida">Híbrida</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Modalidad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="presencial">Presencial</SelectItem>
+                <SelectItem value="teleconsulta">Teleconsulta</SelectItem>
+                <SelectItem value="hibrida">Híbrida</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

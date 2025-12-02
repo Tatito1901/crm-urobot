@@ -76,7 +76,7 @@ export default function AuthPage() {
             <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
               Portal UROBOT
             </h1>
-            <p className="text-base font-medium text-slate-600 dark:text-zinc-300">
+            <p className="text-base font-medium text-foreground">
               Ingresa credenciales para acceder a información del sistema de automatizaciones
             </p>
           </div>

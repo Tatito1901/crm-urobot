@@ -1,34 +1,40 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useMemo, useCallback } from 'react';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useLeads } from '@/hooks/useLeads';
+import { useLeadsPaginated } from '@/hooks/useLeadsPaginated';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
-import { Pagination } from '@/app/components/common/Pagination';
+import { PaginationControls } from '@/app/components/common/PaginationControls';
 import { typography, spacing, cards } from '@/app/lib/design-system';
 import { MainTitle, QuickGuide } from '@/app/components/leads/LeadsTooltips';
 import { LeadsMetrics } from './components/LeadsMetrics';
 import { LeadsFilters } from './components/LeadsFilters';
 import { LeadsTable } from './components/LeadsTable';
+import { Loader2 } from 'lucide-react';
 
 export default function LeadsPage() {
-  const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'Nuevo' | 'En seguimiento' | 'Convertido' | 'Descartado'>('all');
+  // ✅ OPTIMIZADO: Paginación del servidor (no carga todos los registros)
+  const {
+    leads,
+    stats,
+    currentPage,
+    totalPages,
+    totalCount,
+    pageSize,
+    goToPage,
+    search,
+    setSearch,
+    estadoFilter,
+    setEstadoFilter,
+    isLoading,
+    isSearching,
+    error,
+    refresh,
+  } = useLeadsPaginated({ pageSize: 50 });
   
-  // ✅ OPTIMIZACIÓN: Debounce para búsqueda (300ms)
-  const debouncedSearch = useDebouncedCallback(useCallback((value: string) => {
-    setSearch(value);
-    setCurrentPage(0); // Resetear a primera página al buscar
-  }, []), 300);
-  
-  // ✅ Datos enriquecidos de Supabase (con relación a pacientes)
-  const { leads, loading, error, refetch, stats } = useLeads();
-  
-  // Stats ya vienen del hook enriquecido
+  // Stats ya vienen del servidor
   const leadsStats = useMemo(() => ({
     total: stats.total,
     nuevo: stats.nuevos,
@@ -36,46 +42,15 @@ export default function LeadsPage() {
     convertido: stats.convertidos,
     descartado: stats.descartados,
     enProceso: stats.nuevos + stats.enSeguimiento,
-    clientes: stats.clientes,
-    calientes: stats.calientes,
-    inactivos: stats.inactivos,
+    clientes: 0,
+    calientes: 0,
+    inactivos: 0,
   }), [stats]);
   
-  // ✅ OPTIMIZACIÓN: Filtrado con memoización eficiente
-  const filteredLeads = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    
-    // Filtrar por estado primero (más rápido)
-    const filtered = statusFilter !== 'all' 
-      ? leads.filter((lead) => lead.estado === statusFilter)
-      : leads;
-    
-    // Si no hay búsqueda, retornar directo
-    if (!term) return filtered;
-    
-    // Filtrar por término de búsqueda
-    return filtered.filter((lead) => {
-      const nombre = lead.nombre.toLowerCase();
-      const telefono = lead.telefono;
-      const fuente = (lead.fuente || '').toLowerCase();
-      
-      return nombre.includes(term) || telefono.includes(term) || fuente.includes(term);
-    });
-  }, [search, leads, statusFilter]);
-  
-  // ✅ OPTIMIZACIÓN: Paginación dinámica según tamaño de pantalla
-  const itemsPerPage = 50;
-  const paginatedLeads = useMemo(() => {
-    const start = currentPage * itemsPerPage;
-    const end = start + itemsPerPage;
-    return filteredLeads.slice(start, end);
-  }, [filteredLeads, currentPage, itemsPerPage]);
-  
-  // ✅ Resetear página cuando cambian filtros
-  const handleFilterChange = useCallback((newFilter: typeof statusFilter) => {
-    setStatusFilter(newFilter);
-    setCurrentPage(0);
-  }, []);
+  // ✅ Handler para cambio de filtro (mapea a valores del hook)
+  const handleFilterChange = useCallback((newFilter: 'all' | 'Nuevo' | 'En seguimiento' | 'Convertido' | 'Descartado') => {
+    setEstadoFilter(newFilter === 'all' ? '' : newFilter);
+  }, [setEstadoFilter]);
 
   return (
     <PageShell
@@ -85,8 +60,8 @@ export default function LeadsPage() {
       title={<MainTitle />}
       description="Pipeline de ventas y seguimiento de pacientes potenciales."
     >
-      {/* Métricas Clave */}
-      <LeadsMetrics stats={leadsStats} loading={loading} />
+      {/* Métricas Clave (calculadas en servidor) */}
+      <LeadsMetrics stats={leadsStats} loading={isLoading && !leads.length} />
 
       <Card className={`${cards.base} overflow-hidden`}>
         <CardHeader className={`${spacing.cardHeader} border-b border-border bg-muted/20`}>
@@ -97,18 +72,19 @@ export default function LeadsPage() {
                   Base de Datos de Leads
                 </CardTitle>
                 <QuickGuide />
+                {isSearching && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
               </div>
               <CardDescription className={typography.cardDescription}>
-                Gestiona y califica a tus prospectos
+                {totalCount.toLocaleString()} prospectos en total
               </CardDescription>
             </div>
             <button
-              onClick={() => refetch()}
-              disabled={loading}
+              onClick={() => refresh()}
+              disabled={isLoading}
               className="p-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
               title="Recargar datos"
             >
-              <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
@@ -118,21 +94,18 @@ export default function LeadsPage() {
         <CardContent className="p-0">
           <div className="p-4 pb-0">
             <LeadsFilters
-              currentFilter={statusFilter}
+              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'Nuevo' | 'En seguimiento' | 'Convertido' | 'Descartado'}
               onFilterChange={handleFilterChange}
               searchValue={search}
-              onSearchChange={(val) => {
-                setSearch(val); // Update input immediately
-                debouncedSearch(val); // Debounce fetch/filter
-              }}
+              onSearchChange={setSearch}
             />
           </div>
 
           <ContentLoader
-            loading={loading}
+            loading={isLoading && !leads.length}
             error={error}
-            onRetry={refetch}
-            isEmpty={filteredLeads.length === 0}
+            onRetry={refresh}
+            isEmpty={leads.length === 0 && !isLoading}
             minHeight="min-h-[400px]"
             skeleton={<TableContentSkeleton rows={10} />}
             emptyState={
@@ -148,23 +121,23 @@ export default function LeadsPage() {
           >
             <div className="border-t border-border">
               <LeadsTable 
-                leads={paginatedLeads} 
-                loading={loading}
+                leads={leads} 
+                loading={isLoading}
                 emptyMessage="No hay datos para mostrar"
               />
             </div>
             
-            {/* Paginación */}
-            {filteredLeads.length > itemsPerPage && (
-              <div className="p-4 border-t border-border bg-muted/20">
-                <Pagination
-                  currentPage={currentPage}
-                  totalItems={filteredLeads.length}
-                  itemsPerPage={itemsPerPage}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
+            {/* Paginación del servidor */}
+            <div className="p-4 border-t border-border bg-muted/20">
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={goToPage}
+                isLoading={isLoading}
+              />
+            </div>
           </ContentLoader>
         </CardContent>
       </Card>

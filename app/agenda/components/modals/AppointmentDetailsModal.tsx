@@ -15,6 +15,7 @@ import {
   Edit2, X, Check, AlertCircle, ExternalLink,
   Trash2, MessageCircle, ShieldAlert, UserCheck
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Modal } from '../shared/Modal';
 import { formatTimeRange, formatLongDate } from '../../lib/agenda-utils';
 import { StatusBadge } from '../shared/StatusBadge';
@@ -59,7 +60,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
 
   const handleCancel = async () => {
     if (!cancelReason.trim()) {
-      alert('Debe proporcionar un motivo de cancelación');
+      toast.warning('Debe proporcionar un motivo de cancelación');
       return;
     }
 
@@ -72,7 +73,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
       setCancelReason('');
       onClose();
     } catch {
-      alert('Error al cancelar la cita');
+      toast.error('Error al cancelar la cita');
     } finally {
       setIsCancelling(false);
     }
@@ -86,7 +87,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
       await onConfirm(appointment.id);
       onClose();
     } catch {
-      alert('Error al confirmar la cita');
+      toast.error('Error al confirmar la cita');
     } finally {
       setIsConfirming(false);
     }
@@ -101,10 +102,10 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
       if (result.success) {
         onClose();
       } else {
-        alert(result.error || 'Error al marcar llegada del paciente');
+        toast.error(result.error || 'Error al marcar llegada del paciente');
       }
     } catch {
-      alert('Error al marcar llegada del paciente');
+      toast.error('Error al marcar llegada del paciente');
     } finally {
       setIsMarkingArrived(false);
     }
@@ -194,7 +195,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
               {/* Avatar / Iniciales */}
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-lg",
-                isCancelled ? "bg-slate-700 text-slate-400" : "bg-blue-600 text-white shadow-blue-500/20"
+                isCancelled ? "bg-muted" : "bg-primary"
               )}>
                 {getInitials(appointment.paciente)}
               </div>
@@ -203,24 +204,24 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                 <div className="flex items-center gap-2">
                   <h2 className={cn(
                     "text-xl font-bold",
-                    isCancelled ? "text-slate-400 line-through" : "text-white"
+                    isCancelled ? "text-muted-foreground line-through" : "text-white"
                   )}>
                     {appointment.paciente}
                   </h2>
                   <Link 
                     href={`/pacientes/${appointment.pacienteId}`}
-                    className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-all group"
+                    className="p-1.5 text-muted-foreground hover:bg-blue-500/10 rounded-md transition-all group"
                     title="Ir al expediente completo"
                   >
                     <ExternalLink className="w-4 h-4 " />
                   </Link>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-400">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="capitalize">{appointment.tipo}</span>
                   <span>•</span>
                   <span className={cn(
                     "font-medium",
-                    getRelativeTime() === 'Pasada' ? "text-slate-500" : "text-emerald-400"
+                    getRelativeTime() === 'Pasada' ? "text-muted-foreground" : "text-emerald-400"
                   )}>
                     {getRelativeTime()}
                   </span>
@@ -270,13 +271,13 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
             {/* Fecha y Hora */}
             <div className="flex gap-4 group">
               <div className="w-8 flex justify-center pt-0.5">
-                <Clock className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                <Clock className="w-5 h-5 text-muted-foreground group-hover:text-blue-400 transition-colors" />
               </div>
               <div className="flex-1">
                 <p className="text-white font-medium text-base">
                   {formatLongDate(appointment.start)}
                 </p>
-                <p className="text-slate-400 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {formatTimeRange(appointment.start, appointment.end)} ({appointment.duracionMinutos} min)
                 </p>
                 {appointment.calendarLink && (
@@ -296,7 +297,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
             {(appointment.telefono || appointment.email) && (
               <div className="flex gap-4 group">
                 <div className="w-8 flex justify-center pt-0.5">
-                  <Phone className="w-5 h-5 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                  <Phone className="w-5 h-5 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
                 </div>
                 <div className="flex-1 space-y-3">
                   <div className="flex flex-wrap gap-3">
@@ -313,7 +314,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                         </a>
                         <a
                           href={`tel:${appointment.telefono}`}
-                          className="flex items-center gap-2 px-3 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-medium"
+                          className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted-background border border-muted-foreground text-muted-foreground hover:bg-muted-background/90 transition-colors text-sm font-medium"
                         >
                           <Phone className="w-4 h-4" />
                           Llamar
@@ -323,7 +324,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                     {appointment.email && (
                       <a
                         href={`mailto:${appointment.email}`}
-                        className="flex items-center gap-2 px-3 py-2 rounded-md bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted-background border border-muted-foreground text-muted-foreground hover:bg-muted-background/90 transition-colors text-sm font-medium"
                       >
                         <Mail className="w-4 h-4" />
                         Email

@@ -48,7 +48,7 @@ export function AuthClient() {
         <div className="grid gap-2">
           <label 
             htmlFor="email" 
-            className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 ml-1"
+            className="text-xs font-bold uppercase tracking-wider text-foreground ml-1"
           >
             Correo electrónico
           </label>
@@ -68,7 +68,7 @@ export function AuthClient() {
           <div className="flex items-center justify-between ml-1">
             <label 
               htmlFor="password" 
-              className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300"
+              className="text-xs font-bold uppercase tracking-wider text-foreground"
             >
               Contraseña
             </label>

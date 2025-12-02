@@ -91,9 +91,9 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
   });
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50/50 dark:bg-slate-900/40 transition-colors">
+    <div className="flex-1 flex flex-col bg-muted/40 transition-colors">
       {/* Tabs */}
-      <div className="border-b border-slate-200 dark:border-slate-800/40 bg-white dark:bg-slate-900/20">
+      <div className="border-b border-border/40 bg-white dark:bg-slate-900/20">
         <div className="flex overflow-x-auto">
           {tabs.map((tab) => (
             <button
@@ -127,13 +127,13 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
             {sortedConsultas.length === 0 ? (
               <div className="text-center py-12">
                 <Calendar className="h-16 w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500 dark:text-slate-400">No hay citas registradas</p>
+                <p className="text-muted-foreground">No hay citas registradas</p>
               </div>
             ) : (
               sortedConsultas.map((consulta) => (
                 <div
                   key={consulta.id}
-                  className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 rounded-lg p-4 hover:border-slate-300 dark:hover:border-slate-600/50 transition-all shadow-sm dark:shadow-none"
+                  className="bg-white dark:bg-slate-900/60 border border-border/50 rounded-lg p-4 hover:border-slate-300 dark:hover:border-slate-600/50 transition-all shadow-sm dark:shadow-none"
                 >
                   {/* Header de la cita */}
                   <div className="flex items-start justify-between mb-3">
@@ -142,7 +142,7 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
                         <span className="text-sm font-bold text-slate-900 dark:text-white">
                           {formatDate(consulta.fechaConsulta)}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                        <span className="text-xs text-muted-foreground">
                           {formatTime(consulta.horaConsulta)}
                         </span>
                       </div>
@@ -157,14 +157,14 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
                   </div>
 
                   {/* Información de la sede */}
-                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mb-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                     <MapPin className="h-4 w-4 text-slate-400" />
                     <span>{consulta.sede}</span>
                   </div>
 
                   {/* Tipo y estado */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm text-slate-600 dark:text-slate-300 capitalize">
+                    <span className="text-sm text-muted-foreground capitalize">
                       {consulta.tipoCita}
                     </span>
                     <span className="text-slate-400 dark:text-slate-600">•</span>
@@ -197,7 +197,7 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
                   {consulta.motivoConsulta && (
                     <div className="mt-3">
                       <p className="text-xs text-slate-500 mb-1">Motivo:</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 italic">&quot;{consulta.motivoConsulta}&quot;</p>
+                      <p className="text-sm text-foreground italic">&quot;{consulta.motivoConsulta}&quot;</p>
                     </div>
                   )}
 
@@ -215,15 +215,15 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
 
         {activeTab === 'datos' && (
           <div className="space-y-4">
-            <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 rounded-lg p-4 shadow-sm dark:shadow-none">
+            <div className="bg-white dark:bg-slate-900/60 border border-border/50 rounded-lg p-4 shadow-sm dark:shadow-none">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Información del paciente</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Estado:</span>
+                  <span className="text-muted-foreground">Estado:</span>
                   <span className="text-slate-700 dark:text-slate-200">Activo</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Canal de origen:</span>
+                  <span className="text-muted-foreground">Canal de origen:</span>
                   <span className="text-slate-700 dark:text-slate-200">WhatsApp</span>
                 </div>
               </div>

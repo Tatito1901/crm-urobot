@@ -3,7 +3,7 @@
  * TIPOS LEADS - SINCRONIZADO CON BD REAL
  * ============================================================
  * Fuente de verdad: Supabase tabla 'leads'
- * Última sync: 2025-11-28
+ * Última sync: 2025-12-01
  */
 
 import { type CanalMarketing, normalizeCanalMarketing } from './canales-marketing';
@@ -35,6 +35,7 @@ export interface Lead {
   id: string;
   pacienteId: string | null;           // BD: paciente_id
   telefono: string;                     // BD: telefono_whatsapp
+  nombreCompleto: string | null;        // BD: nombre_completo ✅ NUEVO
   estado: LeadEstado;                   // BD: estado
   fuente: CanalMarketing;                 // BD: fuente_lead (normalizado, usado para badges)
   canalMarketing: string | null;          // BD: canal_marketing (dato adicional)
@@ -95,8 +96,10 @@ export function mapLeadFromDB(row: LeadRow, pacienteNombre?: string): Lead {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     
+    nombreCompleto: row.nombre_completo,
+    
     // Calculados
-    nombre: pacienteNombre || row.telefono_whatsapp,
+    nombre: row.nombre_completo || pacienteNombre || row.telefono_whatsapp,
     temperatura,
     diasDesdeContacto,
     diasDesdeUltimaInteraccion: diasDesdeUltima,

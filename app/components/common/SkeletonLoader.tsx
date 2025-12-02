@@ -2,30 +2,15 @@
  * ============================================================
  * SKELETON LOADER - Loading States Mejorados
  * ============================================================
- * QUICK WIN #5: Componentes reutilizables para estados de carga
- * Mejor UX que spinner o texto "Cargando..."
+ * Componentes reutilizables para estados de carga
+ * Usa Skeleton de shadcn/ui como base
  */
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface SkeletonProps {
-  className?: string;
-}
-
-/**
- * Skeleton básico para cualquier contenido
- */
-export function Skeleton({ className }: SkeletonProps) {
-  return (
-    <div
-      className={cn(
-        'rounded-lg bg-muted/60',
-        className
-      )}
-    />
-  );
-}
+// Re-export Skeleton de shadcn para compatibilidad
+export { Skeleton };
 
 /**
  * Skeleton para tarjetas de métricas

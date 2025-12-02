@@ -81,7 +81,7 @@ export default function ConsultasPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2 pt-0 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
               <input
                 value={inputValue}
                 onChange={(event) => {

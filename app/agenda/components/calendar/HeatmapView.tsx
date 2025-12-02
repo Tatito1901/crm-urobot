@@ -8,8 +8,8 @@
 
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel, type OccupancyLevel, type DayOccupancy } from '../../hooks/useOccupancyHeatmap';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel, type OccupancyLevel, type DayOccupancy } from '@/hooks/useOccupancyHeatmap';
 import { addDays, getMonthName, isToday } from '@/lib/date-utils';
 import { TrendingUp, Calendar, BarChart3, MapPin, Clock } from 'lucide-react';
 import { useConsultas } from '@/hooks/useConsultas';
@@ -24,8 +24,13 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
   const [sedeFilter, setSedeFilter] = useState<SedeFilter>('ALL');
   const { getOccupancyForDate, predictions, hourlyPatterns } = useOccupancyHeatmap();
   const { consultas } = useConsultas();
-  const today = useMemo(() => new Date(), []);
   const [viewMode, setViewMode] = useState<'annual' | 'hourly'>('annual');
+  const [today, setToday] = useState(() => new Date());
+
+  // Evitar hydration mismatch
+  useEffect(() => {
+    setToday(new Date());
+  }, []);
 
   // Filtrar consultas por sede
   const filteredConsultas = useMemo(() => {

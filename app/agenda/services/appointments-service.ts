@@ -113,10 +113,8 @@ export async function createAppointment(
       .lt('fecha_hora_inicio', endIso) // Simplificación para conflicto básico
       .in('estado_cita', ['Programada', 'Confirmada', 'Reagendada']);
 
-    if (conflictError) {
-      // Ignoramos error de columna inexistente en filtro si ocurre por tipos desactualizados
-      console.warn('Error validando conflictos (puede ser falso positivo por tipos):', conflictError);
-    }
+    // Ignorar error de validación de conflictos si ocurre por tipos desactualizados
+    if (conflictError) { /* silenciado */ }
 
     if (conflicts && conflicts.length > 0) {
       return { success: false, error: 'El horario seleccionado ya está ocupado' };
@@ -151,7 +149,6 @@ export async function createAppointment(
       .single();
 
     if (insertError) {
-      console.error('Error al crear cita:', insertError);
       return { success: false, error: insertError.message || 'Error al crear la cita' };
     }
 
@@ -165,7 +162,6 @@ export async function createAppointment(
       },
     };
   } catch (error) {
-    console.error('Error inesperado al crear cita:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido al crear la cita',
@@ -229,7 +225,6 @@ export async function updateAppointment(
 
     return { success: true };
   } catch (error) {
-    console.error('Error inesperado al actualizar cita:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido',

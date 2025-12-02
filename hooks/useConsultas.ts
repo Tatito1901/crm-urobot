@@ -6,7 +6,7 @@
  * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import type { Consulta, ConsultaRow } from '@/types/consultas'
@@ -124,8 +124,7 @@ export function useConsultas(): UseConsultasReturn {
           schema: 'public',
           table: 'consultas',
         },
-        (payload) => {
-          console.log('🔔 Cambio detectado en consultas:', payload.eventType)
+        () => {
           mutate() // Revalida los datos sin recargar página
         }
       )
@@ -138,81 +137,85 @@ export function useConsultas(): UseConsultasReturn {
 
   const consultas = data?.consultas || []
 
-  const now = new Date()
-  const hoyStr = now.toISOString().split('T')[0]
-  const semanaDespues = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-  
-  // Calcular estadísticas básicas (usa estadoCita, no estado)
-  const stats = {
-    total: consultas.length,
-    programadas: consultas.filter(c => c.estadoCita === 'Programada').length,
-    confirmadas: consultas.filter(c => c.estadoCita === 'Confirmada').length,
-    completadas: consultas.filter(c => c.estadoCita === 'Completada').length,
-    canceladas: consultas.filter(c => c.estadoCita === 'Cancelada').length,
-    reagendadas: consultas.filter(c => c.estadoCita === 'Reagendada').length,
-    noAsistio: consultas.filter(c => c.estadoCita === 'No Asistió').length,
-    hoy: consultas.filter(c => c.fechaConsulta === hoyStr).length,
-    semana: consultas.filter(c => {
+  // ✅ OPTIMIZACIÓN: Memoizar todos los cálculos para evitar recálculos en cada render
+  const { stats, metricas } = useMemo(() => {
+    const now = new Date()
+    const hoyStr = now.toISOString().split('T')[0]
+    const semanaDespues = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    
+    // Single-pass para contar todos los estados (más eficiente que múltiples .filter())
+    let programadas = 0, confirmadas = 0, completadas = 0, canceladas = 0, reagendadas = 0, noAsistio = 0
+    let hoy = 0, semana = 0
+    let polanco = 0, satelite = 0
+    let primeraVez = 0, seguimiento = 0
+    let totalDuracion = 0
+    let pendientesConf = 0, confirmadasConf = 0, vencidasConf = 0
+    
+    for (const c of consultas) {
+      // Estados de cita
+      switch (c.estadoCita) {
+        case 'Programada': programadas++; break
+        case 'Confirmada': confirmadas++; break
+        case 'Completada': completadas++; break
+        case 'Cancelada': canceladas++; break
+        case 'Reagendada': reagendadas++; break
+        case 'No Asistió': noAsistio++; break
+      }
+      
+      // Temporales
+      if (c.fechaConsulta === hoyStr) hoy++
       const fecha = new Date(c.fechaConsulta)
-      return fecha >= now && fecha <= semanaDespues
-    }).length,
-  }
-  
-  // Calcular métricas avanzadas
-  const consultasFinalizadas = stats.completadas + stats.noAsistio
-  const tasaConfirmacion = stats.total > 0
-    ? Math.round((stats.confirmadas / stats.total) * 100)
-    : 0
-  
-  const tasaCancelacion = stats.total > 0
-    ? Math.round((stats.canceladas / stats.total) * 100)
-    : 0
-  
-  const tasaAsistencia = consultasFinalizadas > 0
-    ? Math.round((stats.completadas / consultasFinalizadas) * 100)
-    : 0
-  
-  // Distribución por sede
-  const porSede = {
-    polanco: consultas.filter(c => c.sede === 'POLANCO').length,
-    satelite: consultas.filter(c => c.sede === 'SATELITE').length,
-  }
-  
-  // Duración promedio
-  const promedioDuracion = consultas.length > 0
-    ? Math.round(consultas.reduce((sum, c) => sum + c.duracionMinutos, 0) / consultas.length)
-    : 30
-  
-  // Tipo de consulta (usa tipoCita, no tipo)
-  const primeraVez = consultas.filter(c => c.tipoCita === 'Primera Vez').length
-  const seguimiento = consultas.filter(c => c.tipoCita === 'Seguimiento').length
-  
-  // Métricas de confirmación
-  const consultasFuturas = consultas.filter(c => 
-    (c.horasHastaConsulta || 0) > 0
-  )
-  
-  // Calcular vencidas: consultas no confirmadas a menos de 3 horas
-  const confirmaciones = {
-    pendientes: consultasFuturas.filter(c => c.estadoConfirmacion === 'Pendiente').length,
-    confirmadas: consultasFuturas.filter(c => c.estadoConfirmacion === 'Confirmada' || c.confirmadoPaciente).length,
-    vencidas: consultasFuturas.filter(c => 
-      c.estadoConfirmacion === 'Pendiente' && 
-      !c.confirmadoPaciente && 
-      (c.horasHastaConsulta ?? 0) < 3
-    ).length,
-  }
-  
-  const metricas = {
-    tasaConfirmacion,
-    tasaCancelacion,
-    tasaAsistencia,
-    confirmaciones,
-    porSede,
-    promedioDuracion,
-    primeraVez,
-    seguimiento,
-  }
+      if (fecha >= now && fecha <= semanaDespues) semana++
+      
+      // Sedes
+      if (c.sede === 'POLANCO') polanco++
+      else if (c.sede === 'SATELITE') satelite++
+      
+      // Tipos
+      if (c.tipoCita === 'Primera Vez') primeraVez++
+      else if (c.tipoCita === 'Seguimiento') seguimiento++
+      
+      // Duración
+      totalDuracion += c.duracionMinutos
+      
+      // Confirmaciones futuras
+      if ((c.horasHastaConsulta || 0) > 0) {
+        if (c.estadoConfirmacion === 'Confirmada' || c.confirmadoPaciente) {
+          confirmadasConf++
+        } else if (c.estadoConfirmacion === 'Pendiente') {
+          pendientesConf++
+          if (!c.confirmadoPaciente && (c.horasHastaConsulta ?? 0) < 3) vencidasConf++
+        }
+      }
+    }
+    
+    const total = consultas.length
+    const consultasFinalizadas = completadas + noAsistio
+    
+    return {
+      stats: {
+        total,
+        programadas,
+        confirmadas,
+        completadas,
+        canceladas,
+        reagendadas,
+        noAsistio,
+        hoy,
+        semana,
+      },
+      metricas: {
+        tasaConfirmacion: total > 0 ? Math.round((confirmadas / total) * 100) : 0,
+        tasaCancelacion: total > 0 ? Math.round((canceladas / total) * 100) : 0,
+        tasaAsistencia: consultasFinalizadas > 0 ? Math.round((completadas / consultasFinalizadas) * 100) : 0,
+        confirmaciones: { pendientes: pendientesConf, confirmadas: confirmadasConf, vencidas: vencidasConf },
+        porSede: { polanco, satelite },
+        promedioDuracion: total > 0 ? Math.round(totalDuracion / total) : 30,
+        primeraVez,
+        seguimiento,
+      }
+    }
+  }, [consultas])
 
   return {
     consultas,

@@ -3,7 +3,7 @@
  * TIPOS CONSULTAS - SINCRONIZADO CON BD REAL
  * ============================================================
  * Fuente de verdad: Supabase tabla 'consultas'
- * Última sync: 2025-11-28
+ * Última sync: 2025-12-01
  */
 
 import type { Tables } from './database';
@@ -50,11 +50,13 @@ export interface Consulta {
   createdAt: string | null;        // BD: created_at
   updatedAt: string | null;        // BD: updated_at
   
-  // === Campos de confirmación/recordatorios ✅ NUEVOS ===
+  // === Campos de confirmación/recordatorios ===
   confirmadoPaciente: boolean;           // BD: confirmado_paciente
   estadoConfirmacion: string | null;     // BD: estado_confirmacion ('Pendiente', 'Confirmada', etc)
   recordatorio24hEnviado: boolean;       // BD: recordatorio_24h_enviado
   recordatorio2hEnviado: boolean;        // BD: recordatorio_2h_enviado
+  recordatorio48hEnviado: boolean;       // BD: recordatorio_48h_enviado ✅ NUEVO
+  canceladoPor: string | null;           // BD: cancelado_por ✅ NUEVO
   
   // === Campos calculados/UI ===
   paciente?: string;               // Nombre via JOIN
@@ -104,6 +106,8 @@ export function mapConsultaFromDB(row: ConsultaRow, pacienteNombre?: string): Co
     estadoConfirmacion: row.estado_confirmacion,
     recordatorio24hEnviado: row.recordatorio_24h_enviado ?? false,
     recordatorio2hEnviado: row.recordatorio_2h_enviado ?? false,
+    recordatorio48hEnviado: row.recordatorio_48h_enviado ?? false,
+    canceladoPor: row.cancelado_por,
     
     // Calculados
     paciente: pacienteNombre || '',

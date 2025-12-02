@@ -89,7 +89,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white tabular-nums">{centerText}</div>
             )}
             {centerSubtext && (
-              <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{centerSubtext}</div>
+              <div className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium">{centerSubtext}</div>
             )}
           </div>
         )}
@@ -110,7 +110,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
                   className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-slate-600 dark:text-slate-300 font-medium truncate">{item.label}</span>
+                <span className="text-foreground font-medium truncate">{item.label}</span>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2">
                 <span className="text-slate-900 dark:text-white font-semibold tabular-nums">{item.value}</span>

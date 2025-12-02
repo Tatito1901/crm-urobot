@@ -53,7 +53,7 @@ export const MonthGrid = React.memo(function MonthGrid({
   return (
     <div className="flex-1 flex flex-col bg-[#050b18] overflow-hidden h-full">
       {/* Header de días */}
-      <div className="grid grid-cols-7 border-b border-slate-700/40 bg-slate-900/90 sticky top-0 z-20">
+      <div className="grid grid-cols-7 border-b border-border/90 sticky top-0 z-20">
         {dayAbbreviations.map((day) => (
           <div 
             key={day} 
@@ -144,7 +144,7 @@ export const MonthGrid = React.memo(function MonthGrid({
                     })}
                     
                     {hiddenCount > 0 && (
-                      <div className="text-[9px] text-slate-500 hover:text-blue-400 font-medium pl-1 transition-colors">
+                      <div className="text-[9px] text-foreground font-medium pl-1 transition-colors">
                         + {hiddenCount} más
                       </div>
                     )}

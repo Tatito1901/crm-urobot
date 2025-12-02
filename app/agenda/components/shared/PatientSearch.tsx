@@ -9,6 +9,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { usePacientes } from '@/hooks/usePacientes';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import type { Paciente } from '@/types/pacientes';
 
 interface PatientSearchProps {
@@ -356,11 +359,11 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
             )}
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
+          <div className="space-y-1.5">
+            <Label className="text-xs">
               Nombre completo <span className="text-destructive">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={newPatientData?.nombre || newPatientForm.nombre}
               onChange={(e) =>
@@ -368,15 +371,14 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               }
               disabled={!!newPatientData}
               placeholder="Ej: Juan Pérez García"
-              className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:border-emerald-500 focus:ring-emerald-500/20 disabled:opacity-60"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
+          <div className="space-y-1.5">
+            <Label className="text-xs">
               Teléfono <span className="text-destructive">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="tel"
               value={newPatientData?.telefono || newPatientForm.telefono}
               onChange={(e) =>
@@ -384,15 +386,12 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               }
               disabled={!!newPatientData}
               placeholder="10 dígitos"
-              className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:border-emerald-500 focus:ring-emerald-500/20 disabled:opacity-60"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              Email (opcional)
-            </label>
-            <input
+          <div className="space-y-1.5">
+            <Label className="text-xs">Email (opcional)</Label>
+            <Input
               type="email"
               value={newPatientData?.email || newPatientForm.email}
               onChange={(e) =>
@@ -400,27 +399,29 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
               }
               disabled={!!newPatientData}
               placeholder="ejemplo@correo.com"
-              className="w-full px-3 py-2 rounded-lg bg-muted/50 border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:border-emerald-500 focus:ring-emerald-500/20 disabled:opacity-60"
             />
           </div>
 
           {!newPatientData && (
             <div className="flex gap-2 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={handleCancelNewPatient}
-                className="flex-1 px-3 py-2 rounded-lg border border-border text-muted-foreground hover:bg-accent transition-colors text-sm"
+                className="flex-1"
+                size="sm"
               >
                 Cancelar
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleNewPatientFormSubmit}
                 disabled={!isNewPatientFormValid}
-                className="flex-1 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                size="sm"
               >
                 Continuar
-              </button>
+              </Button>
             </div>
           )}
 

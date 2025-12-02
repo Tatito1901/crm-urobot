@@ -14,6 +14,10 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, FileText, Scissors, Clock, DollarSign, MapPin, AlertCircle, Save, Plus, Send, FileDown, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   type TipoDestino,
   TIPOS_DESTINO, 
@@ -167,7 +171,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
 
   const handleGenerarPDF = async () => {
     if (!presupuesto.tipoCirugia || !presupuesto.monto) {
-      alert('Por favor complete el tipo de cirugía y el monto.');
+      toast.warning('Por favor complete el tipo de cirugía y el monto.');
       return;
     }
 
@@ -403,11 +407,10 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
       doc.save(fileName);
 
       // Simular envío exitoso
-      alert('Presupuesto generado correctamente.');
+      toast.success('Presupuesto generado correctamente.');
       
-    } catch (error) {
-      console.error('Error generando PDF:', error);
-      alert('Hubo un error al generar el PDF.');
+    } catch {
+      toast.error('Hubo un error al generar el PDF.');
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -427,7 +430,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
     if (tipoDestino === 'presupuesto_enviado' && presupuesto.tipoCirugia) {
       // Validación básica
       if (!presupuesto.monto) {
-        alert('Por favor ingresa el monto del presupuesto');
+        toast.warning('Por favor ingresa el monto del presupuesto');
         return;
       }
       destino.presupuesto = presupuesto as PresupuestoCirugia;
@@ -436,7 +439,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
     if (tipoDestino === 'cirugia_realizada' && cirugia.tipoCirugia) {
       // Validación básica
       if (!cirugia.costo) {
-        alert('Por favor ingresa el costo de la cirugía');
+        toast.warning('Por favor ingresa el costo de la cirugía');
         return;
       }
       destino.cirugia = cirugia as CirugiaRealizada;
@@ -475,7 +478,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
               </div>
               <span className="truncate">Destino del Paciente</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1 truncate ml-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate ml-1">
               Acción para <span className="font-medium text-slate-900 dark:text-slate-200">{pacienteNombre}</span>
             </p>
           </div>
@@ -500,7 +503,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                   relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 gap-1.5 sm:gap-2 min-h-[85px] sm:min-h-[100px] group
                   ${tipoDestino === tipo 
                     ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10 dark:border-indigo-500 shadow-md shadow-indigo-500/10 scale-[1.02]' 
-                    : 'border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:shadow-sm'}
+                    : 'border-border hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:shadow-sm'}
                 `}
               >
                 <div className={`
@@ -516,7 +519,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                 <span className={`text-[10px] sm:text-xs font-bold text-center leading-tight transition-colors ${
                   tipoDestino === tipo 
                     ? 'text-indigo-700 dark:text-indigo-300' 
-                    : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'
+                    : 'text-muted-foreground group-hover:text-slate-900 dark:group-hover:text-slate-200'
                 }`}>
                   {DESTINO_LABELS[tipo]}
                 </span>
@@ -531,7 +534,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
           </div>
 
           {/* Formularios Condicionales */}
-          <div className="bg-slate-50 dark:bg-[#131b2b] rounded-lg sm:rounded-xl p-4 sm:p-5 border border-slate-100 dark:border-blue-900/10 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-muted rounded-lg sm:rounded-xl p-4 sm:p-5 border border-border animate-in fade-in zoom-in-95 duration-200">
             
             {/* Formulario Alta Definitiva */}
             {tipoDestino === 'alta_definitiva' && (
@@ -541,12 +544,12 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                   <h3 className="font-semibold">Detalles del Alta</h3>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Motivo del Alta</label>
-                  <textarea
+                  <Label className="text-xs font-semibold uppercase tracking-wider">Motivo del Alta</Label>
+                  <Textarea
                     value={motivoAlta}
                     onChange={(e) => setMotivoAlta(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-h-[100px]"
                     placeholder="Describa el motivo del alta médica..."
+                    className="min-h-[100px]"
                   />
                 </div>
               </div>
@@ -562,12 +565,12 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                 
                 <div className="grid grid-cols-1 gap-6">
                   {/* Sección 1: Configuración General */}
-                  <div className="space-y-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="space-y-3 border-b border-border pb-4">
                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">1. Sede y Fecha</h4>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Selector de Sede */}
                         <div className="space-y-2 sm:col-span-2">
-                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sede de Atención</label>
+                          <label className="text-xs font-semibold text-foreground">Sede de Atención</label>
                           <div className="grid grid-cols-2 gap-3">
                             <button
                               onClick={() => setPresupuesto({ ...presupuesto, sede: 'polanco' })}
@@ -582,7 +585,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                                 <MapPin className="h-5 w-5" />
                               </div>
                               <div>
-                                <span className={`block text-sm font-bold ${presupuesto.sede === 'polanco' ? 'text-emerald-900 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}>Polanco</span>
+                                <span className={`block text-sm font-bold ${presupuesto.sede === 'polanco' ? 'text-emerald-900 dark:text-emerald-300' : 'text-foreground'}`}>Polanco</span>
                                 <span className="block text-xs text-slate-500 mt-0.5">Hospital Angeles</span>
                               </div>
                               {presupuesto.sede === 'polanco' && (
@@ -605,7 +608,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                                 <MapPin className="h-5 w-5" />
                               </div>
                               <div>
-                                <span className={`block text-sm font-bold ${presupuesto.sede === 'satelite' ? 'text-emerald-900 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}>Satélite</span>
+                                <span className={`block text-sm font-bold ${presupuesto.sede === 'satelite' ? 'text-emerald-900 dark:text-emerald-300' : 'text-foreground'}`}>Satélite</span>
                                 <span className="block text-xs text-slate-500 mt-0.5">San Angel Inn</span>
                               </div>
                               {presupuesto.sede === 'satelite' && (
@@ -618,44 +621,47 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Fecha de Envío</label>
+                          <label className="text-xs font-semibold text-foreground">Fecha de Envío</label>
                           <input
                             type="date"
                             value={presupuesto.fechaEnvio}
                             onChange={(e) => setPresupuesto({ ...presupuesto, fechaEnvio: e.target.value })}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-border rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                           />
                         </div>
                      </div>
                   </div>
 
                   {/* Sección 2: Detalles Económicos */}
-                  <div className="space-y-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="space-y-3 border-b border-border pb-4">
                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">2. Detalles del Procedimiento</h4>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2 sm:col-span-2">
-                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipo de Cirugía</label>
-                          <select
+                          <Label className="text-xs font-semibold">Tipo de Cirugía</Label>
+                          <Select
                             value={presupuesto.tipoCirugia || ''}
-                            onChange={(e) => setPresupuesto({ ...presupuesto, tipoCirugia: e.target.value })}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                            onValueChange={(value) => setPresupuesto({ ...presupuesto, tipoCirugia: value })}
                           >
-                            <option value="">Seleccionar cirugía...</option>
-                            {TIPOS_CIRUGIA.map(c => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar cirugía..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {TIPOS_CIRUGIA.map(c => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Monto Total (MXN)</label>
+                          <label className="text-xs font-semibold text-foreground">Monto Total (MXN)</label>
                           <div className="relative">
                             <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                             <input
                               type="number"
                               value={presupuesto.monto || ''}
                               onChange={(e) => setPresupuesto({ ...presupuesto, monto: Number(e.target.value) })}
-                              className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                              className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-border rounded-lg text-sm font-medium focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                               placeholder="0.00"
                             />
                           </div>
@@ -667,14 +673,14 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">3. Inclusiones y Notas</h4>
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Items Incluidos</label>
+                      <label className="text-xs font-semibold text-foreground">Items Incluidos</label>
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={nuevoItemInclusion}
                           onChange={(e) => setNuevoItemInclusion(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handleAddInclusion()}
-                          className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                          className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-border rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                           placeholder="Ej: Honorarios, Hospitalización..."
                         />
                         <button
@@ -687,7 +693,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                       
                       <div className="flex flex-wrap gap-2 mt-3">
                         {presupuesto.inclusiones?.map((item, index) => (
-                          <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm group animate-in zoom-in-95">
+                          <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-border rounded-full text-sm group animate-in zoom-in-95">
                             <span className="text-slate-600 dark:text-slate-300 text-xs font-medium">
                               {item}
                             </span>
@@ -706,18 +712,18 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
                     </div>
                     
                     <div className="space-y-2 mt-4">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Notas Adicionales</label>
-                      <textarea
+                      <Label className="text-xs font-semibold">Notas Adicionales</Label>
+                      <Textarea
                         value={presupuesto.notas || ''}
                         onChange={(e) => setPresupuesto({ ...presupuesto, notas: e.target.value })}
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all min-h-[80px]"
                         placeholder="Condiciones, validez, forma de pago..."
+                        className="min-h-[80px]"
                       />
                     </div>
                   </div>
 
                   {/* Botón Generar PDF */}
-                  <div className="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800">
+                  <div className="pt-4 mt-2 border-t border-border">
                     <button
                       onClick={handleGenerarPDF}
                       disabled={isGeneratingPdf}
@@ -754,64 +760,67 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Cirugía Realizada</label>
-                    <select
+                    <Label className="text-xs font-semibold uppercase tracking-wider">Cirugía Realizada</Label>
+                    <Select
                       value={cirugia.tipoCirugia || ''}
-                      onChange={(e) => setCirugia({ ...cirugia, tipoCirugia: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      onValueChange={(value) => setCirugia({ ...cirugia, tipoCirugia: value })}
                     >
-                      <option value="">Seleccionar cirugía...</option>
-                      {TIPOS_CIRUGIA.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cirugía..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIPOS_CIRUGIA.map(c => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Costo Final (MXN)</label>
+                    <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Costo Final (MXN)</label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                       <input
                         type="number"
                         value={cirugia.costo || ''}
                         onChange={(e) => setCirugia({ ...cirugia, costo: Number(e.target.value) })}
-                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                         placeholder="0.00"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Fecha Cirugía</label>
+                    <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Fecha Cirugía</label>
                     <input
                       type="date"
                       value={cirugia.fechaCirugia}
                       onChange={(e) => setCirugia({ ...cirugia, fechaCirugia: e.target.value })}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Sede</label>
+                    <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Sede</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                       <input
                         type="text"
                         value={cirugia.sedeOperacion || ''}
                         onChange={(e) => setCirugia({ ...cirugia, sedeOperacion: e.target.value })}
-                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                         placeholder="Ej: Polanco, Satélite..."
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Notas de Cirugía</label>
-                    <textarea
+                    <Label className="text-xs font-semibold uppercase tracking-wider">Notas de Cirugía</Label>
+                    <Textarea
                       value={cirugia.notas || ''}
                       onChange={(e) => setCirugia({ ...cirugia, notas: e.target.value })}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all min-h-[80px]"
                       placeholder="Complicaciones, observaciones post-op..."
+                      className="min-h-[80px]"
                     />
                   </div>
                 </div>
@@ -820,14 +829,14 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
 
             {/* Mensajes para otros estados */}
             {tipoDestino === 'seguimiento' && (
-              <div className="flex items-start gap-3 text-slate-600 dark:text-slate-400">
+              <div className="flex items-start gap-3 text-muted-foreground">
                 <Clock className="h-5 w-5 mt-0.5 text-blue-500" />
                 <p className="text-sm">El paciente continuará en seguimiento regular. Use el campo de observaciones para detallar el plan.</p>
               </div>
             )}
 
             {tipoDestino === 'pendiente' && (
-              <div className="flex items-start gap-3 text-slate-600 dark:text-slate-400">
+              <div className="flex items-start gap-3 text-muted-foreground">
                 <AlertCircle className="h-5 w-5 mt-0.5 text-amber-500" />
                 <p className="text-sm">El estado del paciente está pendiente de definición. Puede agregar notas temporales abajo.</p>
               </div>
@@ -836,12 +845,12 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
 
           {/* Observaciones Generales */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Observaciones Generales</label>
-            <textarea
+            <Label className="text-xs font-semibold uppercase tracking-wider">Observaciones Generales</Label>
+            <Textarea
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131b2b] border border-slate-200 dark:border-blue-900/30 rounded-lg text-sm focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all min-h-[80px]"
               placeholder="Cualquier otra información relevante sobre el destino del paciente..."
+              className="min-h-[80px]"
             />
           </div>
 
@@ -858,7 +867,7 @@ export const DestinoPacienteModal: React.FC<DestinoPacienteModalProps> = ({
           </button>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto sm:flex-none sm:min-w-[140px] px-5 py-3.5 bg-white dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all text-sm order-2 sm:order-1 shadow-sm hover:shadow"
+            className="w-full sm:w-auto sm:flex-none sm:min-w-[140px] px-5 py-3.5 bg-white dark:bg-slate-800/50 text-foreground font-semibold rounded-xl border border-border hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all text-sm order-2 sm:order-1 shadow-sm hover:shadow"
           >
             Cancelar
           </button>

@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { addDays, generateTimeSlotsDetailed, isToday } from '@/lib/date-utils';
 import { AppointmentCard } from '../shared/AppointmentCard';
 import { positionAppointmentsForDay, getDayOfWeek } from '../../lib/appointment-positioning';
@@ -46,11 +46,21 @@ export const TimeGrid = React.memo(function TimeGrid({
       ? [weekStart]
       : Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Calcular posición actual del tiempo en tiempo real
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  // const currentTimePosition = (currentHour - startHour) * 60 + currentMinute;
+  // Estado para la hora actual (evitar hydration mismatch)
+  const [currentTime, setCurrentTime] = useState({ hour: 0, minute: 0 });
+  
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime({ hour: now.getHours(), minute: now.getMinutes() });
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 60000); // Actualizar cada minuto
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentHour = currentTime.hour;
+  const currentMinute = currentTime.minute;
   const showCurrentTimeLine = days.some(day => isToday(day));
   
   // Auto-scroll a la hora actual al cargar

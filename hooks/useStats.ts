@@ -9,7 +9,7 @@
 
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
-import { SWR_CONFIG_DASHBOARD } from '@/lib/swr-config';
+import { SWR_CONFIG_DASHBOARD, CACHE_KEYS } from '@/lib/swr-config';
 
 export interface KPIData {
   totalPacientes: number;
@@ -274,7 +274,7 @@ const fetchStats = async (): Promise<StatsData> => {
  */
 export function useStats() {
   const { data, error, isLoading, mutate } = useSWR<StatsData>(
-    'dashboard-stats',
+    CACHE_KEYS.STATS,
     fetchStats,
     SWR_CONFIG_DASHBOARD
   );

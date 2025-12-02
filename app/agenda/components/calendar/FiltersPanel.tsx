@@ -64,7 +64,7 @@ export const FiltersPanel: React.FC = () => {
         {activeFiltersCount > 0 && (
           <button
             onClick={resetFilters}
-            className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium"
+            className="text-xs text-foreground transition-colors font-medium"
           >
             Limpiar todo
           </button>
@@ -98,7 +98,7 @@ export const FiltersPanel: React.FC = () => {
                 type="checkbox"
                 checked={onlyToday}
                 onChange={(e) => setOnlyToday(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="rounded border-border text-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
               <span className="text-xs text-slate-300 group-hover:text-slate-200">Solo hoy</span>
             </label>
@@ -107,7 +107,7 @@ export const FiltersPanel: React.FC = () => {
                 type="checkbox"
                 checked={onlyPendingConfirmation}
                 onChange={(e) => setOnlyPendingConfirmation(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-800 text-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="rounded border-border text-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
               <span className="text-xs text-slate-300 group-hover:text-slate-200">
                 Pendientes de confirmar

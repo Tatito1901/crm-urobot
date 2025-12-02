@@ -11,6 +11,8 @@
 import React, { useState } from 'react';
 import { Phone, Mail, Calendar, ChevronDown, ChevronUp, Target, CheckCircle, Scissors, DollarSign, Plus, FileText, MessageCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { type PacienteDetallado } from '@/hooks/usePacienteDetallado';
 import { DESTINO_LABELS, DESTINO_COLORS, type TipoDestino } from '@/types/destinos-pacientes';
 import { DestinoPacienteModal } from './DestinoPacienteModal';
@@ -368,28 +370,31 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
         </div>
         {isEditingNotas ? (
           <div className="space-y-2">
-            <textarea
+            <Textarea
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               placeholder="Agrega notas sobre el paciente..."
-              className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none"
+              className="min-h-[80px]"
             />
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={handleSaveNotas}
-                className="flex-1 px-3 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-lg transition-colors shadow-sm"
+                size="sm"
+                className="flex-1"
               >
                 Guardar
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setIsEditingNotas(false);
                   setNotas(paciente.notas || '');
                 }}
-                className="flex-1 px-3 py-1.5 bg-muted hover:bg-accent text-muted-foreground hover:text-foreground text-xs font-medium rounded-lg transition-colors"
+                className="flex-1"
               >
                 Cancelar
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
