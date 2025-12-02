@@ -18,12 +18,23 @@ const supabase = createClient()
 type ConversacionRow = Tables<'conversaciones'>
 
 // Tipos para la UI
-interface Mensaje {
+export type TipoMensaje = 'text' | 'image' | 'audio' | 'video' | 'document' | 'sticker' | 'location'
+
+export interface Mensaje {
   id: string
   telefono: string
   contenido: string
   rol: 'usuario' | 'asistente'
   createdAt: Date
+  // Campos multimedia
+  tipoMensaje: TipoMensaje
+  mediaUrl?: string | null
+  mediaMimeType?: string | null
+  mediaFilename?: string | null
+  mediaCaption?: string | null
+  mediaDurationSeconds?: number | null
+  mediaWidth?: number | null
+  mediaHeight?: number | null
 }
 
 interface Conversacion {
@@ -219,12 +230,21 @@ const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> =>
       const mensaje = row.mensaje?.trim()
       return mensaje && !MENSAJES_INVALIDOS.includes(mensaje)
     })
-    .map((row: ConversacionRow) => ({
+    .map((row: ConversacionRow): Mensaje => ({
       id: row.id,
       telefono: row.telefono,
       contenido: row.mensaje,
       rol: row.rol as 'usuario' | 'asistente',
       createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      // Campos multimedia
+      tipoMensaje: ((row as any).tipo_mensaje as TipoMensaje) || 'text',
+      mediaUrl: (row as any).media_url || null,
+      mediaMimeType: (row as any).media_mime_type || null,
+      mediaFilename: (row as any).media_filename || null,
+      mediaCaption: (row as any).media_caption || null,
+      mediaDurationSeconds: (row as any).media_duration_seconds || null,
+      mediaWidth: (row as any).media_width || null,
+      mediaHeight: (row as any).media_height || null,
     }))
 }
 

@@ -304,6 +304,12 @@ export default function ConversacionesPage() {
                                 rol={msg.rol}
                                 createdAt={msg.createdAt}
                                 isConsecutive={!!isConsecutive}
+                                tipoMensaje={msg.tipoMensaje}
+                                mediaUrl={msg.mediaUrl}
+                                mediaMimeType={msg.mediaMimeType}
+                                mediaFilename={msg.mediaFilename}
+                                mediaCaption={msg.mediaCaption}
+                                mediaDurationSeconds={msg.mediaDurationSeconds}
                               />
                             )
                           })}
