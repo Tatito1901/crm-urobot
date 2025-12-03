@@ -145,7 +145,7 @@ const fetchPacientesPaginated = async (
 export function usePacientesPaginated(
   config: UsePacientesPaginatedConfig = {}
 ): UsePacientesPaginatedReturn {
-  const { pageSize = 50, searchDebounce = 300 } = config;
+  const { pageSize = 50, searchDebounce = 150 } = config; // ✅ Debounce reducido a 150ms
   
   // Estado de paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -187,20 +187,27 @@ export function usePacientesPaginated(
     return `${CACHE_KEYS.PACIENTES}-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`;
   }, [currentPage, pageSize, debouncedSearch, estadoFilter]);
   
-  // SWR para datos paginados - FORZAR revalidación para asegurar datos frescos
+  // SWR para datos paginados - ULTRA RÁPIDO
   const { data, error, isLoading, mutate } = useSWR(
     swrKey,
     () => fetchPacientesPaginated(currentPage, pageSize, debouncedSearch, estadoFilter),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      revalidateIfStale: true, // ✅ Revalidar si los datos están stale
-      dedupingInterval: 1000,  // ✅ Solo 1 segundo de deduplicación
+      revalidateIfStale: false,   // No revalidar automáticamente
+      dedupingInterval: 60000,    // Cache 1 minuto para evitar re-fetches
       refreshInterval: 0,
-      keepPreviousData: true,
-      shouldRetryOnError: true,
-      errorRetryCount: 1,
+      keepPreviousData: true,     // Mostrar datos previos mientras carga
+      shouldRetryOnError: false,  // No reintentar en error
     }
+  );
+  
+  // ✅ PREFETCH: Cargar siguiente página en background
+  const nextPageKey = `${CACHE_KEYS.PACIENTES}-p${currentPage + 1}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`;
+  useSWR(
+    currentPage < Math.ceil((data?.totalCount ?? 0) / pageSize) ? nextPageKey : null,
+    () => fetchPacientesPaginated(currentPage + 1, pageSize, debouncedSearch, estadoFilter),
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
   );
   
   // Cálculos de paginación
