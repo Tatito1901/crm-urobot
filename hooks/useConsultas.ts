@@ -6,7 +6,7 @@
  * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import type { Consulta, ConsultaRow } from '@/types/consultas'
@@ -113,27 +113,8 @@ export function useConsultas(): UseConsultasReturn {
     SWR_CONFIG_STANDARD
   )
 
-  // ✅ Suscripción Realtime a tabla 'consultas'
-  useEffect(() => {
-    const channel = supabase
-      .channel('consultas-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'consultas',
-        },
-        () => {
-          mutate() // Revalida los datos sin recargar página
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [mutate])
+  // ❌ Realtime DESHABILITADO - Consumía demasiados recursos
+  // Los datos se actualizan vía SWR con revalidateOnFocus
 
   const consultas = data?.consultas || []
 

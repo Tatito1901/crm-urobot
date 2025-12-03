@@ -7,7 +7,7 @@
  * ✅ Realtime: Actualizaciones en vivo
  */
 
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { SWR_CONFIG_REALTIME, CACHE_KEYS } from '@/lib/swr-config'
@@ -169,19 +169,31 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
       const leadInfo = leadsMap.get(tel10)
       
       // Determinar tipo y nombre con lógica mejorada
+      // JERARQUÍA:
+      // 1. PACIENTE: Tiene ≥1 cita válida (no cancelada) O lead tiene paciente_id
+      // 2. LEAD: Existe en leads O en pacientes (sin citas válidas)
+      // 3. DESCONOCIDO: No está en ninguna tabla
       let tipoContacto: 'paciente' | 'lead' | 'desconocido' = 'desconocido'
       let nombreContacto: string | null = null
+      let estadoLeadFinal: string | null = null
       
       // PACIENTE: Tiene al menos 1 cita válida (no cancelada)
-      if (pacienteInfo?.citasValidas && pacienteInfo.citasValidas > 0) {
+      // O el lead fue convertido (tiene paciente_id)
+      const esPacienteConCita = pacienteInfo?.citasValidas && pacienteInfo.citasValidas > 0
+      const esLeadConvertido = leadInfo?.pacienteId != null
+      
+      if (esPacienteConCita || esLeadConvertido) {
         tipoContacto = 'paciente'
-        nombreContacto = pacienteInfo.nombre || leadInfo?.nombre || null
+        nombreContacto = pacienteInfo?.nombre || leadInfo?.nombre || null
+        // Si lead fue convertido, mostrar "Convertido" como estado
+        estadoLeadFinal = esLeadConvertido ? 'Convertido' : (leadInfo?.estado || null)
       }
       // LEAD: Existe en leads O en pacientes (sin citas válidas)
       else if (leadInfo || pacienteInfo) {
         tipoContacto = 'lead'
         // Priorizar nombre de paciente si existe, luego lead
         nombreContacto = pacienteInfo?.nombre || leadInfo?.nombre || null
+        estadoLeadFinal = leadInfo?.estado || null
       }
       // DESCONOCIDO: No está en ninguna tabla
       // tipoContacto ya es 'desconocido' por defecto
@@ -194,7 +206,7 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
         mensajesNoLeidos: 0,
         tipoContacto,
         // Campos adicionales
-        estadoLead: leadInfo?.estado || null,
+        estadoLead: estadoLeadFinal,
         citasValidas: pacienteInfo?.citasValidas || 0,
         totalMensajes: mensajesPorTelefono.get(msg.telefono) || 0,
       })
@@ -215,6 +227,43 @@ const MENSAJES_INVALIDOS = [
   '',
 ]
 
+/**
+ * Inferir tipo de mensaje basándose en mime type o URL
+ * cuando tipo_mensaje es null pero hay media
+ */
+const inferirTipoMensaje = (
+  tipoMensaje: string | null,
+  mimeType: string | null,
+  mediaUrl: string | null,
+  filename: string | null
+): TipoMensaje => {
+  // Si ya tenemos un tipo explícito, usarlo
+  if (tipoMensaje) return tipoMensaje as TipoMensaje
+  
+  // Si no hay media, es texto
+  if (!mediaUrl) return 'text'
+  
+  const mime = mimeType?.toLowerCase() || ''
+  const url = mediaUrl?.toLowerCase() || ''
+  const file = filename?.toLowerCase() || ''
+  
+  // Inferir por mime type
+  if (mime.includes('pdf') || file.endsWith('.pdf') || url.includes('.pdf')) return 'document'
+  if (mime.startsWith('image/')) return 'image'
+  if (mime.startsWith('video/')) return 'video'
+  if (mime.startsWith('audio/') || mime.includes('ogg')) return 'audio'
+  if (mime.includes('document') || mime.includes('word') || mime.includes('excel') || mime.includes('spreadsheet')) return 'document'
+  
+  // Inferir por extensión en URL o filename
+  if (url.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i) || file.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i)) return 'image'
+  if (url.match(/\.(mp4|mov|avi|webm|mkv)(\?|$)/i) || file.match(/\.(mp4|mov|avi|webm|mkv)$/i)) return 'video'
+  if (url.match(/\.(mp3|wav|ogg|m4a|opus)(\?|$)/i) || file.match(/\.(mp3|wav|ogg|m4a|opus)$/i)) return 'audio'
+  if (url.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)(\?|$)/i) || file.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/i)) return 'document'
+  
+  // Fallback: si hay URL de media pero no sabemos qué es, asumir documento
+  return 'document'
+}
+
 const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> => {
   const { data, error } = await supabase
     .from('conversaciones')
@@ -225,27 +274,35 @@ const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> =>
   if (error) throw error
   
   return (data || [])
-    // Filtrar mensajes basura/inválidos
+    // Filtrar mensajes basura/inválidos (pero permitir mensajes con media aunque el texto esté vacío)
     .filter((row: ConversacionRow) => {
       const mensaje = row.mensaje?.trim()
-      return mensaje && !MENSAJES_INVALIDOS.includes(mensaje)
+      const tieneMedia = !!(row as any).media_url
+      // Mantener si tiene contenido de texto válido O si tiene media adjunta
+      return (mensaje && !MENSAJES_INVALIDOS.includes(mensaje)) || tieneMedia
     })
-    .map((row: ConversacionRow): Mensaje => ({
-      id: row.id,
-      telefono: row.telefono,
-      contenido: row.mensaje,
-      rol: row.rol as 'usuario' | 'asistente',
-      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
-      // Campos multimedia
-      tipoMensaje: ((row as any).tipo_mensaje as TipoMensaje) || 'text',
-      mediaUrl: (row as any).media_url || null,
-      mediaMimeType: (row as any).media_mime_type || null,
-      mediaFilename: (row as any).media_filename || null,
-      mediaCaption: (row as any).media_caption || null,
-      mediaDurationSeconds: (row as any).media_duration_seconds || null,
-      mediaWidth: (row as any).media_width || null,
-      mediaHeight: (row as any).media_height || null,
-    }))
+    .map((row: ConversacionRow): Mensaje => {
+      const mediaUrl = (row as any).media_url || null
+      const mediaMimeType = (row as any).media_mime_type || null
+      const mediaFilename = (row as any).media_filename || null
+      
+      return {
+        id: row.id,
+        telefono: row.telefono,
+        contenido: row.mensaje || (row as any).media_caption || '[Archivo adjunto]',
+        rol: row.rol as 'usuario' | 'asistente',
+        createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+        // Campos multimedia con inferencia de tipo
+        tipoMensaje: inferirTipoMensaje((row as any).tipo_mensaje, mediaMimeType, mediaUrl, mediaFilename),
+        mediaUrl,
+        mediaMimeType,
+        mediaFilename,
+        mediaCaption: (row as any).media_caption || null,
+        mediaDurationSeconds: (row as any).media_duration_seconds || null,
+        mediaWidth: (row as any).media_width || null,
+        mediaHeight: (row as any).media_height || null,
+      }
+    })
 }
 
 export function useConversaciones(): UseConversacionesReturn {
@@ -271,32 +328,11 @@ export function useConversaciones(): UseConversacionesReturn {
     SWR_CONFIG_REALTIME
   )
 
-  // ✅ Suscripción Realtime a tabla 'conversaciones'
-  useEffect(() => {
-    const channel = supabase
-      .channel('conversaciones-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'conversaciones',
-        },
-        (payload) => {
-          mutateConversaciones()
-          
-          const newRecord = payload.new as ConversacionRow
-          if (newRecord.telefono === telefonoActivo) {
-            mutateMensajes()
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [mutateConversaciones, mutateMensajes, telefonoActivo])
+  // ❌ Realtime DESHABILITADO - Consumía demasiados recursos
+  // Los datos se actualizan vía SWR:
+  // - revalidateOnFocus: al volver a la pestaña
+  // - revalidateOnReconnect: al reconectar internet
+  // - refreshInterval en SWR_CONFIG_REALTIME: polling cada 30s
 
   // Marcar como leído (no-op por ahora, la tabla no tiene ese campo)
   const marcarComoLeido = useCallback(async (_telefono: string) => {

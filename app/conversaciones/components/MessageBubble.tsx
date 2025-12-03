@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { format } from 'date-fns';
-import { Bot, User, FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X } from 'lucide-react';
+import { Bot, User, FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye } from 'lucide-react';
 import type { TipoMensaje } from '@/hooks/useConversaciones';
 
 interface MessageBubbleProps {
@@ -77,40 +77,80 @@ const DocumentContent = memo(function DocumentContent({
   mimeType?: string | null;
   caption?: string | null;
 }) {
-  const isPdf = mimeType?.includes('pdf');
+  const [iframeError, setIframeError] = useState(false);
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
+  
+  const isPdf = mimeType?.includes('pdf') || filename?.toLowerCase().endsWith('.pdf') || url?.toLowerCase().includes('.pdf');
   const displayName = filename || 'Documento';
-  const extension = filename?.split('.').pop()?.toUpperCase() || 'DOC';
+  const extension = filename?.split('.').pop()?.toUpperCase() || (isPdf ? 'PDF' : 'DOC');
+  
+  // Obtener color según tipo de documento
+  const getDocStyles = () => {
+    if (isPdf) return { bg: 'bg-red-500/10', text: 'text-red-500', accent: 'bg-red-500' };
+    if (extension === 'DOC' || extension === 'DOCX') return { bg: 'bg-blue-500/10', text: 'text-blue-500', accent: 'bg-blue-500' };
+    if (extension === 'XLS' || extension === 'XLSX') return { bg: 'bg-green-500/10', text: 'text-green-500', accent: 'bg-green-500' };
+    return { bg: 'bg-slate-500/10', text: 'text-slate-500', accent: 'bg-slate-500' };
+  };
+  
+  const styles = getDocStyles();
   
   return (
     <div className="space-y-2">
-      {/* Preview de PDF */}
-      {isPdf && (
-        <div className="relative rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
-          <iframe 
-            src={`${url}#toolbar=0&navpanes=0`}
-            className="w-full h-48 border-0"
-            title={displayName}
-          />
+      {/* Card de documento con preview para PDFs */}
+      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
+        {/* Header con info del archivo */}
+        <div className="flex items-center gap-3 p-3">
+          <div className={`w-12 h-12 rounded-lg ${styles.bg} flex items-center justify-center shrink-0`}>
+            <FileText className={`w-6 h-6 ${styles.text}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+            <p className="text-xs text-muted-foreground">{extension} • Toca para abrir</p>
+          </div>
         </div>
-      )}
+        
+        {/* Preview de PDF (si está habilitado) */}
+        {isPdf && showPdfViewer && !iframeError && (
+          <div className="relative border-t border-slate-200 dark:border-slate-700">
+            <iframe 
+              src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full h-64 border-0 bg-slate-100 dark:bg-slate-900"
+              title={displayName}
+              onError={() => setIframeError(true)}
+            />
+            <button
+              onClick={() => setShowPdfViewer(false)}
+              className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        )}
+        
+        {/* Botones de acción */}
+        <div className="flex border-t border-slate-200 dark:border-slate-700">
+          {isPdf && !showPdfViewer && (
+            <button
+              onClick={() => setShowPdfViewer(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors border-r border-slate-200 dark:border-slate-700"
+            >
+              <Eye className="w-4 h-4" />
+              Vista previa
+            </button>
+          )}
+          <a 
+            href={url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            {isPdf ? 'Abrir PDF' : 'Descargar'}
+          </a>
+        </div>
+      </div>
       
-      {/* Info del archivo + descarga */}
-      <a 
-        href={url} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors group"
-      >
-        <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0">
-          <FileText className="w-5 h-5 text-red-500" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{displayName}</p>
-          <p className="text-xs text-muted-foreground">{extension}</p>
-        </div>
-        <Download className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
-      </a>
-      {caption && <p className="text-xs opacity-80">{caption}</p>}
+      {caption && <p className="text-xs opacity-80 mt-1">{caption}</p>}
     </div>
   );
 });
@@ -253,20 +293,38 @@ export const MessageBubble = memo(function MessageBubble({
   const renderContent = () => {
     // Si hay mediaUrl, renderizar según tipo
     if (mediaUrl) {
-      switch (tipoMensaje) {
-        case 'image':
-          return <ImageContent url={mediaUrl} caption={mediaCaption} />;
-        case 'document':
-          return <DocumentContent url={mediaUrl} filename={mediaFilename} mimeType={mediaMimeType} caption={mediaCaption} />;
-        case 'audio':
-          return <AudioContent url={mediaUrl} duration={mediaDurationSeconds} caption={mediaCaption} />;
-        case 'video':
-          return <VideoContent url={mediaUrl} caption={mediaCaption} />;
-        case 'sticker':
-          return <img src={mediaUrl} alt="Sticker" className="max-w-32 max-h-32" />;
-        default:
-          break;
-      }
+      const mediaComponent = (() => {
+        switch (tipoMensaje) {
+          case 'image':
+            return <ImageContent url={mediaUrl} caption={mediaCaption} />;
+          case 'document':
+            return <DocumentContent url={mediaUrl} filename={mediaFilename} mimeType={mediaMimeType} caption={mediaCaption} />;
+          case 'audio':
+            return <AudioContent url={mediaUrl} duration={mediaDurationSeconds} caption={mediaCaption} />;
+          case 'video':
+            return <VideoContent url={mediaUrl} caption={mediaCaption} />;
+          case 'sticker':
+            return <img src={mediaUrl} alt="Sticker" className="max-w-32 max-h-32" />;
+          default:
+            // Si no reconocemos el tipo pero hay URL, mostrar como documento
+            return <DocumentContent url={mediaUrl} filename={mediaFilename} mimeType={mediaMimeType} caption={mediaCaption} />;
+        }
+      })();
+      
+      // Si hay texto adicional además del media (y no es el placeholder), mostrarlo
+      const textoAdicional = contenido && 
+        contenido !== '[Archivo adjunto]' && 
+        contenido !== mediaCaption &&
+        !contenido.startsWith('undefined');
+      
+      return (
+        <div className="space-y-2">
+          {mediaComponent}
+          {textoAdicional && (
+            <p className="whitespace-pre-wrap break-words text-sm">{contenido}</p>
+          )}
+        </div>
+      );
     }
     
     // Location

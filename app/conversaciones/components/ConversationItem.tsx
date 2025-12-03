@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { UserPlus, HelpCircle, Calendar } from 'lucide-react';
+import { UserPlus, HelpCircle, UserCheck } from 'lucide-react';
 
 interface ConversationItemProps {
   telefono: string;
@@ -51,20 +51,27 @@ export const ConversationItem = memo(function ConversationItem({
 
   const avatarStyles = getAvatarStyles(tipoContacto);
 
-  const getTipoBadge = (tipo: string) => {
+  const getTipoBadge = (tipo: string, estado: string | null) => {
     if (tipo === 'paciente') {
       return (
         <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
-          <Calendar className="w-2.5 h-2.5" />
-          Con cita
+          <UserCheck className="w-2.5 h-2.5" />
+          Paciente
         </span>
       );
     }
     if (tipo === 'lead') {
+      // Mostrar estado del lead si es relevante
+      const label = estado === 'En seguimiento' ? 'Seguimiento' : 'Lead';
+      const isHot = estado === 'En seguimiento';
       return (
-        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+        <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium border ${
+          isHot 
+            ? 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'
+            : 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
+        }`}>
           <UserPlus className="w-2.5 h-2.5" />
-          Lead
+          {label}
         </span>
       );
     }
@@ -118,7 +125,7 @@ export const ConversationItem = memo(function ConversationItem({
           <p className={`text-xs truncate flex-1 ${isActive ? 'text-foreground/80' : 'text-muted-foreground'}`}>
             {ultimoMensaje}
           </p>
-          {getTipoBadge(tipoContacto)}
+          {getTipoBadge(tipoContacto, estadoLead)}
         </div>
         
         {/* Info adicional: mensajes y estado */}
@@ -127,7 +134,23 @@ export const ConversationItem = memo(function ConversationItem({
           {estadoLead && estadoLead !== 'Nuevo' && (
             <>
               <span>•</span>
-              <span className={estadoLead === 'Convertido' ? 'text-blue-500' : ''}>{estadoLead}</span>
+              <span className={
+                estadoLead === 'Convertido' 
+                  ? 'text-blue-500 font-medium' 
+                  : estadoLead === 'En seguimiento' 
+                    ? 'text-amber-500' 
+                    : estadoLead === 'Descartado' 
+                      ? 'text-slate-400' 
+                      : ''
+              }>
+                {estadoLead}
+              </span>
+            </>
+          )}
+          {citasValidas > 0 && estadoLead !== 'Convertido' && (
+            <>
+              <span>•</span>
+              <span className="text-emerald-500 font-medium">{citasValidas} cita{citasValidas !== 1 ? 's' : ''}</span>
             </>
           )}
         </div>

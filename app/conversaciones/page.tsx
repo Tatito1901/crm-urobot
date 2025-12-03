@@ -88,20 +88,26 @@ export default function ConversacionesPage() {
   }, [mensajesActivos])
 
   // Badge del header (reutiliza lógica similar al item pero simplificada)
-  const getTipoBadge = (tipo: string) => {
+  const getTipoBadge = (tipo: string, estado?: string | null) => {
     if (tipo === 'paciente') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-foreground border border-blue-200 dark:border-blue-800">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
           <UserCheck className="w-3 h-3" />
           Paciente
         </span>
       )
     }
     if (tipo === 'lead') {
+      const label = estado === 'En seguimiento' ? 'Seguimiento' : 'Lead';
+      const isHot = estado === 'En seguimiento';
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+          isHot 
+            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800'
+            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+        }`}>
           <UserPlus className="w-3 h-3" />
-          Lead
+          {label}
         </span>
       )
     }
@@ -243,13 +249,13 @@ export default function ConversacionesPage() {
                       {contactoActivo.nombreContacto || contactoActivo.telefono}
                     </h3>
                     <div className="hidden sm:block">
-                      {getTipoBadge(contactoActivo.tipoContacto)}
+                      {getTipoBadge(contactoActivo.tipoContacto, contactoActivo.estadoLead)}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Phone className="w-3 h-3" />
                     <span>{contactoActivo.telefono}</span>
-                    <span className="sm:hidden">• {getTipoBadge(contactoActivo.tipoContacto)}</span>
+                    <span className="sm:hidden">• {getTipoBadge(contactoActivo.tipoContacto, contactoActivo.estadoLead)}</span>
                   </div>
                 </div>
 
