@@ -23,7 +23,7 @@ export default function PacientePerfilPage() {
   const router = useRouter();
   const pacienteId = params.id as string;
 
-  const { paciente, consultas, loading, error, refetch } = usePacienteDetallado(pacienteId);
+  const { paciente, consultas, notasClinicas, loading, error, refetch } = usePacienteDetallado(pacienteId);
   
   // Estado para tabs en móvil
   const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
@@ -197,6 +197,7 @@ export default function PacientePerfilPage() {
         `}>
           <PatientHistory
             consultas={consultas}
+            notasClinicas={notasClinicas}
             onModificarCita={() => {
               // TODO: Abrir modal de edición de cita
             }}

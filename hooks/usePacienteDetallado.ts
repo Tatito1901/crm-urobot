@@ -17,6 +17,18 @@ import { mapConsultasFromDB } from '@/lib/mappers';
 
 const supabase = createClient();
 
+// Tipo para notas clínicas / episodios
+export interface NotaClinica {
+  id: string;
+  pacienteId: string;
+  consultaId: string | null;
+  fecha: string;
+  titulo: string;
+  nota: string;
+  origen: string | null;
+  createdAt: string;
+}
+
 // Tipo extendido para la vista de paciente detallado
 export interface PacienteDetallado extends Paciente {
   destinos: DestinoPaciente[];
@@ -26,6 +38,7 @@ export interface PacienteDetallado extends Paciente {
 interface UsePacienteDetalladoResult {
   paciente: PacienteDetallado | null;
   consultas: Consulta[];
+  notasClinicas: NotaClinica[];
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -34,6 +47,7 @@ interface UsePacienteDetalladoResult {
 export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoResult {
   const [paciente, setPaciente] = useState<PacienteDetallado | null>(null);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
+  const [notasClinicas, setNotasClinicas] = useState<NotaClinica[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -109,6 +123,38 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       );
 
       setConsultas(consultasMapeadas);
+
+      // Obtener notas clínicas / episodios del paciente
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: notasData, error: notasError } = await (supabase as any)
+        .from('consultas_notas')
+        .select('id, paciente_id, consulta_id, fecha, titulo, nota, origen, created_at')
+        .eq('paciente_id', pacienteId)
+        .order('fecha', { ascending: false });
+
+      if (notasError) { /* silenciado - no crítico */ }
+
+      const notasMapeadas: NotaClinica[] = (notasData || []).map((row: {
+        id: string;
+        paciente_id: string;
+        consulta_id: string | null;
+        fecha: string | null;
+        titulo: string | null;
+        nota: string;
+        origen: string | null;
+        created_at: string;
+      }) => ({
+        id: row.id,
+        pacienteId: row.paciente_id,
+        consultaId: row.consulta_id,
+        fecha: row.fecha || row.created_at?.split('T')[0] || '',
+        titulo: row.titulo || 'Nota clínica',
+        nota: row.nota,
+        origen: row.origen,
+        createdAt: row.created_at,
+      }));
+
+      setNotasClinicas(notasMapeadas);
     } catch (err: unknown) {
       setError(err instanceof Error ? err : new Error('Error desconocido'));
     } finally {
@@ -125,6 +171,7 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
   return {
     paciente,
     consultas,
+    notasClinicas,
     loading,
     error,
     refetch: fetchPacienteData,

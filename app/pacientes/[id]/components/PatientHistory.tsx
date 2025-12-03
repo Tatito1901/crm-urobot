@@ -8,25 +8,29 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, Edit, Eye, StickyNote } from 'lucide-react';
+import { Calendar, MapPin, Edit, Eye, StickyNote, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Consulta } from '@/types/consultas';
+import type { NotaClinica } from '@/hooks/usePacienteDetallado';
 import { NotaConsultaModal } from './NotaConsultaModal';
 import { getNotaConsulta, saveNotaConsulta } from '../services/paciente-service';
 
 interface PatientHistoryProps {
   consultas: Consulta[];
+  notasClinicas?: NotaClinica[];
   onModificarCita?: (consultaId: string) => void;
   onVerEpisodio?: (consultaId: string) => void;
 }
 
-type TabType = 'citas' | 'datos';
+type TabType = 'citas' | 'episodios' | 'datos';
 
 export const PatientHistory: React.FC<PatientHistoryProps> = ({
   consultas,
+  notasClinicas = [],
   onModificarCita,
   onVerEpisodio
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('citas');
+  const [expandedNota, setExpandedNota] = useState<string | null>(null);
   
   // Estado para notas
   const [selectedConsulta, setSelectedConsulta] = useState<Consulta | null>(null);
@@ -82,7 +86,8 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
 
   const tabs = [
     { id: 'citas' as TabType, label: 'Citas', count: consultas.length },
-    { id: 'datos' as TabType, label: 'Datos del paciente', count: 0 },
+    { id: 'episodios' as TabType, label: 'Episodios Clínicos', count: notasClinicas.length },
+    { id: 'datos' as TabType, label: 'Datos', count: 0 },
   ];
 
   // Ordenar consultas por fecha (más recientes primero)
@@ -205,6 +210,65 @@ export const PatientHistory: React.FC<PatientHistoryProps> = ({
                   {consulta.updatedAt && (
                     <div className="mt-2 text-xs text-slate-400 dark:text-slate-500">
                       Última modificación: {formatDate(consulta.updatedAt)}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === 'episodios' && (
+          <div className="space-y-4">
+            {notasClinicas.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-16 w-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-muted-foreground">No hay episodios clínicos registrados</p>
+              </div>
+            ) : (
+              notasClinicas.map((nota) => (
+                <div
+                  key={nota.id}
+                  className="bg-white dark:bg-slate-900/60 border border-border/50 rounded-lg overflow-hidden shadow-sm dark:shadow-none"
+                >
+                  {/* Header del episodio */}
+                  <button
+                    onClick={() => setExpandedNota(expandedNota === nota.id ? null : nota.id)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-lg">
+                        <FileText className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div className="text-left">
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {nota.titulo}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {formatDate(nota.fecha)}
+                          {nota.origen && (
+                            <span className="ml-2 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px]">
+                              {nota.origen}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    {expandedNota === nota.id ? (
+                      <ChevronUp className="h-5 w-5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-slate-400" />
+                    )}
+                  </button>
+
+                  {/* Contenido expandible */}
+                  {expandedNota === nota.id && (
+                    <div className="px-4 pb-4 border-t border-slate-100 dark:border-slate-800">
+                      <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                        <pre className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap font-sans leading-relaxed">
+                          {nota.nota}
+                        </pre>
+                      </div>
                     </div>
                   )}
                 </div>

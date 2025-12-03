@@ -28,7 +28,7 @@ interface DonutChartProps {
 export const DonutChart: React.FC<DonutChartProps> = React.memo(({
   data,
   size = 200,
-  thickness = 40,
+  thickness: _thickness = 40, // Reserved for future use
   centerText,
   centerSubtext,
 }) => {

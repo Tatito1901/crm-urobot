@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { useOccupancyHeatmap, getOccupancyColors, type OccupancyLevel } from '@/hooks/useOccupancyHeatmap';
+import { getOccupancyColors, type OccupancyLevel } from '@/hooks/useOccupancyHeatmap';
 import { useConsultas } from '@/hooks/useConsultas';
 import { getMonthName, isToday } from '@/lib/date-utils';
 
@@ -17,7 +17,6 @@ interface DashboardHeatmapProps {
 }
 
 export function DashboardHeatmap({ monthsToShow = 6 }: DashboardHeatmapProps) {
-  const { getOccupancyForDate } = useOccupancyHeatmap();
   const { consultas } = useConsultas();
   const [today, setToday] = useState(() => new Date());
 
