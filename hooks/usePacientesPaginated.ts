@@ -187,13 +187,19 @@ export function usePacientesPaginated(
     return `${CACHE_KEYS.PACIENTES}-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`;
   }, [currentPage, pageSize, debouncedSearch, estadoFilter]);
   
-  // SWR para datos paginados
+  // SWR para datos paginados - FORZAR revalidación para asegurar datos frescos
   const { data, error, isLoading, mutate } = useSWR(
     swrKey,
     () => fetchPacientesPaginated(currentPage, pageSize, debouncedSearch, estadoFilter),
     {
-      ...SWR_CONFIG_STANDARD,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateIfStale: true, // ✅ Revalidar si los datos están stale
+      dedupingInterval: 1000,  // ✅ Solo 1 segundo de deduplicación
+      refreshInterval: 0,
       keepPreviousData: true,
+      shouldRetryOnError: true,
+      errorRetryCount: 1,
     }
   );
   

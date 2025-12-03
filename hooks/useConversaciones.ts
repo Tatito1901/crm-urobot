@@ -4,7 +4,7 @@
  * ============================================================
  * Hook para gestionar conversaciones usando tabla 'conversaciones'
  * ✅ SWR: Caché y revalidación
- * ✅ Realtime: Actualizaciones en vivo
+ * ❌ Realtime: DESHABILITADO (optimización de rendimiento BD)
  */
 
 import { useState, useCallback } from 'react'
@@ -76,28 +76,31 @@ interface UseConversacionesReturn {
  * Prioridad de nombre: pacientes.nombre_completo > leads.nombre_completo
  */
 const fetchConversaciones = async (): Promise<Conversacion[]> => {
-  // 1. Obtener conversaciones (solo último mensaje por teléfono para optimizar)
-  const { data: convData, error: convError } = await supabase
-    .from('conversaciones')
-    .select('telefono, mensaje, rol, created_at')
-    .order('created_at', { ascending: false })
+  // ✅ OPTIMIZACIÓN: Ejecutar las 3 queries en PARALELO (ahorra ~300-500ms)
+  const [convResult, pacientesResult, leadsResult] = await Promise.all([
+    // 1. Conversaciones recientes (limitadas a últimos 30 días para rendimiento)
+    supabase
+      .from('conversaciones')
+      .select('telefono, mensaje, rol, created_at')
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5000), // Límite de seguridad
+    
+    // 2. Pacientes con conteo de citas VÁLIDAS
+    supabase
+      .from('pacientes')
+      .select('id, telefono, nombre_completo, consultas:consultas(id, estado_cita)'),
+    
+    // 3. Leads con estado
+    supabase
+      .from('leads')
+      .select('telefono_whatsapp, nombre_completo, paciente_id, estado, fecha_conversion')
+  ])
 
-  if (convError) throw convError
-
-  // 2. Obtener pacientes con conteo de citas VÁLIDAS (excluyendo canceladas)
-  const { data: pacientesData } = await supabase
-    .from('pacientes')
-    .select(`
-      id,
-      telefono, 
-      nombre_completo,
-      consultas:consultas(id, estado_cita)
-    `)
-
-  // 3. Obtener leads con estado y paciente_id para verificar conversiones
-  const { data: leadsData } = await supabase
-    .from('leads')
-    .select('telefono_whatsapp, nombre_completo, paciente_id, estado, fecha_conversion')
+  if (convResult.error) throw convResult.error
+  const convData = convResult.data
+  const pacientesData = pacientesResult.data
+  const leadsData = leadsResult.data
 
   // Crear mapa de pacientes con conteo de citas VÁLIDAS
   const pacientesMap = new Map<string, { 

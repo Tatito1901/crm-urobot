@@ -22,18 +22,8 @@ interface PacientesStats {
   sinConsultas: number;
 }
 
-// Métricas compactas en línea
+// Métricas compactas en línea - siempre muestra skeleton en SSR para evitar hydration mismatch
 const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, loading: boolean }) => {
-  if (loading) {
-    return (
-      <div className="flex gap-2 flex-wrap">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-8 w-24 bg-muted rounded animate-pulse" />
-        ))}
-      </div>
-    );
-  }
-
   const metrics = [
     { icon: Users, value: stats.total, label: 'Total', color: 'text-foreground' },
     { icon: UserCheck, value: stats.activos, label: 'Activos', color: 'text-emerald-600 dark:text-emerald-400' },
@@ -42,11 +32,13 @@ const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, load
   ];
 
   return (
-    <div className="flex gap-4 flex-wrap">
+    <div className="flex gap-4 flex-wrap" suppressHydrationWarning>
       {metrics.map((m) => (
         <div key={m.label} className="flex items-center gap-2 text-sm">
           <m.icon className={`w-4 h-4 ${m.color}`} />
-          <span className="font-semibold text-foreground">{m.value.toLocaleString()}</span>
+          <span className="font-semibold text-foreground">
+            {loading ? '-' : m.value.toLocaleString()}
+          </span>
           <span className="text-muted-foreground text-xs">{m.label}</span>
         </div>
       ))}
@@ -75,7 +67,7 @@ export default function PacientesPage() {
     isSearching,
     error,
     refresh,
-  } = usePacientesPaginated({ pageSize: 25 });
+  } = usePacientesPaginated({ pageSize: 10 });
 
   const handlePacienteHover = useCallback((pacienteId: string) => {
     router.prefetch(`/pacientes/${pacienteId}`);
@@ -183,16 +175,18 @@ export default function PacientesPage() {
             />
             
             {/* Paginación del servidor */}
-            <div className="px-4 py-3 border-t border-border bg-muted/20">
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalCount={totalCount}
-                pageSize={pageSize}
-                onPageChange={goToPage}
-                isLoading={isLoading}
-              />
-            </div>
+            {totalPages > 1 && (
+              <div className="px-4 py-3 border-t border-border/50 bg-gradient-to-r from-muted/30 via-transparent to-muted/30">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalCount={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={goToPage}
+                  isLoading={isLoading}
+                />
+              </div>
+            )}
           </ContentLoader>
         </CardContent>
       </Card>

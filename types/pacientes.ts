@@ -6,13 +6,22 @@
  * Última sync: 2025-12-01
  */
 
-import type { Tables, Views } from './database';
+import type { Tables } from './database';
 
 // ============================================================
 // TIPO BD (automático de Supabase)
 // ============================================================
 export type PacienteRow = Tables<'pacientes'>;
-export type PacienteStatsRow = Views<'paciente_stats'>;
+
+// Vista paciente_stats (no generada automáticamente)
+export interface PacienteStatsRow {
+  paciente_id: string;
+  total_consultas: number | null;
+  ultima_consulta: string | null;
+  consultas_completadas: number | null;
+  consultas_canceladas: number | null;
+  consultas_programadas: number | null;
+}
 
 // ============================================================
 // CONSTANTES Y ENUMS

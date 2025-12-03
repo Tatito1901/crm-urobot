@@ -22,7 +22,7 @@ export type SedeType = "POLANCO" | "SATELITE";
 export type LeadRow = Tables<"leads">;
 export type PacienteRow = Tables<"pacientes">;
 export type ConsultaRow = Tables<"consultas">;
-export type RecordatorioRow = Tables<"notification_queue">;
+// RecordatorioRow se importa desde types/recordatorios.ts si es necesario
 
 // ===== TIPOS TRANSFORMADOS PARA UI =====
 export type Lead = {
@@ -71,7 +71,23 @@ export type Consulta = {
   updatedAt: string;
 };
 
-export type Recordatorio = RecordatorioRow;
+// Tipo para notification_queue (no generado automáticamente)
+export type Recordatorio = {
+  id: string;
+  consulta_id: string | null;
+  phone_number: string;
+  message_body: string;
+  status: 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled';
+  attempt_count: number;
+  next_attempt_at: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  error_log: string | null;
+  priority: number;
+  reminder_type: string | null;
+  sent_at: string | null;
+};
 
 export type RecordatorioDetalle = Recordatorio & {
   consulta?: {

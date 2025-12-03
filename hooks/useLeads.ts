@@ -4,7 +4,7 @@
  * ============================================================
  * Hook optimizado con SWR para leads
  * ✅ SWR: Caché, deduplicación y revalidación automática
- * ✅ Realtime: Actualización automática cuando n8n modifica la tabla
+ * ❌ Realtime: DESHABILITADO (optimización de rendimiento BD)
  */
 
 import { useMemo } from 'react'

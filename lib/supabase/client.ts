@@ -22,7 +22,8 @@ let client: SupabaseClient<Database> | null = null;
  * Obtiene o crea el cliente de Supabase (singleton)
  * Solo se crea una vez durante todo el ciclo de vida de la app
  * 
- * NOTA: Retorno tipado explícitamente para mejor inferencia de TypeScript
+ * ⚠️ REALTIME DESHABILITADO para reducir carga en BD
+ * Las actualizaciones se manejan con SWR (polling controlado)
  */
 export function createClient(): SupabaseClient<Database> {
   if (!client) {
@@ -32,10 +33,23 @@ export function createClient(): SupabaseClient<Database> {
       );
     }
 
-    // Crear cliente con tipo explícito
+    // Crear cliente con Realtime deshabilitado
     client = createBrowserClient<Database>(
       supabaseUrl,
-      supabaseKey
+      supabaseKey,
+      {
+        realtime: {
+          params: {
+            eventsPerSecond: -1, // Deshabilitar eventos
+          },
+        },
+        // Deshabilitar auto-refresh agresivo
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: false,
+        },
+      }
     ) as SupabaseClient<Database>;
   }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PaginationControlsProps {
@@ -15,8 +15,7 @@ interface PaginationControlsProps {
 }
 
 /**
- * Controles de paginación optimizados para +3000 registros
- * Muestra: Primera | Prev | Páginas | Next | Última
+ * Controles de paginación - Diseño moderno estilo Linear/Notion
  */
 export function PaginationControls({
   currentPage,
@@ -27,25 +26,29 @@ export function PaginationControls({
   isLoading = false,
   className,
 }: PaginationControlsProps) {
-  // Calcular rango de items mostrados
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalCount);
   
-  // Generar números de página visibles (máximo 5)
-  const getVisiblePages = () => {
-    const pages: number[] = [];
-    const maxVisible = 5;
-    
-    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    const end = Math.min(totalPages, start + maxVisible - 1);
-    
-    // Ajustar inicio si estamos cerca del final
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
+  // Generar páginas visibles con elipsis inteligente
+  const getVisiblePages = (): (number | 'ellipsis-start' | 'ellipsis-end')[] => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
     
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
+    const pages: (number | 'ellipsis-start' | 'ellipsis-end')[] = [];
+    
+    // Siempre mostrar primera página
+    pages.push(1);
+    
+    if (currentPage <= 3) {
+      // Cerca del inicio
+      pages.push(2, 3, 4, 'ellipsis-end', totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      // Cerca del final
+      pages.push('ellipsis-start', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      // En medio
+      pages.push('ellipsis-start', currentPage - 1, currentPage, currentPage + 1, 'ellipsis-end', totalPages);
     }
     
     return pages;
@@ -54,133 +57,119 @@ export function PaginationControls({
   const visiblePages = getVisiblePages();
   const hasMultiplePages = totalPages > 1;
   
-  if (totalCount === 0) {
-    return null;
-  }
+  if (totalCount === 0) return null;
+  
+  const NavButton = ({ 
+    onClick, 
+    disabled, 
+    children, 
+    label 
+  }: { 
+    onClick: () => void; 
+    disabled: boolean; 
+    children: React.ReactNode;
+    label: string;
+  }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled || isLoading}
+      aria-label={label}
+      className={cn(
+        'inline-flex items-center justify-center',
+        'h-8 w-8 rounded-lg text-sm font-medium',
+        'border border-border/50 bg-background',
+        'transition-all duration-150',
+        'hover:bg-accent hover:border-border',
+        'disabled:opacity-40 disabled:pointer-events-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1'
+      )}
+    >
+      {children}
+    </button>
+  );
+  
+  const PageButton = ({ 
+    page, 
+    isActive 
+  }: { 
+    page: number; 
+    isActive: boolean;
+  }) => (
+    <button
+      onClick={() => onPageChange(page)}
+      disabled={isLoading}
+      aria-current={isActive ? 'page' : undefined}
+      className={cn(
+        'inline-flex items-center justify-center',
+        'h-8 min-w-[32px] px-2.5 rounded-lg text-sm font-medium',
+        'transition-all duration-150',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+        isActive
+          ? 'bg-primary text-primary-foreground shadow-sm'
+          : 'border border-transparent hover:bg-accent hover:border-border/50 text-muted-foreground hover:text-foreground'
+      )}
+    >
+      {page}
+    </button>
+  );
+  
+  const Ellipsis = () => (
+    <span className="inline-flex items-center justify-center h-8 w-8 text-muted-foreground/60">
+      <MoreHorizontal className="w-4 h-4" />
+    </span>
+  );
   
   return (
     <div className={cn(
-      'flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-1',
+      'flex flex-col sm:flex-row items-center justify-between gap-4',
       className
     )}>
-      {/* Info de registros */}
-      <div className="text-xs text-muted-foreground">
-        Mostrando <span className="font-semibold text-foreground">{startItem.toLocaleString()}</span>
-        {' - '}
-        <span className="font-semibold text-foreground">{endItem.toLocaleString()}</span>
-        {' de '}
-        <span className="font-semibold text-foreground">{totalCount.toLocaleString()}</span>
-        {' registros'}
+      {/* Info de registros - Diseño pill */}
+      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">{startItem.toLocaleString()}</span>
+        <span>–</span>
+        <span className="font-medium text-foreground">{endItem.toLocaleString()}</span>
+        <span className="text-muted-foreground/60">de</span>
+        <span className="font-medium text-foreground">{totalCount.toLocaleString()}</span>
       </div>
       
-      {/* Controles */}
+      {/* Controles de navegación */}
       {hasMultiplePages && (
-        <div className="flex items-center gap-1">
-          {/* Primera página */}
-          <button
-            onClick={() => onPageChange(1)}
-            disabled={currentPage === 1 || isLoading}
-            className={cn(
-              'p-1.5 rounded-md transition-colors',
-              'hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-            )}
-            title="Primera página"
-          >
-            <ChevronsLeft className="w-4 h-4" />
-          </button>
-          
+        <nav className="flex items-center gap-1" aria-label="Paginación">
           {/* Anterior */}
-          <button
+          <NavButton
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1 || isLoading}
-            className={cn(
-              'p-1.5 rounded-md transition-colors',
-              'hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-            )}
-            title="Página anterior"
+            disabled={currentPage === 1}
+            label="Página anterior"
           >
             <ChevronLeft className="w-4 h-4" />
-          </button>
+          </NavButton>
           
           {/* Números de página */}
           <div className="flex items-center gap-0.5 mx-1">
-            {visiblePages[0] > 1 && (
-              <>
-                <button
-                  onClick={() => onPageChange(1)}
-                  disabled={isLoading}
-                  className="px-2.5 py-1 text-xs rounded-md hover:bg-muted transition-colors"
-                >
-                  1
-                </button>
-                {visiblePages[0] > 2 && (
-                  <span className="px-1 text-muted-foreground">...</span>
-                )}
-              </>
-            )}
-            
-            {visiblePages.map(page => (
-              <button
-                key={page}
-                onClick={() => onPageChange(page)}
-                disabled={isLoading}
-                className={cn(
-                  'px-2.5 py-1 text-xs rounded-md transition-colors min-w-[28px]',
-                  page === currentPage
-                    ? 'bg-primary text-primary-foreground font-semibold'
-                    : 'hover:bg-muted'
-                )}
-              >
-                {page}
-              </button>
-            ))}
-            
-            {visiblePages[visiblePages.length - 1] < totalPages && (
-              <>
-                {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
-                  <span className="px-1 text-muted-foreground">...</span>
-                )}
-                <button
-                  onClick={() => onPageChange(totalPages)}
-                  disabled={isLoading}
-                  className="px-2.5 py-1 text-xs rounded-md hover:bg-muted transition-colors"
-                >
-                  {totalPages}
-                </button>
-              </>
-            )}
+            {visiblePages.map((page, idx) => {
+              if (page === 'ellipsis-start' || page === 'ellipsis-end') {
+                return <Ellipsis key={`${page}-${idx}`} />;
+              }
+              return (
+                <PageButton 
+                  key={page} 
+                  page={page} 
+                  isActive={page === currentPage} 
+                />
+              );
+            })}
           </div>
           
           {/* Siguiente */}
-          <button
+          <NavButton
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages || isLoading}
-            className={cn(
-              'p-1.5 rounded-md transition-colors',
-              'hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-            )}
-            title="Página siguiente"
+            disabled={currentPage === totalPages}
+            label="Página siguiente"
           >
             <ChevronRight className="w-4 h-4" />
-          </button>
-          
-          {/* Última página */}
-          <button
-            onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages || isLoading}
-            className={cn(
-              'p-1.5 rounded-md transition-colors',
-              'hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
-            )}
-            title="Última página"
-          >
-            <ChevronsRight className="w-4 h-4" />
-          </button>
-        </div>
+          </NavButton>
+        </nav>
       )}
     </div>
   );

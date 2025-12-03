@@ -7,12 +7,27 @@
  */
 
 import { type CanalMarketing, normalizeCanalMarketing } from './canales-marketing';
-import type { Tables } from './database';
 
 // ============================================================
-// TIPO BD (automático de Supabase)
+// TIPO BD (manual - tipos generados están incompletos)
 // ============================================================
-export type LeadRow = Tables<'leads'>;
+export interface LeadRow {
+  id: string;
+  paciente_id: string | null;
+  telefono_whatsapp: string;
+  estado: string | null;
+  fuente_lead: string | null;
+  canal_marketing: string | null;
+  notas_iniciales: string | null;
+  session_id: string | null;
+  fecha_primer_contacto: string | null;
+  ultima_interaccion: string | null;
+  fecha_conversion: string | null;
+  total_interacciones: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+  nombre_completo: string | null;
+}
 
 // ============================================================
 // CONSTANTES Y ENUMS

@@ -241,7 +241,8 @@ export async function obtenerContextoUrobot(telefono: string): Promise<{
       return { success: false, error: error.message };
     }
 
-    if (!data || data.length === 0) {
+    // La RPC puede retornar un objeto o null
+    if (!data || (Array.isArray(data) && data.length === 0)) {
       return { 
         success: true, 
         contexto: {
@@ -254,7 +255,30 @@ export async function obtenerContextoUrobot(telefono: string): Promise<{
       };
     }
 
-    const row = data[0];
+    // El RPC retorna un array o un objeto directo - castear a tipo esperado
+    type ContextoRow = {
+      historial_conversacion?: string;
+      tiene_cita_pendiente?: boolean;
+      info_cita?: string;
+      nombre_paciente?: string;
+      es_paciente_conocido?: boolean;
+    };
+    const rawRow = Array.isArray(data) ? data[0] : data;
+    const row = rawRow as ContextoRow | null;
+    
+    if (!row) {
+      return { 
+        success: true, 
+        contexto: {
+          historialConversacion: 'Primera conversación con este paciente.',
+          tieneCitaPendiente: false,
+          infoCita: '',
+          nombrePaciente: '',
+          esPacienteConocido: false,
+        }
+      };
+    }
+    
     return {
       success: true,
       contexto: {

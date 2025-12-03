@@ -20,6 +20,7 @@ const navItems: readonly NavItem[] = [
   { label: "Consultas", href: "/consultas" },
   { label: "Confirmaciones", href: "/confirmaciones" },
   { label: "Estadísticas", href: "/estadisticas" },
+  { label: "🤖 UroBot", href: "/urobot" },
 ];
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });

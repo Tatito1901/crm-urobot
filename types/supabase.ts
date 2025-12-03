@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5"
+  }
   public: {
     Tables: {
       conocimiento_procedimientos_urologia: {
@@ -103,7 +108,29 @@ export type Database = {
           tipo_cita?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "consultas_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "paciente_stats"
+            referencedColumns: ["paciente_id"]
+          },
+          {
+            foreignKeyName: "consultas_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consultas_sede_fkey"
+            columns: ["sede"]
+            isOneToOne: false
+            referencedRelation: "sedes"
+            referencedColumns: ["sede"]
+          },
+        ]
       }
       consultas_notas: {
         Row: {
@@ -142,7 +169,29 @@ export type Database = {
           titulo?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "consultas_notas_consulta_id_fkey"
+            columns: ["consulta_id"]
+            isOneToOne: false
+            referencedRelation: "consultas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consultas_notas_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "paciente_stats"
+            referencedColumns: ["paciente_id"]
+          },
+          {
+            foreignKeyName: "consultas_notas_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversaciones: {
         Row: {
@@ -241,73 +290,157 @@ export type Database = {
           tipo_destino?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "destinos_pacientes_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "paciente_stats"
+            referencedColumns: ["paciente_id"]
+          },
+          {
+            foreignKeyName: "destinos_pacientes_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leads: {
         Row: {
           canal_marketing: string | null
           created_at: string | null
-          email: string | null
           estado: string | null
           fecha_conversion: string | null
           fecha_primer_contacto: string | null
           fuente_lead: string | null
           id: string
-          lead_id: string | null
           nombre_completo: string | null
-          notas: string | null
+          notas_iniciales: string | null
           paciente_id: string | null
-          puntuacion_lead: number | null
-          telefono_mx10: string | null
+          session_id: string | null
           telefono_whatsapp: string
-          temperatura: string | null
-          total_mensajes_enviados: number | null
-          total_mensajes_recibidos: number | null
+          total_interacciones: number | null
           ultima_interaccion: string | null
           updated_at: string | null
         }
         Insert: {
           canal_marketing?: string | null
           created_at?: string | null
-          email?: string | null
           estado?: string | null
           fecha_conversion?: string | null
           fecha_primer_contacto?: string | null
           fuente_lead?: string | null
           id?: string
-          lead_id?: string | null
           nombre_completo?: string | null
-          notas?: string | null
+          notas_iniciales?: string | null
           paciente_id?: string | null
-          puntuacion_lead?: number | null
-          telefono_mx10?: string | null
+          session_id?: string | null
           telefono_whatsapp: string
-          temperatura?: string | null
-          total_mensajes_enviados?: number | null
-          total_mensajes_recibidos?: number | null
+          total_interacciones?: number | null
           ultima_interaccion?: string | null
           updated_at?: string | null
         }
         Update: {
           canal_marketing?: string | null
           created_at?: string | null
-          email?: string | null
           estado?: string | null
           fecha_conversion?: string | null
           fecha_primer_contacto?: string | null
           fuente_lead?: string | null
           id?: string
-          lead_id?: string | null
           nombre_completo?: string | null
-          notas?: string | null
+          notas_iniciales?: string | null
           paciente_id?: string | null
-          puntuacion_lead?: number | null
-          telefono_mx10?: string | null
+          session_id?: string | null
           telefono_whatsapp?: string
-          temperatura?: string | null
-          total_mensajes_enviados?: number | null
-          total_mensajes_recibidos?: number | null
+          total_interacciones?: number | null
           ultima_interaccion?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "paciente_stats"
+            referencedColumns: ["paciente_id"]
+          },
+          {
+            foreignKeyName: "leads_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      n8n_chat_histories: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
+      notification_queue: {
+        Row: {
+          attempt_count: number | null
+          consulta_id: string | null
+          created_at: string | null
+          error_log: string | null
+          id: string
+          message_body: string
+          metadata: Json | null
+          next_attempt_at: string | null
+          phone_number: string
+          priority: number | null
+          reminder_type: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          attempt_count?: number | null
+          consulta_id?: string | null
+          created_at?: string | null
+          error_log?: string | null
+          id?: string
+          message_body: string
+          metadata?: Json | null
+          next_attempt_at?: string | null
+          phone_number: string
+          priority?: number | null
+          reminder_type?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          attempt_count?: number | null
+          consulta_id?: string | null
+          created_at?: string | null
+          error_log?: string | null
+          id?: string
+          message_body?: string
+          metadata?: Json | null
+          next_attempt_at?: string | null
+          phone_number?: string
+          priority?: number | null
+          reminder_type?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"] | null
           updated_at?: string | null
         }
         Relationships: []
@@ -321,18 +454,12 @@ export type Database = {
           email: string | null
           estado: string | null
           fecha_nacimiento: string | null
-          fecha_registro: string | null
-          fuente_original: string | null
           id: string
           medicamentos: string | null
           nombre_completo: string | null
           notas: string | null
           origen_lead: string | null
-          paciente_id: string | null
           telefono: string
-          telefono_mx10: string | null
-          total_consultas: number | null
-          ultima_consulta: string | null
           updated_at: string | null
         }
         Insert: {
@@ -343,18 +470,12 @@ export type Database = {
           email?: string | null
           estado?: string | null
           fecha_nacimiento?: string | null
-          fecha_registro?: string | null
-          fuente_original?: string | null
           id?: string
           medicamentos?: string | null
           nombre_completo?: string | null
           notas?: string | null
           origen_lead?: string | null
-          paciente_id?: string | null
           telefono: string
-          telefono_mx10?: string | null
-          total_consultas?: number | null
-          ultima_consulta?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -365,76 +486,437 @@ export type Database = {
           email?: string | null
           estado?: string | null
           fecha_nacimiento?: string | null
-          fecha_registro?: string | null
-          fuente_original?: string | null
           id?: string
           medicamentos?: string | null
           nombre_completo?: string | null
           notas?: string | null
           origen_lead?: string | null
-          paciente_id?: string | null
           telefono?: string
-          telefono_mx10?: string | null
-          total_consultas?: number | null
-          ultima_consulta?: string | null
           updated_at?: string | null
         }
         Relationships: []
       }
       sedes: {
         Row: {
-          activa: boolean | null
-          created_at: string | null
+          anchor_date: string | null
+          anchor_week_type: string | null
+          calendar_id: string | null
           direccion: string | null
-          horarios_atencion: Json | null
-          id: string
+          display_name: string | null
+          horario_json: Json | null
           instrucciones_llegada: string | null
-          nombre: string | null
+          maps_url: string | null
           sede: string
-          telefono_contacto: string | null
+          timezone: string | null
           updated_at: string | null
         }
         Insert: {
-          activa?: boolean | null
-          created_at?: string | null
+          anchor_date?: string | null
+          anchor_week_type?: string | null
+          calendar_id?: string | null
           direccion?: string | null
-          horarios_atencion?: Json | null
-          id?: string
+          display_name?: string | null
+          horario_json?: Json | null
           instrucciones_llegada?: string | null
-          nombre?: string | null
+          maps_url?: string | null
           sede: string
-          telefono_contacto?: string | null
+          timezone?: string | null
           updated_at?: string | null
         }
         Update: {
-          activa?: boolean | null
-          created_at?: string | null
+          anchor_date?: string | null
+          anchor_week_type?: string | null
+          calendar_id?: string | null
           direccion?: string | null
-          horarios_atencion?: Json | null
-          id?: string
+          display_name?: string | null
+          horario_json?: Json | null
           instrucciones_llegada?: string | null
-          nombre?: string | null
+          maps_url?: string | null
           sede?: string
-          telefono_contacto?: string | null
+          timezone?: string | null
           updated_at?: string | null
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      paciente_stats: {
+        Row: {
+          consultas_canceladas: number | null
+          consultas_completadas: number | null
+          consultas_programadas: number | null
+          paciente_id: string | null
+          total_consultas: number | null
+          ultima_consulta: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      auto_cancelar_citas_no_confirmadas: {
+        Args: { p_horas_antes_max?: number; p_horas_antes_min?: number }
+        Returns: {
+          accion: string
+          consulta_id: string
+          fecha_hora: string
+          paciente_nombre: string
+          telefono: string
+        }[]
+      }
+      cancelar_citas_sin_confirmar: {
+        Args: never
+        Returns: {
+          canceladas: number
+          ids: string[]
+        }[]
+      }
+      cancelar_citas_sin_confirmar_v2: {
+        Args: never
+        Returns: {
+          accion: string
+          consulta_id: string
+          fecha_hora: string
+          paciente_nombre: string
+          telefono: string
+        }[]
+      }
+      claim_notification_jobs: {
+        Args: { p_limit?: number; p_worker_id?: string }
+        Returns: {
+          attempt_count: number
+          consulta_id: string
+          id: string
+          message_body: string
+          metadata: Json
+          phone_number: string
+          priority: number
+          reminder_type: string
+        }[]
+      }
+      confirmar_cita_con_mensaje: {
+        Args: { p_consulta_id: string }
+        Returns: {
+          calendar_event_id: string
+          calendar_id: string
+          mensaje: string
+          motivo_consulta: string
+          paciente_nombre: string
+          queue_id: string
+          telefono: string
+        }[]
+      }
+      generar_recordatorio_tipo: {
+        Args: {
+          p_horas_max: number
+          p_horas_min: number
+          p_tipo_recordatorio: string
+        }
+        Returns: {
+          consultas_procesadas: string[]
+          ejecutado_at: string
+          insertados: number
+          tipo: string
+        }[]
+      }
+      generar_recordatorios_v2: {
+        Args: {
+          p_horas_max: number
+          p_horas_min: number
+          p_tipo_recordatorio: string
+        }
+        Returns: {
+          consulta_id: string
+          direccion: string
+          fecha_hora: string
+          maps_url: string
+          mensaje: string
+          paciente_nombre: string
+          sede: string
+          sede_display: string
+          telefono: string
+        }[]
+      }
+      get_consultas_stats: { Args: never; Returns: Json }
+      get_dashboard_metrics: { Args: never; Returns: Json }
+      get_leads_stats: { Args: never; Returns: Json }
+      get_pacientes_stats: { Args: never; Returns: Json }
+      get_recordatorios_pendientes: {
+        Args: { p_fin: string; p_inicio: string; p_tipo: string }
+        Returns: {
+          consulta_id: string
+          fecha_hora_utc: string
+          id: string
+          paciente_nombre: string
+          paciente_telefono: string
+          primer_nombre: string
+          reminder_type: string
+          sede: string
+        }[]
+      }
+      get_recordatorios_status: {
+        Args: never
+        Returns: {
+          detalle: string
+          metrica: string
+          valor: number
+        }[]
+      }
       guardar_mensaje: {
         Args: { p_mensaje: string; p_rol: string; p_telefono: string }
         Returns: string
       }
+      identificar_paciente_por_telefono: {
+        Args: { p_telefono: string }
+        Returns: {
+          calendar_event_id: string
+          calendar_id: string
+          confirmado_paciente: boolean
+          consulta_id: string
+          direccion: string
+          estado_cita: string
+          fecha_hora_inicio: string
+          maps_url: string
+          motivo_consulta: string
+          paciente_id: string
+          paciente_nombre: string
+          permite_reagendar: boolean
+          sede: string
+          sede_display: string
+        }[]
+      }
+      insertar_respuesta_cola: {
+        Args: { p_consulta_id?: string; p_mensaje: string; p_telefono: string }
+        Returns: string
+      }
+      marcar_recordatorio_enviado: {
+        Args: { p_consulta_id: string; p_tipo: string }
+        Returns: undefined
+      }
+      mark_notification_failed: {
+        Args: { p_error_message?: string; p_notification_id: string }
+        Returns: {
+          new_status: string
+          next_attempt: string
+          should_retry: boolean
+        }[]
+      }
+      mark_notification_sent: {
+        Args: { p_external_message_id?: string; p_notification_id: string }
+        Returns: boolean
+      }
+      match_documents:
+        | {
+            Args: { filter: Json; match_count: number; query_embedding: string }
+            Returns: {
+              content: string
+              id: string
+              metadata: Json
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              match_count?: number
+              match_threshold?: number
+              query_embedding: string
+            }
+            Returns: {
+              content: string
+              id: string
+              metadata: Json
+              similarity: number
+            }[]
+          }
+      match_documents_hybrid: {
+        Args: {
+          keyword_weight?: number
+          match_count?: number
+          query_embedding: string
+          query_text: string
+          semantic_weight?: number
+        }
+        Returns: {
+          content: string
+          id: string
+          match_type: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
       normalizar_telefono: { Args: { p_telefono: string }; Returns: string }
       obtener_contexto_urobot: { Args: { p_telefono: string }; Returns: Json }
+      preview_recordatorios_pendientes: {
+        Args: never
+        Returns: {
+          consulta_id: string
+          fecha_hora: string
+          horas_restantes: number
+          paciente_nombre: string
+          sede: string
+          telefono: string
+          tipo_recordatorio_pendiente: string
+        }[]
+      }
+      procesar_recordatorios_batch: {
+        Args: {
+          p_tipo: string
+          p_ventana_horas_fin: number
+          p_ventana_horas_inicio: number
+        }
+        Returns: number
+      }
+      procesar_recordatorios_batch_v2: {
+        Args: {
+          p_horas_max: number
+          p_horas_min: number
+          p_tipo_recordatorio: string
+        }
+        Returns: {
+          insertados: number
+          tipo: string
+        }[]
+      }
+      procesar_respuesta_rapida: {
+        Args: { p_mensaje: string; p_telefono: string }
+        Returns: {
+          accion: string
+          calendar_event_id: string
+          calendar_id: string
+          es_accion_rapida: boolean
+          respuesta: string
+        }[]
+      }
+      reagendar_consulta_atomica: {
+        Args: {
+          p_consulta_uuid_anterior: string
+          p_motivo_reagendamiento: string
+          p_nueva_duracion_minutos: number
+          p_nueva_fecha_consulta: string
+          p_nueva_fecha_hora_utc: string
+          p_nueva_hora_consulta: string
+          p_nueva_sede: string
+          p_nuevo_calendar_event_id: string
+          p_nuevo_calendar_link: string
+          p_timezone: string
+        }
+        Returns: Json
+      }
+      registrar_paciente_confirmado: {
+        Args: { p_nombre_real: string; p_telefono: string }
+        Returns: Json
+      }
+      release_stale_jobs: {
+        Args: { p_stale_minutes?: number }
+        Returns: number
+      }
+      search_leads: {
+        Args: {
+          p_estado?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
+        Returns: {
+          data: Json
+          total_count: number
+        }[]
+      }
+      search_pacientes: {
+        Args: {
+          p_estado?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
+        Returns: {
+          data: Json
+          total_count: number
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       to_mx10: { Args: { input_phone: string }; Returns: string }
+      upsert_appointment_atomic_from_calendar: {
+        Args: {
+          p_calendar_event_id: string
+          p_calendar_link: string
+          p_canal_origen?: string
+          p_consulta_id: string
+          p_duracion_minutos: number
+          p_email?: string
+          p_event_key?: string
+          p_fecha_consulta: string
+          p_fecha_hora_utc: string
+          p_fuente_original?: string
+          p_hora_consulta: string
+          p_idempotency_key?: string
+          p_lead_telefono_whatsapp?: string
+          p_motivo_consulta: string
+          p_nombre_completo: string
+          p_operation_id: string
+          p_paciente_id: string
+          p_sede: string
+          p_telefono: string
+          p_timezone?: string
+          p_tipo_cita: string
+        }
+        Returns: {
+          calendar_link: string
+          consulta_uuid: string
+          error_code: string
+          error_message: string
+          error_type: string
+          idempotency_hash: string
+          is_new_consulta: boolean
+          is_update_consulta: boolean
+          lead_updated: boolean
+          message: string
+          operation_id: string
+          paciente_uuid: string
+          success: boolean
+        }[]
+      }
+      upsert_lead_interaction:
+        | {
+            Args: {
+              p_canal_marketing?: string
+              p_contenido?: string
+              p_es_bot?: boolean
+              p_estado?: string
+              p_fecha_conversion?: string
+              p_fuente_lead?: string
+              p_message_id?: string
+              p_nombre_completo: string
+              p_notas_iniciales?: string
+              p_paciente_id?: string
+              p_session_id?: string
+              p_telefono_whatsapp: string
+              p_timestamp_mensaje?: string
+              p_tipo_mensaje?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_canal_marketing?: string
+              p_contenido?: string
+              p_estado?: string
+              p_fuente_lead?: string
+              p_nombre_completo: string
+              p_notas_iniciales?: string
+              p_session_id?: string
+              p_telefono_whatsapp: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
-      notification_status: "pending" | "processing" | "sent" | "failed" | "cancelled"
+      notification_status:
+        | "pending"
+        | "processing"
+        | "sent"
+        | "failed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -442,21 +924,133 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database["public"]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
-  TableName extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-> = (DefaultSchema["Tables"] & DefaultSchema["Views"])[TableName] extends {
-  Row: infer R
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
 }
-  ? R
-  : never
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
-export type TablesInsert<TableName extends keyof DefaultSchema["Tables"]> =
-  DefaultSchema["Tables"][TableName] extends { Insert: infer I } ? I : never
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
-export type TablesUpdate<TableName extends keyof DefaultSchema["Tables"]> =
-  DefaultSchema["Tables"][TableName] extends { Update: infer U } ? U : never
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
-export type Enums<EnumName extends keyof DefaultSchema["Enums"]> =
-  DefaultSchema["Enums"][EnumName]
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      notification_status: [
+        "pending",
+        "processing",
+        "sent",
+        "failed",
+        "cancelled",
+      ],
+    },
+  },
+} as const

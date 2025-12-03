@@ -11,13 +11,27 @@
  * - get_recordatorios_pendientes(p_inicio, p_fin, p_tipo)
  */
 
-import type { Tables, Enums } from './database';
+// ============================================================
+// TIPO BD (definido manualmente - no está en tipos generados)
+// ============================================================
+export type NotificationStatus = 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled';
 
-// ============================================================
-// TIPO BD (automático de Supabase)
-// ============================================================
-export type NotificationQueueRow = Tables<'notification_queue'>;
-export type NotificationStatus = Enums<'notification_status'>;
+export interface NotificationQueueRow {
+  id: string;
+  consulta_id: string | null;
+  phone_number: string;
+  message_body: string;
+  status: NotificationStatus | null;
+  attempt_count: number | null;
+  next_attempt_at: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string | null;
+  updated_at: string | null;
+  error_log: string | null;
+  priority: number | null;
+  reminder_type: string | null;
+  sent_at: string | null;
+}
 
 // ============================================================
 // CONSTANTES Y ENUMS

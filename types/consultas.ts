@@ -41,7 +41,7 @@ export interface Consulta {
   pacienteId: string | null;       // BD: paciente_id
   sede: ConsultaSede | null;       // BD: sede (FK → sedes)
   fechaHoraInicio: string;         // BD: fecha_hora_inicio (timestamptz)
-  fechaHoraFin: string;            // BD: fecha_hora_fin (timestamptz)
+  fechaHoraFin: string | null;     // BD: fecha_hora_fin (timestamptz) - puede ser null
   estadoCita: ConsultaEstado;      // BD: estado_cita
   tipoCita: ConsultaTipo | null;   // BD: tipo_cita
   motivoConsulta: string | null;   // BD: motivo_consulta
@@ -82,7 +82,7 @@ export const DEFAULT_CONSULTA_TIPO: ConsultaTipo = 'Primera Vez';
 
 export function mapConsultaFromDB(row: ConsultaRow, pacienteNombre?: string): Consulta {
   const inicio = new Date(row.fecha_hora_inicio);
-  const fin = new Date(row.fecha_hora_fin);
+  const fin = row.fecha_hora_fin ? new Date(row.fecha_hora_fin) : new Date(inicio.getTime() + 30 * 60000); // Default 30 min
   const duracion = Math.round((fin.getTime() - inicio.getTime()) / 60000);
   
   return {

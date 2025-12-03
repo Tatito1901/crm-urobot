@@ -6,12 +6,22 @@
  * Última sync: 2025-12-01
  */
 
-import type { Tables } from './database';
-
 // ============================================================
-// TIPO BD (automático de Supabase)
+// TIPO BD (manual - tipos generados están desactualizados)
 // ============================================================
-export type SedeRow = Tables<'sedes'>;
+export interface SedeRow {
+  sede: string;
+  display_name: string | null;
+  direccion: string | null;
+  maps_url: string | null;
+  calendar_id: string | null;
+  horario_json: Record<string, unknown> | null;
+  timezone: string | null;
+  anchor_date: string | null;
+  anchor_week_type: string | null;
+  updated_at: string | null;
+  instrucciones_llegada: string | null;
+}
 
 // ============================================================
 // CONSTANTES

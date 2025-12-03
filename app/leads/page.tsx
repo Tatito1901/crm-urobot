@@ -128,16 +128,18 @@ export default function LeadsPage() {
             </div>
             
             {/* Paginación del servidor */}
-            <div className="p-4 border-t border-border bg-muted/20">
-              <PaginationControls
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalCount={totalCount}
-                pageSize={pageSize}
-                onPageChange={goToPage}
-                isLoading={isLoading}
-              />
-            </div>
+            {totalPages > 1 && (
+              <div className="px-4 py-3 border-t border-border/50 bg-gradient-to-r from-muted/30 via-transparent to-muted/30">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalCount={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={goToPage}
+                  isLoading={isLoading}
+                />
+              </div>
+            )}
           </ContentLoader>
         </CardContent>
       </Card>

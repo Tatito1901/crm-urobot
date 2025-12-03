@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client';
 import { SWR_CONFIG_READONLY } from '@/lib/swr-config';
 import {
   type RecordatorioDetalle,
+  type NotificationQueueRow,
   mapNotificacionFromDB,
 } from '@/types/recordatorios';
 
@@ -30,7 +31,9 @@ const fetchRecordatorios = async (): Promise<RecordatorioDetalle[]> => {
   const hace7Dias = new Date();
   hace7Dias.setDate(hace7Dias.getDate() - 7);
 
-  const { data, error: fetchError } = await supabase
+  // notification_queue no está en los tipos generados de Supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error: fetchError } = await (supabase as any)
     .from('notification_queue')
     .select('*')
     .gte('created_at', hace7Dias.toISOString())
@@ -40,7 +43,7 @@ const fetchRecordatorios = async (): Promise<RecordatorioDetalle[]> => {
   if (fetchError) throw fetchError;
   if (!data) return [];
 
-  return data.map((row) => mapNotificacionFromDB(row));
+  return data.map((row: NotificationQueueRow) => mapNotificacionFromDB(row));
 };
 
 /**

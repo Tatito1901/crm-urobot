@@ -52,12 +52,16 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       if (pacienteError) throw pacienteError;
       if (!pacienteData) throw new Error('Paciente no encontrado');
 
-      // Obtener estadísticas de la vista
-      const { data: statsData, error: statsError } = await supabase
+      // Obtener estadísticas de la vista (no tipada en Supabase - usar rpc/sql directo)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const statsResult = await (supabase as any)
         .from('paciente_stats')
         .select('*')
         .eq('paciente_id', pacienteId)
         .single();
+      
+      const statsData = statsResult.data as PacienteStatsRow | null;
+      const statsError = statsResult.error;
 
       // PGRST116 es "Results contain 0 rows" - aceptable si no hay stats
       if (statsError && statsError.code !== 'PGRST116') { /* silenciado */ }

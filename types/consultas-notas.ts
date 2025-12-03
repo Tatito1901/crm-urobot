@@ -21,7 +21,7 @@ export type ConsultaNotaUpdate = Updatable<'consultas_notas'>;
 
 export interface ConsultaNota {
   id: string;
-  consultaId: string;           // BD: consulta_id (FK → consultas.id)
+  consultaId: string | null;     // BD: consulta_id (FK → consultas.id) - puede ser null para episodios independientes
   nota: string;                  // BD: nota (texto libre con observaciones)
   createdAt: string | null;      // BD: created_at
   updatedAt: string | null;      // BD: updated_at

@@ -75,18 +75,21 @@ const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number 
     return { pacientes: [], count: 0 }
   }
 
-  // Obtener estadísticas de la vista paciente_stats
-  const { data: statsData } = await supabase
+  // Obtener estadísticas de la vista paciente_stats (no tipada en Supabase)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const statsResult = await (supabase as any)
     .from('paciente_stats')
     .select('*')
+  
+  const statsData = (statsResult.data || []) as PacienteStatsRow[]
 
-  const statsMap = new Map(
-    (statsData || []).map(s => [s.paciente_id, s])
+  const statsMap = new Map<string, PacienteStatsRow>(
+    statsData.map((s: PacienteStatsRow) => [s.paciente_id, s])
   )
 
   // Mapear los pacientes con sus estadísticas
   const pacientes = (data as PacienteRow[]).map(row => {
-    const stats = statsMap.get(row.id) || null
+    const stats = statsMap.get(row.id) ?? null
     return mapPacienteFromDB(row, stats)
   })
   

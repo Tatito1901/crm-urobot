@@ -75,16 +75,41 @@ const mapConsulta = (row: ConsultaRowWithPaciente): Consulta => {
 
 /**
  * Fetcher para consultas
- * ✅ Campos sincronizados con BD real (types/supabase.ts)
+ * ✅ OPTIMIZACIÓN: Limitar a últimos 6 meses + solo campos necesarios
+ * Para historial completo usar paginación
  */
 const fetchConsultas = async (): Promise<{ consultas: Consulta[], count: number }> => {
+  // Limitar a últimos 6 meses para rendimiento (cubre la mayoría de casos de uso)
+  const hace6Meses = new Date();
+  hace6Meses.setMonth(hace6Meses.getMonth() - 6);
+  
   const { data, error, count } = await supabase
     .from('consultas')
     .select(`
-      *,
+      id,
+      consulta_id,
+      paciente_id,
+      sede,
+      fecha_hora_inicio,
+      fecha_hora_fin,
+      estado_cita,
+      tipo_cita,
+      motivo_consulta,
+      calendar_event_id,
+      calendar_link,
+      confirmado_paciente,
+      estado_confirmacion,
+      recordatorio_24h_enviado,
+      recordatorio_2h_enviado,
+      recordatorio_48h_enviado,
+      cancelado_por,
+      created_at,
+      updated_at,
       paciente:pacientes ( id, nombre_completo )
     `, { count: 'exact' })
+    .gte('fecha_hora_inicio', hace6Meses.toISOString())
     .order('fecha_hora_inicio', { ascending: false })
+    .limit(1000) // Límite de seguridad
 
   if (error) throw error
 

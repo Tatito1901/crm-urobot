@@ -174,8 +174,8 @@ export default function DashboardPage() {
               disabled={isLoadingAny}
               className="flex items-center justify-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-medium text-blue-600 dark:text-blue-200 border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px]"
             >
-              <span>{isLoadingAny ? '⟳' : '↻'}</span>
-              <span>{isLoadingAny ? 'Actualizando...' : 'Actualizar'}</span>
+              <span className={isLoadingAny ? 'animate-spin' : ''}>↻</span>
+              <span className="hidden sm:inline">Actualizar</span>
             </button>
           </div>
         }
