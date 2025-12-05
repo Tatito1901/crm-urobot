@@ -29,9 +29,12 @@ const getInitials = (nombre: string | null, telefono: string) => {
 };
 
 // Función para formatear tiempo compacto
-const formatTimeCompact = (fecha: Date) => {
+const formatTimeCompact = (fecha: Date | string) => {
+  const dateObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
+  if (isNaN(dateObj.getTime())) return '';
+
   const now = new Date();
-  const diff = now.getTime() - fecha.getTime();
+  const diff = now.getTime() - dateObj.getTime();
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -40,7 +43,7 @@ const formatTimeCompact = (fecha: Date) => {
   if (mins < 60) return `${mins}m`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
-  return formatDistanceToNow(fecha, { addSuffix: false, locale: es });
+  return formatDistanceToNow(dateObj, { addSuffix: false, locale: es });
 };
 
 export const ConversationItem = memo(function ConversationItem({

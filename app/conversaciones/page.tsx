@@ -143,7 +143,7 @@ export default function ConversacionesPage() {
               </div>
               <div>
                 <h2 className="font-bold text-foreground">Conversaciones</h2>
-                <p className="text-[11px] text-muted-foreground">{conversaciones.length} contactos</p>
+                <p className="text-[11px] text-muted-foreground">{mounted ? conversaciones.length : 0} contactos</p>
               </div>
             </div>
             <button 
