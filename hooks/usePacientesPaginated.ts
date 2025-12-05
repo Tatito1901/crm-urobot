@@ -128,8 +128,8 @@ const fetchPacientesPaginated = async (
       notas: null,
       // Campos calculados/UI
       nombre: nombreCompleto || telefono, // Display name requerido
-      totalConsultas: 0,
-      ultimaConsulta: null,
+      totalConsultas: (p.totalConsultas as number) || 0,
+      ultimaConsulta: p.ultimaConsulta as string | null,
     };
   });
   
@@ -182,9 +182,9 @@ export function usePacientesPaginated(
     SWR_CONFIG_DASHBOARD
   );
   
-  // Clave SWR única por página/búsqueda/filtro
+  // Clave SWR única por página/búsqueda/filtro (v2: ordenado por ultima_consulta)
   const swrKey = useMemo(() => {
-    return `${CACHE_KEYS.PACIENTES}-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`;
+    return `${CACHE_KEYS.PACIENTES}-v2-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`;
   }, [currentPage, pageSize, debouncedSearch, estadoFilter]);
   
   // SWR para datos paginados - ULTRA RÁPIDO
@@ -203,7 +203,7 @@ export function usePacientesPaginated(
   );
   
   // ✅ PREFETCH: Cargar siguiente página en background
-  const nextPageKey = `${CACHE_KEYS.PACIENTES}-p${currentPage + 1}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`;
+  const nextPageKey = `${CACHE_KEYS.PACIENTES}-v2-p${currentPage + 1}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`;
   useSWR(
     currentPage < Math.ceil((data?.totalCount ?? 0) / pageSize) ? nextPageKey : null,
     () => fetchPacientesPaginated(currentPage + 1, pageSize, debouncedSearch, estadoFilter),
