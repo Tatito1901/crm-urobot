@@ -1,7 +1,3 @@
-
-> crm-urobot@0.1.0 regenerate-types
-> npx supabase gen types typescript --project-id arlgadlbxwysvgtbxvic --schema=public
-
 export type Json =
   | string
   | number

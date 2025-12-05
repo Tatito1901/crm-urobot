@@ -89,7 +89,7 @@ export function useAppointmentForm(options: UseAppointmentFormOptions = {}) {
     const validationErrors = validateAppointmentForm(formData);
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;
-  }, [formData, initialSlot]);
+  }, [formData]);
 
   /**
    * Manejar submit del formulario
