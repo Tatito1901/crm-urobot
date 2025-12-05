@@ -1,0 +1,265 @@
+{
+  "name": "RECORDATORIOS_GENERATOR",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "02681b89-393f-47fa-aacb-36f567106d5b",
+      "name": "Cada 15 Minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM generar_recordatorio_tipo('48h', 47, 49);",
+        "options": {}
+      },
+      "id": "ff7d2c94-ba92-4af8-bdc1-fb3510662906",
+      "name": "Generar 48h",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -656,
+        -272
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM generar_recordatorio_tipo('24h', 23, 25);",
+        "options": {}
+      },
+      "id": "8375094c-054d-432f-abca-01032f93b980",
+      "name": "Generar 24h",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -656,
+        -80
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM generar_recordatorio_tipo('3h', 2.5, 3.5);",
+        "options": {}
+      },
+      "id": "dfce4f8c-24f2-4cd5-b7f1-f0d83ce6b8a2",
+      "name": "Generar 3h",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -656,
+        128
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "5edb6528-516e-41e0-abd5-e86d0f693e02",
+      "name": "Merge Resultados",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM auto_cancelar_citas_no_confirmadas(3, 6);",
+        "options": {}
+      },
+      "id": "688449eb-e911-4883-8add-212cf4f977d6",
+      "name": "Auto-Cancelar No Confirmadas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -160,
+        -80
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM release_stale_jobs(10);",
+        "options": {}
+      },
+      "id": "c976146f-6379-4af6-ad2c-ffdd6d039aef",
+      "name": "Liberar Jobs Atascados",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        96,
+        -80
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b874838a-aa32-4d1b-b506-1b341236510f",
+      "name": "Log Resumen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        352,
+        -80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cada 15 Minutos": {
+      "main": [
+        [
+          {
+            "node": "Generar 48h",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generar 24h",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generar 3h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar 48h": {
+      "main": [
+        [
+          {
+            "node": "Merge Resultados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar 24h": {
+      "main": [
+        [
+          {
+            "node": "Merge Resultados",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Resultados": {
+      "main": [
+        [
+          {
+            "node": "Auto-Cancelar No Confirmadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-Cancelar No Confirmadas": {
+      "main": [
+        [
+          {
+            "node": "Liberar Jobs Atascados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Liberar Jobs Atascados": {
+      "main": [
+        [
+          {
+            "node": "Log Resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar 3h": {
+      "main": [
+        [
+          {
+            "node": "Merge Resultados",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "versionId": "15d959d3-65f8-4553-9987-0c6a50367168",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
+  },
+  "id": "QilsXdZR2f6n0SIw",
+  "tags": []
+}

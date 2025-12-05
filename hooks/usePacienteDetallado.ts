@@ -8,6 +8,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import type { Database } from '@/types/supabase-generated';
 import type { Paciente, PacienteRow, PacienteStatsRow } from '@/types/pacientes';
 import { mapPacienteFromDB } from '@/types/pacientes';
 import type { Consulta } from '@/types/consultas';
@@ -66,13 +67,13 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       if (pacienteError) throw pacienteError;
       if (!pacienteData) throw new Error('Paciente no encontrado');
 
-      // Obtener estadísticas de la vista (no tipada en Supabase - usar rpc/sql directo)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const statsResult = await (supabase as any)
+      // Obtener estadísticas de la vista
+      type PacienteStatsView = Database['public']['Views']['paciente_stats']['Row'];
+      const statsResult = await supabase
         .from('paciente_stats')
         .select('*')
         .eq('paciente_id', pacienteId)
-        .single();
+        .single() as { data: PacienteStatsView | null; error: { code?: string } | null };
       
       const statsData = statsResult.data as PacienteStatsRow | null;
       const statsError = statsResult.error;
@@ -125,33 +126,24 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       setConsultas(consultasMapeadas);
 
       // Obtener notas clínicas / episodios del paciente
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: notasData, error: notasError } = await (supabase as any)
+      type ConsultasNotasRow = Database['public']['Tables']['consultas_notas']['Row'];
+      const { data: notasData, error: notasError } = await supabase
         .from('consultas_notas')
         .select('id, paciente_id, consulta_id, fecha, titulo, nota, origen, created_at')
         .eq('paciente_id', pacienteId)
-        .order('fecha', { ascending: false });
+        .order('fecha', { ascending: false }) as { data: ConsultasNotasRow[] | null; error: unknown };
 
       if (notasError) { /* silenciado - no crítico */ }
 
-      const notasMapeadas: NotaClinica[] = (notasData || []).map((row: {
-        id: string;
-        paciente_id: string;
-        consulta_id: string | null;
-        fecha: string | null;
-        titulo: string | null;
-        nota: string;
-        origen: string | null;
-        created_at: string;
-      }) => ({
+      const notasMapeadas: NotaClinica[] = (notasData || []).map((row) => ({
         id: row.id,
-        pacienteId: row.paciente_id,
+        pacienteId: row.paciente_id || pacienteId,
         consultaId: row.consulta_id,
         fecha: row.fecha || row.created_at?.split('T')[0] || '',
         titulo: row.titulo || 'Nota clínica',
         nota: row.nota,
         origen: row.origen,
-        createdAt: row.created_at,
+        createdAt: row.created_at || '',
       }));
 
       setNotasClinicas(notasMapeadas);

@@ -34,66 +34,21 @@ interface UseLeadsReturn {
   }
 }
 
-// Tipo para el JOIN
-type LeadRowWithPaciente = LeadRow & {
-  paciente: {
-    id: string
-    nombre_completo: string | null
-    telefono: string
-    email: string | null
-  } | null
-}
+// Tipo para el JOIN eliminado - usamos datos directos de la tabla leads
+// ya que nombre_completo ahora se guarda en la tabla leads
 
 /**
- * Mapea una fila de la tabla 'leads' al tipo Lead con datos enriquecidos
- * Usa mapper centralizado + enriquece con datos de paciente
- */
-const mapLead = (row: LeadRowWithPaciente): Lead => {
-  // Obtener nombre del paciente si existe
-  const pacienteNombre = row.paciente?.nombre_completo || undefined;
-  
-  // Usar mapper centralizado (convierte snake_case → camelCase)
-  const leadBase = mapLeadFromDB(row, pacienteNombre);
-  
-  // Enriquecer con cálculos (días, esCaliente, esInactivo)
-  const leadEnriquecido = enrichLead(leadBase);
-  
-  // Retornar lead enriquecido
-  return leadEnriquecido;
-}
-
-/**
- * Fetcher para leads con JOIN a pacientes
- * ✅ Campos sincronizados con BD real (types/supabase.ts)
+ * Fetcher para leads
+ * ✅ Campos sincronizados con BD real
  */
 const fetchLeads = async (): Promise<{ leads: Lead[], count: number }> => {
   const { data, error, count } = await supabase
     .from('leads')
-    .select(`
-      id,
-      paciente_id,
-      telefono_whatsapp,
-      estado,
-      fuente_lead,
-      canal_marketing,
-      notas_iniciales,
-      session_id,
-      fecha_primer_contacto,
-      ultima_interaccion,
-      fecha_conversion,
-      total_interacciones,
-      created_at,
-      updated_at,
-      paciente:pacientes (
-        id,
-        nombre_completo,
-        telefono,
-        email
-      )
-    `, { count: 'exact' })
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
 
   if (error) {
+    console.error('Error fetching leads:', error)
     throw error
   }
 
@@ -102,7 +57,10 @@ const fetchLeads = async (): Promise<{ leads: Lead[], count: number }> => {
   }
 
   // Mapear y validar cada lead
-  const leads = (data as unknown as LeadRowWithPaciente[]).map(mapLead)
+  const leads = data.map(row => {
+    const leadBase = mapLeadFromDB(row as LeadRow);
+    return enrichLead(leadBase);
+  })
   
   return { leads, count: count || leads.length }
 }

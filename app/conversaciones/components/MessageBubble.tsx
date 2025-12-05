@@ -1,4 +1,5 @@
 import React, { memo, useState } from 'react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { Bot, User, FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye } from 'lucide-react';
 import type { TipoMensaje } from '@/hooks/useConversaciones';
@@ -30,11 +31,14 @@ const ImageContent = memo(function ImageContent({
   return (
     <>
       <div className="relative cursor-pointer group" onClick={() => setShowLightbox(true)}>
-        <img 
+        <Image 
           src={url} 
           alt={caption || 'Imagen'} 
+          width={400}
+          height={256}
           className="max-w-full max-h-64 rounded-lg object-cover"
           loading="lazy"
+          unoptimized
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
           <ImageIcon className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -49,16 +53,20 @@ const ImageContent = memo(function ImageContent({
           onClick={() => setShowLightbox(false)}
         >
           <button 
-            className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+            className="absolute top-4 right-4 z-10 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
             onClick={() => setShowLightbox(false)}
           >
             <X className="w-6 h-6 text-white" />
           </button>
-          <img 
-            src={url} 
-            alt={caption || 'Imagen'} 
-            className="max-w-full max-h-full object-contain"
-          />
+          <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
+            <Image 
+              src={url} 
+              alt={caption || 'Imagen'} 
+              fill
+              className="object-contain"
+              unoptimized
+            />
+          </div>
         </div>
       )}
     </>
@@ -304,7 +312,7 @@ export const MessageBubble = memo(function MessageBubble({
           case 'video':
             return <VideoContent url={mediaUrl} caption={mediaCaption} />;
           case 'sticker':
-            return <img src={mediaUrl} alt="Sticker" className="max-w-32 max-h-32" />;
+            return <Image src={mediaUrl} alt="Sticker" width={128} height={128} className="max-w-32 max-h-32" unoptimized />;
           default:
             // Si no reconocemos el tipo pero hay URL, mostrar como documento
             return <DocumentContent url={mediaUrl} filename={mediaFilename} mimeType={mediaMimeType} caption={mediaCaption} />;
