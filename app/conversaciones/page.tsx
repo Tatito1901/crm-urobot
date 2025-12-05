@@ -232,7 +232,7 @@ export default function ConversacionesPage() {
                   <MessageCircle className="w-8 h-8 text-slate-400" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">Sin conversaciones</p>
-                {searchQuery && <p className="text-xs mt-2 text-center">No hay resultados para "{searchQuery}"</p>}
+                {searchQuery && <p className="text-xs mt-2 text-center">No hay resultados para &quot;{searchQuery}&quot;</p>}
               </div>
             ) : (
               <div className="p-2">
