@@ -1,8 +1,8 @@
 import React, { memo, useState } from 'react';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { Bot, User, FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye } from 'lucide-react';
-import type { TipoMensaje } from '@/hooks/useConversaciones';
+import { FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye } from 'lucide-react';
+import type { TipoMensaje } from '@/types/chat';
 
 interface MessageBubbleProps {
   contenido: string;

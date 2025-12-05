@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useConversaciones } from '@/hooks/useConversaciones'
-import { MessageCircle, Search, ArrowLeft, Phone, UserCheck, UserPlus, RefreshCw, ExternalLink, MessageSquare, MoreVertical, Calendar } from 'lucide-react'
+import { MessageCircle, Search, ArrowLeft, RefreshCw, ExternalLink, MessageSquare, MoreVertical, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -88,33 +88,6 @@ export default function ConversacionesPage() {
     return grupos
   }, [mensajesActivos])
 
-  // Badge del header (reutiliza lógica similar al item pero simplificada)
-  const getTipoBadge = (tipo: string, estado?: string | null) => {
-    if (tipo === 'paciente') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-          <UserCheck className="w-3 h-3" />
-          Paciente
-        </span>
-      )
-    }
-    if (tipo === 'lead') {
-      const label = estado === 'En seguimiento' ? 'Seguimiento' : 'Lead';
-      const isHot = estado === 'En seguimiento';
-      return (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
-          isHot 
-            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800'
-            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-        }`}>
-          <UserPlus className="w-3 h-3" />
-          {label}
-        </span>
-      )
-    }
-    return null
-  }
-
   // Abrir WhatsApp
   const openWhatsApp = useCallback((telefono: string) => {
     window.open(`https://wa.me/52${telefono}`, '_blank')
@@ -132,7 +105,7 @@ export default function ConversacionesPage() {
   }, [router])
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-hidden">
+    <div className="h-[calc(100dvh-4rem)] lg:h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-hidden">
       {/* Header Mobile (Solo visible si NO estamos viendo chat) */}
       {!isMobileViewingChat && (
         <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between">

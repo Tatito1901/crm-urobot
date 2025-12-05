@@ -121,6 +121,44 @@ const fetchConsultas = async (): Promise<{ consultas: Consulta[], count: number 
 }
 
 
+interface ConsultasStatsResponse {
+  total: number
+  programadas: number
+  confirmadas: number
+  completadas: number
+  canceladas: number
+  reagendadas: number
+  noAsistio: number
+  hoy: number
+  semana: number
+  metricas: {
+    tasaConfirmacion: number
+    tasaCancelacion: number
+    tasaAsistencia: number
+    confirmaciones: {
+      pendientes: number
+      confirmadas: number
+      vencidas: number
+    }
+    porSede: {
+      polanco: number
+      satelite: number
+    }
+    promedioDuracion: number
+    primeraVez: number
+    seguimiento: number
+  }
+}
+
+/**
+ * Fetcher para estadísticas de consultas (RPC)
+ */
+const fetchConsultasStats = async (): Promise<ConsultasStatsResponse | null> => {
+  const { data, error } = await supabase.rpc('get_consultas_stats')
+  if (error) throw error
+  return data as unknown as ConsultasStatsResponse
+}
+
 /**
  * Hook para gestionar consultas
  *
@@ -132,104 +170,56 @@ const fetchConsultas = async (): Promise<{ consultas: Consulta[], count: number 
  * - ✅ REALTIME: Se suscribe a cambios en la tabla 'consultas'
  */
 export function useConsultas(): UseConsultasReturn {
-  const { data, error, isLoading, mutate } = useSWR(
+  // 1. Fetch Consultas (Lista)
+  const { data: dataConsultas, error: errorConsultas, isLoading: loadingConsultas, mutate: mutateConsultas } = useSWR(
     'consultas',
     fetchConsultas,
+    SWR_CONFIG_STANDARD
+  )
+
+  // 2. Fetch Stats (Agregados Real-time)
+  const { data: dataStats, error: errorStats, isLoading: loadingStats, mutate: mutateStats } = useSWR(
+    'consultas_stats',
+    fetchConsultasStats,
     SWR_CONFIG_STANDARD
   )
 
   // ❌ Realtime DESHABILITADO - Consumía demasiados recursos
   // Los datos se actualizan vía SWR con revalidateOnFocus
 
-  const consultas = data?.consultas || []
+  const consultas = dataConsultas?.consultas || []
 
-  // ✅ OPTIMIZACIÓN: Memoizar todos los cálculos para evitar recálculos en cada render
-  const { stats, metricas } = useMemo(() => {
-    const now = new Date()
-    const hoyStr = now.toISOString().split('T')[0]
-    const semanaDespues = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    
-    // Single-pass para contar todos los estados (más eficiente que múltiples .filter())
-    let programadas = 0, confirmadas = 0, completadas = 0, canceladas = 0, reagendadas = 0, noAsistio = 0
-    let hoy = 0, semana = 0
-    let polanco = 0, satelite = 0
-    let primeraVez = 0, seguimiento = 0
-    let totalDuracion = 0
-    let pendientesConf = 0, confirmadasConf = 0, vencidasConf = 0
-    
-    for (const c of consultas) {
-      // Estados de cita
-      switch (c.estadoCita) {
-        case 'Programada': programadas++; break
-        case 'Confirmada': confirmadas++; break
-        case 'Completada': completadas++; break
-        case 'Cancelada': canceladas++; break
-        case 'Reagendada': reagendadas++; break
-        case 'No Asistió': noAsistio++; break
-      }
-      
-      // Temporales
-      if (c.fechaConsulta === hoyStr) hoy++
-      const fecha = new Date(c.fechaConsulta)
-      if (fecha >= now && fecha <= semanaDespues) semana++
-      
-      // Sedes
-      if (c.sede === 'POLANCO') polanco++
-      else if (c.sede === 'SATELITE') satelite++
-      
-      // Tipos
-      if (c.tipoCita === 'Primera Vez') primeraVez++
-      else if (c.tipoCita === 'Seguimiento') seguimiento++
-      
-      // Duración
-      totalDuracion += c.duracionMinutos
-      
-      // Confirmaciones futuras
-      if ((c.horasHastaConsulta || 0) > 0) {
-        if (c.estadoConfirmacion === 'Confirmada' || c.confirmadoPaciente) {
-          confirmadasConf++
-        } else if (c.estadoConfirmacion === 'Pendiente') {
-          pendientesConf++
-          if (!c.confirmadoPaciente && (c.horasHastaConsulta ?? 0) < 3) vencidasConf++
-        }
-      }
-    }
-    
-    const total = consultas.length
-    const consultasFinalizadas = completadas + noAsistio
-    
-    return {
-      stats: {
-        total,
-        programadas,
-        confirmadas,
-        completadas,
-        canceladas,
-        reagendadas,
-        noAsistio,
-        hoy,
-        semana,
-      },
-      metricas: {
-        tasaConfirmacion: total > 0 ? Math.round((confirmadas / total) * 100) : 0,
-        tasaCancelacion: total > 0 ? Math.round((canceladas / total) * 100) : 0,
-        tasaAsistencia: consultasFinalizadas > 0 ? Math.round((completadas / consultasFinalizadas) * 100) : 0,
-        confirmaciones: { pendientes: pendientesConf, confirmadas: confirmadasConf, vencidas: vencidasConf },
-        porSede: { polanco, satelite },
-        promedioDuracion: total > 0 ? Math.round(totalDuracion / total) : 30,
-        primeraVez,
-        seguimiento,
-      }
-    }
-  }, [consultas])
+  // Valores por defecto si no hay datos
+  const defaultStats = {
+    total: 0, programadas: 0, confirmadas: 0, completadas: 0, canceladas: 0, reagendadas: 0, noAsistio: 0, hoy: 0, semana: 0
+  }
+  
+  const defaultMetricas = {
+    tasaConfirmacion: 0, tasaCancelacion: 0, tasaAsistencia: 0,
+    confirmaciones: { pendientes: 0, confirmadas: 0, vencidas: 0 },
+    porSede: { polanco: 0, satelite: 0 },
+    promedioDuracion: 30, primeraVez: 0, seguimiento: 0
+  }
+
+  const stats = dataStats ? {
+    total: dataStats.total,
+    programadas: dataStats.programadas,
+    confirmadas: dataStats.confirmadas,
+    completadas: dataStats.completadas,
+    canceladas: dataStats.canceladas,
+    reagendadas: dataStats.reagendadas,
+    noAsistio: dataStats.noAsistio,
+    hoy: dataStats.hoy,
+    semana: dataStats.semana
+  } : defaultStats
 
   return {
     consultas,
-    loading: isLoading,
-    error: error || null,
-    refetch: async () => { await mutate() },
-    totalCount: data?.count || 0,
+    loading: loadingConsultas || loadingStats,
+    error: errorConsultas || errorStats || null,
+    refetch: async () => { await Promise.all([mutateConsultas(), mutateStats()]) },
+    totalCount: dataConsultas?.count || 0,
     stats,
-    metricas,
+    metricas: dataStats?.metricas || defaultMetricas,
   }
 }

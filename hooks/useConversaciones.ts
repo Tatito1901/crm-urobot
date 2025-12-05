@@ -11,47 +11,12 @@ import { useState, useCallback } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { SWR_CONFIG_REALTIME, CACHE_KEYS } from '@/lib/swr-config'
-import type { Tables } from '@/types/supabase'
+import type { ConversacionRow, Mensaje, ConversacionUI, TipoMensaje } from '@/types/chat'
 
 const supabase = createClient()
 
-type ConversacionRow = Tables<'conversaciones'>
-
-// Tipos para la UI
-export type TipoMensaje = 'text' | 'image' | 'audio' | 'video' | 'document' | 'sticker' | 'location'
-
-export interface Mensaje {
-  id: string
-  telefono: string
-  contenido: string
-  rol: 'usuario' | 'asistente'
-  createdAt: Date
-  // Campos multimedia
-  tipoMensaje: TipoMensaje
-  mediaUrl?: string | null
-  mediaMimeType?: string | null
-  mediaFilename?: string | null
-  mediaCaption?: string | null
-  mediaDurationSeconds?: number | null
-  mediaWidth?: number | null
-  mediaHeight?: number | null
-}
-
-interface Conversacion {
-  telefono: string
-  nombreContacto: string | null
-  ultimoMensaje: string
-  ultimaFecha: Date
-  mensajesNoLeidos: number
-  tipoContacto: 'paciente' | 'lead' | 'desconocido'
-  // Campos adicionales para UI enriquecida
-  estadoLead: string | null // 'Nuevo', 'Convertido', etc.
-  citasValidas: number
-  totalMensajes: number
-}
-
 interface UseConversacionesReturn {
-  conversaciones: Conversacion[]
+  conversaciones: ConversacionUI[]
   mensajesActivos: Mensaje[]
   telefonoActivo: string | null
   setTelefonoActivo: (telefono: string | null) => void
@@ -75,13 +40,13 @@ interface UseConversacionesReturn {
  * 
  * Prioridad de nombre: pacientes.nombre_completo > leads.nombre_completo
  */
-const fetchConversaciones = async (): Promise<Conversacion[]> => {
+const fetchConversaciones = async (): Promise<ConversacionUI[]> => {
   // ✅ OPTIMIZACIÓN: Ejecutar las 3 queries en PARALELO (ahorra ~300-500ms)
   const [convResult, pacientesResult, leadsResult] = await Promise.all([
     // 1. Conversaciones recientes (limitadas a últimos 30 días para rendimiento)
     supabase
       .from('conversaciones')
-      .select('telefono, mensaje, rol, created_at')
+      .select('telefono, mensaje, rol, created_at, tipo_mensaje, media_caption') // Select explícito
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false })
       .limit(5000), // Límite de seguridad
@@ -98,7 +63,8 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
   ])
 
   if (convResult.error) throw convResult.error
-  const convData = convResult.data
+  // Casting seguro porque sabemos que los campos existen en BD
+  const convData = convResult.data as unknown as ConversacionRow[]
   const pacientesData = pacientesResult.data
   const leadsData = leadsResult.data
 
@@ -153,7 +119,8 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
   const mensajesValidos = ['undefined', 'Interacción registrada', 'null', '']
   const convDataFiltrado = (convData || []).filter(msg => {
     const texto = msg.mensaje?.trim()
-    return texto && !mensajesValidos.includes(texto)
+    const tieneMedia = msg.tipo_mensaje && msg.tipo_mensaje !== 'text'
+    return (texto && !mensajesValidos.includes(texto)) || tieneMedia
   })
   
   const mensajesPorTelefono = new Map<string, number>()
@@ -163,7 +130,7 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
   }
 
   // 5. Agrupar conversaciones por teléfono (solo primer mensaje válido = más reciente)
-  const conversacionesMap = new Map<string, Conversacion>()
+  const conversacionesMap = new Map<string, ConversacionUI>()
   
   for (const msg of convDataFiltrado) {
     if (!conversacionesMap.has(msg.telefono)) {
@@ -174,8 +141,8 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
       // Determinar tipo y nombre con lógica mejorada
       // JERARQUÍA:
       // 1. PACIENTE: Tiene ≥1 cita válida (no cancelada) O lead tiene paciente_id
-      // 2. LEAD: Existe en leads O en pacientes (sin citas válidas)
-      // 3. DESCONOCIDO: No está en ninguna tabla
+      // 2. LEAD: Existe en tabla leads O pacientes pero SIN citas válidas
+      // 3. DESCONOCIDO: Teléfono no está en ninguna tabla
       let tipoContacto: 'paciente' | 'lead' | 'desconocido' = 'desconocido'
       let nombreContacto: string | null = null
       let estadoLeadFinal: string | null = null
@@ -191,7 +158,7 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
         // Si lead fue convertido, mostrar "Convertido" como estado
         estadoLeadFinal = esLeadConvertido ? 'Convertido' : (leadInfo?.estado || null)
       }
-      // LEAD: Existe en leads O en pacientes (sin citas válidas)
+      // LEAD: Existe en tabla leads O pacientes pero SIN citas válidas
       else if (leadInfo || pacienteInfo) {
         tipoContacto = 'lead'
         // Priorizar nombre de paciente si existe, luego lead
@@ -201,10 +168,13 @@ const fetchConversaciones = async (): Promise<Conversacion[]> => {
       // DESCONOCIDO: No está en ninguna tabla
       // tipoContacto ya es 'desconocido' por defecto
       
+      // Contenido a mostrar (mensaje o caption de media)
+      const contenidoMostrar = msg.mensaje || msg.media_caption || (msg.tipo_mensaje !== 'text' ? `[${msg.tipo_mensaje}]` : '')
+
       conversacionesMap.set(msg.telefono, {
         telefono: msg.telefono,
         nombreContacto,
-        ultimoMensaje: msg.mensaje,
+        ultimoMensaje: contenidoMostrar,
         ultimaFecha: msg.created_at ? new Date(msg.created_at) : new Date(),
         mensajesNoLeidos: 0,
         tipoContacto,
@@ -276,34 +246,33 @@ const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> =>
 
   if (error) throw error
   
-  return (data || [])
+  // Casting a ConversacionRow porque sabemos que la tabla tiene los campos
+  const rawData = data as unknown as ConversacionRow[]
+  
+  return rawData
     // Filtrar mensajes basura/inválidos (pero permitir mensajes con media aunque el texto esté vacío)
-    .filter((row: ConversacionRow) => {
+    .filter((row) => {
       const mensaje = row.mensaje?.trim()
-      const tieneMedia = !!(row as any).media_url
+      const tieneMedia = !!row.media_url
       // Mantener si tiene contenido de texto válido O si tiene media adjunta
       return (mensaje && !MENSAJES_INVALIDOS.includes(mensaje)) || tieneMedia
     })
-    .map((row: ConversacionRow): Mensaje => {
-      const mediaUrl = (row as any).media_url || null
-      const mediaMimeType = (row as any).media_mime_type || null
-      const mediaFilename = (row as any).media_filename || null
-      
+    .map((row): Mensaje => {
       return {
         id: row.id,
         telefono: row.telefono,
-        contenido: row.mensaje || (row as any).media_caption || '[Archivo adjunto]',
-        rol: row.rol as 'usuario' | 'asistente',
+        contenido: row.mensaje || row.media_caption || '[Archivo adjunto]',
+        rol: row.rol,
         createdAt: row.created_at ? new Date(row.created_at) : new Date(),
         // Campos multimedia con inferencia de tipo
-        tipoMensaje: inferirTipoMensaje((row as any).tipo_mensaje, mediaMimeType, mediaUrl, mediaFilename),
-        mediaUrl,
-        mediaMimeType,
-        mediaFilename,
-        mediaCaption: (row as any).media_caption || null,
-        mediaDurationSeconds: (row as any).media_duration_seconds || null,
-        mediaWidth: (row as any).media_width || null,
-        mediaHeight: (row as any).media_height || null,
+        tipoMensaje: inferirTipoMensaje(row.tipo_mensaje, row.media_mime_type, row.media_url, row.media_filename),
+        mediaUrl: row.media_url,
+        mediaMimeType: row.media_mime_type,
+        mediaFilename: row.media_filename,
+        mediaCaption: row.media_caption,
+        mediaDurationSeconds: row.media_duration_seconds,
+        mediaWidth: row.media_width,
+        mediaHeight: row.media_height,
       }
     })
 }
