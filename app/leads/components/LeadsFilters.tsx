@@ -3,7 +3,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 
-type FilterStatus = 'all' | 'Nuevo' | 'Interesado' | 'Convertido' | 'Descartado';
+type FilterStatus = 'all' | 'Nuevo' | 'Contactado' | 'Interesado' | 'Convertido' | 'Descartado';
 
 interface LeadsFiltersProps {
   currentFilter: FilterStatus;
@@ -19,8 +19,9 @@ export const LeadsFilters = React.memo(function LeadsFilters({
   onSearchChange,
 }: LeadsFiltersProps) {
   const filters: { id: FilterStatus; label: string }[] = [
-    { id: 'all', label: 'Todos' },
+    { id: 'all', label: 'Activos' },
     { id: 'Nuevo', label: 'Nuevos' },
+    { id: 'Contactado', label: 'Contactados' },
     { id: 'Interesado', label: 'Interesados' },
     { id: 'Convertido', label: 'Convertidos' },
     { id: 'Descartado', label: 'Descartados' },

@@ -38,17 +38,15 @@ export default function LeadsPage() {
   const leadsStats = useMemo(() => ({
     total: stats.total,
     nuevo: stats.nuevos,
+    contactado: stats.enSeguimiento, // Leads contactados (en seguimiento)
     interesado: stats.interesados,
     convertido: stats.convertidos,
     descartado: stats.descartados,
-    enProceso: stats.nuevos + stats.interesados,
-    clientes: 0,
-    calientes: 0,
-    inactivos: 0,
+    activos: stats.nuevos + stats.enSeguimiento + stats.interesados, // Pipeline activo
   }), [stats]);
   
   // ✅ Handler para cambio de filtro (mapea a valores del hook)
-  const handleFilterChange = useCallback((newFilter: 'all' | 'Nuevo' | 'Interesado' | 'Convertido' | 'Descartado') => {
+  const handleFilterChange = useCallback((newFilter: 'all' | 'Nuevo' | 'Contactado' | 'Interesado' | 'Convertido' | 'Descartado') => {
     setEstadoFilter(newFilter === 'all' ? '' : newFilter);
   }, [setEstadoFilter]);
 

@@ -326,7 +326,7 @@ export const MessageBubble = memo(function MessageBubble({
         <div className="space-y-2">
           {mediaComponent}
           {textoAdicional && (
-            <p className="whitespace-pre-wrap break-words text-sm">{contenido}</p>
+            <p className="whitespace-pre-wrap break-words text-[15px]">{contenido}</p>
           )}
         </div>
       );
@@ -336,61 +336,60 @@ export const MessageBubble = memo(function MessageBubble({
       return <LocationContent contenido={contenido} />;
     }
     
-    return <p className="whitespace-pre-wrap break-words">{contenido}</p>;
-  };
-
-  const getTypeIcon = () => {
-    switch (tipoMensaje) {
-      case 'image': return <ImageIcon className="w-3 h-3" />;
-      case 'document': return <FileText className="w-3 h-3" />;
-      case 'audio': return <Mic className="w-3 h-3" />;
-      case 'video': return <Film className="w-3 h-3" />;
-      case 'location': return <MapPin className="w-3 h-3" />;
-      default: return null;
-    }
+    return <p className="whitespace-pre-wrap break-words text-[15px]">{contenido}</p>;
   };
 
   return (
     <div className={`flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-0.5' : 'mt-3'}`}>
-      <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${isAsistente ? 'items-start' : 'items-end'}`}>
+      <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] ${isAsistente ? 'items-start' : 'items-end'}`}>
         
-        {/* Etiqueta de remitente (solo primer mensaje de serie) */}
-        {!isConsecutive && (
-          <div className={`flex items-center gap-1.5 mb-1.5 px-1 ${isAsistente ? '' : 'flex-row-reverse'}`}>
-            <div className={`
-              w-5 h-5 rounded-lg flex items-center justify-center shadow-sm
-              ${isAsistente 
-                ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' 
-                : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'}
-            `}>
-              {isAsistente ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
-            </div>
-            <span className={`text-[11px] font-semibold ${isAsistente ? 'text-indigo-600 dark:text-indigo-400' : 'text-blue-600 dark:text-blue-400'}`}>
-              {isAsistente ? 'UroBot' : 'Paciente'}
+        {/* Bubble estilo iMessage/WhatsApp */}
+        <div className={`
+          group relative
+          ${isAsistente 
+            ? `bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100
+               rounded-2xl rounded-bl-md` 
+            : `bg-blue-500 text-white
+               rounded-2xl rounded-br-md`}
+        `}>
+          {/* Contenido principal */}
+          <div className="px-3.5 pt-2.5 pb-1">
+            {renderContent()}
+          </div>
+          
+          {/* Footer con hora integrado en la burbuja */}
+          <div className={`flex items-center justify-end gap-1.5 px-3 pb-2 ${isAsistente ? 'text-slate-400' : 'text-white/70'}`}>
+            {tipoMensaje !== 'text' && (
+              <>
+                {tipoMensaje === 'image' && <ImageIcon className="w-3 h-3" />}
+                {tipoMensaje === 'document' && <FileText className="w-3 h-3" />}
+                {tipoMensaje === 'audio' && <Mic className="w-3 h-3" />}
+                {tipoMensaje === 'video' && <Film className="w-3 h-3" />}
+                {tipoMensaje === 'location' && <MapPin className="w-3 h-3" />}
+              </>
+            )}
+            <span className="text-[11px] font-medium">
+              {format(createdAt, 'HH:mm')}
             </span>
           </div>
-        )}
-        
-        {/* Bubble */}
-        <div className={`
-          relative px-4 py-3 text-sm leading-relaxed
-          ${isAsistente 
-            ? `bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200
-               rounded-2xl rounded-tl-md shadow-sm` 
-            : `bg-gradient-to-br from-blue-500 to-blue-600 text-white
-               rounded-2xl rounded-tr-md shadow-lg shadow-blue-500/20`}
-        `}>
-          {renderContent()}
-        </div>
-
-        {/* Time + Type indicator */}
-        <div className={`flex items-center gap-1.5 mt-1 px-1 ${isAsistente ? '' : 'flex-row-reverse'}`}>
-          {tipoMensaje !== 'text' && (
-            <span className="text-slate-400">{getTypeIcon()}</span>
+          
+          {/* Triángulo decorativo (tail) solo en primer mensaje de serie */}
+          {!isConsecutive && (
+            <div className={`
+              absolute bottom-0 w-3 h-3
+              ${isAsistente 
+                ? '-left-1.5 text-slate-100 dark:text-slate-800/80' 
+                : '-right-1.5 text-blue-500'}
+            `}>
+              <svg viewBox="0 0 12 12" className="w-full h-full fill-current">
+                {isAsistente ? (
+                  <path d="M12 12 L0 12 L12 0 Z" />
+                ) : (
+                  <path d="M0 12 L12 12 L0 0 Z" />
+                )}
+              </svg>
+            </div>
           )}
-          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
-            {format(createdAt, 'HH:mm')}
-          </span>
         </div>
       </div>
     </div>

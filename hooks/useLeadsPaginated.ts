@@ -27,7 +27,18 @@ interface LeadsStats {
 const fetchStats = async (): Promise<LeadsStats> => {
   const { data, error } = await supabase.rpc('get_leads_stats' as never);
   if (error) return { total: 0, nuevos: 0, interesados: 0, enSeguimiento: 0, convertidos: 0, descartados: 0, ultimaSemana: 0, ultimoMes: 0 };
-  return data as unknown as LeadsStats;
+  // La función ahora retorna JSON directamente
+  const stats = data as unknown as LeadsStats;
+  return {
+    total: stats.total || 0,
+    nuevos: stats.nuevos || 0,
+    interesados: stats.interesados || 0,
+    enSeguimiento: stats.enSeguimiento || 0,
+    convertidos: stats.convertidos || 0,
+    descartados: stats.descartados || 0,
+    ultimaSemana: stats.ultimaSemana || 0,
+    ultimoMes: stats.ultimoMes || 0,
+  };
 };
 
 const fetchLeadsPaginated = async (

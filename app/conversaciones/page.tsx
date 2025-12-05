@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useConversaciones } from '@/hooks/useConversaciones'
-import { MessageCircle, Search, ArrowLeft, Phone, UserCheck, UserPlus, Calendar, RefreshCw, Eye, ExternalLink, MessageSquare } from 'lucide-react'
+import { MessageCircle, Search, ArrowLeft, Phone, UserCheck, UserPlus, RefreshCw, ExternalLink, MessageSquare, MoreVertical, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -266,68 +266,66 @@ export default function ConversacionesPage() {
         `}>
           {telefonoActivo && contactoActivo ? (
             <>
-              {/* Header del chat */}
-              <header className="shrink-0 h-[72px] px-4 flex items-center gap-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-10">
+              {/* Header del chat - Estilo WhatsApp */}
+              <header className="shrink-0 h-16 px-2 sm:px-4 flex items-center gap-3 border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl z-10">
                 <button
                   onClick={() => setIsMobileViewingChat(false)}
-                  className="sm:hidden -ml-1 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                  className="sm:hidden p-1.5 -ml-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                 </button>
                 
-                {/* Avatar */}
+                {/* Avatar circular */}
                 <div className={`
-                  w-11 h-11 rounded-2xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-lg
-                  ${contactoActivo.tipoContacto === 'paciente' 
-                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/25' 
+                  w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0
+                  bg-gradient-to-br ${contactoActivo.tipoContacto === 'paciente' 
+                    ? 'from-emerald-500 to-emerald-600' 
                     : contactoActivo.tipoContacto === 'lead' 
-                      ? 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/25' 
-                      : 'bg-gradient-to-br from-slate-500 to-slate-600 shadow-slate-500/25'}
+                      ? 'from-amber-500 to-orange-500' 
+                      : 'from-slate-400 to-slate-500'}
                 `}>
                   {(contactoActivo.nombreContacto?.[0] || contactoActivo.telefono.slice(-2)).toUpperCase()}
                 </div>
                 
                 {/* Info contacto */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-foreground text-base truncate">
-                      {contactoActivo.nombreContacto || contactoActivo.telefono}
-                    </h3>
-                    <div className="hidden sm:block">
-                      {getTipoBadge(contactoActivo.tipoContacto, contactoActivo.estadoLead)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <Phone className="w-3 h-3" />
-                    <span className="font-medium">{contactoActivo.telefono}</span>
-                    <span className="text-slate-300 dark:text-slate-600">•</span>
-                    <span>{contactoActivo.totalMensajes} mensajes</span>
-                  </div>
+                  <h3 className="font-semibold text-foreground text-[15px] truncate leading-tight">
+                    {contactoActivo.nombreContacto || contactoActivo.telefono}
+                  </h3>
+                  <p className="text-[12px] text-slate-500 dark:text-slate-400 truncate">
+                    {contactoActivo.tipoContacto === 'paciente' ? '✓ Paciente' : contactoActivo.estadoLead || 'Contacto'} • {contactoActivo.totalMensajes} mensajes
+                  </p>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2">
+                {/* Actions - Estilo iconos limpios */}
+                <div className="flex items-center gap-1">
                   <button
                     onClick={() => openWhatsApp(contactoActivo.telefono)}
-                    className="hidden sm:flex items-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
+                    className="p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
+                    title="Abrir en WhatsApp"
                   >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
+                    <MessageCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
                   </button>
                   <button
                     onClick={() => viewProfile(contactoActivo)}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                    className="p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
                     title="Ver perfil"
                   >
-                    <ExternalLink className="w-4 h-4 text-slate-500" />
+                    <ExternalLink className="w-5 h-5 text-slate-500" />
+                  </button>
+                  <button
+                    className="p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
+                    title="Más opciones"
+                  >
+                    <MoreVertical className="w-5 h-5 text-slate-500" />
                   </button>
                 </div>
               </header>
 
-              {/* Lista de Mensajes */}
+              {/* Lista de Mensajes - Fondo con patrón sutil */}
               <div 
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth"
+                className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 scroll-smooth bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2YxZjVmOSIvPgo8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxIiBmaWxsPSIjZTJlOGYwIi8+Cjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzBmMTcyYSIvPgo8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxIiBmaWxsPSIjMWUyOTNiIi8+Cjwvc3ZnPg==')]"
               >
                 {isLoadingMensajes ? (
                   <div className="flex items-center justify-center h-full">
@@ -389,13 +387,11 @@ export default function ConversacionesPage() {
                 )}
               </div>
 
-              {/* Footer de solo lectura */}
-              <footer className="shrink-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80">
-                <div className="max-w-4xl mx-auto bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-4 flex items-center justify-center gap-3 text-sm text-slate-500 dark:text-slate-400 select-none">
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <Eye className="w-4 h-4 text-blue-500" />
-                  </div>
-                  <span className="font-medium">Modo lectura • El historial se sincroniza automáticamente</span>
+              {/* Footer minimalista */}
+              <footer className="shrink-0 py-2 px-4 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800/60">
+                <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Historial sincronizado • Solo lectura</span>
                 </div>
               </footer>
             </>
