@@ -6,7 +6,20 @@ import { Badge, DataTable } from '@/app/components/crm/ui';
 import { Button } from '@/components/ui/button';
 import { HelpIcon } from '@/app/components/common/InfoTooltip';
 import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
-import { History, Target, MessageCircle } from 'lucide-react';
+import { Eye, Calendar, MessageCircle, MoreHorizontal, Stethoscope, FileText } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import type { Paciente } from '@/types/pacientes';
 import { DestinoPacienteModal } from '../[id]/components/DestinoPacienteModal';
 import { updatePacienteDestino } from '../[id]/services/paciente-service';
@@ -129,46 +142,96 @@ export const PacientesTable = React.memo(function PacientesTable({
         </div>
       ),
       acciones: (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/pacientes/${paciente.id}`);
-            }}
-            title="Ver historial completo"
-            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
-          >
-            <History className="h-4 w-4" />
-          </Button>
+        <TooltipProvider delayDuration={200}>
+          <div className="flex items-center justify-end gap-0.5">
+            {/* Botón principal: Ver perfil */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/pacientes/${paciente.id}`);
+                  }}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-popover text-popover-foreground border">
+                <p className="text-xs font-medium">Ver perfil completo</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenDestino(paciente);
-            }}
-            title="Registrar destino / cirugía"
-            className="h-8 w-8 p-0 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
-          >
-            <Target className="h-4 w-4" />
-          </Button>
+            {/* Botón WhatsApp - el más usado */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(`https://wa.me/52${paciente.telefono}`, '_blank');
+                  }}
+                  className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="bg-popover text-popover-foreground border">
+                <p className="text-xs font-medium">Enviar WhatsApp</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(`https://wa.me/52${paciente.telefono}`, '_blank');
-            }}
-            title="Contactar por WhatsApp"
-            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
-          >
-            <MessageCircle className="h-4 w-4" />
-          </Button>
-        </div>
+            {/* Menú de más acciones */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/agenda?paciente=${paciente.id}`);
+                  }}
+                  className="gap-2 cursor-pointer"
+                >
+                  <Calendar className="h-4 w-4 text-blue-500" />
+                  <span>Agendar consulta</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenDestino(paciente);
+                  }}
+                  className="gap-2 cursor-pointer"
+                >
+                  <Stethoscope className="h-4 w-4 text-indigo-500" />
+                  <span>Registrar cirugía</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/pacientes/${paciente.id}#notas`);
+                  }}
+                  className="gap-2 cursor-pointer"
+                >
+                  <FileText className="h-4 w-4 text-amber-500" />
+                  <span>Agregar nota</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </TooltipProvider>
       ),
     };
   }), [pacientes, router]);

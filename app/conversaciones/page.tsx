@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useConversaciones } from '@/hooks/useConversaciones'
-import { MessageCircle, Search, ArrowLeft, Phone, UserCheck, UserPlus, Calendar, RefreshCw, Eye } from 'lucide-react'
+import { MessageCircle, Search, ArrowLeft, Phone, UserCheck, UserPlus, Calendar, RefreshCw, Eye, ExternalLink, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { ConversationItem } from './components/ConversationItem'
 import { MessageBubble } from './components/MessageBubble'
 
 export default function ConversacionesPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const telefonoParam = searchParams.get('telefono')
   
   // Estado para evitar hydration mismatch
@@ -114,14 +115,38 @@ export default function ConversacionesPage() {
     return null
   }
 
+  // Abrir WhatsApp
+  const openWhatsApp = useCallback((telefono: string) => {
+    window.open(`https://wa.me/52${telefono}`, '_blank')
+  }, [])
+
+  // Ver perfil del contacto
+  const viewProfile = useCallback((contacto: typeof contactoActivo) => {
+    if (!contacto) return
+    if (contacto.tipoContacto === 'paciente') {
+      // Buscar paciente por teléfono - ir a leads por ahora
+      router.push(`/leads?search=${contacto.telefono}`)
+    } else {
+      router.push(`/leads?search=${contacto.telefono}`)
+    }
+  }, [router])
+
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-hidden">
       {/* Header Mobile (Solo visible si NO estamos viendo chat) */}
       {!isMobileViewingChat && (
-        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border bg-background flex items-center justify-between">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">Mensajes</h1>
-          <button onClick={() => refetch()} className="p-2">
-            <RefreshCw className={`w-4 h-4 ${mounted && isLoading ? 'animate-spin' : ''}`} />
+        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-white" />
+            </div>
+            <h1 className="text-lg font-bold text-foreground tracking-tight">Mensajes</h1>
+          </div>
+          <button 
+            onClick={() => refetch()} 
+            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 text-slate-600 dark:text-slate-400 ${mounted && isLoading ? 'animate-spin' : ''}`} />
           </button>
         </header>
       )}
@@ -131,70 +156,86 @@ export default function ConversacionesPage() {
         
         {/* ========== SIDEBAR ========== */}
         <aside className={`
-          w-full sm:w-[300px] lg:w-[350px] border-r border-border flex flex-col bg-background shrink-0 z-10
+          w-full sm:w-[320px] lg:w-[380px] border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col 
+          bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shrink-0 z-10
           absolute sm:relative inset-0 h-full
           transition-transform duration-300 ease-in-out
           ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
         `}>
           {/* Header Desktop del Sidebar */}
-          <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-border/50">
-            <h2 className="font-semibold">Mensajes</h2>
-            <button onClick={() => refetch()} title="Actualizar" className="text-muted-foreground hover:text-foreground">
-              <RefreshCw className={`w-4 h-4 ${mounted && isLoading ? 'animate-spin' : ''}`} />
+          <div className="hidden sm:flex items-center justify-between px-5 py-4 border-b border-slate-200/50 dark:border-slate-800/50">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="font-bold text-foreground">Conversaciones</h2>
+                <p className="text-[11px] text-muted-foreground">{conversaciones.length} contactos</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => refetch()} 
+              title="Actualizar" 
+              className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 text-slate-500 ${mounted && isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
           {/* Buscador */}
-          <div className="p-3 border-b border-border/50 shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
+          <div className="p-4 border-b border-slate-200/50 dark:border-slate-800/50 shrink-0">
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
               <input
                 type="text"
-                placeholder="Buscar conversación..."
+                placeholder="Buscar por nombre o teléfono..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm bg-muted/50 border border-transparent rounded-xl
-                         focus:outline-none focus:bg-background focus:border-primary/20 focus:ring-2 focus:ring-primary/10
-                         placeholder:text-muted-foreground transition-all"
+                className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-transparent rounded-xl
+                         focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/10
+                         placeholder:text-slate-400 transition-all duration-200"
               />
             </div>
           </div>
 
-          {/* Lista Virtualizada (Simulada con map simple pero memoizada) */}
-          <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-muted/50 hover:scrollbar-thumb-muted">
+          {/* Lista de conversaciones */}
+          <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 hover:scrollbar-thumb-slate-400 dark:hover:scrollbar-thumb-slate-600">
             {error ? (
-              <div className="p-4 text-center text-red-500">
-                <p className="text-sm font-medium">Error al cargar</p>
-                <p className="text-xs mt-1 opacity-70">{error.message}</p>
+              <div className="p-6 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-7 h-7 text-red-500" />
+                </div>
+                <p className="text-sm font-semibold text-red-600 dark:text-red-400">Error al cargar</p>
+                <p className="text-xs mt-1 text-red-500/70">{error.message}</p>
                 <button 
                   onClick={() => refetch()}
-                  className="mt-2 px-3 py-1 bg-red-100 dark:bg-red-900/30 rounded text-xs"
+                  className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-medium transition-colors"
                 >
                   Reintentar
                 </button>
               </div>
             ) : !mounted || isLoading ? (
-              <div className="p-4 space-y-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 animate-pulse">
-                    <div className="w-10 h-10 rounded-full bg-muted shrink-0" />
+              <div className="p-4 space-y-3">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 animate-pulse">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 bg-muted rounded w-3/4" />
-                      <div className="h-2 bg-muted rounded w-1/2" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-3/4" />
+                      <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/2" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filteredConversaciones.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center mb-3">
-                  <MessageCircle className="w-6 h-6 opacity-40" />
+              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground px-6">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                  <MessageCircle className="w-8 h-8 text-slate-400" />
                 </div>
-                <p className="text-sm font-medium">Sin conversaciones</p>
-                {searchQuery && <p className="text-xs mt-1 opacity-70">Intenta otra búsqueda</p>}
+                <p className="text-sm font-semibold text-foreground">Sin conversaciones</p>
+                {searchQuery && <p className="text-xs mt-2 text-center">No hay resultados para "{searchQuery}"</p>}
               </div>
             ) : (
-              <div>
+              <div className="p-2">
                 {filteredConversaciones.map(conv => (
                   <ConversationItem
                     key={conv.telefono}
@@ -217,27 +258,31 @@ export default function ConversacionesPage() {
 
         {/* ========== CHAT AREA ========== */}
         <main className={`
-          flex-1 flex flex-col min-w-0 min-h-0 bg-muted/5 overflow-hidden
+          flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden
           absolute sm:relative inset-0 h-full
-          transition-transform duration-300 ease-in-out bg-slate-50 dark:bg-slate-950/50
+          transition-transform duration-300 ease-in-out
+          bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900
           ${isMobileViewingChat ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}
         `}>
           {telefonoActivo && contactoActivo ? (
             <>
               {/* Header del chat */}
-              <header className="shrink-0 h-16 px-4 flex items-center gap-3 border-b border-border bg-background/80 backdrop-blur-md z-10 shadow-sm">
+              <header className="shrink-0 h-[72px] px-4 flex items-center gap-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-10">
                 <button
                   onClick={() => setIsMobileViewingChat(false)}
-                  className="sm:hidden -ml-2 p-2 hover:bg-muted rounded-full transition-colors"
+                  className="sm:hidden -ml-1 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                 </button>
                 
                 {/* Avatar */}
                 <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0 shadow-sm
-                  ${contactoActivo.tipoContacto === 'paciente' ? 'bg-blue-500' : 
-                    contactoActivo.tipoContacto === 'lead' ? 'bg-amber-500' : 'bg-slate-500'}
+                  w-11 h-11 rounded-2xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-lg
+                  ${contactoActivo.tipoContacto === 'paciente' 
+                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/25' 
+                    : contactoActivo.tipoContacto === 'lead' 
+                      ? 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/25' 
+                      : 'bg-gradient-to-br from-slate-500 to-slate-600 shadow-slate-500/25'}
                 `}>
                   {(contactoActivo.nombreContacto?.[0] || contactoActivo.telefono.slice(-2)).toUpperCase()}
                 </div>
@@ -245,23 +290,37 @@ export default function ConversacionesPage() {
                 {/* Info contacto */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
+                    <h3 className="font-bold text-foreground text-base truncate">
                       {contactoActivo.nombreContacto || contactoActivo.telefono}
                     </h3>
                     <div className="hidden sm:block">
                       {getTipoBadge(contactoActivo.tipoContacto, contactoActivo.estadoLead)}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                     <Phone className="w-3 h-3" />
-                    <span>{contactoActivo.telefono}</span>
-                    <span className="sm:hidden">• {getTipoBadge(contactoActivo.tipoContacto, contactoActivo.estadoLead)}</span>
+                    <span className="font-medium">{contactoActivo.telefono}</span>
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                    <span>{contactoActivo.totalMensajes} mensajes</span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1">
-                  {/* Aquí podrían ir botones de acción como 'Llamar', 'Ver Perfil' */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openWhatsApp(contactoActivo.telefono)}
+                    className="hidden sm:flex items-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    WhatsApp
+                  </button>
+                  <button
+                    onClick={() => viewProfile(contactoActivo)}
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                    title="Ver perfil"
+                  >
+                    <ExternalLink className="w-4 h-4 text-slate-500" />
+                  </button>
                 </div>
               </header>
 
@@ -272,34 +331,38 @@ export default function ConversacionesPage() {
               >
                 {isLoadingMensajes ? (
                   <div className="flex items-center justify-center h-full">
-                    <div className="flex flex-col items-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">Cargando historial...</span>
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
+                      </div>
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Cargando mensajes...</span>
                     </div>
                   </div>
                 ) : mensajesAgrupados.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-50">
-                    <MessageCircle className="w-16 h-16 mb-4 opacity-20" />
-                    <p className="text-sm">No hay mensajes en esta conversación</p>
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                      <MessageCircle className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+                    </div>
+                    <p className="text-base font-semibold text-slate-600 dark:text-slate-400">Sin mensajes</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Esta conversación está vacía</p>
                   </div>
                 ) : (
-                  <div className="space-y-6 pb-4">
+                  <div className="space-y-6 pb-4 max-w-4xl mx-auto">
                     {mensajesAgrupados.map((grupo) => (
                       <div key={grupo.fecha}>
                         {/* Separador de fecha */}
                         <div className="sticky top-0 flex items-center justify-center py-4 z-10 pointer-events-none">
-                          <div className="px-3 py-1 bg-muted/90 backdrop-blur shadow-sm rounded-full flex items-center gap-1.5 border border-border/50">
-                            <Calendar className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          <div className="px-4 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-sm rounded-full flex items-center gap-2 border border-slate-200/50 dark:border-slate-700/50">
+                            <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                               {format(new Date(grupo.fecha), "d 'de' MMMM, yyyy", { locale: es })}
                             </span>
                           </div>
                         </div>
                         
                         {/* Mensajes del día */}
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           {grupo.mensajes.map((msg, idx) => {
-                            // Detectar si es mensaje consecutivo del mismo rol
                             const prevMsg = grupo.mensajes[idx - 1];
                             const isConsecutive = prevMsg && prevMsg.rol === msg.rol;
                             
@@ -327,22 +390,24 @@ export default function ConversacionesPage() {
               </div>
 
               {/* Footer de solo lectura */}
-              <footer className="shrink-0 p-3 bg-background border-t border-border">
-                <div className="bg-muted/30 border border-border/50 rounded-lg p-3 flex items-center justify-center gap-2 text-xs text-muted-foreground select-none">
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Modo lectura • El historial se sincroniza automáticamente</span>
+              <footer className="shrink-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80">
+                <div className="max-w-4xl mx-auto bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-4 flex items-center justify-center gap-3 text-sm text-slate-500 dark:text-slate-400 select-none">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Eye className="w-4 h-4 text-blue-500" />
+                  </div>
+                  <span className="font-medium">Modo lectura • El historial se sincroniza automáticamente</span>
                 </div>
               </footer>
             </>
           ) : (
             /* Estado vacío (Desktop) */
-            <div className="hidden sm:flex flex-1 flex-col items-center justify-center text-muted-foreground p-8 bg-slate-50/50 dark:bg-slate-900/20">
-              <div className="w-32 h-32 rounded-full bg-blue-50 dark:bg-blue-900/10 flex items-center justify-center mb-6 animate-in zoom-in duration-300">
-                <MessageCircle className="w-12 h-12 text-blue-200 dark:text-blue-800" />
+            <div className="hidden sm:flex flex-1 flex-col items-center justify-center p-8">
+              <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center mb-6 shadow-xl shadow-blue-500/10">
+                <MessageSquare className="w-14 h-14 text-blue-400 dark:text-blue-500" />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Conversaciones UroBot</h3>
-              <p className="text-sm text-center max-w-xs leading-relaxed opacity-80">
-                Selecciona un chat de la izquierda para ver el historial completo de interacciones.
+              <h3 className="text-2xl font-bold text-foreground mb-2">Conversaciones</h3>
+              <p className="text-sm text-center max-w-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                Selecciona una conversación de la lista para ver el historial completo de mensajes con el paciente.
               </p>
             </div>
           )}

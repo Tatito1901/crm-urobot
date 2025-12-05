@@ -18,7 +18,7 @@ export type ConsultaRow = Tables<'consultas'>;
 // ============================================================
 
 // Estados disponibles en BD (estado_cita)
-export const CONSULTA_ESTADOS = ['Programada', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada', 'No Asistió'] as const;
+export const CONSULTA_ESTADOS = ['Programada', 'Pendiente', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada', 'No Asistió'] as const;
 
 // Sedes disponibles (FK a tabla sedes)
 export const CONSULTA_SEDES = ['POLANCO', 'SATELITE'] as const;

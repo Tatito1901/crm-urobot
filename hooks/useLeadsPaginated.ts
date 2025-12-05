@@ -16,6 +16,7 @@ const supabase = createClient();
 interface LeadsStats {
   total: number;
   nuevos: number;
+  interesados: number;
   enSeguimiento: number;
   convertidos: number;
   descartados: number;
@@ -25,7 +26,7 @@ interface LeadsStats {
 
 const fetchStats = async (): Promise<LeadsStats> => {
   const { data, error } = await supabase.rpc('get_leads_stats' as never);
-  if (error) return { total: 0, nuevos: 0, enSeguimiento: 0, convertidos: 0, descartados: 0, ultimaSemana: 0, ultimoMes: 0 };
+  if (error) return { total: 0, nuevos: 0, interesados: 0, enSeguimiento: 0, convertidos: 0, descartados: 0, ultimaSemana: 0, ultimoMes: 0 };
   return data as unknown as LeadsStats;
 };
 
@@ -54,6 +55,19 @@ const fetchLeadsPaginated = async (
   const leads: Lead[] = (result.data || []).map((l: Record<string, unknown>) => {
     const telefono = l.telefonoWhatsapp as string;
     const nombreCompleto = l.nombreCompleto as string | null;
+    const ultimaInteraccion = l.ultimaInteraccion as string | null;
+    const totalInteracciones = (l.totalInteracciones as number) || 0;
+    
+    // Calcular días desde última interacción
+    const diasDesdeUltimaInteraccion = ultimaInteraccion 
+      ? Math.floor((Date.now() - new Date(ultimaInteraccion).getTime()) / (1000 * 60 * 60 * 24))
+      : 999;
+    
+    // Lead inactivo si no hay interacción en más de 7 días
+    const esInactivo = diasDesdeUltimaInteraccion > 7;
+    
+    // Lead caliente si tiene interacción reciente (<2 días) y muchos mensajes (>5)
+    const esCaliente = diasDesdeUltimaInteraccion <= 2 && totalInteracciones >= 5;
     
     return {
       id: l.id as string,
@@ -66,19 +80,19 @@ const fetchLeadsPaginated = async (
       notas: null,
       sessionId: null,
       primerContacto: l.createdAt as string | null,
-      ultimaInteraccion: l.ultimaInteraccion as string | null,
+      ultimaInteraccion,
       fechaConversion: null,
-      totalInteracciones: (l.totalInteracciones as number) || 0,
+      totalInteracciones,
       createdAt: l.createdAt as string | null,
       updatedAt: null,
       // Campos calculados
       nombre: nombreCompleto || telefono,
-      temperatura: 'Tibio' as Lead['temperatura'],
+      temperatura: esCaliente ? 'Caliente' : (esInactivo ? 'Frío' : 'Tibio') as Lead['temperatura'],
       diasDesdeContacto: 0,
-      diasDesdeUltimaInteraccion: 0,
+      diasDesdeUltimaInteraccion,
       esCliente: !!l.pacienteId,
-      esCaliente: false,
-      esInactivo: false,
+      esCaliente,
+      esInactivo,
     };
   });
   
@@ -108,7 +122,8 @@ export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: 
   
   const { data: stats } = useSWR<LeadsStats>(`${CACHE_KEYS.LEADS}-stats`, fetchStats, SWR_CONFIG_DASHBOARD);
   
-  const swrKey = useMemo(() => `${CACHE_KEYS.LEADS}-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`, [currentPage, pageSize, debouncedSearch, estadoFilter]);
+  // v2: incluye cálculo de días, esCaliente, esInactivo
+  const swrKey = useMemo(() => `${CACHE_KEYS.LEADS}-v2-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`, [currentPage, pageSize, debouncedSearch, estadoFilter]);
   
   const { data, error, isLoading, mutate } = useSWR(swrKey, () => fetchLeadsPaginated(currentPage, pageSize, debouncedSearch, estadoFilter), { ...SWR_CONFIG_STANDARD, keepPreviousData: true });
   
@@ -117,7 +132,7 @@ export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: 
   
   return {
     leads: data?.data ?? [],
-    stats: stats ?? { total: 0, nuevos: 0, enSeguimiento: 0, convertidos: 0, descartados: 0, ultimaSemana: 0, ultimoMes: 0 },
+    stats: stats ?? { total: 0, nuevos: 0, interesados: 0, enSeguimiento: 0, convertidos: 0, descartados: 0, ultimaSemana: 0, ultimoMes: 0 },
     currentPage,
     totalPages,
     totalCount,

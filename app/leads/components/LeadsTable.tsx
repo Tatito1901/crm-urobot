@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { Badge, DataTable } from '@/app/components/crm/ui';
-import { CANAL_COLORS } from '@/types/canales-marketing';
 import { STATE_COLORS } from '@/app/lib/crm-data';
 import { GLOSARIO } from '@/app/lib/glosario-medico';
 import { WrapTooltip } from '@/app/components/common/InfoTooltip';
@@ -20,7 +19,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
   // Configuración de columnas
   const headers = [
     { key: 'nombre', label: <TableHeaders.Persona /> },
-    { key: 'origen', label: <TableHeaders.Origen /> },
+    { key: 'mensajes', label: 'Mensajes' },
     { key: 'ultimoMensaje', label: <TableHeaders.UltimoMensaje /> },
     { key: 'estado', label: <TableHeaders.Etapa /> },
     { key: 'conversion', label: <TableHeaders.Paciente /> },
@@ -28,10 +27,6 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
 
   // Transformación de filas memoizada
   const rows = React.useMemo(() => leads.map((lead) => {
-    // Usar fuente (fuente_lead normalizado) para el badge de origen
-    const origen = lead.fuente;
-    const origenStyle = CANAL_COLORS[origen];
-
     return {
       id: lead.id,
       nombre: (
@@ -48,13 +43,21 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
           {lead.canalMarketing && <span className="text-[10px] text-muted-foreground/80 truncate max-w-[150px]">{lead.canalMarketing}</span>}
         </div>
       ),
-      origen: (
-        <WrapTooltip content={GLOSARIO.canales[origen]} side="right">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border cursor-help ${origenStyle.bg} ${origenStyle.text} ${origenStyle.border}`}>
-            <span>{origenStyle.icon}</span>
-            <span>{origen}</span>
+      mensajes: (
+        <div className="flex flex-col items-center gap-1">
+          <span className={`text-lg font-bold ${
+            lead.totalInteracciones >= 10 
+              ? 'text-emerald-600 dark:text-emerald-400' 
+              : lead.totalInteracciones >= 5 
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-muted-foreground'
+          }`}>
+            {lead.totalInteracciones}
           </span>
-        </WrapTooltip>
+          <span className="text-[10px] text-muted-foreground">
+            {lead.totalInteracciones === 1 ? 'mensaje' : 'mensajes'}
+          </span>
+        </div>
       ),
       ultimoMensaje: (
         <div className="flex flex-col gap-1 text-xs">
@@ -133,7 +136,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
       empty={emptyMessage}
       mobileConfig={{
         primary: 'nombre',
-        secondary: 'origen',
+        secondary: 'mensajes',
         metadata: ['estado', 'ultimoMensaje']
       }}
     />

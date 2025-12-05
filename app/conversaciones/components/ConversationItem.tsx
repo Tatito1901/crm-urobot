@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { UserPlus, HelpCircle, UserCheck } from 'lucide-react';
+import { UserPlus, HelpCircle, UserCheck, Calendar, MessageSquare } from 'lucide-react';
 
 interface ConversationItemProps {
   telefono: string;
@@ -33,125 +33,99 @@ export const ConversationItem = memo(function ConversationItem({
     switch (tipo) {
       case 'paciente': 
         return {
-          bg: 'bg-blue-500 shadow-blue-500/20',
-          ring: 'ring-2 ring-blue-400/30'
+          bg: 'bg-gradient-to-br from-blue-500 to-blue-600',
+          shadow: 'shadow-lg shadow-blue-500/20'
         };
       case 'lead': 
         return {
-          bg: 'bg-amber-500 shadow-amber-500/20',
-          ring: 'ring-2 ring-amber-400/30'
+          bg: 'bg-gradient-to-br from-amber-500 to-orange-500',
+          shadow: 'shadow-lg shadow-amber-500/20'
         };
       default: 
         return {
-          bg: 'bg-slate-500 shadow-slate-500/20',
-          ring: ''
+          bg: 'bg-gradient-to-br from-slate-400 to-slate-500',
+          shadow: 'shadow-lg shadow-slate-500/10'
         };
     }
   };
 
   const avatarStyles = getAvatarStyles(tipoContacto);
 
-  const getTipoBadge = (tipo: string, estado: string | null) => {
-    if (tipo === 'paciente') {
-      return (
-        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
-          <UserCheck className="w-2.5 h-2.5" />
-          Paciente
-        </span>
-      );
-    }
-    if (tipo === 'lead') {
-      // Mostrar estado del lead si es relevante
-      const label = estado === 'En seguimiento' ? 'Seguimiento' : 'Lead';
-      const isHot = estado === 'En seguimiento';
-      return (
-        <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium border ${
-          isHot 
-            ? 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'
-            : 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
-        }`}>
-          <UserPlus className="w-2.5 h-2.5" />
-          {label}
-        </span>
-      );
-    }
-    // Desconocido
-    return (
-      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-100 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-500/20">
-        <HelpCircle className="w-2.5 h-2.5" />
-        Nuevo
-      </span>
-    );
-  };
-
   return (
     <button
       onClick={() => onSelect(telefono)}
       className={`
-        w-full p-3 flex items-center gap-3 text-left transition-all duration-200 border-b border-border/40 last:border-0
+        w-full p-3 flex items-center gap-3 text-left transition-all duration-200 rounded-xl mb-1
         ${isActive 
-          ? 'bg-primary/5 border-l-4 border-l-primary' 
-          : 'hover:bg-muted/40 border-l-4 border-l-transparent'}
+          ? 'bg-blue-50 dark:bg-blue-900/20 ring-1 ring-blue-500/30' 
+          : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/50'}
       `}
     >
-      {/* Avatar con ring para pacientes */}
+      {/* Avatar */}
       <div className={`
-        w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0 shadow-sm
-        ${avatarStyles.bg} ${avatarStyles.ring}
+        w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shrink-0
+        ${avatarStyles.bg} ${avatarStyles.shadow}
       `}>
         {(nombreContacto?.[0] || telefono.slice(-2)).toUpperCase()}
       </div>
       
       {/* Info */}
       <div className="flex-1 min-w-0 overflow-hidden">
+        {/* Row 1: Nombre + Tiempo */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className={`font-semibold text-sm truncate ${isActive ? 'text-primary' : 'text-foreground'}`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={`font-semibold text-sm truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
               {nombreContacto || telefono}
             </span>
-            {/* Indicador de citas */}
-            {citasValidas > 0 && (
-              <span className="shrink-0 w-4 h-4 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center">
-                {citasValidas}
+            {/* Badge de tipo */}
+            {tipoContacto === 'paciente' && (
+              <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-semibold bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                <UserCheck className="w-2.5 h-2.5" />
+              </span>
+            )}
+            {tipoContacto === 'lead' && estadoLead === 'Interesado' && (
+              <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-semibold bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400">
+                <UserPlus className="w-2.5 h-2.5" />
               </span>
             )}
           </div>
-          <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap" suppressHydrationWarning>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 shrink-0 whitespace-nowrap font-medium" suppressHydrationWarning>
             {formatDistanceToNow(ultimaFecha, { addSuffix: false, locale: es })}
           </span>
         </div>
         
-        <div className="flex items-center gap-2 mt-0.5">
-          <p className={`text-xs truncate flex-1 ${isActive ? 'text-foreground/80' : 'text-muted-foreground'}`}>
-            {ultimoMensaje}
-          </p>
-          {getTipoBadge(tipoContacto, estadoLead)}
-        </div>
+        {/* Row 2: Último mensaje */}
+        <p className={`text-xs truncate mt-0.5 ${isActive ? 'text-slate-600 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          {ultimoMensaje}
+        </p>
         
-        {/* Info adicional: mensajes y estado */}
-        <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-          <span>{totalMensajes} mensaje{totalMensajes !== 1 ? 's' : ''}</span>
-          {estadoLead && estadoLead !== 'Nuevo' && (
-            <>
-              <span>•</span>
-              <span className={
-                estadoLead === 'Convertido' 
-                  ? 'text-blue-500 font-medium' 
-                  : estadoLead === 'En seguimiento' 
-                    ? 'text-amber-500' 
-                    : estadoLead === 'Descartado' 
-                      ? 'text-slate-400' 
-                      : ''
-              }>
-                {estadoLead}
-              </span>
-            </>
+        {/* Row 3: Metadata */}
+        <div className="flex items-center gap-2 mt-1.5">
+          {/* Contador de mensajes */}
+          <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500">
+            <MessageSquare className="w-3 h-3" />
+            {totalMensajes}
+          </span>
+          
+          {/* Citas */}
+          {citasValidas > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+              <Calendar className="w-3 h-3" />
+              {citasValidas} cita{citasValidas !== 1 ? 's' : ''}
+            </span>
           )}
-          {citasValidas > 0 && estadoLead !== 'Convertido' && (
-            <>
-              <span>•</span>
-              <span className="text-emerald-500 font-medium">{citasValidas} cita{citasValidas !== 1 ? 's' : ''}</span>
-            </>
+          
+          {/* Estado del lead */}
+          {estadoLead && estadoLead !== 'Nuevo' && tipoContacto !== 'paciente' && (
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+              estadoLead === 'Convertido' 
+                ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                : estadoLead === 'Interesado' 
+                  ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400' 
+                  : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+            }`}>
+              {estadoLead}
+            </span>
           )}
         </div>
       </div>

@@ -38,17 +38,17 @@ export default function LeadsPage() {
   const leadsStats = useMemo(() => ({
     total: stats.total,
     nuevo: stats.nuevos,
-    seguimiento: stats.enSeguimiento,
+    interesado: stats.interesados,
     convertido: stats.convertidos,
     descartado: stats.descartados,
-    enProceso: stats.nuevos + stats.enSeguimiento,
+    enProceso: stats.nuevos + stats.interesados,
     clientes: 0,
     calientes: 0,
     inactivos: 0,
   }), [stats]);
   
   // ✅ Handler para cambio de filtro (mapea a valores del hook)
-  const handleFilterChange = useCallback((newFilter: 'all' | 'Nuevo' | 'En seguimiento' | 'Convertido' | 'Descartado') => {
+  const handleFilterChange = useCallback((newFilter: 'all' | 'Nuevo' | 'Interesado' | 'Convertido' | 'Descartado') => {
     setEstadoFilter(newFilter === 'all' ? '' : newFilter);
   }, [setEstadoFilter]);
 
@@ -94,7 +94,7 @@ export default function LeadsPage() {
         <CardContent className="p-0">
           <div className="p-4 pb-0">
             <LeadsFilters
-              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'Nuevo' | 'En seguimiento' | 'Convertido' | 'Descartado'}
+              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'Nuevo' | 'Interesado' | 'Convertido' | 'Descartado'}
               onFilterChange={handleFilterChange}
               searchValue={search}
               onSearchChange={setSearch}

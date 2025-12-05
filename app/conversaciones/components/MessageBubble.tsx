@@ -299,7 +299,6 @@ export const MessageBubble = memo(function MessageBubble({
 
   // Renderizar contenido según tipo
   const renderContent = () => {
-    // Si hay mediaUrl, renderizar según tipo
     if (mediaUrl) {
       const mediaComponent = (() => {
         switch (tipoMensaje) {
@@ -314,12 +313,10 @@ export const MessageBubble = memo(function MessageBubble({
           case 'sticker':
             return <Image src={mediaUrl} alt="Sticker" width={128} height={128} className="max-w-32 max-h-32" unoptimized />;
           default:
-            // Si no reconocemos el tipo pero hay URL, mostrar como documento
             return <DocumentContent url={mediaUrl} filename={mediaFilename} mimeType={mediaMimeType} caption={mediaCaption} />;
         }
       })();
       
-      // Si hay texto adicional además del media (y no es el placeholder), mostrarlo
       const textoAdicional = contenido && 
         contenido !== '[Archivo adjunto]' && 
         contenido !== mediaCaption &&
@@ -335,16 +332,13 @@ export const MessageBubble = memo(function MessageBubble({
       );
     }
     
-    // Location
     if (tipoMensaje === 'location') {
       return <LocationContent contenido={contenido} />;
     }
     
-    // Texto normal
     return <p className="whitespace-pre-wrap break-words">{contenido}</p>;
   };
 
-  // Icono según tipo de mensaje
   const getTypeIcon = () => {
     switch (tipoMensaje) {
       case 'image': return <ImageIcon className="w-3 h-3" />;
@@ -357,21 +351,21 @@ export const MessageBubble = memo(function MessageBubble({
   };
 
   return (
-    <div className={`flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-1' : 'mt-4'}`}>
-      <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${isAsistente ? 'items-start' : 'items-end'}`}>
+    <div className={`flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-0.5' : 'mt-3'}`}>
+      <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${isAsistente ? 'items-start' : 'items-end'}`}>
         
         {/* Etiqueta de remitente (solo primer mensaje de serie) */}
         {!isConsecutive && (
-          <div className={`flex items-center gap-1 mb-1 px-1 ${isAsistente ? '' : 'flex-row-reverse'}`}>
+          <div className={`flex items-center gap-1.5 mb-1.5 px-1 ${isAsistente ? '' : 'flex-row-reverse'}`}>
             <div className={`
-              w-4 h-4 rounded-full flex items-center justify-center
+              w-5 h-5 rounded-lg flex items-center justify-center shadow-sm
               ${isAsistente 
-                ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white' 
-                : 'bg-blue-500 text-white'}
+                ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white' 
+                : 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'}
             `}>
-              {isAsistente ? <Bot className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
+              {isAsistente ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
             </div>
-            <span className={`text-[10px] font-semibold ${isAsistente ? 'text-purple-600 dark:text-purple-400' : 'text-blue-600'}`}>
+            <span className={`text-[11px] font-semibold ${isAsistente ? 'text-indigo-600 dark:text-indigo-400' : 'text-blue-600 dark:text-blue-400'}`}>
               {isAsistente ? 'UroBot' : 'Paciente'}
             </span>
           </div>
@@ -379,20 +373,22 @@ export const MessageBubble = memo(function MessageBubble({
         
         {/* Bubble */}
         <div className={`
-          relative px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm
+          relative px-4 py-3 text-sm leading-relaxed
           ${isAsistente 
-            ? 'bg-white dark:bg-slate-800 border-l-4 border-l-purple-500 border border-slate-200 dark:border-slate-700 text-foreground rounded-tl-sm' 
-            : 'bg-blue-600 text-white rounded-tr-none border border-blue-600'}
+            ? `bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200
+               rounded-2xl rounded-tl-md shadow-sm` 
+            : `bg-gradient-to-br from-blue-500 to-blue-600 text-white
+               rounded-2xl rounded-tr-md shadow-lg shadow-blue-500/20`}
         `}>
           {renderContent()}
         </div>
 
         {/* Time + Type indicator */}
-        <div className={`flex items-center gap-1 mt-1 px-1 ${isAsistente ? '' : 'flex-row-reverse'}`}>
+        <div className={`flex items-center gap-1.5 mt-1 px-1 ${isAsistente ? '' : 'flex-row-reverse'}`}>
           {tipoMensaje !== 'text' && (
-            <span className="text-muted-foreground">{getTypeIcon()}</span>
+            <span className="text-slate-400">{getTypeIcon()}</span>
           )}
-          <span className="text-[10px] text-slate-400">
+          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
             {format(createdAt, 'HH:mm')}
           </span>
         </div>
