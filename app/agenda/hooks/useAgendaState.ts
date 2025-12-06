@@ -33,8 +33,9 @@ interface AgendaState {
   dateRange: { start: Temporal.PlainDate; end: Temporal.PlainDate };
 
   // ========== FILTROS ==========
-  selectedSede: 'ALL' | 'POLANCO' | 'SATELITE';
-  setSelectedSede: (sede: 'ALL' | 'POLANCO' | 'SATELITE') => void;
+  // Incluye TRINIDAD para datos históricos
+  selectedSede: 'ALL' | 'POLANCO' | 'SATELITE' | 'TRINIDAD';
+  setSelectedSede: (sede: 'ALL' | 'POLANCO' | 'SATELITE' | 'TRINIDAD') => void;
   selectedEstados: string[];
   setSelectedEstados: (estados: string[]) => void;
   selectedTipos: string[];
@@ -113,13 +114,16 @@ export const useAgendaState = create<AgendaState>((set, get) => ({
 
   // Colores iniciales (Tailwind classes mapeadas a hex o clases directas)
   // Usamos clases de Tailwind para consistencia, pero el picker podría usar hex
+  // TRINIDAD incluida para datos históricos
   sedeColors: {
     'POLANCO': 'bg-blue-600',
     'SATELITE': 'bg-emerald-600',
+    'TRINIDAD': 'bg-slate-500',
   },
   visibleSedes: {
     'POLANCO': true,
     'SATELITE': true,
+    'TRINIDAD': true,
   },
 
   // ========== ACCIONES DE SEDES ==========

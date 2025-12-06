@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { UserCheck, Calendar, Check, CheckCheck } from 'lucide-react';
+import { UserCheck, Calendar, CheckCheck } from 'lucide-react';
 
 interface ConversationItemProps {
   telefono: string;

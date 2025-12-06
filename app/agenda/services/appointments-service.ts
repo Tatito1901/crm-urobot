@@ -24,6 +24,9 @@ export interface ServiceResponse<T = void> {
   error?: string;
 }
 
+// Tipo de sede: incluye TRINIDAD para datos históricos
+type SedeActiva = 'POLANCO' | 'SATELITE' | 'TRINIDAD';
+
 export interface CreateAppointmentData {
   patientId: string;
   patientName: string;
@@ -32,7 +35,7 @@ export interface CreateAppointmentData {
   end: Temporal.ZonedDateTime;
   timezone: string;
   duracionMinutos: number;
-  sede: 'POLANCO' | 'SATELITE';
+  sede: SedeActiva;
   tipo: string;
   prioridad?: 'normal' | 'alta' | 'urgente';
   modalidad?: 'presencial' | 'teleconsulta' | 'hibrida';
@@ -50,7 +53,7 @@ export interface UpdateAppointmentData {
   notasInternas?: string;
   prioridad?: 'normal' | 'alta' | 'urgente';
   modalidad?: 'presencial' | 'teleconsulta' | 'hibrida';
-  sede?: 'POLANCO' | 'SATELITE';
+  sede?: SedeActiva;
 }
 
 export interface CancelAppointmentData {

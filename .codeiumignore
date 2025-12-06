@@ -28,7 +28,7 @@ yarn.lock
 next-env.d.ts
 
 # === Archivos de datos grandes ===
-*.csv
+
 *.parquet
 *.json.backup
 *.sql
@@ -64,11 +64,9 @@ yarn-error.log*
 # === Documentación externa ===
 FLUJOS N8N/
 docs/
-*.md
 
 # === Otros ===
 *.ipynb_checkpoints/
-temp_csv_utf8/
 supabase/.branches/
 .vercel/
 .git/

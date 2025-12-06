@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamicImport from 'next/dynamic';
 import { Users, Activity, UserCheck, Calendar, Clock } from 'lucide-react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
@@ -34,6 +34,12 @@ export default function DashboardPage() {
   const { consultas, loading: loadingConsultas, refetch: refetchConsultas } = useConsultas();
 
   const [activeTab, setActiveTab] = useState<'actividad' | 'graficas'>('actividad');
+
+  // Evitar hydration mismatch: garantizar estado consistente entre SSR y cliente
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleRefresh = async () => {
     await Promise.all([refreshStats(), refetchLeads(), refetchConsultas()]);
@@ -150,7 +156,8 @@ export default function DashboardPage() {
       .slice(0, 5);
   }, [consultas]);
 
-  const isLoadingAny = loadingStats || loadingLeads || loadingConsultas;
+  // Mostrar loading hasta que esté montado en cliente para evitar hydration mismatch
+  const isLoadingAny = !mounted || loadingStats || loadingLeads || loadingConsultas;
 
   return (
     <ErrorBoundary>
@@ -228,15 +235,19 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate">
-                      Leads Recientes {loadingLeads && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
+                      Leads Recientes {mounted && loadingLeads && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Últimos 5 contactos registrados</p>
                   </div>
-                  <Badge label={`${leads.length}`} variant="outline" className="border-border text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
+                  <Badge label={mounted ? `${leads.length}` : '—'} variant="outline" className="border-border text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="max-h-[320px] sm:max-h-[400px] overflow-y-auto overscroll-contain">
-                    {recentLeads.length === 0 ? (
+                    {!mounted ? (
+                      <div className="flex h-28 sm:h-32 items-center justify-center">
+                        <div className="h-4 w-32 skeleton-pulse rounded bg-muted" />
+                      </div>
+                    ) : recentLeads.length === 0 ? (
                       <div className="flex h-28 sm:h-32 items-center justify-center text-xs sm:text-sm text-muted-foreground">
                         No hay leads recientes
                       </div>
@@ -271,15 +282,19 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate">
-                      Consultas Próximas {loadingConsultas && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
+                      Consultas Próximas {mounted && loadingConsultas && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Agenda para los próximos días</p>
                   </div>
-                  <Badge label={`${upcomingConsultas.length}`} variant="outline" className="border-border text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
+                  <Badge label={mounted ? `${upcomingConsultas.length}` : '—'} variant="outline" className="border-border text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="max-h-[320px] sm:max-h-[400px] overflow-y-auto overscroll-contain">
-                    {upcomingConsultas.length === 0 ? (
+                    {!mounted ? (
+                      <div className="flex h-28 sm:h-32 items-center justify-center">
+                        <div className="h-4 w-32 skeleton-pulse rounded bg-muted" />
+                      </div>
+                    ) : upcomingConsultas.length === 0 ? (
                       <div className="flex h-28 sm:h-32 items-center justify-center text-xs sm:text-sm text-muted-foreground">
                         No hay consultas próximas
                       </div>

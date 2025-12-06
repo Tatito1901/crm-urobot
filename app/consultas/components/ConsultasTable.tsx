@@ -6,9 +6,11 @@ import { STATE_COLORS, formatDate } from '@/app/lib/crm-data';
 import type { Consulta } from '@/types/consultas';
 import { CheckCircle2 } from 'lucide-react';
 
-const SEDE_COLORS: Record<'POLANCO' | 'SATELITE', string> = {
+// Incluye TRINIDAD como sede histórica (ya no activa pero con datos existentes)
+const SEDE_COLORS: Record<'POLANCO' | 'SATELITE' | 'TRINIDAD', string> = {
   POLANCO: 'border border-fuchsia-200 dark:border-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10',
   SATELITE: 'border border-cyan-200 dark:border-cyan-500/20 text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10',
+  TRINIDAD: 'border border-slate-200 dark:border-slate-500/20 text-slate-700 dark:text-slate-400 bg-slate-50 dark:bg-slate-500/10',
 };
 
 interface ConsultasTableProps {

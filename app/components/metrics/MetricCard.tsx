@@ -95,6 +95,12 @@ export const MetricCard = React.memo(({
   maxValue = 100,
   animate = true,
 }: MetricCardProps) => {
+  // Evitar hydration mismatch: siempre renderizar skeleton en SSR y primer render del cliente
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const finalDescription = description || subtitle;
   const colors = colorClasses[color];
   
@@ -103,10 +109,13 @@ export const MetricCard = React.memo(({
     (typeof value === 'string' ? parseInt(value.replace(/[^0-9]/g, ''), 10) || 0 : 0);
   
   // Animar el número cuando no está cargando
-  const animatedValue = useAnimatedNumber(numericValue, 400, animate && !loading);
+  const animatedValue = useAnimatedNumber(numericValue, 400, animate && !loading && mounted);
+  
+  // Mostrar skeleton hasta que esté montado en cliente
+  const isLoading = !mounted || loading;
   
   // Mostrar valor formateado
-  const displayValue = loading ? '—' : 
+  const displayValue = isLoading ? '—' : 
     (animate && typeof value === 'number') ? animatedValue.toLocaleString('es-MX') : value;
   
   return (
@@ -122,7 +131,7 @@ export const MetricCard = React.memo(({
       </div>
 
       <div className="mt-3 sm:mt-4">
-        {loading ? (
+        {isLoading ? (
           <div className="mb-1 h-7 sm:h-8 w-20 sm:w-24 skeleton-pulse rounded-md bg-muted" />
         ) : (
           <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap transition-opacity duration-200">
@@ -136,15 +145,21 @@ export const MetricCard = React.memo(({
         )}
 
         <div className="mt-1 flex items-center gap-2 text-xs sm:text-sm">
-          {finalDescription && (
-            <p className="font-medium text-muted-foreground truncate">{finalDescription}</p>
-          )}
-          
-          {trend && (
-            <div className={`flex items-center gap-0.5 font-medium shrink-0 ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
-              <span>{trend.isPositive ? '↑' : '↓'}</span>
-              <span>{Math.abs(trend.value)}%</span>
-            </div>
+          {isLoading ? (
+            <div className="h-4 w-24 skeleton-pulse rounded bg-muted" />
+          ) : (
+            <>
+              {finalDescription && (
+                <p className="font-medium text-muted-foreground truncate">{finalDescription}</p>
+              )}
+              
+              {trend && (
+                <div className={`flex items-center gap-0.5 font-medium shrink-0 ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  <span>{trend.isPositive ? '↑' : '↓'}</span>
+                  <span>{Math.abs(trend.value)}%</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

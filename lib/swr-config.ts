@@ -21,6 +21,10 @@ const CACHE_VERSION = 'v1';
 /**
  * Provider de caché que persiste en localStorage
  * Reduce llamadas iniciales al cargar datos guardados
+ * 
+ * ⚠️ IMPORTANTE: NO cargamos datos de localStorage en el primer render
+ * para evitar hydration mismatch. Los datos se cargan después de que
+ * React haya completado la hidratación.
  */
 export function localStorageProvider(): Cache<unknown> {
   if (typeof window === 'undefined') {
@@ -28,10 +32,35 @@ export function localStorageProvider(): Cache<unknown> {
     return new Map();
   }
 
-  // Cargar datos existentes del localStorage
-  const map = new Map<string, State<unknown>>(
-    JSON.parse(localStorage.getItem(`${CACHE_PREFIX}${CACHE_VERSION}`) || '[]')
-  );
+  // Empezar con Map vacío para evitar hydration mismatch
+  // Los datos del localStorage se cargarán después de la hidratación
+  const map = new Map<string, State<unknown>>();
+  
+  // Cargar datos del localStorage DESPUÉS de que React hidrate
+  // Usamos requestIdleCallback o setTimeout para diferir la carga
+  const loadFromStorage = () => {
+    try {
+      const stored = localStorage.getItem(`${CACHE_PREFIX}${CACHE_VERSION}`);
+      if (stored) {
+        const entries = JSON.parse(stored) as [string, State<unknown>][];
+        entries.forEach(([key, value]) => {
+          // Solo cargar si no hay datos ya en el cache (evita sobrescribir datos frescos)
+          if (!map.has(key)) {
+            map.set(key, value);
+          }
+        });
+      }
+    } catch {
+      // Ignorar errores de parsing
+    }
+  };
+  
+  // Diferir la carga para después de la hidratación
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(loadFromStorage);
+  } else {
+    setTimeout(loadFromStorage, 100);
+  }
 
   // Guardar en localStorage antes de cerrar
   window.addEventListener('beforeunload', () => {

@@ -99,7 +99,8 @@ export const getEstadoConfig = (estado: string): EstadoConfig => {
 };
 
 // ========== SEDES ==========
-export type Sede = 'POLANCO' | 'SATELITE' | 'ALL';
+// TRINIDAD es histórica (ya no activa) pero tiene datos de pacientes anteriores
+export type Sede = 'POLANCO' | 'SATELITE' | 'TRINIDAD' | 'ALL';
 
 export interface SedeConfig {
   value: Sede;
@@ -132,6 +133,16 @@ export const SEDES: SedeConfig[] = [
     borderClass: 'border-cyan-500/30',
     borderLeftClass: 'border-l-cyan-500',
     icon: MapPin,
+  },
+  {
+    value: 'TRINIDAD',
+    label: 'Trinidad',
+    color: 'slate-500',
+    bgClass: 'bg-slate-500/15',
+    textClass: 'text-slate-400',
+    borderClass: 'border-slate-500/30',
+    borderLeftClass: 'border-l-slate-500',
+    icon: Building2,
   },
   {
     value: 'ALL',
