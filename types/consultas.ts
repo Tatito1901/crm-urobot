@@ -21,7 +21,8 @@ export type ConsultaRow = Tables<'consultas'>;
 export const CONSULTA_ESTADOS = ['Programada', 'Pendiente', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada', 'No Asistió'] as const;
 
 // Sedes disponibles (FK a tabla sedes)
-export const CONSULTA_SEDES = ['POLANCO', 'SATELITE'] as const;
+// TRINIDAD es histórica (ya no activa) pero tiene datos de pacientes anteriores
+export const CONSULTA_SEDES = ['POLANCO', 'SATELITE', 'TRINIDAD'] as const;
 
 // Tipos de cita (tipo_cita) - Default en BD: 'Primera Vez'
 export const CONSULTA_TIPOS = ['Primera Vez', 'Seguimiento', 'Urgencia', 'Procedimiento', 'Valoración'] as const;

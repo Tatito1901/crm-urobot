@@ -32,7 +32,7 @@ export default function LeadsPage() {
     isSearching,
     error,
     refresh,
-  } = useLeadsPaginated({ pageSize: 50 });
+  } = useLeadsPaginated({ pageSize: 10 });
   
   // Stats ya vienen del servidor
   const leadsStats = useMemo(() => ({

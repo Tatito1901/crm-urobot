@@ -1,0 +1,74 @@
+# ============================================
+# Configuración optimizada para Windsurf/Codeium
+# Reduce consumo de RAM significativamente
+# ============================================
+
+# === CRÍTICO: Dependencias (mayor impacto) ===
+node_modules/
+.pnpm/
+.yarn/
+bower_components/
+
+# === Build & Cache (Next.js) ===
+.next/
+.turbo/
+dist/
+build/
+out/
+.out/
+.cache/
+.tmp/
+.swc/
+
+# === Lock files & generados ===
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+*.tsbuildinfo
+next-env.d.ts
+
+# === Archivos de datos grandes ===
+*.csv
+*.parquet
+*.json.backup
+*.sql
+*.sqlite
+*.db
+
+# === Testing & Coverage ===
+coverage/
+.nyc_output/
+__tests__/
+*.test.ts
+*.spec.ts
+
+# === IDE & Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# === Environments ===
+.venv/
+.env/
+.env.local
+.env*.local
+
+# === Logs ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Documentación externa ===
+FLUJOS N8N/
+docs/
+*.md
+
+# === Otros ===
+*.ipynb_checkpoints/
+temp_csv_utf8/
+supabase/.branches/
+.vercel/
+.git/
