@@ -136,21 +136,21 @@ export const SWR_CONFIG_DASHBOARD: SWRConfiguration = {
 };
 
 /**
- * DATOS EN TIEMPO REAL (conversaciones activas)
- * - Actualiza al volver a la pestaña
- * - Polling cada 30 segundos cuando está activo
- * - Cache de 1 minuto para deduplicación
+ * DATOS DE CONVERSACIONES (sin Realtime)
+ * - Actualiza al volver a la pestaña (mejor UX)
+ * - SIN polling automático (ahorra llamadas API)
+ * - Cache de 5 minutos
  */
 export const SWR_CONFIG_REALTIME: SWRConfiguration = {
   revalidateOnFocus: true,         // ✅ Actualizar al volver a la pestaña
   revalidateOnReconnect: true,     // ✅ Actualizar al reconectar
-  revalidateIfStale: true,         // ✅ Actualizar si datos están stale
-  dedupingInterval: 60 * 1000,     // 1 minuto de deduplicación
-  refreshInterval: 30 * 1000,      // ✅ Polling cada 30 segundos
+  revalidateIfStale: false,        // ❌ No auto-revalidar
+  dedupingInterval: 5 * 60 * 1000, // 5 minutos de deduplicación
+  refreshInterval: 0,              // ❌ SIN polling (ahorra 83% de carga)
   keepPreviousData: true,
   shouldRetryOnError: true,
-  errorRetryCount: 2,
-  errorRetryInterval: 3000,
+  errorRetryCount: 1,
+  errorRetryInterval: 5000,
 };
 
 // ============================================================

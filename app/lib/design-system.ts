@@ -2,7 +2,7 @@
  * ============================================================
  * DESIGN SYSTEM - CRM UROBOT
  * ============================================================
- * Tokens de diseño complementarios a shadcn/ui
+ * Sistema de diseño unificado para consistencia visual
  * 
  * IMPORTANTE: Usar componentes de shadcn/ui como base:
  * - Card, CardHeader, CardTitle, CardContent → @/components/ui/card
@@ -17,24 +17,49 @@
 import { cn } from "@/lib/utils";
 
 // ==================== TYPOGRAPHY ====================
+// Tamaños consistentes en toda la plataforma
 export const typography = {
-  // Títulos
-  pageTitle: 'text-xl sm:text-2xl font-bold text-foreground',
+  // Títulos de página
+  pageTitle: 'text-lg sm:text-xl font-semibold text-foreground',
   pageSubtitle: 'text-sm text-muted-foreground',
-  cardTitle: 'text-base font-semibold text-foreground',
-  cardDescription: 'text-sm text-muted-foreground',
   
-  // Body
+  // Títulos de sección/card
+  sectionTitle: 'text-sm font-semibold text-foreground',
+  cardTitle: 'text-sm font-semibold text-foreground',
+  cardDescription: 'text-xs text-muted-foreground',
+  
+  // Body text
   body: 'text-sm text-foreground',
+  bodySmall: 'text-xs text-foreground',
   
   // Labels y metadata
-  label: 'text-xs text-muted-foreground uppercase tracking-wider',
-  metadata: 'text-xs text-muted-foreground/80',
-  metadataSmall: 'text-[11px] text-muted-foreground/70',
+  label: 'text-[11px] text-muted-foreground uppercase tracking-wider font-medium',
+  labelSmall: 'text-[10px] text-muted-foreground uppercase tracking-wider font-medium',
+  metadata: 'text-xs text-muted-foreground',
+  metadataSmall: 'text-[11px] text-muted-foreground',
   
-  // Métricas
-  metric: 'text-2xl font-bold text-foreground tabular-nums',
-  metricSmall: 'text-lg font-semibold text-foreground tabular-nums',
+  // Métricas y números
+  metric: 'text-xl sm:text-2xl font-bold text-foreground tabular-nums',
+  metricMedium: 'text-lg font-semibold text-foreground tabular-nums',
+  metricSmall: 'text-base font-semibold text-foreground tabular-nums',
+  number: 'tabular-nums font-medium',
+  
+  // Tablas
+  tableHeader: 'text-[11px] uppercase tracking-wider font-medium text-muted-foreground',
+  tableCell: 'text-sm text-foreground',
+  tableCellSmall: 'text-xs text-muted-foreground',
+};
+
+// ==================== BADGES / CHIPS ====================
+// Estilos consistentes para todos los badges
+export const badges = {
+  // Base (aplicar siempre)
+  base: 'inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-md border',
+  
+  // Variantes de tamaño
+  sm: 'px-1.5 py-0.5 text-[10px]',
+  md: 'px-2 py-0.5 text-[11px]',
+  lg: 'px-2.5 py-1 text-xs',
 };
 
 // ==================== SPACING ====================

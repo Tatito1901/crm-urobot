@@ -6,7 +6,6 @@
  * ✅ SWR: Caché, deduplicación y revalidación automática
  */
 
-import { useMemo } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import type { Consulta, ConsultaRow } from '@/types/consultas'
@@ -59,68 +58,6 @@ interface UseConsultasReturn {
   }
 }
 
-// Tipo intermedio para el JOIN de Supabase
-// Extiende ConsultaRow (sincronizado con BD) con datos del paciente relacionado
-type ConsultaRowWithPaciente = ConsultaRow & {
-  paciente: {
-    id: string
-    nombre_completo: string
-  } | null
-}
-
-const mapConsulta = (row: ConsultaRowWithPaciente): Consulta => {
-  // Mapeo usando utilidades centralizadas con nombre del paciente
-  return mapConsultaFromDB(row, row.paciente?.nombre_completo ?? 'Paciente sin nombre');
-}
-
-/**
- * Fetcher para consultas
- * ✅ OPTIMIZACIÓN: Limitar a últimos 6 meses + solo campos necesarios
- * Para historial completo usar paginación
- */
-const fetchConsultas = async (): Promise<{ consultas: Consulta[], count: number }> => {
-  // Limitar a últimos 6 meses para rendimiento (cubre la mayoría de casos de uso)
-  const hace6Meses = new Date();
-  hace6Meses.setMonth(hace6Meses.getMonth() - 6);
-  
-  const { data, error, count } = await supabase
-    .from('consultas')
-    .select(`
-      id,
-      consulta_id,
-      paciente_id,
-      sede,
-      fecha_hora_inicio,
-      fecha_hora_fin,
-      estado_cita,
-      tipo_cita,
-      motivo_consulta,
-      calendar_event_id,
-      calendar_link,
-      confirmado_paciente,
-      estado_confirmacion,
-      recordatorio_24h_enviado,
-      recordatorio_2h_enviado,
-      recordatorio_48h_enviado,
-      cancelado_por,
-      created_at,
-      updated_at,
-      paciente:pacientes ( id, nombre_completo )
-    `, { count: 'exact' })
-    .gte('fecha_hora_inicio', hace6Meses.toISOString())
-    .order('fecha_hora_inicio', { ascending: false })
-    .limit(1000) // Límite de seguridad
-
-  if (error) throw error
-
-  // Casting necesario para el JOIN
-  const rawData = (data || []) as unknown as ConsultaRowWithPaciente[];
-  const consultas = rawData.map(mapConsulta)
-  
-  return { consultas, count: count || consultas.length }
-}
-
-
 interface ConsultasStatsResponse {
   total: number
   programadas: number
@@ -150,48 +87,61 @@ interface ConsultasStatsResponse {
   }
 }
 
+interface CombinedConsultasResponse {
+  consultas: Consulta[]
+  stats: ConsultasStatsResponse
+  totalCount: number
+}
+
 /**
- * Fetcher para estadísticas de consultas (RPC)
+ * Fetcher combinado - UNA sola llamada para consultas + stats
+ * ✅ OPTIMIZACIÓN: Reduce de 2 llamadas a 1
  */
-const fetchConsultasStats = async (): Promise<ConsultasStatsResponse | null> => {
-  const { data, error } = await supabase.rpc('get_consultas_stats')
+const fetchConsultasWithStats = async (): Promise<CombinedConsultasResponse> => {
+  const { data, error } = await supabase.rpc('get_consultas_with_stats' as never, {
+    p_limit: 500,
+    p_offset: 0
+  } as never)
+  
   if (error) throw error
-  return data as unknown as ConsultasStatsResponse
+  
+  const result = data as { 
+    consultas: Array<ConsultaRow & { paciente_nombre: string }>, 
+    stats: ConsultasStatsResponse,
+    totalCount: number
+  }
+  
+  // Mapear consultas
+  const consultas = (result.consultas || []).map(row => {
+    return mapConsultaFromDB(row as unknown as ConsultaRow, row.paciente_nombre || 'Paciente sin nombre')
+  })
+  
+  return {
+    consultas,
+    stats: result.stats,
+    totalCount: result.totalCount || consultas.length
+  }
 }
 
 /**
  * Hook para gestionar consultas
  *
- * ✅ QUICK WIN #3: Configuración SWR optimizada
- * - Revalida automáticamente cuando vuelves a la pestaña (mejor UX)
- * - Caché de 5 minutos (menos requests duplicados con 2 usuarios)
- * - Retry automático en caso de error de red
- * - Mantiene datos previos mientras recarga (sin parpadeos)
- * - ✅ REALTIME: Se suscribe a cambios en la tabla 'consultas'
+ * ✅ OPTIMIZADO: Una sola llamada RPC para consultas + stats
+ * - Cache de 15 minutos
+ * - Sin revalidación automática
+ * - Mantiene datos previos mientras recarga
  */
 export function useConsultas(): UseConsultasReturn {
-  // 1. Fetch Consultas (Lista)
-  const { data: dataConsultas, error: errorConsultas, isLoading: loadingConsultas, mutate: mutateConsultas } = useSWR(
-    'consultas',
-    fetchConsultas,
+  const { data, error, isLoading, mutate } = useSWR(
+    'consultas-combined',
+    fetchConsultasWithStats,
     SWR_CONFIG_STANDARD
   )
 
-  // 2. Fetch Stats (Agregados Real-time)
-  const { data: dataStats, error: errorStats, isLoading: loadingStats, mutate: mutateStats } = useSWR(
-    'consultas_stats',
-    fetchConsultasStats,
-    SWR_CONFIG_STANDARD
-  )
-
-  // ❌ Realtime DESHABILITADO - Consumía demasiados recursos
-  // Los datos se actualizan vía SWR con revalidateOnFocus
-
-  const consultas = dataConsultas?.consultas || []
-
-  // Valores por defecto si no hay datos
+  // Valores por defecto
   const defaultStats = {
-    total: 0, programadas: 0, confirmadas: 0, completadas: 0, canceladas: 0, reagendadas: 0, noAsistio: 0, hoy: 0, semana: 0
+    total: 0, programadas: 0, confirmadas: 0, completadas: 0, 
+    canceladas: 0, reagendadas: 0, noAsistio: 0, hoy: 0, semana: 0
   }
   
   const defaultMetricas = {
@@ -201,25 +151,13 @@ export function useConsultas(): UseConsultasReturn {
     promedioDuracion: 30, primeraVez: 0, seguimiento: 0
   }
 
-  const stats = dataStats ? {
-    total: dataStats.total,
-    programadas: dataStats.programadas,
-    confirmadas: dataStats.confirmadas,
-    completadas: dataStats.completadas,
-    canceladas: dataStats.canceladas,
-    reagendadas: dataStats.reagendadas,
-    noAsistio: dataStats.noAsistio,
-    hoy: dataStats.hoy,
-    semana: dataStats.semana
-  } : defaultStats
-
   return {
-    consultas,
-    loading: loadingConsultas || loadingStats,
-    error: errorConsultas || errorStats || null,
-    refetch: async () => { await Promise.all([mutateConsultas(), mutateStats()]) },
-    totalCount: dataConsultas?.count || 0,
-    stats,
-    metricas: dataStats?.metricas || defaultMetricas,
+    consultas: data?.consultas || [],
+    loading: isLoading,
+    error: error || null,
+    refetch: async () => { await mutate() },
+    totalCount: data?.totalCount || 0,
+    stats: data?.stats || defaultStats,
+    metricas: data?.stats?.metricas || defaultMetricas,
   }
 }

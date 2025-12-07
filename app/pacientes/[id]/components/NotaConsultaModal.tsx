@@ -6,7 +6,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface NotaConsultaModalProps {
   isOpen: boolean;
@@ -84,6 +86,9 @@ export const NotaConsultaModal: React.FC<NotaConsultaModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl h-[85vh] max-h-[800px] flex flex-col gap-0 p-0 overflow-hidden">
+        <VisuallyHidden>
+          <DialogTitle>Nota Clínica - {titulo}</DialogTitle>
+        </VisuallyHidden>
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">

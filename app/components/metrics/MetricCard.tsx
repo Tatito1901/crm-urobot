@@ -70,16 +70,16 @@ function useAnimatedNumber(targetValue: number, duration = 600, enabled = true) 
 }
 
 const colorClasses = {
-  emerald: { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500', border: 'border-emerald-500/30', bgLight: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  green: { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500', border: 'border-emerald-500/30', bgLight: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  blue: { text: 'text-foreground', bg: 'bg-blue-500', border: 'border-blue-500/30', bgLight: 'bg-blue-50 dark:bg-blue-500/10' },
-  purple: { text: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-500', border: 'border-purple-500/30', bgLight: 'bg-purple-50 dark:bg-purple-500/10' },
-  amber: { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500', border: 'border-amber-500/30', bgLight: 'bg-amber-50 dark:bg-amber-500/10' },
-  orange: { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500', border: 'border-amber-500/30', bgLight: 'bg-amber-50 dark:bg-amber-500/10' },
-  red: { text: 'text-red-600 dark:text-red-400', bg: 'bg-red-500', border: 'border-red-500/30', bgLight: 'bg-red-50 dark:bg-red-500/10' },
-  cyan: { text: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-500', border: 'border-cyan-500/30', bgLight: 'bg-cyan-50 dark:bg-cyan-500/10' },
-  teal: { text: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-500', border: 'border-cyan-500/30', bgLight: 'bg-cyan-50 dark:bg-cyan-500/10' },
-  fuchsia: { text: 'text-fuchsia-600 dark:text-fuchsia-400', bg: 'bg-fuchsia-500', border: 'border-fuchsia-500/30', bgLight: 'bg-fuchsia-50 dark:bg-fuchsia-500/10' },
+  emerald: { label: 'text-emerald-500 dark:text-emerald-300', value: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20', icon: 'text-emerald-400' },
+  green: { label: 'text-emerald-500 dark:text-emerald-300', value: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20', icon: 'text-emerald-400' },
+  blue: { label: 'text-blue-500 dark:text-blue-300', value: 'text-foreground', border: 'border-blue-500/20', icon: 'text-blue-400' },
+  purple: { label: 'text-purple-500 dark:text-purple-300', value: 'text-foreground', border: 'border-purple-500/20', icon: 'text-purple-400' },
+  amber: { label: 'text-amber-500 dark:text-amber-300', value: 'text-foreground', border: 'border-amber-500/20', icon: 'text-amber-400' },
+  orange: { label: 'text-amber-500 dark:text-amber-300', value: 'text-foreground', border: 'border-amber-500/20', icon: 'text-amber-400' },
+  red: { label: 'text-red-500 dark:text-red-300', value: 'text-foreground', border: 'border-red-500/20', icon: 'text-red-400' },
+  cyan: { label: 'text-cyan-500 dark:text-cyan-300', value: 'text-foreground', border: 'border-cyan-500/20', icon: 'text-cyan-400' },
+  teal: { label: 'text-cyan-500 dark:text-cyan-300', value: 'text-foreground', border: 'border-cyan-500/20', icon: 'text-cyan-400' },
+  fuchsia: { label: 'text-fuchsia-500 dark:text-fuchsia-300', value: 'text-foreground', border: 'border-fuchsia-500/20', icon: 'text-fuchsia-400' },
 };
 
 export const MetricCard = React.memo(({
@@ -119,49 +119,38 @@ export const MetricCard = React.memo(({
     (animate && typeof value === 'number') ? animatedValue.toLocaleString('es-MX') : value;
   
   return (
-    <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/50 bg-card p-4 sm:p-5 min-h-[120px]">
+    <div className={`bg-card border ${colors.border} rounded-lg p-3.5 flex flex-col justify-between relative overflow-hidden group min-h-[100px]`}>
+      {/* Icono de fondo grande */}
+      {icon && (
+        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+          <span className={`${colors.icon} [&>svg]:w-10 [&>svg]:h-10`}>{icon}</span>
+        </div>
+      )}
       
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-xs sm:text-sm font-medium text-muted-foreground leading-tight">{title}</span>
-        {icon && (
-          <span className={`rounded-md p-1 sm:p-1.5 shrink-0 ${colors.bgLight} ${colors.text} transition-colors`}>
-             {icon} 
-          </span>
-        )}
-      </div>
-
-      <div className="mt-3 sm:mt-4">
+      <div>
+        <div className={`text-[11px] ${colors.label} mb-0.5 font-medium`}>{title}</div>
         {isLoading ? (
-          <div className="mb-1 h-7 sm:h-8 w-20 sm:w-24 skeleton-pulse rounded-md bg-muted" />
+          <div className="h-7 w-16 bg-muted/50 rounded animate-pulse" />
         ) : (
-          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap transition-opacity duration-200">
-            <span className="text-2xl sm:text-3xl font-bold tracking-tight text-card-foreground tabular-nums">
-              {percentage !== undefined ? `${percentage}%` : displayValue}
-            </span>
-            {maxValue > 0 && typeof value === 'number' && (
-              <span className="text-xs sm:text-sm font-medium text-muted-foreground">/ {maxValue}</span>
-            )}
+          <div className={`text-2xl font-bold ${colors.value} tabular-nums`}>
+            {percentage !== undefined ? `${percentage}%` : displayValue}
           </div>
         )}
-
-        <div className="mt-1 flex items-center gap-2 text-xs sm:text-sm">
-          {isLoading ? (
-            <div className="h-4 w-24 skeleton-pulse rounded bg-muted" />
-          ) : (
-            <>
-              {finalDescription && (
-                <p className="font-medium text-muted-foreground truncate">{finalDescription}</p>
-              )}
-              
-              {trend && (
-                <div className={`flex items-center gap-0.5 font-medium shrink-0 ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
-                  <span>{trend.isPositive ? '↑' : '↓'}</span>
-                  <span>{Math.abs(trend.value)}%</span>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+      </div>
+      
+      <div className="text-[10px] text-muted-foreground mt-1">
+        {isLoading ? (
+          <div className="h-3 w-20 bg-muted/50 rounded animate-pulse" />
+        ) : (
+          <>
+            {finalDescription}
+            {trend && (
+              <span className={`ml-1 ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {trend.isPositive ? '↑' : '↓'}{Math.abs(trend.value)}%
+              </span>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

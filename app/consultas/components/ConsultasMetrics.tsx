@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React from 'react';
 import { 
   BarChart3, 
   Calendar, 
@@ -8,36 +8,6 @@ import {
   Clock, 
   CalendarDays
 } from 'lucide-react';
-
-interface StatCardProps {
-  label: string;
-  value: number;
-  color: 'white' | 'blue' | 'emerald' | 'purple' | 'amber';
-  icon: React.ReactNode;
-  className?: string;
-}
-
-const StatCard = memo(({ label, value, color, icon, className = '' }: StatCardProps) => {
-  const colorClasses = {
-    white: 'bg-card border-border text-foreground',
-    blue: 'bg-blue-500/5 border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-400',
-    emerald: 'bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400',
-    purple: 'bg-purple-500/5 border-purple-200 dark:border-purple-500/20 text-purple-700 dark:text-purple-400',
-    amber: 'bg-amber-500/5 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400',
-  };
-
-  return (
-    <div className={`rounded-2xl border p-3 sm:p-4 ${colorClasses[color]} ${className}`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs sm:text-sm font-medium opacity-80">{label}</span>
-        <span className="opacity-70">{icon}</span>
-      </div>
-      <div className="text-2xl sm:text-3xl font-bold tabular-nums">{value}</div>
-    </div>
-  );
-});
-
-StatCard.displayName = 'StatCard';
 
 interface ConsultasStats {
   total: number;
@@ -49,42 +19,88 @@ interface ConsultasStats {
 
 interface ConsultasMetricsProps {
   stats: ConsultasStats;
+  loading?: boolean;
 }
 
-export const ConsultasMetrics = memo(function ConsultasMetrics({ stats }: ConsultasMetricsProps) {
+export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, loading }: ConsultasMetricsProps) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-24 bg-muted/50 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  // Estilos consistentes
+  const labelClass = "text-[11px] font-medium uppercase tracking-wider";
+  const metricClass = "text-xl font-bold tabular-nums";
+  const hintClass = "text-[10px] text-muted-foreground mt-1";
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-      <StatCard
-        label="Total"
-        value={stats.total}
-        color="white"
-        icon={<BarChart3 className="h-5 w-5" />}
-      />
-      <StatCard
-        label="Programadas"
-        value={stats.programadas}
-        color="blue"
-        icon={<Calendar className="h-5 w-5" />}
-      />
-      <StatCard
-        label="Confirmadas"
-        value={stats.confirmadas}
-        color="emerald"
-        icon={<CheckCircle2 className="h-5 w-5" />}
-      />
-      <StatCard
-        label="Hoy"
-        value={stats.hoy}
-        color="purple"
-        icon={<Clock className="h-5 w-5" />}
-      />
-      <StatCard
-        label="Esta semana"
-        value={stats.semana}
-        color="amber"
-        icon={<CalendarDays className="h-5 w-5" />}
-        className="col-span-2 sm:col-span-1"
-      />
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
+      {/* Total */}
+      <div className="bg-card border border-border rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+          <BarChart3 className="w-10 h-10" />
+        </div>
+        <div>
+          <div className={`${labelClass} text-muted-foreground`}>Total</div>
+          <div className={`${metricClass} text-foreground`}>{stats.total.toLocaleString()}</div>
+        </div>
+        <div className={hintClass}>Histórico</div>
+      </div>
+
+      {/* Programadas */}
+      <div className="bg-card border border-blue-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+          <Calendar className="w-10 h-10 text-blue-400" />
+        </div>
+        <div>
+          <div className={`${labelClass} text-blue-600 dark:text-blue-400`}>Programadas</div>
+          <div className={`${metricClass} text-foreground`}>{stats.programadas}</div>
+        </div>
+        <div className={hintClass}>Por confirmar</div>
+      </div>
+
+      {/* Confirmadas */}
+      <div className="bg-card border border-emerald-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+          <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+        </div>
+        <div>
+          <div className={`${labelClass} text-emerald-600 dark:text-emerald-400`}>Confirmadas</div>
+          <div className={`${metricClass} text-emerald-600 dark:text-emerald-400`}>{stats.confirmadas}</div>
+        </div>
+        <div className={hintClass}>Listas para atender</div>
+      </div>
+
+      {/* Hoy */}
+      <div className="bg-card border border-purple-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+          <Clock className="w-10 h-10 text-purple-400" />
+        </div>
+        <div>
+          <div className={`${labelClass} text-purple-600 dark:text-purple-400 flex items-center gap-1`}>
+            <span className="animate-pulse">●</span> Hoy
+          </div>
+          <div className={`${metricClass} text-foreground`}>{stats.hoy}</div>
+        </div>
+        <div className={hintClass}>Agenda del día</div>
+      </div>
+
+      {/* Esta semana */}
+      <div className="bg-card border border-amber-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+          <CalendarDays className="w-10 h-10 text-amber-400" />
+        </div>
+        <div>
+          <div className={`${labelClass} text-amber-600 dark:text-amber-400`}>Semana</div>
+          <div className={`${metricClass} text-foreground`}>{stats.semana}</div>
+        </div>
+        <div className={hintClass}>Próximos 7 días</div>
+      </div>
     </div>
   );
 });

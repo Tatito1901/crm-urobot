@@ -30,22 +30,17 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
     return {
       id: lead.id,
       nombre: (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-foreground">{lead.nombre}</span>
-            {lead.esCaliente && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 border">
-                🔥
-              </span>
-            )}
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium text-foreground leading-tight">{lead.nombre}</span>
+            {lead.esCaliente && <span className="text-amber-500" title="Lead caliente">🔥</span>}
           </div>
           <span className="text-xs text-muted-foreground font-mono">{lead.telefono}</span>
-          {lead.canalMarketing && <span className="text-[10px] text-muted-foreground/80 truncate max-w-[150px]">{lead.canalMarketing}</span>}
         </div>
       ),
       mensajes: (
-        <div className="flex flex-col items-center gap-1">
-          <span className={`text-lg font-bold ${
+        <div className="text-center">
+          <span className={`text-lg font-semibold ${
             lead.totalInteracciones >= 10 
               ? 'text-emerald-600 dark:text-emerald-400' 
               : lead.totalInteracciones >= 5 
@@ -54,16 +49,14 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
           }`}>
             {lead.totalInteracciones}
           </span>
-          <span className="text-[10px] text-muted-foreground">
-            {lead.totalInteracciones === 1 ? 'mensaje' : 'mensajes'}
-          </span>
+          <span className="text-[11px] text-muted-foreground ml-1">msgs</span>
         </div>
       ),
       ultimoMensaje: (
-        <div className="flex flex-col gap-1 text-xs">
+        <div className="text-xs">
           {lead.ultimaInteraccion ? (
-            <>
-              <span className="text-foreground font-medium">
+            <div className="flex flex-col">
+              <span className="text-foreground">
                 {new Date(lead.ultimaInteraccion).toLocaleDateString('es-MX', { 
                   day: 'numeric', 
                   month: 'short',
@@ -73,17 +66,11 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
               </span>
               <span className="text-muted-foreground">
                 Hace {lead.diasDesdeUltimaInteraccion}d
+                {lead.esInactivo && <span className="text-red-500 ml-1">• Inactivo</span>}
               </span>
-            </>
+            </div>
           ) : (
-            <span className="text-muted-foreground italic">
-              Sin mensajes aún
-            </span>
-          )}
-          {lead.esInactivo && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-red-50 text-red-600 border-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30 border w-fit mt-1">
-              Inactivo
-            </span>
+            <span className="text-muted-foreground">Sin mensajes</span>
           )}
         </div>
       ),
@@ -103,26 +90,16 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
         </WrapTooltip>
       ),
       conversion: (
-        <div className="flex flex-col gap-1 text-xs">
+        <div className="text-xs">
           {lead.estado === 'Convertido' && lead.pacienteId ? (
-            <div className="group">
-              <Link
-                href={`/pacientes/${lead.pacienteId}`}
-                className="text-foreground hover:text-emerald-700 dark:hover:text-emerald-300 font-medium flex items-center gap-1 transition-colors"
-              >
-                Ver perfil
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-              </Link>
-              {lead.fechaConversion && (
-                <span className="text-muted-foreground text-[10px]">
-                  Convertido
-                </span>
-              )}
-            </div>
+            <Link
+              href={`/pacientes/${lead.pacienteId}`}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+            >
+              Ver perfil →
+            </Link>
           ) : (
-            <span className="text-muted-foreground">
-              En prospección
-            </span>
+            <span className="text-muted-foreground">En prospección</span>
           )}
         </div>
       ),

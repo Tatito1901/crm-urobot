@@ -22,24 +22,27 @@ interface PacientesStats {
   sinConsultas: number;
 }
 
-// Métricas compactas en línea - siempre muestra skeleton en SSR para evitar hydration mismatch
+// Métricas compactas - responsivas para móvil
 const PacientesMetrics = memo(({ stats, loading }: { stats: PacientesStats, loading: boolean }) => {
   const metrics = [
-    { icon: Users, value: stats.total, label: 'Total', color: 'text-foreground' },
-    { icon: UserCheck, value: stats.activos, label: 'Activos', color: 'text-emerald-600 dark:text-emerald-400' },
-    { icon: UserPlus, value: stats.recientes, label: 'Nuevos (30d)', color: 'text-blue-600 dark:text-blue-400' },
-    { icon: AlertCircle, value: stats.sinConsultas, label: 'Sin citas', color: 'text-amber-600 dark:text-amber-400' },
+    { icon: Users, value: stats.total, label: 'Total', color: 'text-foreground', show: true },
+    { icon: UserCheck, value: stats.activos, label: 'Activos', color: 'text-emerald-600 dark:text-emerald-400', show: true },
+    { icon: UserPlus, value: stats.conConsultas, label: 'Con citas', color: 'text-blue-600 dark:text-blue-400', show: false },
+    { icon: AlertCircle, value: stats.sinConsultas, label: 'Sin citas', color: 'text-amber-600 dark:text-amber-400', show: true },
   ];
 
   return (
-    <div className="flex gap-4 flex-wrap" suppressHydrationWarning>
+    <div className="flex gap-3 sm:gap-4 flex-wrap" suppressHydrationWarning>
       {metrics.map((m) => (
-        <div key={m.label} className="flex items-center gap-2 text-sm">
-          <m.icon className={`w-4 h-4 ${m.color}`} />
-          <span className="font-semibold text-foreground">
+        <div 
+          key={m.label} 
+          className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${!m.show ? 'hidden sm:flex' : ''}`}
+        >
+          <m.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${m.color}`} />
+          <span className="font-semibold text-foreground tabular-nums">
             {loading ? '-' : m.value.toLocaleString()}
           </span>
-          <span className="text-muted-foreground text-xs">{m.label}</span>
+          <span className="text-muted-foreground text-[10px] sm:text-xs hidden xs:inline">{m.label}</span>
         </div>
       ))}
     </div>
@@ -67,7 +70,7 @@ export default function PacientesPage() {
     isSearching,
     error,
     refresh,
-  } = usePacientesPaginated({ pageSize: 10 });
+  } = usePacientesPaginated({ pageSize: 8 });
 
   const handlePacienteHover = useCallback((pacienteId: string) => {
     router.prefetch(`/pacientes/${pacienteId}`);
@@ -89,64 +92,64 @@ export default function PacientesPage() {
       {/* Header compacto con búsqueda, métricas y filtros */}
       <Card className={`${cards.base} overflow-hidden`}>
         {/* Barra superior: Búsqueda + Métricas + Filtros */}
-        <div className="p-4 border-b border-border bg-muted/30">
-          <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-            {/* Barra de búsqueda con indicador de loading */}
-            <div className="relative flex-1 max-w-xl">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar por nombre, teléfono o correo..."
-                className="w-full pl-10 pr-10 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-              />
-              {isSearching && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />
-              )}
+        <div className="p-3 sm:p-4 border-b border-border bg-muted/30">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            {/* Fila 1: Búsqueda + Refresh */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar paciente..."
+                  className="w-full pl-9 pr-9 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+                {isSearching && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />
+                )}
+              </div>
+              <button
+                onClick={() => refresh()}
+                disabled={isLoading}
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 flex-shrink-0"
+                title="Recargar datos"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
             </div>
 
-            {/* Métricas inline (calculadas en servidor) */}
-            <PacientesMetrics stats={stats} loading={isLoading && !pacientes.length} />
-          </div>
-
-          {/* Filtros y acciones */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-2">
+            {/* Fila 2: Filtros + Métricas */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               {/* Filtros de estado */}
-              <div className="flex bg-muted rounded-lg p-0.5 border border-border">
-                {[
-                  { key: '' as const, label: 'Todos' },
-                  { key: 'Activo' as const, label: 'Activos' },
-                  { key: 'Inactivo' as const, label: 'Inactivos' },
-                ].map((option) => (
-                  <button
-                    key={option.key || 'all'}
-                    type="button"
-                    onClick={() => handleEstadoFilterChange(option.key)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-                      estadoFilter === option.key
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2">
+                <div className="inline-flex bg-muted rounded-lg p-0.5 border border-border">
+                  {[
+                    { key: '' as const, label: 'Todos' },
+                    { key: 'Activo' as const, label: 'Activos' },
+                    { key: 'Inactivo' as const, label: 'Inactivos' },
+                  ].map((option) => (
+                    <button
+                      key={option.key || 'all'}
+                      type="button"
+                      onClick={() => handleEstadoFilterChange(option.key)}
+                      className={`px-2.5 sm:px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                        estadoFilter === option.key
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {totalCount.toLocaleString()}
+                </span>
               </div>
 
-              <span className="text-xs text-muted-foreground">
-                {totalCount.toLocaleString()} pacientes
-              </span>
+              {/* Métricas inline (calculadas en servidor) */}
+              <PacientesMetrics stats={stats} loading={isLoading && !pacientes.length} />
             </div>
-
-            <button
-              onClick={() => refresh()}
-              disabled={isLoading}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
-              title="Recargar datos"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
           </div>
         </div>
 

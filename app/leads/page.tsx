@@ -2,12 +2,11 @@
 
 import { useMemo, useCallback } from 'react';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useLeadsPaginated } from '@/hooks/useLeadsPaginated';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { PaginationControls } from '@/app/components/common/PaginationControls';
-import { typography, spacing, cards } from '@/app/lib/design-system';
+import { cards } from '@/app/lib/design-system';
 import { MainTitle, QuickGuide } from '@/app/components/leads/LeadsTooltips';
 import { LeadsMetrics } from './components/LeadsMetrics';
 import { LeadsFilters } from './components/LeadsFilters';
@@ -32,7 +31,7 @@ export default function LeadsPage() {
     isSearching,
     error,
     refresh,
-  } = useLeadsPaginated({ pageSize: 10 });
+  } = useLeadsPaginated({ pageSize: 8 });
   
   // Stats ya vienen del servidor
   const leadsStats = useMemo(() => ({
@@ -50,10 +49,14 @@ export default function LeadsPage() {
     setEstadoFilter(newFilter === 'all' ? '' : newFilter);
   }, [setEstadoFilter]);
 
+  // ✅ Handler memoizado para refresh
+  const handleRefresh = useCallback(() => refresh(), [refresh]);
+
   return (
     <PageShell
       accent
       fullWidth
+      compact
       eyebrow="Gestión de Prospectos"
       title={<MainTitle />}
       description="Pipeline de ventas y seguimiento de pacientes potenciales."
@@ -61,36 +64,28 @@ export default function LeadsPage() {
       {/* Métricas Clave (calculadas en servidor) */}
       <LeadsMetrics stats={leadsStats} loading={isLoading && !leads.length} />
 
-      <Card className={`${cards.base} overflow-hidden`}>
-        <CardHeader className={`${spacing.cardHeader} border-b border-border bg-muted/20`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <CardTitle className={typography.cardTitle}>
-                  Base de Datos de Leads
-                </CardTitle>
-                <QuickGuide />
-                {isSearching && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
-              </div>
-              <CardDescription className={typography.cardDescription}>
-                {totalCount.toLocaleString()} prospectos en total
-              </CardDescription>
-            </div>
-            <button
-              onClick={() => refresh()}
-              disabled={isLoading}
-              className="p-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
-              title="Recargar datos"
-            >
-              <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
+      <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-muted/20">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">Base de Datos de Leads</span>
+            <QuickGuide />
+            <span className="text-xs text-muted-foreground">({totalCount.toLocaleString()})</span>
+            {isSearching && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
           </div>
-        </CardHeader>
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="p-1.5 rounded-md bg-secondary text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
+            title="Recargar datos"
+          >
+            <svg className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
         
-        <CardContent className="p-0">
-          <div className="p-4 pb-0">
+        <div>
+          <div className="px-4 py-3 pb-0">
             <LeadsFilters
               currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'Nuevo' | 'Interesado' | 'Convertido' | 'Descartado'}
               onFilterChange={handleFilterChange}
@@ -104,8 +99,8 @@ export default function LeadsPage() {
             error={error}
             onRetry={refresh}
             isEmpty={leads.length === 0 && !isLoading}
-            minHeight="min-h-[400px]"
-            skeleton={<TableContentSkeleton rows={10} />}
+            minHeight="min-h-[300px]"
+            skeleton={<TableContentSkeleton rows={6} />}
             emptyState={
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <div className="bg-muted/50 p-4 rounded-full mb-3">
@@ -139,8 +134,8 @@ export default function LeadsPage() {
               </div>
             )}
           </ContentLoader>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </PageShell>
   );
 }

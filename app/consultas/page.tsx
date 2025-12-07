@@ -3,13 +3,12 @@
 import { useMemo, useState, useCallback } from 'react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useConsultas } from '@/hooks/useConsultas';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { Pagination } from '@/app/components/common/Pagination';
-import { typography, spacing, cards, inputs } from '@/app/lib/design-system';
-import { Building2, MapPin, Search } from 'lucide-react';
+import { cards } from '@/app/lib/design-system';
+import { Building2, MapPin, Search, RefreshCw, Loader2 } from 'lucide-react';
 import { ConsultasTable } from './components/ConsultasTable';
 import { ConsultasMetrics } from './components/ConsultasMetrics';
 
@@ -50,8 +49,8 @@ export default function ConsultasPage() {
     });
   }, [search, consultas, sedeFilter]);
 
-  // ✅ OPTIMIZACIÓN: Paginación adaptativa según viewport
-  const itemsPerPage = 30;
+  // ✅ Paginación de 7 elementos
+  const itemsPerPage = 7;
   const paginatedConsultas = useMemo(() => {
     const start = currentPage * itemsPerPage;
     const end = start + itemsPerPage;
@@ -68,55 +67,35 @@ export default function ConsultasPage() {
     <PageShell
       accent
       fullWidth
-      eyebrow="Consultas"
-      title="Agenda de consultas"
-      description="Listado completo de consultas programadas con información esencial de cada cita."
-      headerSlot={
-        <Card className={cards.base}>
-          <CardHeader className={spacing.cardHeader}>
-            <CardTitle className={typography.label}>Buscar</CardTitle>
-            <CardDescription className={typography.metadataSmall}>
-              Paciente, folio o motivo
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2 pt-0 sm:flex-row sm:items-center">
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
+      compact
+      eyebrow="Gestión de Citas"
+      title="Agenda de Consultas"
+      description="Historial de consultas programadas con información de cada cita."
+    >
+      {/* Métricas */}
+      <ConsultasMetrics stats={stats} />
+
+      <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
+        {/* Header con búsqueda y filtros */}
+        <div className="p-4 border-b border-border bg-muted/20">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            {/* Búsqueda */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <input
                 value={inputValue}
                 onChange={(event) => {
                   setInputValue(event.target.value);
                   debouncedSearch(event.target.value);
                 }}
-                placeholder="Buscar..."
-                className={`${inputs.search} sm:border-none sm:bg-transparent sm:px-0 sm:py-0 pl-9 sm:pl-9`}
+                placeholder="Buscar paciente, folio o motivo..."
+                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm transition-all"
               />
             </div>
-          </CardContent>
-        </Card>
-      }
-    >
-      {/* Estadísticas fuera del Card principal para consistencia visual */}
-      <ConsultasMetrics stats={stats} />
 
-      <Card className={cards.base}>
-        <CardHeader className={spacing.cardHeader}>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <CardTitle className={typography.cardTitle}>
-                Listado de consultas
-              </CardTitle>
-              <CardDescription className={typography.cardDescription}>
-                {error 
-                  ? `Error: ${error.message}` 
-                  : 'Detalle operativo por paciente y sede'
-                }
-              </CardDescription>
-            </div>
-            
-            {/* Filtros de sede y botón recargar (Unificados y Responsivos) */}
-            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-              <div className="flex bg-muted rounded-lg p-1 border border-border">
+            {/* Filtros de sede */}
+            <div className="flex items-center gap-3">
+              <div className="inline-flex p-1 bg-muted/50 rounded-lg border border-border">
                 {[
                   { key: 'all' as const, label: 'Todas', icon: <Building2 className="h-3.5 w-3.5" /> },
                   { key: 'POLANCO' as const, label: 'Polanco', icon: <MapPin className="h-3.5 w-3.5" /> },
@@ -127,16 +106,15 @@ export default function ConsultasPage() {
                     type="button"
                     onClick={() => handleSedeFilterChange(option.key)}
                     className={`
-                      flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-2
+                      px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap
                       ${sedeFilter === option.key
-                        ? 'bg-background text-foreground shadow-sm border border-border'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                       }
                     `}
                   >
-                    <span>{option.icon}</span>
+                    {option.icon}
                     <span className="hidden sm:inline">{option.label}</span>
-                    <span className="sm:hidden">{option.label.slice(0, 3)}</span>
                   </button>
                 ))}
               </div>
@@ -144,17 +122,18 @@ export default function ConsultasPage() {
               <button
                 onClick={() => refetch()}
                 disabled={loading}
-                className="p-2 rounded-lg bg-muted text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 hidden sm:flex"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
                 title="Recargar datos"
               >
-                <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="pt-0 space-y-4">
+
+        </div>
+
+        {/* Tabla */}
+        <div>
           
           <ContentLoader
             loading={loading}
@@ -162,11 +141,11 @@ export default function ConsultasPage() {
             onRetry={refetch}
             isEmpty={filteredConsultas.length === 0}
             minHeight="min-h-[500px]"
-            skeleton={<TableContentSkeleton rows={8} />}
+            skeleton={<TableContentSkeleton rows={7} />}
             emptyState={
               <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
                 <p className="text-4xl sm:text-5xl">📅</p>
-                <p className={typography.body}>
+                <p className="text-sm text-muted-foreground">
                   {search ? 'No se encontraron consultas' : 'No hay consultas registradas'}
                 </p>
               </div>
@@ -189,8 +168,8 @@ export default function ConsultasPage() {
               </div>
             )}
           </ContentLoader>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </PageShell>
   );
 }

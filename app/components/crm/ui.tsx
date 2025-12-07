@@ -11,18 +11,34 @@ import {
 } from "@/components/ui/card";
 import { Badge as ShadcnBadge } from "@/components/ui/badge";
 
+/**
+ * Badge consistente para toda la plataforma
+ * Usa STATE_COLORS de crm-data.ts para colores
+ */
 export const Badge = memo(function Badge({
   label,
   tone,
+  size = "md",
   variant = "default",
   className,
   ...props
-}: { label: string; tone?: string } & React.ComponentProps<typeof ShadcnBadge>) {
+}: { 
+  label: string; 
+  tone?: string;
+  size?: "sm" | "md" | "lg";
+} & React.ComponentProps<typeof ShadcnBadge>) {
+  const sizeClasses = {
+    sm: "px-1.5 py-0.5 text-[10px]",
+    md: "px-2 py-0.5 text-[11px]",
+    lg: "px-2.5 py-1 text-xs",
+  };
+
   return (
     <ShadcnBadge
       variant={variant}
       className={cn(
-        "capitalize tracking-[0.12em] text-xs font-medium",
+        "capitalize font-medium rounded-md whitespace-nowrap",
+        sizeClasses[size],
         tone,
         className
       )}
@@ -33,14 +49,18 @@ export const Badge = memo(function Badge({
   );
 });
 
+/**
+ * StatCard consistente para métricas
+ * Tipografía estandarizada
+ */
 export const StatCard = memo(function StatCard({ title, value, hint }: { title: string; value: string; hint?: string }) {
   return (
     <Card className="bg-card border-border/50">
-      <CardHeader className="space-y-2 pb-2">
-        <CardDescription className="text-[0.7rem] uppercase tracking-widest text-muted-foreground/70">
+      <CardHeader className="space-y-1.5 pb-2">
+        <CardDescription className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
           {title}
         </CardDescription>
-        <CardTitle className="text-2xl font-semibold text-foreground tabular-nums">{value}</CardTitle>
+        <CardTitle className="text-xl font-semibold text-foreground tabular-nums">{value}</CardTitle>
       </CardHeader>
       {hint && (
         <CardContent className="pt-0">
@@ -102,12 +122,12 @@ export function DataTable({
 
   return (
     <div className="space-y-4">
-      <div className="hidden w-full overflow-x-auto rounded-2xl border border-border/50 bg-card md:block">
+      <div className="hidden w-full overflow-x-auto rounded-xl border border-border/50 bg-card md:block">
         <table className="min-w-full divide-y divide-border/50 text-left text-sm text-foreground">
-          <thead className="bg-muted/50 text-xs uppercase tracking-widest text-muted-foreground">
+          <thead className="bg-muted/40 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             <tr>
               {headers.map((header) => (
-                <th key={header.key} scope="col" className={cn("px-4 py-3.5 font-medium", getAlignmentClasses(header.align))}>
+                <th key={header.key} scope="col" className={cn("px-4 py-3 font-medium", getAlignmentClasses(header.align))}>
                   {header.label}
                 </th>
               ))}
@@ -118,14 +138,14 @@ export function DataTable({
               <tr
                 key={row.id}
                 className={cn(
-                  "hover:bg-muted/30",
+                  "hover:bg-muted/30 transition-colors",
                   onRowClick && "cursor-pointer"
                 )}
                 onClick={onRowClick ? () => onRowClick(row.id) : undefined}
                 onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
               >
                 {headers.map((header) => (
-                  <td key={header.key} className={cn("px-4 py-3.5 align-top", getAlignmentClasses(header.align))}>
+                  <td key={header.key} className={cn("px-4 py-3 align-middle", getAlignmentClasses(header.align))}>
                     {row[header.key] ?? "—"}
                   </td>
                 ))}

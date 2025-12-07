@@ -5,7 +5,7 @@
  * Hook OPTIMIZADO para +3000 leads
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { SWR_CONFIG_STANDARD, SWR_CONFIG_DASHBOARD, CACHE_KEYS } from '@/lib/swr-config';
@@ -42,24 +42,25 @@ const DEFAULT_STATS: LeadsStats = {
 const fetchStats = async (): Promise<LeadsStats> => {
   const { data, error } = await supabase.rpc('get_leads_stats' as never);
   if (error) return DEFAULT_STATS;
-  const stats = data as unknown as LeadsStats;
+  
+  // Mapear campos de la RPC a la interfaz del hook
+  const s = data as Record<string, number>;
   return {
-    total: stats.total || 0,
-    nuevos: stats.nuevos || 0,
-    interesados: stats.interesados || 0,
-    enSeguimiento: stats.enSeguimiento || 0,
-    convertidos: stats.convertidos || 0,
-    descartados: stats.descartados || 0,
-    ultimaSemana: stats.ultimaSemana || 0,
-    ultimoMes: stats.ultimoMes || 0,
-    // Nuevas métricas
-    prospectos: stats.prospectos || 0,
-    pacientesExistentes: stats.pacientesExistentes || 0,
-    reenganche: stats.reenganche || 0,
-    referidos: stats.referidos || 0,
-    prioridadAlta: stats.prioridadAlta || 0,
-    pendientesSeguimiento: stats.pendientesSeguimiento || 0,
-    scorePromedio: stats.scorePromedio || 0,
+    total: s.total || 0,
+    nuevos: s.nuevo || 0,
+    interesados: s.interesado || 0,
+    enSeguimiento: (s.contactado || 0) + (s.calificado || 0),
+    convertidos: s.convertido || 0,
+    descartados: s.descartado || 0,
+    ultimaSemana: 0, // No calculado en RPC actual
+    ultimoMes: 0,    // No calculado en RPC actual
+    prospectos: s.activos || 0,
+    pacientesExistentes: 0,
+    reenganche: 0,
+    referidos: 0,
+    prioridadAlta: s.calientes || 0,
+    pendientesSeguimiento: s.inactivos || 0,
+    scorePromedio: 0,
   };
 };
 
@@ -152,32 +153,66 @@ const fetchLeadsPaginated = async (
 };
 
 export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: number } = {}) {
-  const { pageSize = 10, searchDebounce = 300 } = config;
+  const { pageSize = 6, searchDebounce = 400 } = config; // Debounce más largo para menos llamadas
   
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearchInternal] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [estadoFilter, setEstadoFilter] = useState('');
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Debounce optimizado con ref para evitar memory leaks
   useEffect(() => {
-    setIsSearching(true);
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    
+    if (search !== debouncedSearch) {
+      setIsSearching(true);
+      searchTimerRef.current = setTimeout(() => {
+        setDebouncedSearch(search);
+        setCurrentPage(1);
+        setIsSearching(false);
+      }, searchDebounce);
+    }
+    
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, [search, searchDebounce, debouncedSearch]);
+  
+  // Reset página al cambiar filtro (solo si realmente cambió)
+  const prevEstadoRef = useRef(estadoFilter);
+  useEffect(() => {
+    if (prevEstadoRef.current !== estadoFilter) {
+      prevEstadoRef.current = estadoFilter;
       setCurrentPage(1);
-      setIsSearching(false);
-    }, searchDebounce);
-    return () => clearTimeout(timer);
-  }, [search, searchDebounce]);
+    }
+  }, [estadoFilter]);
   
-  useEffect(() => { setCurrentPage(1); }, [estadoFilter]);
+  // Stats con staleTime largo (cambian poco)
+  const { data: stats } = useSWR<LeadsStats>(
+    `${CACHE_KEYS.LEADS}-stats`,
+    fetchStats,
+    { ...SWR_CONFIG_DASHBOARD, dedupingInterval: 60 * 60 * 1000 } // 1 hora
+  );
   
-  const { data: stats } = useSWR<LeadsStats>(`${CACHE_KEYS.LEADS}-stats`, fetchStats, SWR_CONFIG_DASHBOARD);
+  // Key estable para SWR
+  const swrKey = useMemo(
+    () => `${CACHE_KEYS.LEADS}-v2-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`,
+    [currentPage, pageSize, debouncedSearch, estadoFilter]
+  );
   
-  // v2: incluye cálculo de días, esCaliente, esInactivo
-  const swrKey = useMemo(() => `${CACHE_KEYS.LEADS}-v2-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`, [currentPage, pageSize, debouncedSearch, estadoFilter]);
+  // Fetcher memoizado
+  const fetcher = useCallback(
+    () => fetchLeadsPaginated(currentPage, pageSize, debouncedSearch, estadoFilter),
+    [currentPage, pageSize, debouncedSearch, estadoFilter]
+  );
   
-  const { data, error, isLoading, mutate } = useSWR(swrKey, () => fetchLeadsPaginated(currentPage, pageSize, debouncedSearch, estadoFilter), { ...SWR_CONFIG_STANDARD, keepPreviousData: true });
+  const { data, error, isLoading, mutate } = useSWR(swrKey, fetcher, {
+    ...SWR_CONFIG_STANDARD,
+    keepPreviousData: true,
+    revalidateOnMount: true, // Solo al montar
+  });
   
   const totalCount = data?.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));

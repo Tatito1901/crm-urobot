@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { cn } from '@/lib/utils';
 
 interface ModalProps {
@@ -47,10 +48,14 @@ export const Modal: React.FC<ModalProps> = ({
           "max-h-[90vh] overflow-hidden flex flex-col gap-0 p-0"
         )}
       >
-        {title && (
+        {title ? (
           <DialogHeader className="px-5 py-4 border-b border-border shrink-0">
             <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
           </DialogHeader>
+        ) : (
+          <VisuallyHidden>
+            <DialogTitle>Modal</DialogTitle>
+          </VisuallyHidden>
         )}
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {children}
