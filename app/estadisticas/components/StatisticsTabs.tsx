@@ -9,7 +9,8 @@ import {
   Share2, 
   MessageSquare, 
   Zap, 
-  Activity 
+  Activity,
+  Stethoscope
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,11 @@ const menuItems = [
     title: 'Dashboard', 
     href: '/estadisticas', 
     icon: LayoutDashboard,
+  },
+  { 
+    title: 'Clínico', 
+    href: '/estadisticas/clinico', 
+    icon: Stethoscope,
   },
   { 
     title: 'Leads', 

@@ -116,11 +116,14 @@ const fetchConversaciones = async (): Promise<ConversacionUI[]> => {
   }
 
   // 4. Filtrar mensajes válidos y contar por teléfono
-  const mensajesValidos = ['undefined', 'Interacción registrada', 'null', '']
+  const mensajesInvalidos = ['undefined', 'Interacción registrada', 'null']
   const convDataFiltrado = (convData || []).filter(msg => {
-    const texto = msg.mensaje?.trim()
+    const texto = msg.mensaje?.trim() || ''
     const tieneMedia = msg.tipo_mensaje && msg.tipo_mensaje !== 'text'
-    return (texto && !mensajesValidos.includes(texto)) || tieneMedia
+    const tieneCaption = !!msg.media_caption?.trim()
+    // Excluir solo mensajes exactamente inválidos sin media
+    const esInvalido = mensajesInvalidos.includes(texto) && !tieneMedia && !tieneCaption
+    return !esInvalido && (texto.length > 0 || tieneMedia || tieneCaption)
   })
   
   const mensajesPorTelefono = new Map<string, number>()
@@ -191,13 +194,12 @@ const fetchConversaciones = async (): Promise<ConversacionUI[]> => {
 
 /**
  * Fetcher para mensajes de un teléfono específico
- * Filtra mensajes inválidos (undefined, logs de sistema, etc.)
+ * Filtra solo mensajes claramente inválidos del sistema
  */
 const MENSAJES_INVALIDOS = [
   'undefined',
   'Interacción registrada',
   'null',
-  '',
 ]
 
 /**
@@ -250,12 +252,18 @@ const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> =>
   const rawData = data as unknown as ConversacionRow[]
   
   return rawData
-    // Filtrar mensajes basura/inválidos (pero permitir mensajes con media aunque el texto esté vacío)
+    // Filtrar solo mensajes claramente inválidos del sistema
     .filter((row) => {
-      const mensaje = row.mensaje?.trim()
+      const mensaje = row.mensaje?.trim() || ''
       const tieneMedia = !!row.media_url
-      // Mantener si tiene contenido de texto válido O si tiene media adjunta
-      return (mensaje && !MENSAJES_INVALIDOS.includes(mensaje)) || tieneMedia
+      const tieneCaption = !!row.media_caption?.trim()
+      const tipoNoTexto = row.tipo_mensaje && row.tipo_mensaje !== 'text'
+      
+      // Excluir solo si es exactamente un mensaje inválido Y no tiene media
+      const esInvalido = MENSAJES_INVALIDOS.includes(mensaje) && !tieneMedia && !tieneCaption
+      
+      // Mantener si: tiene texto válido, tiene media, tiene caption, o es tipo multimedia
+      return !esInvalido && (mensaje.length > 0 || tieneMedia || tieneCaption || tipoNoTexto)
     })
     .map((row): Mensaje => {
       return {
