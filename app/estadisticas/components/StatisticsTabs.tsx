@@ -10,7 +10,8 @@ import {
   MessageSquare, 
   Zap, 
   Activity,
-  Stethoscope
+  Stethoscope,
+  TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +20,11 @@ const menuItems = [
     title: 'Dashboard', 
     href: '/estadisticas', 
     icon: LayoutDashboard,
+  },
+  { 
+    title: 'Impacto', 
+    href: '/estadisticas/impacto', 
+    icon: TrendingUp,
   },
   { 
     title: 'Clínico', 

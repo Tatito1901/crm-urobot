@@ -13,13 +13,13 @@ interface LeadsFiltersProps {
 }
 
 // Constante fuera del componente para evitar re-creación
+// Nota: "Convertidos" no aparece porque si ya son pacientes, NO son leads
 const FILTERS: { id: FilterStatus; label: string }[] = [
-  { id: 'all', label: 'Activos' },
-  { id: 'Nuevo', label: 'Nuevos' },
-  { id: 'Contactado', label: 'Contactados' },
-  { id: 'Interesado', label: 'Interesados' },
-  { id: 'Convertido', label: 'Convertidos' },
-  { id: 'Descartado', label: 'Descartados' },
+  { id: 'all', label: 'Todos' },
+  { id: 'Nuevo', label: '🔵 Nuevos' },
+  { id: 'Contactado', label: '🟡 En seguimiento' },
+  { id: 'Interesado', label: '🟣 Interesados' },
+  { id: 'Descartado', label: '⚫ Descartados' },
 ];
 
 export const LeadsFilters = React.memo(function LeadsFilters({

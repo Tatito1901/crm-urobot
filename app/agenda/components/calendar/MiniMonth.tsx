@@ -10,7 +10,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getMonthMatrix, getMonthName, isSameDay, isToday, addMonths } from '@/lib/date-utils';
-import { useOccupancyHeatmap, getOccupancyColors } from '../../hooks/useOccupancyHeatmap';
+import { useOccupancyHeatmap, getOccupancyColors } from '@/hooks/useOccupancyHeatmap';
 
 interface MiniMonthProps {
   selectedDate: Date;

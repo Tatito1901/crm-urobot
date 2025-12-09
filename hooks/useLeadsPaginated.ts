@@ -86,13 +86,20 @@ const fetchLeadsPaginated = async (
   
   if (!result) return { data: [], totalCount: 0 };
   
-  const leads: Lead[] = (result.data || []).map((l: Record<string, unknown>) => {
+  // IMPORTANTE: Filtrar leads que ya son pacientes (tienen paciente_id)
+  // Si alguien ya es paciente, NO es lead
+  const leadsActivos = (result.data || []).filter(
+    (l: Record<string, unknown>) => !l.pacienteId
+  );
+  
+  const leads: Lead[] = leadsActivos.map((l: Record<string, unknown>) => {
     const telefono = l.telefonoWhatsapp as string;
     const nombreCompleto = l.nombreCompleto as string | null;
     const ultimaInteraccion = l.ultimaInteraccion as string | null;
     const totalInteracciones = (l.totalInteracciones as number) || 0;
     const tipoContacto = (l.tipoContacto as string) || 'prospecto';
     const proximoSeguimiento = l.proximoSeguimiento as string | null;
+    const estadoLead = ((l.estado as string) || 'Nuevo') as Lead['estado'];
     
     // Calcular días desde última interacción
     const diasDesdeUltimaInteraccion = ultimaInteraccion 
@@ -110,12 +117,16 @@ const fetchLeadsPaginated = async (
       ? new Date(proximoSeguimiento).getTime() <= Date.now()
       : false;
     
+    // Score y prioridad vienen de la BD (si existen)
+    const scoreDB = (l.score as number) || 0;
+    const prioridadDB = ((l.prioridad as string) || 'media') as Lead['prioridad'];
+    
     return {
       id: l.id as string,
-      pacienteId: l.pacienteId as string | null,
+      pacienteId: null, // Ya filtramos los que tienen pacienteId
       telefono,
       nombreCompleto,
-      estado: ((l.estado as string) || 'Nuevo') as Lead['estado'],
+      estado: estadoLead,
       fuente: ((l.fuenteLead as string) || 'Otro') as Lead['fuente'],
       canalMarketing: l.canalMarketing as string | null,
       notas: null,
@@ -126,11 +137,11 @@ const fetchLeadsPaginated = async (
       totalInteracciones,
       createdAt: l.createdAt as string | null,
       updatedAt: null,
-      // Campos de clasificación
+      // Campos de clasificación (de BD)
       tipoContacto: tipoContacto as Lead['tipoContacto'],
       motivoContacto: ((l.motivoContacto as string) || 'consulta_nueva') as Lead['motivoContacto'],
-      prioridad: ((l.prioridad as string) || 'media') as Lead['prioridad'],
-      score: (l.score as number) || 0,
+      prioridad: prioridadDB,
+      score: scoreDB,
       etiquetas: (l.etiquetas as string[]) || [],
       ultimoSeguimiento: l.ultimoSeguimiento as string | null,
       proximoSeguimiento,
@@ -141,7 +152,7 @@ const fetchLeadsPaginated = async (
       temperatura: esCaliente ? 'Caliente' : (esInactivo ? 'Frio' : 'Tibio') as Lead['temperatura'],
       diasDesdeContacto: 0,
       diasDesdeUltimaInteraccion,
-      esCliente: !!l.pacienteId,
+      esCliente: false, // Ya filtramos los que son clientes
       esPacienteExistente: tipoContacto === 'paciente_existente',
       esCaliente,
       esInactivo,
@@ -149,7 +160,12 @@ const fetchLeadsPaginated = async (
     };
   });
   
-  return { data: leads, totalCount: Number(result.total_count) || 0 };
+  // Ajustar totalCount porque filtramos los que ya son pacientes
+  const totalFiltrado = leads.length < (result.data || []).length 
+    ? Math.max(0, Number(result.total_count) - ((result.data || []).length - leads.length))
+    : Number(result.total_count) || 0;
+  
+  return { data: leads, totalCount: totalFiltrado };
 };
 
 export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: number } = {}) {
