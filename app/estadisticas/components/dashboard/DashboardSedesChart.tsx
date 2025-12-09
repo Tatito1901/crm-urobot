@@ -29,16 +29,25 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { name
 };
 
 export const DashboardSedesChart = memo(function DashboardSedesChart({ data }: { data: ChartData[] }) {
+  // Si no hay datos, mostrar estado vacío
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[200px] w-full flex items-center justify-center text-muted-foreground text-sm">
+        Sin datos disponibles
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[220px] w-full flex items-center justify-center">
+    <div className="h-[200px] w-full overflow-hidden">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
-            cy="50%"
-            innerRadius={50}
-            outerRadius={80}
+            cy="45%"
+            innerRadius={35}
+            outerRadius={55}
             paddingAngle={2}
             dataKey="value"
           >
@@ -47,7 +56,11 @@ export const DashboardSedesChart = memo(function DashboardSedesChart({ data }: {
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px', color: '#64748b' }} />
+          <Legend 
+            iconType="circle" 
+            iconSize={8}
+            wrapperStyle={{ fontSize: '10px', paddingTop: '5px', color: '#64748b' }} 
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

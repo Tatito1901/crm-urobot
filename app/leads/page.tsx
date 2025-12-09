@@ -120,6 +120,7 @@ export default function LeadsPage() {
               <LeadsTable 
                 leads={leads} 
                 loading={isLoading}
+                onRefresh={handleRefresh}
                 emptyMessage="No hay datos para mostrar"
               />
             </div>

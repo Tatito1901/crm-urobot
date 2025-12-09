@@ -100,6 +100,11 @@ export function normalizeCanalMarketing(value: string | null | undefined): Canal
     'google ads': 'Google Ads',
     'adwords': 'Google Ads',
     'sem': 'Google Ads',
+    'click to chat link': 'Google Ads',
+    'click_to_chat_link': 'Google Ads',
+    'click to chat': 'Google Ads',
+    'click_to_chat': 'Google Ads',
+    'ctc': 'Google Ads',
     
     // Instagram
     'instagram': 'Instagram Ads',

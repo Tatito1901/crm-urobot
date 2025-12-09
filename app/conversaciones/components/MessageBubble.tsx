@@ -283,6 +283,77 @@ const LocationContent = memo(function LocationContent({
   return <p className="whitespace-pre-wrap break-words">{contenido}</p>;
 });
 
+// Componente para renderizar texto con formato básico (negritas, cursivas, saltos, listas)
+const RichText = memo(function RichText({ content, className, isBot }: { content: string; className?: string; isBot?: boolean }) {
+  // Función para parsear markdown básico con mejor soporte
+  const parseMarkdown = (text: string) => {
+    if (!text) return null;
+
+    // 1. Dividir por saltos de línea para manejar párrafos
+    const lines = text.split('\n');
+    let inList = false;
+    const elements: React.ReactNode[] = [];
+
+    lines.forEach((line, i) => {
+      // Detectar si es item de lista
+      const listMatch = line.match(/^(\d+\.\s*|[-•]\s*)(.*)/);
+      
+      if (listMatch) {
+        if (!inList) {
+          inList = true;
+        }
+        const [, bullet, content] = listMatch;
+        elements.push(
+          <div key={i} className="flex gap-2 py-0.5">
+            <span className={`shrink-0 ${isBot ? 'text-slate-500' : 'text-white/70'}`}>{bullet.trim()}</span>
+            <span>{parseInlineFormatting(content)}</span>
+          </div>
+        );
+      } else {
+        inList = false;
+        // Línea normal
+        if (line.trim() === '') {
+          elements.push(<div key={i} className="h-2" />);
+        } else {
+          elements.push(
+            <React.Fragment key={i}>
+              {parseInlineFormatting(line)}
+              {i < lines.length - 1 && !lines[i + 1]?.match(/^(\d+\.\s*|[-•]\s*)/) && <br />}
+            </React.Fragment>
+          );
+        }
+      }
+    });
+
+    return elements;
+  };
+
+  // Parsear formato inline (negritas, cursivas)
+  const parseInlineFormatting = (text: string): React.ReactNode => {
+    const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+    
+    return parts.map((part, j) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={j} className={`font-semibold ${isBot ? 'text-slate-900 dark:text-white' : ''}`}>
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={j} className="italic">{part.slice(1, -1)}</em>;
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div className={`whitespace-pre-wrap break-words leading-relaxed ${className}`}>
+      {parseMarkdown(content)}
+    </div>
+  );
+});
+
 export const MessageBubble = memo(function MessageBubble({
   contenido,
   rol,
@@ -326,7 +397,7 @@ export const MessageBubble = memo(function MessageBubble({
         <div className="space-y-2">
           {mediaComponent}
           {textoAdicional && (
-            <p className="whitespace-pre-wrap break-words text-[15px]">{contenido}</p>
+            <RichText content={contenido} className="text-[15px]" isBot={isAsistente} />
           )}
         </div>
       );
@@ -336,29 +407,29 @@ export const MessageBubble = memo(function MessageBubble({
       return <LocationContent contenido={contenido} />;
     }
     
-    return <p className="whitespace-pre-wrap break-words text-[15px]">{contenido}</p>;
+    return <RichText content={contenido} className="text-sm sm:text-[15px]" isBot={isAsistente} />;
   };
 
   return (
-    <div className={`flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-0.5' : 'mt-3'}`}>
-      <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] ${isAsistente ? 'items-start' : 'items-end'}`}>
+    <div className={`flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? '-mt-1.5 sm:-mt-2' : ''}`}>
+      <div className={`flex flex-col max-w-[88%] sm:max-w-[75%] lg:max-w-[65%] ${isAsistente ? 'items-start' : 'items-end'}`}>
         
-        {/* Bubble estilo iMessage/WhatsApp */}
+        {/* Bubble - estilo minimalista y elegante */}
         <div className={`
-          group relative
+          relative transition-all duration-200
           ${isAsistente 
-            ? `bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100
-               rounded-2xl rounded-bl-md` 
-            : `bg-blue-500 text-white
-               rounded-2xl rounded-br-md`}
+            ? `bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200
+               rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 dark:border-slate-700/50` 
+            : `bg-gradient-to-br from-blue-500 to-blue-600 text-white
+               rounded-2xl rounded-tr-sm shadow-md shadow-blue-500/20`}
         `}>
           {/* Contenido principal */}
-          <div className="px-3.5 pt-2.5 pb-1">
+          <div className="px-3 sm:px-4 pt-2.5 sm:pt-3 pb-1">
             {renderContent()}
           </div>
           
-          {/* Footer con hora integrado en la burbuja */}
-          <div className={`flex items-center justify-end gap-1.5 px-3 pb-2 ${isAsistente ? 'text-slate-400' : 'text-white/70'}`}>
+          {/* Footer con hora - más elegante */}
+          <div className={`flex items-center justify-end gap-1 sm:gap-1.5 px-3 sm:px-3.5 pb-2 sm:pb-2.5 ${isAsistente ? 'text-slate-400' : 'text-white/60'}`}>
             {tipoMensaje !== 'text' && (
               <>
                 {tipoMensaje === 'image' && <ImageIcon className="w-3 h-3" />}
@@ -368,28 +439,10 @@ export const MessageBubble = memo(function MessageBubble({
                 {tipoMensaje === 'location' && <MapPin className="w-3 h-3" />}
               </>
             )}
-            <span className="text-[11px] font-medium">
+            <span className="text-[10px] font-medium tracking-wide">
               {format(createdAt, 'HH:mm')}
             </span>
           </div>
-          
-          {/* Triángulo decorativo (tail) solo en primer mensaje de serie */}
-          {!isConsecutive && (
-            <div className={`
-              absolute bottom-0 w-3 h-3
-              ${isAsistente 
-                ? '-left-1.5 text-slate-100 dark:text-slate-800/80' 
-                : '-right-1.5 text-blue-500'}
-            `}>
-              <svg viewBox="0 0 12 12" className="w-full h-full fill-current">
-                {isAsistente ? (
-                  <path d="M12 12 L0 12 L12 0 Z" />
-                ) : (
-                  <path d="M0 12 L12 12 L0 0 Z" />
-                )}
-              </svg>
-            </div>
-          )}
         </div>
       </div>
     </div>

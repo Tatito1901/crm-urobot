@@ -129,8 +129,8 @@ export function DashboardHeatmap({ monthsToShow = 6 }: DashboardHeatmapProps) {
       </div>
 
       {/* Heatmap Grid */}
-      <div className="overflow-x-auto pb-2">
-        <div className="min-w-[400px]">
+      <div className="overflow-x-auto pb-2 -mx-1 px-1">
+        <div className="inline-block min-w-0">
           {/* Headers de meses */}
           <div className="flex mb-1.5 text-[10px] text-muted-foreground relative h-4">
             {monthHeaders.map((header, idx) => (

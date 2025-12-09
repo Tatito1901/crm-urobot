@@ -33,8 +33,17 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export const DashboardEvolutionChart = memo(function DashboardEvolutionChart({ data }: { data: MonthlyData[] }) {
+  // Si no hay datos, mostrar estado vacío
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[280px] w-full flex items-center justify-center text-muted-foreground text-sm">
+        Sin datos de evolución disponibles
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[300px] w-full">
+    <div className="h-[280px] w-full overflow-hidden">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
@@ -51,22 +60,27 @@ export const DashboardEvolutionChart = memo(function DashboardEvolutionChart({ d
           <XAxis 
             dataKey="name" 
             stroke="#94a3b8" 
-            fontSize={12} 
+            fontSize={11} 
             tickLine={false} 
             axisLine={false} 
             tick={{ fill: '#64748b' }}
           />
           <YAxis 
             stroke="#94a3b8" 
-            fontSize={12} 
+            fontSize={10} 
             tickLine={false} 
             axisLine={false} 
             tick={{ fill: '#64748b' }}
+            width={35}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area type="monotone" dataKey="consultas" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorConsultas)" name="Consultas" />
-          <Area type="monotone" dataKey="pacientes" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPacientes)" name="Nuevos Pacientes" />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px', color: '#64748b' }} />
+          <Area type="monotone" dataKey="pacientes" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPacientes)" name="Pacientes" />
+          <Legend 
+            iconType="circle" 
+            iconSize={8}
+            wrapperStyle={{ fontSize: '10px', paddingTop: '8px', color: '#64748b' }} 
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>

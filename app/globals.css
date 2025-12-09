@@ -109,11 +109,25 @@
   font-family: var(--font-roboto), -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Utilidades de responsividad */
+/* Utilidades de responsividad - Safe Areas (iPhone notch, etc.) */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Breakpoint xs personalizado (480px) */
+@media (min-width: 480px) {
+  .xs\:inline { display: inline; }
+  .xs\:block { display: block; }
+  .xs\:hidden { display: none; }
+  .xs\:flex { display: flex; }
 }
 
 /* Mejoras de scroll en móviles */
@@ -339,4 +353,138 @@ html {
 /* Skeleton estático */
 .skeleton-pulse {
   opacity: 0.5;
+}
+
+/* ============================================
+   MEJORAS UX MÓVIL - FEEDBACK TÁCTIL
+   ============================================ */
+
+/* Haptic feedback visual para botones */
+@media (pointer: coarse) {
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled),
+  a:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease-out;
+  }
+  
+  /* Evitar transform en elementos con animaciones propias */
+  .no-scale-active:active {
+    transform: none !important;
+  }
+}
+
+/* Mejorar scroll en contenedores móviles */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+/* Bottom sheet animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out;
+}
+
+/* Mejorar contraste de focus en móvil */
+@media (pointer: coarse) {
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+/* Loading skeleton con shimmer sutil */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    var(--muted-foreground) 50%,
+    var(--muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  opacity: 0.1;
+}
+
+/* Prevenir doble tap zoom en iOS */
+* {
+  touch-action: manipulation;
+}
+
+/* Mejorar legibilidad en modo oscuro */
+.dark {
+  --text-opacity: 0.95;
+}
+
+/* Cards con mejor sombra para profundidad */
+.card-elevated {
+  box-shadow: 
+    0 1px 3px rgba(0,0,0,0.05),
+    0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dark .card-elevated {
+  box-shadow: 
+    0 1px 3px rgba(0,0,0,0.2),
+    0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Estado de carga en botones */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  border-right-color: transparent;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pull to refresh indicator area */
+.ptr-area {
+  height: env(safe-area-inset-top, 0);
+  min-height: 0;
+}
+
+/* Mejorar accesibilidad de links */
+a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

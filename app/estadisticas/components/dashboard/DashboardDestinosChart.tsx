@@ -29,33 +29,40 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { name
 };
 
 export const DashboardDestinosChart = memo(function DashboardDestinosChart({ data }: { data: ChartData[] }) {
+  // Si no hay datos, mostrar estado vacío
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[200px] w-full flex items-center justify-center text-muted-foreground text-sm">
+        Sin datos disponibles
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[220px] w-full flex items-center justify-center">
-      {data.length > 0 ? (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={50}
-              outerRadius={80}
-              paddingAngle={2}
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px', color: '#64748b' }} />
-          </PieChart>
-        </ResponsiveContainer>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-50">
-          <p className="text-xs">No hay datos disponibles</p>
-        </div>
-      )}
+    <div className="h-[200px] w-full overflow-hidden">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="45%"
+            innerRadius={35}
+            outerRadius={55}
+            paddingAngle={2}
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+          <Legend 
+            iconType="circle" 
+            iconSize={8}
+            wrapperStyle={{ fontSize: '10px', paddingTop: '5px', color: '#64748b' }} 
+          />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 });

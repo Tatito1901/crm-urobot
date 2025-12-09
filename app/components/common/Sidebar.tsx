@@ -142,41 +142,168 @@ export function Sidebar() {
   );
 }
 
+// Items principales para bottom nav (máximo 5 para UX óptima)
+const BOTTOM_NAV_ITEMS: readonly { label: string; href: string; icon: string }[] = [
+  { label: "Inicio", href: "/dashboard", icon: "🏠" },
+  { label: "Leads", href: "/leads", icon: "🎯" },
+  { label: "Chat", href: "/conversaciones", icon: "💬" },
+  { label: "Pacientes", href: "/pacientes", icon: "👥" },
+  { label: "Más", href: "#more", icon: "☰" }, // Abre menú con resto de opciones
+];
+
+// Items secundarios (accesibles desde "Más")
+const SECONDARY_NAV_ITEMS: readonly NavItem[] = [
+  { label: "Consultas", href: "/consultas" },
+  { label: "Confirmaciones", href: "/confirmaciones" },
+  { label: "Estadísticas", href: "/estadisticas" },
+  { label: "🤖 UroBot", href: "/urobot" },
+];
+
 export function BottomNav() {
   const pathname = usePathname();
+  const [showMore, setShowMore] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // ✅ Prevenir hydration mismatch - renderizar solo en cliente
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Cerrar menú al cambiar de ruta
+  useEffect(() => {
+    setShowMore(false);
+  }, [pathname]);
+
+  // Cerrar con Escape
+  useEffect(() => {
+    if (!showMore) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowMore(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [showMore]);
+
+  // Verificar si algún item secundario está activo
+  const isSecondaryActive = SECONDARY_NAV_ITEMS.some(
+    item => pathname === item.href || pathname?.startsWith(`${item.href}/`)
+  );
+
+  // ✅ Skeleton mientras no está montado para evitar hydration mismatch
+  if (!mounted) {
+    return (
+      <nav
+        aria-label="Navegación inferior"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg lg:hidden"
+      >
+        <div className="flex items-center justify-around px-1 py-1">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex flex-col items-center gap-1 px-3 py-2 min-h-[52px] min-w-[60px]">
+              <div className="w-5 h-5 rounded bg-muted animate-pulse" />
+              <div className="w-8 h-2 rounded bg-muted animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="h-[env(safe-area-inset-bottom)] bg-background/95" />
+      </nav>
+    );
+  }
+
   return (
-    <nav
-      aria-label="Navegación inferior"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/90 backdrop-blur-lg shadow-[0_-4px_16px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)] lg:hidden"
-    >
-      <div className="flex items-center justify-between gap-1 px-2 py-2 sm:px-3">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              prefetch={true}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                // ✅ Touch target optimizado: min 48px height
-                "flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2.5 min-h-[48px] justify-center text-center transition-all duration-200 active:scale-95 active:bg-muted/50",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-                isActive 
-                  ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white font-semibold shadow-sm dark:shadow-[0_0_12px_rgba(59,130,246,0.3)]" 
-                  : "text-muted-foreground active:text-foreground"
-              )}
-            >
-              <span className="text-[10px] sm:text-xs leading-tight truncate max-w-full text-center">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-      {/* ✅ Safe area para iPhones con notch */}
-      <div className="h-[env(safe-area-inset-bottom)] bg-background/90" />
-    </nav>
+    <>
+      {/* Menú expandido "Más" */}
+      {showMore && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div 
+            className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowMore(false)}
+          />
+          <div className="absolute bottom-[calc(64px+env(safe-area-inset-bottom))] left-2 right-2 z-50 
+                          bg-card border border-border rounded-2xl shadow-2xl p-2 
+                          animate-in slide-in-from-bottom-4 duration-200">
+            <div className="grid grid-cols-2 gap-1">
+              {SECONDARY_NAV_ITEMS.map((item) => {
+                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setShowMore(false)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
+                      "active:scale-95 active:bg-muted/50 min-h-[48px]",
+                      isActive
+                        ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <span>{item.label}</span>
+                    {isActive && <span className="ml-auto text-blue-500">•</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Navigation */}
+      <nav
+        aria-label="Navegación inferior"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg shadow-[0_-4px_16px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)] lg:hidden"
+      >
+        <div className="flex items-center justify-around px-1 py-1">
+          {BOTTOM_NAV_ITEMS.map((item) => {
+            const isMoreButton = item.href === "#more";
+            const isActive = isMoreButton 
+              ? (showMore || isSecondaryActive)
+              : (pathname === item.href || pathname?.startsWith(`${item.href}/`));
+            
+            if (isMoreButton) {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => setShowMore(!showMore)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
+                    "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400",
+                    isActive
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white"
+                      : "text-muted-foreground"
+                  )}
+                  aria-expanded={showMore}
+                  aria-label="Más opciones"
+                >
+                  <span className="text-lg leading-none">{showMore ? "✕" : item.icon}</span>
+                  <span className="text-[10px] font-medium">{showMore ? "Cerrar" : item.label}</span>
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                prefetch={true}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
+                  "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400",
+                  isActive 
+                    ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white font-semibold" 
+                    : "text-muted-foreground"
+                )}
+              >
+                <span className="text-lg leading-none">{item.icon}</span>
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+        {/* ✅ Safe area para iPhones con notch */}
+        <div className="h-[env(safe-area-inset-bottom)] bg-background/95" />
+      </nav>
+    </>
   );
 }
 

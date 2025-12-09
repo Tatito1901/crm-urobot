@@ -32,16 +32,25 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return null;
 };
 
-export const DashboardFunnelChart = memo(function DashboardFunnelChart({ data, height = 300, barSize = 24 }: { data: ChartData[], height?: number, barSize?: number }) {
+export const DashboardFunnelChart = memo(function DashboardFunnelChart({ data, height = 280, barSize = 20 }: { data: ChartData[], height?: number, barSize?: number }) {
+  // Si no hay datos, mostrar estado vacío
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[280px] w-full flex items-center justify-center text-muted-foreground text-sm">
+        Sin datos de embudo disponibles
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full" style={{ height: `${height}px` }}>
+    <div className="w-full overflow-hidden" style={{ height: `${height}px` }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.2} horizontal={false} />
           <XAxis 
             type="number" 
             stroke="#94a3b8" 
-            fontSize={12} 
+            fontSize={10} 
             tickLine={false} 
             axisLine={false} 
             tick={{ fill: '#64748b' }}
@@ -50,10 +59,10 @@ export const DashboardFunnelChart = memo(function DashboardFunnelChart({ data, h
             dataKey="name" 
             type="category" 
             stroke="#94a3b8" 
-            fontSize={11} 
+            fontSize={10} 
             tickLine={false} 
             axisLine={false} 
-            width={80} 
+            width={70} 
             tick={{ fill: '#64748b' }}
           />
           <Tooltip 

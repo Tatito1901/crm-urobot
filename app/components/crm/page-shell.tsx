@@ -34,10 +34,10 @@ export function PageShell({
   className,
 }: PageShellProps) {
   const layoutClasses = compact
-    ? "relative flex w-full flex-col gap-3 px-4 py-3 pt-4 sm:gap-3 sm:px-8 sm:py-4 md:gap-3 lg:px-12 lg:py-4 xl:px-16"
+    ? "relative flex w-full flex-col gap-3 px-3 py-3 pt-4 sm:gap-3 sm:px-6 sm:py-4 md:gap-3 lg:px-8 lg:py-4 xl:px-10"
     : cn(
-        "relative mx-auto flex w-full flex-col gap-4 px-4 pb-20 pt-4 sm:gap-8 sm:px-8 sm:pb-24 sm:pt-10 md:gap-10 lg:px-12 lg:pt-12 lg:pb-20 xl:px-16",
-        fullWidth ? "max-w-[1600px]" : "max-w-6xl"
+        "relative mx-auto flex w-full flex-col gap-4 px-3 pb-20 pt-4 sm:gap-6 sm:px-6 sm:pb-24 sm:pt-8 md:gap-8 lg:px-8 lg:pt-10 lg:pb-20 xl:px-10",
+        fullWidth ? "max-w-full" : "max-w-6xl"
       );
 
   const headerClasses = cn(

@@ -25,15 +25,15 @@ export function AppShell({ children }: PropsWithChildren) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background transition-colors duration-300">
+    <div className="flex min-h-screen w-full bg-background transition-colors duration-300 overflow-hidden">
       <Suspense fallback={null}>
         <MobileSidebar />
       </Suspense>
-      <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80" />}>
+      <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80 shrink-0" />}>
         <Sidebar />
       </Suspense>
-      <div className="flex min-h-screen flex-1 flex-col lg:pl-0">
-        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
+      <div className="flex min-h-screen flex-1 flex-col min-w-0 overflow-hidden">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto pb-16 lg:pb-0">{children}</main>
         <Suspense fallback={<div className="h-16 lg:hidden" />}>
           <BottomNav />
         </Suspense>

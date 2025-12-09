@@ -14,9 +14,10 @@ interface LeadsTableProps {
   leads: Lead[];
   emptyMessage: string;
   loading?: boolean;
+  onRefresh?: () => void;
 }
 
-export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }: LeadsTableProps) {
+export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, onRefresh }: LeadsTableProps) {
   // Configuración de columnas
   const headers = [
     { key: 'nombre', label: <TableHeaders.Persona /> },
@@ -97,9 +98,9 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
           </div>
         </WrapTooltip>
       ),
-      accion: <LeadActionMenu lead={lead} />,
+      accion: <LeadActionMenu lead={lead} onRefresh={onRefresh} />,
     };
-  }), [leads]);
+  }), [leads, onRefresh]);
 
   return (
     <DataTable

@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { UserCheck, Calendar, CheckCheck } from 'lucide-react';
+import { UserCheck, Calendar, Bot, Clock, Zap } from 'lucide-react';
 
 interface ConversationItemProps {
   telefono: string;
@@ -73,88 +73,121 @@ export const ConversationItem = memo(function ConversationItem({
   const colorIndex = telefono.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length;
   const avatarGradient = avatarColors[colorIndex];
 
+  // Verificar si es reciente (últimas 2 horas)
+  const esReciente = () => {
+    const fecha = typeof ultimaFecha === 'string' ? new Date(ultimaFecha) : ultimaFecha;
+    const hace2h = Date.now() - 2 * 60 * 60 * 1000;
+    return fecha.getTime() > hace2h;
+  };
+  
+  // Verificar si necesita atención (lead nuevo o interesado sin cita)
+  const necesitaAtencion = tipoContacto === 'lead' && 
+    (estadoLead === 'Nuevo' || estadoLead === 'Interesado') && 
+    citasValidas === 0;
+
+  // Limpiar preview del mensaje (quitar formato markdown)
+  const cleanPreview = (text: string) => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/\n/g, ' ')
+      .trim();
+  };
+
   return (
     <button
       onClick={() => onSelect(telefono)}
       className={`
-        w-full px-3 py-2.5 flex items-center gap-3 text-left transition-all duration-150 rounded-xl
+        group w-full px-3 py-3.5 sm:py-3 flex items-center gap-3 text-left transition-all duration-200
+        active:bg-slate-100 dark:active:bg-slate-800
         ${isActive 
-          ? 'bg-blue-500/10 dark:bg-blue-500/20' 
-          : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 active:bg-slate-200 dark:active:bg-slate-700/60'}
+          ? 'bg-blue-50 dark:bg-blue-950/40 border-l-2 border-blue-500' 
+          : 'hover:bg-slate-50 dark:hover:bg-slate-800/40 border-l-2 border-transparent'}
       `}
     >
-      {/* Avatar con indicador de tipo */}
+      {/* Avatar minimalista */}
       <div className="relative shrink-0">
         <div className={`
-          w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm
-          bg-gradient-to-br ${avatarGradient}
+          w-12 h-12 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-medium text-sm
+          ${isActive 
+            ? 'bg-blue-500 text-white' 
+            : `bg-gradient-to-br ${avatarGradient} text-white`}
+          transition-all duration-200 shadow-sm
         `}>
           {getInitials(nombreContacto, telefono)}
         </div>
         
-        {/* Indicador de tipo (esquina inferior derecha) */}
+        {/* Indicador de tipo - más sutil */}
         {tipoContacto === 'paciente' && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center">
-            <UserCheck className="w-3 h-3 text-white" />
+          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm">
+            <UserCheck className="w-2.5 h-2.5 text-white" />
           </div>
         )}
         {citasValidas > 0 && tipoContacto !== 'paciente' && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-blue-500 border-2 border-white dark:border-slate-900 flex items-center justify-center">
-            <Calendar className="w-3 h-3 text-white" />
+          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue-500 border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm">
+            <Calendar className="w-2.5 h-2.5 text-white" />
           </div>
         )}
       </div>
       
-      {/* Info */}
-      <div className="flex-1 min-w-0 overflow-hidden">
-        {/* Row 1: Nombre + Tiempo */}
+      {/* Info - diseño más limpio */}
+      <div className="flex-1 min-w-0">
+        {/* Row 1: Nombre + Tiempo + Indicadores */}
         <div className="flex items-center justify-between gap-2">
-          <span className={`font-semibold text-[15px] truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-slate-100'}`}>
-            {nombreContacto || telefono}
-          </span>
-          <span className="text-[11px] text-slate-400 dark:text-slate-500 shrink-0 tabular-nums" suppressHydrationWarning>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className={`font-medium text-sm truncate transition-colors ${
+              isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-100'
+            }`}>
+              {nombreContacto || telefono}
+            </span>
+            {/* Indicador de reciente */}
+            {esReciente() && !isActive && (
+              <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            )}
+            {/* Indicador de atención */}
+            {necesitaAtencion && !isActive && (
+              <span className="shrink-0" title="Requiere seguimiento">
+                <Zap className="w-3 h-3 text-amber-500" />
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 shrink-0 tabular-nums font-medium" suppressHydrationWarning>
             {formatTimeCompact(ultimaFecha)}
           </span>
         </div>
         
-        {/* Row 2: Preview del mensaje con estado */}
-        <div className="flex items-center gap-1.5 mt-0.5">
-          {/* Icono de leído (simulado - siempre doble check) */}
-          <CheckCheck className="w-4 h-4 text-blue-500 shrink-0" />
-          <p className="text-[13px] truncate text-slate-500 dark:text-slate-400">
-            {ultimoMensaje}
+        {/* Row 2: Preview del mensaje - más elegante */}
+        <div className="flex items-center gap-1.5 mt-1">
+          <Bot className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:block" />
+          <p className="text-[13px] sm:text-[13px] truncate text-slate-500 dark:text-slate-400 leading-snug">
+            {cleanPreview(ultimoMensaje)}
           </p>
         </div>
         
-        {/* Row 3: Tags compactos */}
-        <div className="flex items-center gap-1.5 mt-1.5">
-          {/* Badge del estado lead */}
-          {estadoLead && tipoContacto !== 'paciente' && (
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-              estadoLead === 'Convertido' 
-                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' 
-                : estadoLead === 'Interesado' 
-                  ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
-                  : estadoLead === 'Contactado'
-                    ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400'
-                    : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-            }`}>
-              {estadoLead}
-            </span>
-          )}
-          
-          {/* Citas badge */}
-          {citasValidas > 0 && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-              {citasValidas} cita{citasValidas !== 1 ? 's' : ''}
-            </span>
-          )}
-          
-          {/* Contador mensajes (sutil) */}
-          <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">
-            {totalMensajes} msgs
-          </span>
-        </div>
+        {/* Row 3: Tags - más minimalistas */}
+        {(estadoLead || citasValidas > 0) && (
+          <div className="flex items-center gap-1.5 mt-2">
+            {estadoLead && tipoContacto !== 'paciente' && (
+              <span className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                estadoLead === 'Convertido' 
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                  : estadoLead === 'Interesado' 
+                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                    : estadoLead === 'Contactado'
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+              }`}>
+                {estadoLead}
+              </span>
+            )}
+            
+            {citasValidas > 0 && (
+              <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                {citasValidas} cita{citasValidas !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </button>
   );

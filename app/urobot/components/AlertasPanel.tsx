@@ -40,12 +40,12 @@ function AlertaCard({ alerta, onRevisar }: { alerta: Alerta; onRevisar: (id: str
       className={`p-3 rounded-lg border flex items-start justify-between gap-3 transition-colors hover:opacity-90 ${colors.border} ${colors.bg}`}
     >
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1 flex-wrap">
+        <div className="flex items-center gap-2 mb-1 flex-wrap min-w-0">
           <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${colors.text}`} />
-          <span className={`text-[10px] sm:text-xs font-semibold uppercase ${colors.text}`}>
+          <span className={`text-[10px] sm:text-xs font-semibold uppercase shrink-0 ${colors.text}`}>
             {alerta.severidad}
           </span>
-          <span className="text-[10px] sm:text-xs text-muted-foreground">
+          <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
             {new Date(alerta.created_at).toLocaleString('es-MX', {
               day: 'numeric',
               month: 'short',
@@ -54,12 +54,12 @@ function AlertaCard({ alerta, onRevisar }: { alerta: Alerta; onRevisar: (id: str
             })}
           </span>
         </div>
-        <p className="text-sm text-foreground font-medium">{alerta.tipo_alerta}</p>
+        <p className="text-sm text-foreground font-medium truncate">{alerta.tipo_alerta}</p>
         {alerta.mensaje && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{alerta.mensaje}</p>
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-2 break-words">{alerta.mensaje}</p>
         )}
         {alerta.telefono && (
-          <p className="text-xs text-muted-foreground font-mono mt-1">{alerta.telefono}</p>
+          <p className="text-xs text-muted-foreground font-mono mt-1 truncate">{alerta.telefono}</p>
         )}
       </div>
       <button

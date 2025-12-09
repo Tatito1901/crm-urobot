@@ -71,37 +71,52 @@ const DashboardHourlyPatterns = dynamic(() => import('./components/dashboard/Das
   ssr: false
 });
 
-// Componente para tarjeta KPI pequeña
+// Componente para tarjeta KPI pequeña - Con manejo de overflow
 function KpiCard({ 
   title, 
   value, 
   subtext, 
   icon: Icon, 
-  trend 
+  trend,
+  tooltip
 }: { 
   title: string; 
   value: string | number; 
   subtext: string; 
   icon: ElementType; 
-  trend?: string 
+  trend?: string;
+  tooltip?: string;
 }) {
+  // Formatear números grandes
+  const formatValue = (val: string | number) => {
+    if (typeof val === 'number') {
+      if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+      if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
+      return val.toLocaleString('es-MX');
+    }
+    return val;
+  };
+
   return (
-    <div className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all">
+    <div 
+      className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[140px]"
+      title={tooltip}
+    >
       <div className="flex justify-between items-start mb-3">
-        <div className="p-2.5 bg-primary/10 text-primary border border-primary/20 rounded-lg">
-          <Icon className="w-5 h-5" />
+        <div className="p-2 sm:p-2.5 bg-primary/10 text-primary border border-primary/20 rounded-lg shrink-0">
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
         {trend && (
-          <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
+          <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border border-emerald-500/20 shrink-0">
             <ArrowUpRight className="w-3 h-3" />
-            {trend}
+            <span className="hidden sm:inline">{trend}</span>
           </div>
         )}
       </div>
-      <div>
-        <h3 className="text-muted-foreground text-[11px] font-bold uppercase tracking-widest mb-1">{title}</h3>
-        <div className="text-3xl font-bold text-foreground mb-1 tracking-tight">{value}</div>
-        <p className="text-xs font-medium text-muted-foreground">{subtext}</p>
+      <div className="min-w-0">
+        <h3 className="text-muted-foreground text-[10px] sm:text-[11px] font-bold uppercase tracking-wider sm:tracking-widest mb-1 truncate">{title}</h3>
+        <div className="text-2xl sm:text-3xl font-bold text-foreground mb-1 tracking-tight truncate">{formatValue(value)}</div>
+        <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">{subtext}</p>
       </div>
     </div>
   );
@@ -148,40 +163,44 @@ export default function EstadisticasPage() {
       description="Visión estratégica del rendimiento operativo, comercial y de marketing."
     >
       {/* KPIs Principales */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <KpiCard
-          title="Pacientes Activos"
+          title="Pacientes"
           value={kpi.totalPacientes}
-          subtext={`+${kpi.pacientesNuevosMes} nuevos este mes`}
+          subtext={`+${kpi.pacientesNuevosMes} este mes`}
           icon={Users}
           trend={kpi.pacientesNuevosMes > 0 ? "Creciendo" : undefined}
+          tooltip="Total de pacientes registrados en el sistema"
         />
         <KpiCard
-          title="Consultas (Mes)"
+          title="Consultas"
           value={kpi.consultasMes}
           subtext={`${kpi.consultasConfirmadasMes} confirmadas`}
           icon={Calendar}
+          tooltip="Consultas programadas este mes"
         />
         <KpiCard
-          title="Tasa Conversión"
+          title="Conversión"
           value={`${kpi.tasaConversion}%`}
-          subtext="Leads a Pacientes"
+          subtext="Leads → Pacientes"
           icon={Target}
-          trend="+2.4%"
+          trend={kpi.tasaConversion > 5 ? `${kpi.tasaConversion}%` : undefined}
+          tooltip="Porcentaje de leads que se convierten en pacientes"
         />
         <KpiCard
-          title="Mensajería Total"
-          value={metricasMensajeria.reduce((acc, curr) => acc + (typeof curr.value === 'number' ? curr.value : 0), 0)}
-          subtext="Interacciones Lead/Bot"
+          title="Leads"
+          value={kpi.totalLeads}
+          subtext={`${kpi.leadsNuevosMes} nuevos`}
           icon={MessageSquare}
+          tooltip="Total de leads en el sistema"
         />
       </section>
 
       {/* Gráficos Principales - Fila 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 sm:mb-6">
         
         {/* Evolución Mensual */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-blue-500" />
@@ -195,7 +214,7 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Funnel de Leads Mejorado */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
               <Target className="w-4 h-4 text-indigo-500" />
@@ -210,10 +229,10 @@ export default function EstadisticasPage() {
 
       </div>
 
-      {/* Análisis de Ocupación y Predicciones - NUEVO */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      {/* Análisis de Ocupación y Predicciones */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4 sm:mb-6">
         {/* Heatmap de Ocupación */}
-        <Card className={`${cards.base} lg:col-span-2`}>
+        <Card className={`${cards.base} xl:col-span-2 min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-500" />
@@ -227,7 +246,7 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Análisis Predictivo */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-indigo-500" />
@@ -242,16 +261,16 @@ export default function EstadisticasPage() {
       </div>
 
       {/* Gráficos Secundarios - Fila 2 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
         {/* Marketing: Fuentes */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-pink-500" />
-              Canales de Captación
+            <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-pink-500 shrink-0" />
+              <span className="truncate">Canales</span>
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">Origen de los leads</CardDescription>
+            <CardDescription className="text-[11px] text-muted-foreground truncate">Origen de leads</CardDescription>
           </CardHeader>
           <CardContent>
             <SourcesChart data={fuentesCaptacion} />
@@ -259,13 +278,13 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Operativo: Estado Citas */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-500" />
-              Estado de Citas
+            <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span className="truncate">Citas</span>
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">Desglose operativo actual</CardDescription>
+            <CardDescription className="text-[11px] text-muted-foreground truncate">Estado actual</CardDescription>
           </CardHeader>
           <CardContent>
             <StatusChart data={estadoCitas} />
@@ -273,13 +292,13 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Sedes */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-              <PieChartIcon className="w-4 h-4 text-purple-500" />
-              Por Sede
+            <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <PieChartIcon className="w-4 h-4 text-purple-500 shrink-0" />
+              <span className="truncate">Sedes</span>
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">Distribución geográfica</CardDescription>
+            <CardDescription className="text-[11px] text-muted-foreground truncate">Distribución</CardDescription>
           </CardHeader>
           <CardContent>
             <SedesChart data={consultasPorSede} />
@@ -287,13 +306,13 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Destinos */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-              <Target className="w-4 h-4 text-amber-500" />
-              Destinos de Pacientes
+            <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Target className="w-4 h-4 text-amber-500 shrink-0" />
+              <span className="truncate">Destinos</span>
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">Resolución de casos</CardDescription>
+            <CardDescription className="text-[11px] text-muted-foreground truncate">Resolución</CardDescription>
           </CardHeader>
           <CardContent>
             <DestinosChart data={destinosPacientes} />
@@ -302,9 +321,9 @@ export default function EstadisticasPage() {
 
       </div>
 
-      {/* Patrones de Horarios - NUEVO */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <Card className={cards.base}>
+      {/* Patrones y Métricas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4 sm:mt-6">
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
               <Clock className="w-4 h-4 text-cyan-500" />
@@ -318,7 +337,7 @@ export default function EstadisticasPage() {
         </Card>
 
         {/* Métricas de Asistencia */}
-        <Card className={cards.base}>
+        <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
               <Activity className="w-4 h-4 text-green-500" />

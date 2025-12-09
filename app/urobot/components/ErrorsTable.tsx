@@ -65,12 +65,12 @@ export const ErrorsTable = React.memo(function ErrorsTable({ errors }: ErrorsTab
 
       {/* Desktop View - Table */}
       <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-fixed">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Hora</th>
-              <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Teléfono</th>
-              <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Tipo</th>
+              <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs w-20">Hora</th>
+              <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs w-28">Teléfono</th>
+              <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs w-32">Tipo</th>
               <th className="text-left py-2 px-3 text-muted-foreground font-medium text-xs">Detalle</th>
             </tr>
           </thead>
@@ -80,11 +80,15 @@ export const ErrorsTable = React.memo(function ErrorsTable({ errors }: ErrorsTab
                 <td className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap">
                   {new Date(err.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                 </td>
-                <td className="py-2 px-3 font-mono text-xs">{err.telefono}</td>
-                <td className="py-2 px-3">
-                  <ErrorBadge type={err.tipo_error} />
+                <td className="py-2 px-3 font-mono text-xs truncate">
+                  {err.telefono}
                 </td>
-                <td className="py-2 px-3 text-xs text-muted-foreground max-w-[200px] truncate">
+                <td className="py-2 px-3">
+                  <div className="truncate">
+                    <ErrorBadge type={err.tipo_error} />
+                  </div>
+                </td>
+                <td className="py-2 px-3 text-xs text-muted-foreground truncate">
                   {err.detalle_error || err.razones_fallo?.join(', ') || '-'}
                 </td>
               </tr>

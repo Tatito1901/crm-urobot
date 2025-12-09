@@ -39,10 +39,11 @@ export function FunnelGuide() {
 
   return (
     <div className="mb-4">
-      {/* Toggle button */}
+      {/* Toggle button - más grande para touch */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground 
+                   transition-colors py-2 px-1 -mx-1 rounded-lg active:bg-muted/50"
       >
         <Info className="w-4 h-4" />
         <span>¿Cómo funciona el embudo de ventas?</span>
@@ -65,12 +66,13 @@ export function FunnelGuide() {
             </p>
           </div>
 
-          {/* Diagrama visual del embudo */}
-          <div className="flex items-center justify-center gap-1 flex-wrap py-2">
+          {/* Diagrama visual del embudo - scroll horizontal en móvil */}
+          <div className="flex items-center gap-1 py-2 overflow-x-auto scrollbar-hide 
+                          md:justify-center md:flex-wrap -mx-4 px-4 md:mx-0 md:px-0">
             {ETAPAS_FUNNEL.slice(0, 5).map((etapa, idx) => (
               <React.Fragment key={etapa.estado}>
                 <div 
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium border
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border whitespace-nowrap shrink-0
                              ${etapa.color === 'blue' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30' : ''}
                              ${etapa.color === 'amber' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30' : ''}
                              ${etapa.color === 'purple' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/30' : ''}
@@ -79,7 +81,7 @@ export function FunnelGuide() {
                   <span className="mr-1">{etapa.icon}</span>
                   {etapa.nombre}
                 </div>
-                {idx < 4 && <ArrowRight className="w-4 h-4 text-muted-foreground" />}
+                {idx < 4 && <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />}
               </React.Fragment>
             ))}
           </div>
@@ -95,10 +97,11 @@ export function FunnelGuide() {
                 key={etapa.estado}
                 className="border border-border rounded-md overflow-hidden"
               >
-                {/* Header de etapa */}
+                {/* Header de etapa - touch optimizado */}
                 <button
                   onClick={() => setExpandedEtapa(expandedEtapa === etapa.estado ? null : etapa.estado)}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 p-3 md:p-3 py-4 hover:bg-muted/50 
+                             transition-colors text-left active:bg-muted/70 min-h-[56px]"
                 >
                   <span className="text-lg">{etapa.icon}</span>
                   <div className="flex-1 min-w-0">
@@ -168,7 +171,8 @@ export function FunnelGuide() {
                                     plantilla.id
                                   )}
                                   className="text-xs text-muted-foreground hover:text-foreground 
-                                             flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                             flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 
+                                             transition-opacity p-1 -m-1 rounded active:bg-muted"
                                 >
                                   {copiedId === plantilla.id ? (
                                     <>

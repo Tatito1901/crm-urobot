@@ -91,9 +91,10 @@ export const layouts = {
 // ==================== CARDS ====================
 // Variantes de Card (base viene de shadcn, estas son extensiones)
 export const cards = {
-  base: '', // Usar <Card> de shadcn directamente
-  interactive: 'cursor-pointer hover:border-ring/50 hover:bg-accent/30 active:scale-[0.98] transition-all',
-  mobileCard: 'min-h-[80px] flex flex-col justify-center',
+  base: 'overflow-hidden', // Previene desbordamiento de contenido
+  interactive: 'cursor-pointer hover:border-ring/50 hover:bg-accent/30 active:scale-[0.98] transition-all overflow-hidden',
+  mobileCard: 'min-h-[80px] flex flex-col justify-center overflow-hidden',
+  chart: 'overflow-hidden min-w-0', // Para cards con gráficos
 };
 
 // ==================== INPUTS ====================

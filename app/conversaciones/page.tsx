@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useConversaciones } from '@/hooks/useConversaciones'
-import { MessageCircle, Search, ArrowLeft, RefreshCw, ExternalLink, MessageSquare, MoreVertical, Calendar } from 'lucide-react'
+import { MessageCircle, Search, ArrowLeft, RefreshCw, ExternalLink, MessageSquare, Sparkles, Phone, Filter, Users, UserCheck } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ConversationItem } from './components/ConversationItem'
 import { MessageBubble } from './components/MessageBubble'
+import { ConversationActionsPanel } from './components/ConversationActionsPanel'
 
 export default function ConversacionesPage() {
   const searchParams = useSearchParams()
@@ -40,17 +41,46 @@ export default function ConversacionesPage() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [isMobileViewingChat, setIsMobileViewingChat] = useState(false)
+  const [showActionsPanel, setShowActionsPanel] = useState(false)
+  const [filtroActivo, setFiltroActivo] = useState<'todos' | 'leads' | 'pacientes' | 'recientes'>('todos')
   const chatContainerRef = useRef<HTMLDivElement>(null)
 
-  // Filtrar conversaciones por búsqueda (Memoizado)
-  const filteredConversaciones = useMemo(() => 
-    conversaciones.filter(conv => {
-      const query = searchQuery.toLowerCase()
-      return (
+  // Filtrar conversaciones por búsqueda y filtro activo (Memoizado)
+  const filteredConversaciones = useMemo(() => {
+    let resultado = conversaciones;
+    
+    // Filtro por tipo
+    if (filtroActivo === 'leads') {
+      resultado = resultado.filter(c => c.tipoContacto === 'lead');
+    } else if (filtroActivo === 'pacientes') {
+      resultado = resultado.filter(c => c.tipoContacto === 'paciente');
+    } else if (filtroActivo === 'recientes') {
+      const hace24h = Date.now() - 24 * 60 * 60 * 1000;
+      resultado = resultado.filter(c => new Date(c.ultimaFecha).getTime() > hace24h);
+    }
+    
+    // Filtro por búsqueda
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      resultado = resultado.filter(conv => 
         conv.telefono.includes(query) ||
         (conv.nombreContacto?.toLowerCase().includes(query) ?? false)
-      )
-    }), [conversaciones, searchQuery])
+      );
+    }
+    
+    return resultado;
+  }, [conversaciones, searchQuery, filtroActivo]);
+
+  // Contar por tipo para los filtros
+  const conteosPorTipo = useMemo(() => ({
+    todos: conversaciones.length,
+    leads: conversaciones.filter(c => c.tipoContacto === 'lead').length,
+    pacientes: conversaciones.filter(c => c.tipoContacto === 'paciente').length,
+    recientes: conversaciones.filter(c => {
+      const hace24h = Date.now() - 24 * 60 * 60 * 1000;
+      return new Date(c.ultimaFecha).getTime() > hace24h;
+    }).length,
+  }), [conversaciones])
 
   // Seleccionar conversación
   const handleSelectConversation = (telefono: string) => {
@@ -108,16 +138,16 @@ export default function ConversacionesPage() {
     <div className="h-[calc(100dvh-4rem)] lg:h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-hidden">
       {/* Header Mobile (Solo visible si NO estamos viendo chat) */}
       {!isMobileViewingChat && (
-        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between">
+        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between safe-area-top">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-white" />
-            </div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">Mensajes</h1>
+            <h1 className="text-lg font-semibold text-foreground">Mensajes</h1>
+            <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+              {mounted ? conversaciones.length : 0}
+            </span>
           </div>
           <button 
             onClick={() => refetch()} 
-            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <RefreshCw className={`w-4 h-4 text-slate-600 dark:text-slate-400 ${mounted && isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -135,39 +165,62 @@ export default function ConversacionesPage() {
           transition-transform duration-300 ease-in-out
           ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
         `}>
-          {/* Header Desktop del Sidebar */}
-          <div className="hidden sm:flex items-center justify-between px-5 py-4 border-b border-slate-200/50 dark:border-slate-800/50">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <MessageSquare className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="font-bold text-foreground">Conversaciones</h2>
-                <p className="text-[11px] text-muted-foreground">{mounted ? conversaciones.length : 0} contactos</p>
-              </div>
+          {/* Header Desktop del Sidebar - Más minimalista */}
+          <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-slate-200/50 dark:border-slate-800/50">
+            <div>
+              <h2 className="font-semibold text-slate-800 dark:text-slate-100 text-lg">Mensajes</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{mounted ? conversaciones.length : 0} conversaciones</p>
             </div>
             <button 
               onClick={() => refetch()} 
               title="Actualizar" 
-              className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <RefreshCw className={`w-4 h-4 text-slate-500 ${mounted && isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-slate-400 ${mounted && isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
-          {/* Buscador */}
-          <div className="p-4 border-b border-slate-200/50 dark:border-slate-800/50 shrink-0">
-            <div className="relative group">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          {/* Buscador y Filtros */}
+          <div className="px-3 py-2 space-y-2 shrink-0">
+            {/* Buscador */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Buscar por nombre o teléfono..."
+                placeholder="Buscar contacto..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-100/80 dark:bg-slate-800/50 border border-transparent rounded-xl
-                         focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/10
-                         placeholder:text-slate-400 transition-all duration-200"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-slate-100 dark:bg-slate-800/60 rounded-lg
+                         focus:outline-none focus:ring-2 focus:ring-blue-500/20
+                         placeholder:text-slate-400 transition-all"
               />
+            </div>
+            
+            {/* Filtros rápidos - Pills */}
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {([
+                { id: 'todos', label: 'Todos', icon: <MessageSquare className="w-3 h-3" /> },
+                { id: 'recientes', label: '24h', icon: <RefreshCw className="w-3 h-3" /> },
+                { id: 'leads', label: 'Leads', icon: <Users className="w-3 h-3" /> },
+                { id: 'pacientes', label: 'Pacientes', icon: <UserCheck className="w-3 h-3" /> },
+              ] as const).map(({ id, label, icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setFiltroActivo(id)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
+                    ${filtroActivo === id 
+                      ? 'bg-blue-500 text-white shadow-sm' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                >
+                  {icon}
+                  <span>{label}</span>
+                  {conteosPorTipo[id] > 0 && (
+                    <span className={`ml-0.5 text-[10px] ${filtroActivo === id ? 'text-white/80' : 'text-slate-400'}`}>
+                      {conteosPorTipo[id]}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -202,10 +255,26 @@ export default function ConversacionesPage() {
             ) : filteredConversaciones.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-muted-foreground px-6">
                 <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                  <MessageCircle className="w-8 h-8 text-slate-400" />
+                  {filtroActivo === 'leads' ? <Users className="w-8 h-8 text-slate-400" /> :
+                   filtroActivo === 'pacientes' ? <UserCheck className="w-8 h-8 text-slate-400" /> :
+                   <MessageCircle className="w-8 h-8 text-slate-400" />}
                 </div>
-                <p className="text-sm font-semibold text-foreground">Sin conversaciones</p>
-                {searchQuery && <p className="text-xs mt-2 text-center">No hay resultados para &quot;{searchQuery}&quot;</p>}
+                <p className="text-sm font-semibold text-foreground">
+                  {searchQuery ? 'Sin resultados' : 
+                   filtroActivo === 'leads' ? 'Sin leads' :
+                   filtroActivo === 'pacientes' ? 'Sin pacientes' :
+                   filtroActivo === 'recientes' ? 'Sin actividad reciente' :
+                   'Sin conversaciones'}
+                </p>
+                <p className="text-xs mt-2 text-center text-slate-400">
+                  {searchQuery ? `No hay resultados para "${searchQuery}"` :
+                   filtroActivo === 'recientes' ? 'No hay mensajes en las últimas 24h' :
+                   filtroActivo !== 'todos' ? (
+                     <button onClick={() => setFiltroActivo('todos')} className="text-blue-500 hover:underline">
+                       Ver todas las conversaciones
+                     </button>
+                   ) : 'Las conversaciones aparecerán aquí'}
+                </p>
               </div>
             ) : (
               <div className="p-2">
@@ -240,10 +309,10 @@ export default function ConversacionesPage() {
           {telefonoActivo && contactoActivo ? (
             <>
               {/* Header del chat - Estilo WhatsApp */}
-              <header className="shrink-0 h-16 px-2 sm:px-4 flex items-center gap-3 border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl z-10">
+              <header className="shrink-0 min-h-[60px] sm:min-h-[64px] px-2 sm:px-4 flex items-center gap-2 sm:gap-3 border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl z-10 safe-area-top">
                 <button
                   onClick={() => setIsMobileViewingChat(false)}
-                  className="sm:hidden p-1.5 -ml-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
+                  className="sm:hidden p-2 -ml-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                 </button>
@@ -262,43 +331,50 @@ export default function ConversacionesPage() {
                 
                 {/* Info contacto */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground text-[15px] truncate leading-tight">
-                    {contactoActivo.nombreContacto || contactoActivo.telefono}
+                  <h3 className="font-semibold text-foreground text-sm sm:text-[15px] truncate leading-tight">
+                    {contactoActivo.nombreContacto || 'Sin nombre'}
                   </h3>
-                  <p className="text-[12px] text-slate-500 dark:text-slate-400 truncate">
-                    {contactoActivo.tipoContacto === 'paciente' ? '✓ Paciente' : contactoActivo.estadoLead || 'Contacto'} • {contactoActivo.totalMensajes} mensajes
-                  </p>
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-slate-500 dark:text-slate-400">
+                    <span className="font-mono truncate">{contactoActivo.telefono}</span>
+                    <span className="hidden xs:inline">•</span>
+                    <span className="hidden xs:inline truncate">{contactoActivo.tipoContacto === 'paciente' ? '✓ Paciente' : contactoActivo.estadoLead || 'Contacto'}</span>
+                  </div>
                 </div>
 
                 {/* Actions - Estilo iconos limpios */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 sm:gap-1">
                   <button
                     onClick={() => openWhatsApp(contactoActivo.telefono)}
-                    className="p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
+                    className="p-2 sm:p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
                     title="Abrir en WhatsApp"
                   >
                     <MessageCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
                   </button>
                   <button
                     onClick={() => viewProfile(contactoActivo)}
-                    className="p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
+                    className="hidden sm:flex p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] items-center justify-center"
                     title="Ver perfil"
                   >
                     <ExternalLink className="w-5 h-5 text-slate-500" />
                   </button>
+                  {/* Botón de acciones de lead */}
                   <button
-                    className="p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
-                    title="Más opciones"
+                    onClick={() => setShowActionsPanel(!showActionsPanel)}
+                    className={`p-2 sm:p-2.5 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center
+                      ${showActionsPanel 
+                        ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' 
+                        : 'hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500'}`}
+                    title={showActionsPanel ? 'Cerrar acciones' : 'Acciones de lead'}
                   >
-                    <MoreVertical className="w-5 h-5 text-slate-500" />
+                    <Sparkles className="w-5 h-5" />
                   </button>
                 </div>
               </header>
 
-              {/* Lista de Mensajes - Fondo con patrón sutil */}
+              {/* Lista de Mensajes - Fondo limpio */}
               <div 
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 scroll-smooth bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2YxZjVmOSIvPgo8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxIiBmaWxsPSIjZTJlOGYwIi8+Cjwvc3ZnPg==')] dark:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CjxyZWN0IHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzBmMTcyYSIvPgo8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxIiBmaWxsPSIjMWUyOTNiIi8+Cjwvc3ZnPg==')]"
+                className="flex-1 overflow-y-auto px-2 sm:px-6 py-3 sm:py-4 scroll-smooth bg-slate-50/50 dark:bg-slate-950/50 overscroll-contain"
               >
                 {isLoadingMensajes ? (
                   <div className="flex items-center justify-center h-full">
@@ -321,18 +397,15 @@ export default function ConversacionesPage() {
                   <div className="space-y-6 pb-4 max-w-4xl mx-auto">
                     {mensajesAgrupados.map((grupo) => (
                       <div key={grupo.fecha}>
-                        {/* Separador de fecha */}
-                        <div className="sticky top-0 flex items-center justify-center py-4 z-10 pointer-events-none">
-                          <div className="px-4 py-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-sm rounded-full flex items-center gap-2 border border-slate-200/50 dark:border-slate-700/50">
-                            <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                              {format(new Date(grupo.fecha), "d 'de' MMMM, yyyy", { locale: es })}
-                            </span>
+                        {/* Separador de fecha - Más minimalista */}
+                        <div className="sticky top-0 flex items-center justify-center py-3 z-10 pointer-events-none">
+                          <div className="px-3 py-1 bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-full text-[11px] font-medium text-slate-500 dark:text-slate-400 shadow-sm">
+                            {format(new Date(grupo.fecha), "d MMM yyyy", { locale: es })}
                           </div>
                         </div>
                         
                         {/* Mensajes del día */}
-                        <div className="space-y-1">
+                        <div className="space-y-3">
                           {grupo.mensajes.map((msg, idx) => {
                             const prevMsg = grupo.mensajes[idx - 1];
                             const isConsecutive = prevMsg && prevMsg.rol === msg.rol;
@@ -360,28 +433,84 @@ export default function ConversacionesPage() {
                 )}
               </div>
 
-              {/* Footer minimalista */}
-              <footer className="shrink-0 py-2 px-4 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800/60">
-                <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Historial sincronizado • Solo lectura</span>
+              {/* Footer con acciones rápidas */}
+              <footer className="shrink-0 py-2 px-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-t border-slate-200/50 dark:border-slate-800/50">
+                <div className="flex items-center justify-between gap-2">
+                  {/* Info de solo lectura */}
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span>Solo lectura</span>
+                  </div>
+                  
+                  {/* Botones de acción rápida */}
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href={`https://wa.me/52${contactoActivo?.telefono.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 
+                               text-white text-xs font-medium rounded-lg transition-colors shadow-sm"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">WhatsApp</span>
+                    </a>
+                    <button
+                      onClick={() => setShowActionsPanel(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 
+                               text-white text-xs font-medium rounded-lg transition-colors shadow-sm lg:hidden"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Acciones</span>
+                    </button>
+                  </div>
                 </div>
               </footer>
             </>
           ) : (
-            /* Estado vacío (Desktop) */
+            /* Estado vacío (Desktop) - Más minimalista */
             <div className="hidden sm:flex flex-1 flex-col items-center justify-center p-8">
-              <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center mb-6 shadow-xl shadow-blue-500/10">
-                <MessageSquare className="w-14 h-14 text-blue-400 dark:text-blue-500" />
+              <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                <MessageSquare className="w-8 h-8 text-slate-400" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-2">Conversaciones</h3>
-              <p className="text-sm text-center max-w-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                Selecciona una conversación de la lista para ver el historial completo de mensajes con el paciente.
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-1">Selecciona una conversación</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Elige un contacto para ver sus mensajes
               </p>
             </div>
           )}
         </main>
+
+        {/* ========== PANEL DE ACCIONES (Desktop) ========== */}
+        {showActionsPanel && telefonoActivo && contactoActivo && (
+          <aside className="hidden lg:flex w-[320px] shrink-0 animate-in slide-in-from-right duration-200">
+            <ConversationActionsPanel
+              telefono={contactoActivo.telefono}
+              nombreContacto={contactoActivo.nombreContacto}
+              onClose={() => setShowActionsPanel(false)}
+            />
+          </aside>
+        )}
       </div>
+
+      {/* ========== PANEL DE ACCIONES (Mobile Bottom Sheet) ========== */}
+      {showActionsPanel && telefonoActivo && contactoActivo && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="lg:hidden fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
+            onClick={() => setShowActionsPanel(false)}
+          />
+          {/* Bottom Sheet */}
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 animate-in slide-in-from-bottom duration-300">
+            <ConversationActionsPanel
+              telefono={contactoActivo.telefono}
+              nombreContacto={contactoActivo.nombreContacto}
+              onClose={() => setShowActionsPanel(false)}
+              isMobile={true}
+            />
+          </div>
+        </>
+      )}
     </div>
   )
 }

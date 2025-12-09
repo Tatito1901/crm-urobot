@@ -33,31 +33,45 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export const DashboardStatusChart = memo(function DashboardStatusChart({ data }: { data: ChartData[] }) {
+  // Si no hay datos, mostrar estado vacío
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[200px] w-full flex items-center justify-center text-muted-foreground text-sm">
+        Sin datos disponibles
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[220px] w-full">
+    <div className="h-[200px] w-full overflow-hidden">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.2} vertical={false} />
           <XAxis 
             dataKey="name" 
+            stroke="#94a3b8" 
+            fontSize={9} 
+            tickLine={false} 
+            axisLine={false} 
+            tick={{ fill: '#64748b' }}
+            interval={0}
+            angle={-15}
+            textAnchor="end"
+            height={40}
+          />
+          <YAxis 
             stroke="#94a3b8" 
             fontSize={10} 
             tickLine={false} 
             axisLine={false} 
             tick={{ fill: '#64748b' }}
-          />
-          <YAxis 
-            stroke="#94a3b8" 
-            fontSize={12} 
-            tickLine={false} 
-            axisLine={false} 
-            tick={{ fill: '#64748b' }}
+            width={35}
           />
           <Tooltip 
             cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
             content={<CustomTooltip />}
           />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={30}>
+          <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={24}>
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.fill} />
             ))}

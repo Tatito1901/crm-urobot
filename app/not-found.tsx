@@ -1,0 +1,130 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { Home, RefreshCw, Search } from 'lucide-react';
+
+/**
+ * ============================================================
+ * PÁGINA 404 - UroBot Perdido
+ * ============================================================
+ * Página amigable cuando no se encuentra una ruta
+ */
+
+// Mensajes aleatorios del robot
+const MENSAJES_ROBOT = [
+  "¡Ups! Me perdí en el sistema... 🤖💫",
+  "Error 404: Mi GPS interno falló 🗺️❌",
+  "Buscando página... No encontrada... Necesito café ☕",
+  "¿Seguro que escribiste bien la dirección? 🤔",
+  "Esta página se fue de vacaciones 🏖️",
+  "Houston, tenemos un problema... de navegación 🚀",
+];
+
+const TIPS = [
+  "Verifica que la URL esté correcta",
+  "Usa el menú para navegar",
+  "Vuelve al Dashboard",
+];
+
+export default function NotFound() {
+  const [mensaje, setMensaje] = useState('');
+  const [glitch, setGlitch] = useState(false);
+
+  useEffect(() => {
+    // Seleccionar mensaje aleatorio
+    setMensaje(MENSAJES_ROBOT[Math.floor(Math.random() * MENSAJES_ROBOT.length)]);
+    
+    // Efecto glitch periódico
+    const interval = setInterval(() => {
+      setGlitch(true);
+      setTimeout(() => setGlitch(false), 150);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="max-w-md w-full text-center space-y-8">
+        
+        {/* Robot ASCII Art animado */}
+        <div className={`font-mono text-2xl sm:text-3xl leading-tight transition-all duration-100 ${glitch ? 'text-red-500 translate-x-1' : 'text-primary'}`}>
+          <pre className="inline-block text-left">
+{`    ┌───────┐
+    │ ✖   ✖ │
+    │   ▽   │
+    └───┬───┘
+   ┌────┴────┐
+   │ UROBOT  │
+   │  ERROR  │
+   └────┬────┘
+      ┌─┴─┐
+     ─┘   └─`}
+          </pre>
+        </div>
+
+        {/* Código de error */}
+        <div className="space-y-2">
+          <h1 className="text-7xl sm:text-8xl font-bold text-muted-foreground/30">
+            404
+          </h1>
+          <p className="text-lg sm:text-xl font-medium text-foreground">
+            Página no encontrada
+          </p>
+        </div>
+
+        {/* Mensaje del robot */}
+        <div className="bg-muted/50 border border-border rounded-2xl p-4 space-y-2">
+          <p className="text-sm text-muted-foreground font-mono">
+            🤖 UroBot dice:
+          </p>
+          <p className="text-base font-medium text-foreground">
+            "{mensaje}"
+          </p>
+        </div>
+
+        {/* Tips */}
+        <div className="text-left bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl p-4">
+          <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2">
+            💡 Sugerencias:
+          </p>
+          <ul className="text-sm text-blue-600 dark:text-blue-300 space-y-1">
+            {TIPS.map((tip, i) => (
+              <li key={i}>• {tip}</li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 
+                       bg-primary text-primary-foreground rounded-xl font-medium
+                       hover:opacity-90 transition-all active:scale-95"
+          >
+            <Home className="w-4 h-4" />
+            Ir al Dashboard
+          </Link>
+          
+          <button
+            onClick={() => window.history.back()}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 
+                       bg-muted text-foreground rounded-xl font-medium
+                       hover:bg-muted/80 transition-all active:scale-95
+                       border border-border"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Volver atrás
+          </button>
+        </div>
+
+        {/* Footer */}
+        <p className="text-xs text-muted-foreground">
+          Si el problema persiste, contacta soporte técnico
+        </p>
+      </div>
+    </div>
+  );
+}
