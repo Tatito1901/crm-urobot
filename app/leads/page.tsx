@@ -11,6 +11,7 @@ import { MainTitle, QuickGuide } from '@/app/components/leads/LeadsTooltips';
 import { LeadsMetrics } from './components/LeadsMetrics';
 import { LeadsFilters } from './components/LeadsFilters';
 import { LeadsTable } from './components/LeadsTable';
+import { FunnelGuide } from './components/FunnelGuide';
 import { Loader2 } from 'lucide-react';
 
 export default function LeadsPage() {
@@ -63,6 +64,9 @@ export default function LeadsPage() {
     >
       {/* Métricas Clave (calculadas en servidor) */}
       <LeadsMetrics stats={leadsStats} loading={isLoading && !leads.length} />
+
+      {/* Guía del Embudo (educativo para el doctor) */}
+      <FunnelGuide />
 
       <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-muted/20">

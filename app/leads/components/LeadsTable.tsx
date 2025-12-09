@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { Badge, DataTable } from '@/app/components/crm/ui';
 import { STATE_COLORS } from '@/app/lib/crm-data';
 import { GLOSARIO } from '@/app/lib/glosario-medico';
 import { CANAL_COLORS } from '@/types/canales-marketing';
 import { WrapTooltip } from '@/app/components/common/InfoTooltip';
 import { TableHeaders } from '@/app/components/leads/LeadsTooltips';
+import { LeadActionMenu } from './LeadActionMenu';
 import type { Lead } from '@/types/leads';
 
 interface LeadsTableProps {
@@ -97,28 +97,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage }
           </div>
         </WrapTooltip>
       ),
-      accion: (
-        <div className="text-xs">
-          {lead.estado === 'Convertido' && lead.pacienteId ? (
-            <Link
-              href={`/pacientes/${lead.pacienteId}`}
-              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
-            >
-              Ver paciente →
-            </Link>
-          ) : lead.estado === 'Nuevo' ? (
-            <span className="text-blue-600 dark:text-blue-400 font-medium">📞 Contactar hoy</span>
-          ) : lead.estado === 'Contactado' ? (
-            <span className="text-amber-600 dark:text-amber-400 font-medium">📋 Dar seguimiento</span>
-          ) : lead.estado === 'Interesado' ? (
-            <span className="text-purple-600 dark:text-purple-400 font-medium">📅 Agendar cita</span>
-          ) : lead.esInactivo ? (
-            <span className="text-red-500 font-medium">⚠️ Reactivar</span>
-          ) : (
-            <span className="text-muted-foreground">En proceso</span>
-          )}
-        </div>
-      ),
+      accion: <LeadActionMenu lead={lead} />,
     };
   }), [leads]);
 
