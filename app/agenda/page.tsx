@@ -13,7 +13,7 @@ import React, { useState, useCallback, useMemo, lazy, Suspense, useEffect } from
 import { Temporal } from '@js-temporal/polyfill';
 import { startOfWeek } from '@/lib/date-utils';
 import { useAgendaState } from './hooks/useAgendaState';
-import { useConsultas } from '@/hooks/useConsultas';
+import { useConsultas } from '@/hooks/consultas/useConsultas';
 import type { Consulta } from '@/types/consultas';
 import type { Appointment } from '@/types/agenda';
 import type { CreateAppointmentData, UpdateAppointmentData } from './services/appointments-service';

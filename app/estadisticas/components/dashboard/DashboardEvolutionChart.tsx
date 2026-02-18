@@ -12,7 +12,7 @@ import {
   Legend 
 } from 'recharts';
 
-import { MonthlyData } from '@/hooks/useStats';
+import { MonthlyData } from '@/hooks/dashboard/useStats';
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number | string; color: string }[]; label?: string }) => {
   if (active && payload && payload.length) {

@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { addDays, getDayName, isToday } from '@/lib/date-utils';
-import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel } from '@/hooks/useOccupancyHeatmap';
+import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel } from '@/hooks/estadisticas/useOccupancyHeatmap';
 
 interface DaysHeaderProps {
   weekStart: Date;

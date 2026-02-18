@@ -7,7 +7,7 @@
  */
 
 import { useMemo } from 'react';
-import { useConsultas } from '@/hooks/useConsultas';
+import { useConsultas } from '@/hooks/consultas/useConsultas';
 
 export type OccupancyLevel = 'empty' | 'low' | 'medium' | 'high' | 'very-high';
 

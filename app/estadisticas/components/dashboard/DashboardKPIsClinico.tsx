@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Users, Calendar, TrendingUp, Repeat, CheckCircle, XCircle, UserCheck, Activity } from 'lucide-react';
-import type { KPIClinico } from '@/hooks/useClinicalStats';
+import type { KPIClinico } from '@/hooks/estadisticas/useClinicalStats';
 
 interface Props {
   data: KPIClinico;

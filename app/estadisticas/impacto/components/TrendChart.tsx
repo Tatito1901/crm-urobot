@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import type { EvolucionMes } from '@/hooks/useImpactStats';
+import type { EvolucionMes } from '@/hooks/estadisticas/useImpactStats';
 
 interface TrendChartProps {
   data: EvolucionMes[];

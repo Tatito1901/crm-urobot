@@ -26,7 +26,7 @@ import {
   personalizarPlantilla,
   type PlantillaMensaje
 } from '@/app/lib/funnel-config';
-import { useLeadActions } from '@/hooks/useLeadActions';
+import { useLeadActions } from '@/hooks/leads/useLeadActions';
 import type { Lead, LeadEstado } from '@/types/leads';
 
 // ============================================================

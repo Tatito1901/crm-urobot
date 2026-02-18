@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import type { TendenciaMensual } from '@/hooks/useClinicalStats';
+import type { TendenciaMensual } from '@/hooks/estadisticas/useClinicalStats';
 
 interface Props {
   data: TendenciaMensual[];

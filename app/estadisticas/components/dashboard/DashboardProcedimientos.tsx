@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import type { ProcedimientoData } from '@/hooks/useClinicalStats';
+import type { ProcedimientoData } from '@/hooks/estadisticas/useClinicalStats';
 
 interface Props {
   data: ProcedimientoData[];

@@ -4,9 +4,9 @@ import { useState, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUrobotStats, marcarAlertaRevisada } from '@/hooks/useUrobotStats';
-import { useConversacionesStats } from '@/hooks/useConversacionesStats';
-import { useUrobotMetricasCRM } from '@/hooks/useUrobotMetricasCRM';
+import { useUrobotStats, marcarAlertaRevisada } from '@/hooks/urobot/useUrobotStats';
+import { useConversacionesStats } from '@/hooks/conversaciones/useConversacionesStats';
+import { useUrobotMetricasCRM } from '@/hooks/urobot/useUrobotMetricasCRM';
 import { Bot, RefreshCw, XCircle, AlertTriangle, MessageCircle, Activity, Target } from 'lucide-react';
 
 // Componentes optimizados

@@ -14,7 +14,7 @@ import {
   ChevronUp,
   Sparkles
 } from 'lucide-react';
-import { useLeadsCleanup, type LeadToClean } from '@/hooks/useLeadsCleanup';
+import { useLeadsCleanup, type LeadToClean } from '@/hooks/leads/useLeadsCleanup';
 
 interface LeadsCleanupPanelProps {
   onComplete?: () => void;

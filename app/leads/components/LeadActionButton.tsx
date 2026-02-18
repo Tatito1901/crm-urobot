@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { MoreHorizontal, Loader2 } from 'lucide-react';
 import { WrapTooltip } from '@/app/components/common/InfoTooltip';
 import { getEtapaConfig, getPlantillasParaEtapa, personalizarPlantilla } from '@/app/lib/funnel-config';
-import { useLeadActions } from '@/hooks/useLeadActions';
+import { useLeadActions } from '@/hooks/leads/useLeadActions';
 import { LeadActionsModal } from './LeadActionsModal';
 import type { Lead } from '@/types/leads';
 

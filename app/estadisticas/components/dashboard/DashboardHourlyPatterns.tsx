@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { useOccupancyHeatmap } from '@/hooks/useOccupancyHeatmap';
+import { useOccupancyHeatmap } from '@/hooks/estadisticas/useOccupancyHeatmap';
 import { Clock } from 'lucide-react';
 
 export function DashboardHourlyPatterns() {

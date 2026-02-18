@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
-import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useDebouncedCallback } from '@/hooks/common/useDebouncedCallback';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { useConsultas } from '@/hooks/useConsultas';
+import { useConsultas } from '@/hooks/consultas/useConsultas';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { Pagination } from '@/app/components/common/Pagination';

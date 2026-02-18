@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Crown, Calendar, CheckCircle2 } from 'lucide-react';
-import type { PacienteFiel } from '@/hooks/useClinicalStats';
+import type { PacienteFiel } from '@/hooks/estadisticas/useClinicalStats';
 
 interface Props {
   data: PacienteFiel[];

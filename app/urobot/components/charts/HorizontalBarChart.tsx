@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
-import type { ChartData } from '@/hooks/useUrobotStats';
+import type { ChartData } from '@/hooks/urobot/useUrobotStats';
 
 interface HorizontalBarChartProps {
   data: ChartData[];

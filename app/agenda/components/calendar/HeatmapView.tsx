@@ -9,10 +9,10 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel, type OccupancyLevel, type DayOccupancy } from '@/hooks/useOccupancyHeatmap';
+import { useOccupancyHeatmap, getOccupancyColors, getOccupancyLabel, type OccupancyLevel, type DayOccupancy } from '@/hooks/estadisticas/useOccupancyHeatmap';
 import { addDays, getMonthName, isToday } from '@/lib/date-utils';
 import { TrendingUp, Calendar, BarChart3, MapPin, Clock } from 'lucide-react';
-import { useConsultas } from '@/hooks/useConsultas';
+import { useConsultas } from '@/hooks/consultas/useConsultas';
 
 interface HeatmapViewProps {
   monthsToShow?: number;

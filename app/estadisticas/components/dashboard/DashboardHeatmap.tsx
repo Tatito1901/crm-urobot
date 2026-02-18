@@ -8,8 +8,8 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { getOccupancyColors, type OccupancyLevel } from '@/hooks/useOccupancyHeatmap';
-import { useConsultas } from '@/hooks/useConsultas';
+import { getOccupancyColors, type OccupancyLevel } from '@/hooks/estadisticas/useOccupancyHeatmap';
+import { useConsultas } from '@/hooks/consultas/useConsultas';
 import { getMonthName, isToday } from '@/lib/date-utils';
 
 interface DashboardHeatmapProps {

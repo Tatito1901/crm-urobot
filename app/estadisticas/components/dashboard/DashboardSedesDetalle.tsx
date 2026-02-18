@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Building2, CheckCircle2, XCircle, TrendingUp } from 'lucide-react';
-import type { SedeRendimiento } from '@/hooks/useClinicalStats';
+import type { SedeRendimiento } from '@/hooks/estadisticas/useClinicalStats';
 
 interface Props {
   data: SedeRendimiento[];

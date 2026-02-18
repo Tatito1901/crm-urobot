@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { usePacientes } from '@/hooks/usePacientes';
+import { usePacientes } from '@/hooks/pacientes/usePacientes';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';

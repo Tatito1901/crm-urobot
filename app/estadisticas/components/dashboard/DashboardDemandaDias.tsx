@@ -12,7 +12,7 @@ import {
   Cell,
   ReferenceLine,
 } from 'recharts';
-import type { DemandaDia } from '@/hooks/useClinicalStats';
+import type { DemandaDia } from '@/hooks/estadisticas/useClinicalStats';
 
 interface Props {
   data: DemandaDia[];

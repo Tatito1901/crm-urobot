@@ -8,7 +8,7 @@ import type {
   IntentDistribucion, 
   ConversionFunnel,
   ActividadPorHora 
-} from '@/hooks/useUrobotMetricasCRM';
+} from '@/hooks/urobot/useUrobotMetricasCRM';
 import { 
   MessageCircle,
   Calendar,

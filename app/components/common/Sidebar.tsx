@@ -1,25 +1,55 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode, type ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Target, MessageCircle, MoreHorizontal, Calendar } from "lucide-react";
+import {
+  Home,
+  Target,
+  MessageCircle,
+  MoreHorizontal,
+  Calendar,
+  BarChart3,
+  Bot,
+  Stethoscope,
+  type LucideProps,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
 import { ThemeToggle } from "./ThemeToggle";
 
-type NavItem = { readonly label: string; readonly href: string };
+type NavItem = {
+  readonly label: string;
+  readonly href: string;
+  readonly icon: ComponentType<LucideProps>;
+};
 
-const navItems: readonly NavItem[] = [
-  { label: "Dashboard", href: "/dashboard" },
-  // { label: "Agenda", href: "/agenda" }, // Temporalmente oculta
-  { label: "Conversaciones", href: "/conversaciones" },
-  { label: "Leads", href: "/leads" },
-  { label: "Consultas", href: "/consultas" },
-  { label: "Estadísticas", href: "/estadisticas" },
-  { label: "🤖 UroBot", href: "/urobot" },
+type NavSection = {
+  readonly title: string;
+  readonly items: readonly NavItem[];
+};
+
+const NAV_SECTIONS: readonly NavSection[] = [
+  {
+    title: "Operación",
+    items: [
+      { label: "Dashboard", href: "/dashboard", icon: Home },
+      { label: "Leads", href: "/leads", icon: Target },
+      { label: "Conversaciones", href: "/conversaciones", icon: MessageCircle },
+      { label: "Consultas", href: "/consultas", icon: Stethoscope },
+    ],
+  },
+  {
+    title: "Inteligencia",
+    items: [
+      { label: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
+      { label: "UroBot", href: "/urobot", icon: Bot },
+    ],
+  },
 ];
+
+const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });
 
@@ -59,41 +89,46 @@ export function Sidebar() {
           </header>
 
           {/* Navigation */}
-          <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1 scrollbar-hide">
-            <p className="mb-2 px-3 text-[9px] uppercase tracking-[0.3em] text-sidebar-foreground/30 font-semibold">Navegación</p>
-            <ul className="flex flex-col gap-0.5 text-[13px]">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-                return (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href}
-                      prefetch={true}
-                      aria-current={isActive ? "page" : undefined}
-                      className={cn(
-                        "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-150",
-                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
-                        isActive 
-                          ? "bg-white/[0.07] text-white border border-white/[0.08] shadow-sm shadow-teal-500/[0.05]"
-                          : "text-sidebar-foreground/50 hover:bg-white/[0.04] hover:text-sidebar-foreground/90 border border-transparent"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full transition-all duration-200",
-                          isActive ? "bg-teal-400 shadow-[0_0_6px_1px] shadow-teal-400/40" : "bg-sidebar-foreground/20 group-hover:bg-sidebar-foreground/40"
-                        )}
-                        aria-hidden
-                      />
-                      <span className="flex-1">{item.label}</span>
-                      {isActive && (
-                        <span className="h-4 w-0.5 rounded-full bg-teal-400/60" aria-hidden />
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+          <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1 scrollbar-hide space-y-5">
+            {NAV_SECTIONS.map((section) => (
+              <div key={section.title}>
+                <p className="mb-2 px-3 text-[9px] uppercase tracking-[0.3em] text-sidebar-foreground/30 font-semibold">{section.title}</p>
+                <ul className="flex flex-col gap-0.5 text-[13px]">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                    const Icon = item.icon;
+                    return (
+                      <li key={item.label}>
+                        <Link
+                          href={item.href}
+                          prefetch={true}
+                          aria-current={isActive ? "page" : undefined}
+                          className={cn(
+                            "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-150",
+                            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
+                            isActive 
+                              ? "bg-white/[0.07] text-white border border-white/[0.08] shadow-sm shadow-teal-500/[0.05]"
+                              : "text-sidebar-foreground/50 hover:bg-white/[0.04] hover:text-sidebar-foreground/90 border border-transparent"
+                          )}
+                        >
+                          <Icon
+                            className={cn(
+                              "h-4 w-4 shrink-0 transition-colors duration-200",
+                              isActive ? "text-teal-400" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70"
+                            )}
+                            aria-hidden
+                          />
+                          <span className="flex-1">{item.label}</span>
+                          {isActive && (
+                            <span className="h-4 w-0.5 rounded-full bg-teal-400/60" aria-hidden />
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </nav>
         </div>
 
@@ -152,14 +187,14 @@ const BOTTOM_NAV_ITEMS: readonly { label: string; href: string; icon: ReactNode 
   { label: "Inicio", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
   { label: "Leads", href: "/leads", icon: <Target className="w-5 h-5" /> },
   { label: "Chat", href: "/conversaciones", icon: <MessageCircle className="w-5 h-5" /> },
-  { label: "Consultas", href: "/consultas", icon: <Calendar className="w-5 h-5" /> },
+  { label: "Consultas", href: "/consultas", icon: <Stethoscope className="w-5 h-5" /> },
   { label: "Más", href: "#more", icon: <MoreHorizontal className="w-5 h-5" /> },
 ];
 
-// Items secundarios (accesibles desde "Más")
-const SECONDARY_NAV_ITEMS: readonly NavItem[] = [
-  { label: "Estadísticas", href: "/estadisticas" },
-  { label: "UroBot", href: "/urobot" },
+// Items secundarios (accesibles desde "Más") — consistentes con sidebar "Inteligencia"
+const SECONDARY_NAV_ITEMS: readonly { label: string; href: string; icon: ComponentType<LucideProps> }[] = [
+  { label: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
+  { label: "UroBot", href: "/urobot", icon: Bot },
 ];
 
 export function BottomNav() {
@@ -227,19 +262,21 @@ export function BottomNav() {
             <div className="grid grid-cols-2 gap-1">
               {SECONDARY_NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                const Icon = item.icon;
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
                     onClick={() => setShowMore(false)}
                     className={cn(
-                      "flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
+                      "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
                       "active:scale-95 active:bg-muted/50 min-h-[48px]",
                       isActive
                         ? "bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-300"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
+                    <Icon className="h-4 w-4 shrink-0" />
                     <span>{item.label}</span>
                     {isActive && <span className="ml-auto text-teal-400">•</span>}
                   </Link>

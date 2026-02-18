@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { useOccupancyHeatmap } from '@/hooks/useOccupancyHeatmap';
+import { useOccupancyHeatmap } from '@/hooks/estadisticas/useOccupancyHeatmap';
 import { TrendingUp, TrendingDown, Calendar, Clock, Target, Zap } from 'lucide-react';
 
 export function DashboardPredictive() {

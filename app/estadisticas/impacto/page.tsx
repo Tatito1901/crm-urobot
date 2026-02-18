@@ -12,7 +12,7 @@ import {
   formatVariacion, 
   getVariacionColor,
   type CanalRendimiento 
-} from '@/hooks/useImpactStats';
+} from '@/hooks/estadisticas/useImpactStats';
 import { 
   TrendingUp, 
   TrendingDown, 

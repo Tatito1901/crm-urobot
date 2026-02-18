@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { lazy, Suspense, type PropsWithChildren } from 'react'
-import { usePrefetchRoutes } from '@/hooks/usePrefetchRoutes'
+import { usePrefetchRoutes } from '@/hooks/common/usePrefetchRoutes'
 
 // Lazy loading de componentes pesados para optimizar carga inicial
 const Sidebar = lazy(() => import('./Sidebar').then(mod => ({ default: mod.Sidebar })))

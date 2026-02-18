@@ -1,6 +1,6 @@
 'use client';
 
-import { useStats } from '@/hooks/useStats';
+import { useStats } from '@/hooks/dashboard/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { spacing, cards } from '@/app/lib/design-system';

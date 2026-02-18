@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { KPICard } from './KPICard';
-import type { UrobotKPI } from '@/hooks/useUrobotStats';
+import type { UrobotKPI } from '@/hooks/urobot/useUrobotStats';
 import { 
   MessageSquare,
   TrendingUp,

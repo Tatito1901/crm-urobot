@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import type { ErrorLog } from '@/hooks/useUrobotStats';
+import type { ErrorLog } from '@/hooks/urobot/useUrobotStats';
 
 interface ErrorsTableProps {
   errors: ErrorLog[];

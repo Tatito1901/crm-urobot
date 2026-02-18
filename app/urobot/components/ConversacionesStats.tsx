@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { KPICard } from './KPICard';
-import type { ConversacionesKPI, TipoInteraccion, TopPregunta, MensajesPorHora } from '@/hooks/useConversacionesStats';
+import type { ConversacionesKPI, TipoInteraccion, TopPregunta, MensajesPorHora } from '@/hooks/conversaciones/useConversacionesStats';
 import { 
   MessageCircle,
   Send,

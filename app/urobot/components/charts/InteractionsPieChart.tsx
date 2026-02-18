@@ -10,7 +10,7 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ChartData } from '@/hooks/useUrobotStats';
+import type { ChartData } from '@/hooks/urobot/useUrobotStats';
 
 interface InteractionsPieChartProps {
   data: ChartData[];

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { useClinicalStats } from '@/hooks/useClinicalStats';
+import { useClinicalStats } from '@/hooks/estadisticas/useClinicalStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { spacing, cards } from '@/app/lib/design-system';

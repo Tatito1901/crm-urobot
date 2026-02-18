@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { useLeadsPaginated } from '@/hooks/useLeadsPaginated';
+import { useLeadsPaginated } from '@/hooks/leads/useLeadsPaginated';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { PaginationControls } from '@/app/components/common/PaginationControls';

@@ -12,7 +12,7 @@ import {
   Cell,
   LabelList
 } from 'recharts';
-import type { CanalRendimiento } from '@/hooks/useImpactStats';
+import type { CanalRendimiento } from '@/hooks/estadisticas/useImpactStats';
 
 interface ChannelBarChartProps {
   data: CanalRendimiento[];

@@ -11,7 +11,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { TimeSeriesData } from '@/hooks/useUrobotStats';
+import type { TimeSeriesData } from '@/hooks/urobot/useUrobotStats';
 
 interface ActivityChartProps {
   data: TimeSeriesData[];

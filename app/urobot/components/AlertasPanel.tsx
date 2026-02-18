@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CheckCircle2, Eye, AlertTriangle } from 'lucide-react';
-import type { Alerta } from '@/hooks/useUrobotStats';
+import type { Alerta } from '@/hooks/urobot/useUrobotStats';
 
 interface AlertasPanelProps {
   alertas: Alerta[];

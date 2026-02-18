@@ -26,8 +26,8 @@ import {
   PLANTILLAS_MENSAJE,
   type PlantillaMensaje
 } from '@/app/lib/funnel-config';
-import { useLeadActions } from '@/hooks/useLeadActions';
-import { useLeadByTelefono } from '@/hooks/useLeadByTelefono';
+import { useLeadActions } from '@/hooks/leads/useLeadActions';
+import { useLeadByTelefono } from '@/hooks/leads/useLeadByTelefono';
 import type { LeadEstado } from '@/types/leads';
 
 // ============================================================
