@@ -1,8 +1,9 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import { lazy, Suspense, type PropsWithChildren } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { lazy, Suspense, useEffect, useState, type PropsWithChildren } from 'react'
 import { usePrefetchRoutes } from '@/hooks/common/usePrefetchRoutes'
+import { createClient } from '@/lib/supabase/client'
 
 // Lazy loading de componentes pesados para optimizar carga inicial
 const Sidebar = lazy(() => import('./Sidebar').then(mod => ({ default: mod.Sidebar })))
@@ -13,14 +14,37 @@ const AGENDA_PREFIX = '/agenda'
 
 export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname() ?? ''
+  const router = useRouter()
   const isAuthRoute = pathname.startsWith(AUTH_PREFIX)
   const isAgendaRoute = pathname.startsWith(AGENDA_PREFIX)
+  const isPublicRoute = isAuthRoute || isAgendaRoute
+  const [authChecked, setAuthChecked] = useState(isPublicRoute)
 
   // ✅ OPTIMIZACIÓN: Prefetch inteligente de rutas probables
   usePrefetchRoutes()
 
+  // Auth guard — redirigir a /auth si no hay sesión
+  useEffect(() => {
+    if (isPublicRoute) {
+      setAuthChecked(true)
+      return
+    }
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace('/auth')
+      } else {
+        setAuthChecked(true)
+      }
+    })
+  }, [pathname, isPublicRoute, router])
+
   if (isAuthRoute || isAgendaRoute) {
     return <>{children}</>
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   return (
