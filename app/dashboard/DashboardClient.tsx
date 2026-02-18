@@ -5,7 +5,7 @@ import dynamicImport from 'next/dynamic';
 import {
   Users, Activity, UserCheck, Calendar, Clock, Zap, Loader2,
   MessageSquare, AlertTriangle, Bot, TrendingUp, Flame, Snowflake,
-  ThermometerSun, DollarSign, CheckCircle2, XCircle, ArrowRight,
+  ThermometerSun, CheckCircle2, XCircle, ArrowRight,
   Stethoscope, Bell,
 } from 'lucide-react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
@@ -50,7 +50,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   const {
     kpis, acciones, totalAcciones, pipeline, temperaturas, fuentes, bot,
     leadsRecientes, consultasProximas, escalamientosRecientes,
-    tasaConversion, tasaAsistencia,
+    tasaConversion,
     loading, refresh,
   } = useDashboardV2(initialData);
 
@@ -198,7 +198,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               <MetricCard
                 title="Consultas programadas"
                 value={kpis.consultasProgramadas}
-                subtitle={`${kpis.consultasHoy} hoy · ${kpis.consultasCompletadasMes} completadas este mes`}
+                subtitle={`${kpis.consultasHoy} hoy · ${kpis.consultasSemana} esta semana`}
                 color="amber"
                 icon={<Calendar className="h-4 w-4" />}
                 loading={loading}
@@ -222,19 +222,19 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 loading={loading}
               />
               <MetricCard
-                title="Asistencia"
-                value={`${tasaAsistencia}%`}
-                subtitle={`${kpis.consultasNoAsistioMes} no asistió`}
-                color="red"
-                icon={<Clock className="h-4 w-4" />}
+                title="Mensajes Bot"
+                value={bot.totalMensajesBot}
+                subtitle={`${bot.totalMensajesUsuario} del paciente`}
+                color="teal"
+                icon={<Bot className="h-4 w-4" />}
                 loading={loading}
               />
               <MetricCard
-                title="Ingresos del mes"
-                value={kpis.ingresosMes > 0 ? `$${kpis.ingresosMes.toLocaleString('es-MX')}` : '$0'}
-                subtitle="Consultas pagadas"
-                color="teal"
-                icon={<DollarSign className="h-4 w-4" />}
+                title="Citas por Bot"
+                value={bot.citasAgendadasBot}
+                subtitle="Agendadas automáticamente"
+                color="amber"
+                icon={<Stethoscope className="h-4 w-4" />}
                 loading={loading}
               />
             </div>
