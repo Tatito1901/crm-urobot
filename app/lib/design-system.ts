@@ -105,35 +105,35 @@ export const chartColors = {
 // Colores semánticos para acentos en UI (Tailwind classes)
 export const accentColors = {
   primary: {
-    text: 'text-teal-600 dark:text-teal-400',
+    text: 'text-teal-400',
     bg: 'bg-teal-500/10',
-    border: 'border-teal-500/20 dark:border-teal-400/15',
-    hover: 'hover:bg-teal-500/15 dark:hover:bg-teal-500/20',
+    border: 'border-teal-400/15',
+    hover: 'hover:bg-teal-500/20',
     dot: 'bg-teal-500',
   },
   success: {
-    text: 'text-emerald-600 dark:text-emerald-400',
+    text: 'text-emerald-400',
     bg: 'bg-emerald-500/10',
     border: 'border-emerald-500/20',
     hover: 'hover:bg-emerald-500/15',
     dot: 'bg-emerald-500',
   },
   warning: {
-    text: 'text-amber-600 dark:text-amber-400',
+    text: 'text-amber-400',
     bg: 'bg-amber-500/10',
     border: 'border-amber-500/20',
     hover: 'hover:bg-amber-500/15',
     dot: 'bg-amber-500',
   },
   danger: {
-    text: 'text-rose-600 dark:text-rose-400',
+    text: 'text-rose-400',
     bg: 'bg-rose-500/10',
     border: 'border-rose-500/20',
     hover: 'hover:bg-rose-500/15',
     dot: 'bg-rose-500',
   },
   info: {
-    text: 'text-cyan-600 dark:text-cyan-400',
+    text: 'text-cyan-400',
     bg: 'bg-cyan-500/10',
     border: 'border-cyan-500/20',
     hover: 'hover:bg-cyan-500/15',
@@ -208,8 +208,8 @@ export const buttons = {
     'disabled:opacity-50 disabled:cursor-not-allowed',
   ),
   // Variantes de color para refresh
-  refreshTeal: 'bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/20 dark:border-teal-400/15 hover:bg-teal-500/15 dark:hover:bg-teal-500/20',
-  refreshCyan: 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/30',
+  refreshTeal: 'bg-teal-500/10 text-teal-300 border border-teal-400/15 hover:bg-teal-500/20',
+  refreshCyan: 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30',
   // Select / dropdown pequeño
   select: 'px-2 sm:px-3 py-1.5 rounded-lg bg-muted border border-border text-sm',
 } as const;
@@ -228,7 +228,7 @@ export const tabs = {
   tabActive: 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary',
   tabInactive: 'text-muted-foreground hover:text-foreground',
   // Tab con icono activo/inactivo (para bordes de color)
-  tabIconActive: (color: string) => `border-${color}-500 text-${color}-600 dark:text-${color}-400`,
+  tabIconActive: (color: string) => `border-${color}-500 text-${color}-400`,
   tabIconInactive: 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
   // Badge counter dentro de tab
   tabBadge: 'ml-1 px-1.5 py-0.5 text-xs rounded-full bg-muted',
@@ -254,16 +254,16 @@ export const listItems = {
 // ==================== METRIC CARD COLORS ====================
 // Paleta unificada para MetricCard / KpiCard
 export const metricColors = {
-  emerald: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
-  green: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
-  blue: { label: 'text-sky-400 dark:text-sky-300', border: 'border-sky-500/10 dark:border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400', bg: 'bg-sky-500/10' },
-  purple: { label: 'text-violet-400 dark:text-violet-300', border: 'border-violet-500/10 dark:border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400', bg: 'bg-violet-500/10' },
-  amber: { label: 'text-amber-400 dark:text-amber-300', border: 'border-amber-500/10 dark:border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400', bg: 'bg-amber-500/10' },
-  orange: { label: 'text-orange-400 dark:text-orange-300', border: 'border-orange-500/10 dark:border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400', bg: 'bg-orange-500/10' },
-  red: { label: 'text-rose-400 dark:text-rose-300', border: 'border-rose-500/10 dark:border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400', bg: 'bg-rose-500/10' },
-  cyan: { label: 'text-cyan-400 dark:text-cyan-300', border: 'border-cyan-500/10 dark:border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400', bg: 'bg-cyan-500/10' },
-  teal: { label: 'text-teal-400 dark:text-teal-300', border: 'border-teal-500/10 dark:border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400', bg: 'bg-teal-500/10' },
-  fuchsia: { label: 'text-fuchsia-400 dark:text-fuchsia-300', border: 'border-fuchsia-500/10 dark:border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400', bg: 'bg-fuchsia-500/10' },
+  emerald: { label: 'text-emerald-300', border: 'border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
+  green: { label: 'text-emerald-300', border: 'border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
+  blue: { label: 'text-sky-300', border: 'border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400', bg: 'bg-sky-500/10' },
+  purple: { label: 'text-violet-300', border: 'border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400', bg: 'bg-violet-500/10' },
+  amber: { label: 'text-amber-300', border: 'border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400', bg: 'bg-amber-500/10' },
+  orange: { label: 'text-orange-300', border: 'border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400', bg: 'bg-orange-500/10' },
+  red: { label: 'text-rose-300', border: 'border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400', bg: 'bg-rose-500/10' },
+  cyan: { label: 'text-cyan-300', border: 'border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400', bg: 'bg-cyan-500/10' },
+  teal: { label: 'text-teal-300', border: 'border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400', bg: 'bg-teal-500/10' },
+  fuchsia: { label: 'text-fuchsia-300', border: 'border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400', bg: 'bg-fuchsia-500/10' },
 } as const;
 
 export type MetricColor = keyof typeof metricColors;

@@ -18,7 +18,6 @@ import {
 
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
-import { ThemeToggle } from "./ThemeToggle";
 
 type NavItem = {
   readonly label: string;
@@ -126,11 +125,6 @@ export function Sidebar() {
         </div>
 
         <footer className="relative space-y-3">
-          <div className="flex items-center justify-between px-1">
-             <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Tema</span>
-             <ThemeToggle />
-          </div>
-
           <div className="rounded-xl border border-border bg-muted/30 px-3.5 py-3">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
@@ -246,7 +240,7 @@ export function BottomNav() {
       {showMore && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div 
-            className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setShowMore(false)}
           />
           <div className="absolute bottom-[calc(64px+env(safe-area-inset-bottom))] left-2 right-2 z-50 
@@ -265,7 +259,7 @@ export function BottomNav() {
                       "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
                       "active:scale-95 active:bg-muted/50 min-h-[48px]",
                       isActive
-                        ? "bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-300"
+                        ? "bg-teal-500/10 text-teal-300"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
@@ -301,7 +295,7 @@ export function BottomNav() {
                     "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
                     "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
                     isActive
-                      ? "text-teal-400 dark:text-teal-300"
+                      ? "text-teal-300"
                       : "text-muted-foreground"
                   )}
                   aria-expanded={showMore}
@@ -323,7 +317,7 @@ export function BottomNav() {
                   "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
                   "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
                   isActive 
-                    ? "text-teal-400 dark:text-teal-300 font-semibold" 
+                    ? "text-teal-300 font-semibold" 
                     : "text-muted-foreground"
                 )}
               >

@@ -48,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" className="dark" suppressHydrationWarning>
       <head>
         {/* Preconnect a Supabase para reducir latencia de API calls */}
         {/* NOTA: Google Fonts preconnect eliminado — next/font self-hosts las fuentes */}

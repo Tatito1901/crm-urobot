@@ -1,10 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MoreHorizontal, Loader2 } from 'lucide-react';
-import { WrapTooltip } from '@/app/components/common/InfoTooltip';
-import { getEtapaConfig, getPlantillasParaEtapa, personalizarPlantilla } from '@/app/lib/funnel-config';
-import { useLeadActions } from '@/hooks/leads/useLeadActions';
+import { MoreHorizontal } from 'lucide-react';
 import { LeadActionsModal } from './LeadActionsModal';
 import type { Lead } from '@/types/leads';
 
@@ -15,32 +12,6 @@ interface LeadActionButtonProps {
 
 export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isQuickSending, setIsQuickSending] = useState(false);
-
-  const { 
-    recomendacion, 
-    isLoading,
-    enviarMensajeWhatsApp 
-  } = useLeadActions(lead);
-
-  const plantillas = getPlantillasParaEtapa(lead.estado);
-  const etapaConfig = getEtapaConfig(lead.estado);
-
-  // Acción rápida de 1-click
-  const handleQuickAction = async () => {
-    if (!plantillas[0]) return;
-    
-    setIsQuickSending(true);
-    try {
-      const mensaje = personalizarPlantilla(plantillas[0].mensaje, {
-        nombre: lead.nombre || 'paciente',
-      });
-      await enviarMensajeWhatsApp(mensaje, plantillas[0].id);
-      onRefresh?.();
-    } finally {
-      setIsQuickSending(false);
-    }
-  };
 
   // Si es paciente convertido, mostrar badge
   if (lead.estado === 'convertido' && lead.convertidoAPacienteId) {
@@ -56,59 +27,9 @@ export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
     );
   }
 
-  // Configuración del botón según estado y recomendación
-  const getQuickButtonConfig = () => {
-    if (recomendacion?.prioridad === 'no_contactar') {
-      return { label: '⛔', color: 'bg-secondary text-muted-foreground', disabled: true };
-    }
-    if (recomendacion?.accion === 'esperar') {
-      const dias = recomendacion.diasEsperar;
-      // Si diasEsperar es 0 o undefined, mostrar solo el reloj
-      if (dias === undefined || dias === 0) {
-        return { label: '⏳', color: 'bg-secondary text-muted-foreground', disabled: true };
-      }
-      return { label: `⏳ ${dias}d`, color: 'bg-secondary text-muted-foreground', disabled: true };
-    }
-    if (recomendacion?.prioridad === 'alta') {
-      return { label: '🚨', color: 'bg-red-500/10 text-red-600 dark:text-red-400 animate-pulse', disabled: false };
-    }
-    
-    switch (lead.estado) {
-      case 'nuevo': return { label: '👋', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', disabled: false };
-      case 'interactuando': return { label: '🤖', color: 'bg-sky-500/10 text-sky-600 dark:text-sky-400', disabled: false };
-      case 'contactado': return { label: '📋', color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400', disabled: false };
-      case 'cita_propuesta': return { label: '💰', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400', disabled: false };
-      case 'cita_agendada': return { label: '📅', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', disabled: false };
-      default: return { label: '💬', color: 'bg-secondary text-foreground', disabled: false };
-    }
-  };
-
-  const quickConfig = getQuickButtonConfig();
-
   return (
     <>
       <div className="flex items-center gap-1">
-        {/* Botón de acción rápida */}
-        <WrapTooltip
-          content={
-            <div className="text-xs">
-              <p className="font-medium">{recomendacion?.razon || 'Enviar mensaje rápido'}</p>
-              {!quickConfig.disabled && <p className="text-muted-foreground mt-0.5">Clic para abrir WhatsApp</p>}
-            </div>
-          }
-          side="left"
-        >
-          <button
-            onClick={handleQuickAction}
-            disabled={quickConfig.disabled || isLoading || isQuickSending}
-            className={`px-2 py-1.5 text-xs font-medium rounded-lg border border-transparent
-                       transition-all disabled:opacity-60 disabled:cursor-not-allowed
-                       ${quickConfig.color}`}
-          >
-            {isQuickSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : quickConfig.label}
-          </button>
-        </WrapTooltip>
-
         {/* Botón para abrir modal con más opciones */}
         <button
           onClick={() => setIsModalOpen(true)}

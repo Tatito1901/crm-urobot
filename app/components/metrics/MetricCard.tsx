@@ -133,7 +133,7 @@ export const MetricCard = React.memo(({
   // Trend rendering (supports both object and string formats)
   const trendElement = trend ? (
     typeof trend === 'string' ? (
-      <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+      <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
         <ArrowUpRight className="w-3 h-3" />
         <span className="hidden sm:inline">{trend}</span>
       </div>
@@ -181,7 +181,7 @@ export const MetricCard = React.memo(({
     const kpiColor = iconColor || `${colors.label}`;
     return (
       <div
-        className="bg-card dark:bg-white/[0.03] border border-border dark:border-white/[0.06] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top"
+        className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top"
         title={tooltip}
       >
         <div className="flex justify-between items-start mb-3">

@@ -20,12 +20,12 @@ import { cards, listItems, chartColors } from '@/app/lib/design-system';
 
 // Lazy load de gráficos pesados
 const DonutChart = dynamicImport(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
-  loading: () => <div className="h-[220px] w-full bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-center justify-center"><div className="h-32 w-32 rounded-full bg-slate-200 dark:bg-slate-700" /></div>,
+  loading: () => <div className="h-[220px] w-full bg-slate-800/50 rounded-xl flex items-center justify-center"><div className="h-32 w-32 rounded-full bg-slate-700" /></div>,
   ssr: false,
 });
 
 const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart').then(mod => ({ default: mod.BarChart })), {
-  loading: () => <div className="h-[250px] w-full bg-slate-100 dark:bg-slate-800/50 rounded-xl flex items-end justify-around p-4 gap-2"><div className="h-1/3 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /><div className="h-2/3 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /><div className="h-1/2 w-full bg-slate-200 dark:bg-slate-700 rounded-t" /></div>,
+  loading: () => <div className="h-[250px] w-full bg-slate-800/50 rounded-xl flex items-end justify-around p-4 gap-2"><div className="h-1/3 w-full bg-slate-700 rounded-t" /><div className="h-2/3 w-full bg-slate-700 rounded-t" /><div className="h-1/2 w-full bg-slate-700 rounded-t" /></div>,
   ssr: false,
 });
 
@@ -154,12 +154,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               ACTION CENTER - Acciones pendientes
               ════════════════════════════════════════════ */}
           {totalAcciones > 0 && (
-            <section className="rounded-xl border border-amber-500/20 dark:border-amber-400/15 bg-amber-500/5 dark:bg-amber-500/[0.03] p-3 sm:p-4">
+            <section className="rounded-xl border border-amber-400/15 bg-amber-500/[0.03] p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2.5">
                 <div className="p-1.5 rounded-lg bg-amber-500/15">
-                  <Zap className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                  <Zap className="h-3.5 w-3.5 text-amber-400" />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
                   Requieren atención ({totalAcciones})
                 </span>
               </div>
@@ -404,7 +404,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                                 <div className="flex items-center gap-1.5">
                                   <p className={listItems.rowTitle}>{e.nombre}</p>
                                   {e.esUrgente && (
-                                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/20">
                                       Urgente
                                     </span>
                                   )}
@@ -457,8 +457,8 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     <div className="text-right shrink-0">
                       <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Conversión</div>
                       <div className={`text-base sm:text-lg font-bold tabular-nums ${
-                        tasaConversion >= 30 ? 'text-emerald-600 dark:text-emerald-400'
-                        : tasaConversion >= 15 ? 'text-amber-600 dark:text-amber-400'
+                        tasaConversion >= 30 ? 'text-emerald-400'
+                        : tasaConversion >= 15 ? 'text-amber-400'
                         : 'text-muted-foreground'
                       }`}>
                         {tasaConversion}%
@@ -568,8 +568,8 @@ function SectionHeader({ label }: { icon?: React.ReactNode; label: string }) {
 
 function StatPill({ label, value, variant }: { label: string; value: number; variant?: 'emerald' | 'blue' }) {
   const colors = {
-    emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-    blue: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+    emerald: 'bg-emerald-500/10 text-emerald-400',
+    blue: 'bg-sky-500/10 text-sky-400',
   };
   const valueColor = variant ? colors[variant].split(' ').slice(1).join(' ') : 'text-foreground';
   const bgColor = variant ? colors[variant].split(' ')[0] : 'bg-muted/50';
