@@ -7,7 +7,7 @@ import { GLOSARIO } from '@/app/lib/glosario-medico';
 import { CANAL_COLORS } from '@/types/canales-marketing';
 import { WrapTooltip } from '@/app/components/common/InfoTooltip';
 import { TableHeaders } from '@/app/components/leads/LeadsTooltips';
-import { LeadActionMenu } from './LeadActionMenu';
+import { LeadActionButton } from './LeadActionButton';
 import type { Lead } from '@/types/leads';
 
 interface LeadsTableProps {
@@ -50,13 +50,13 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
       mensajes: (
         <div className="text-center">
           <span className={`text-lg font-semibold ${
-            lead.totalInteracciones >= 10 
+            lead.totalMensajes >= 10 
               ? 'text-emerald-600 dark:text-emerald-400' 
-              : lead.totalInteracciones >= 5 
+              : lead.totalMensajes >= 5 
                 ? 'text-blue-600 dark:text-blue-400'
                 : 'text-muted-foreground'
           }`}>
-            {lead.totalInteracciones}
+            {lead.totalMensajes}
           </span>
           <span className="text-[11px] text-muted-foreground ml-1">msgs</span>
         </div>
@@ -98,7 +98,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
           </div>
         </WrapTooltip>
       ),
-      accion: <LeadActionMenu lead={lead} onRefresh={onRefresh} />,
+      accion: <LeadActionButton lead={lead} onRefresh={onRefresh} />,
     };
   }), [leads, onRefresh]);
 

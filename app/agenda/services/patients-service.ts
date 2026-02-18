@@ -76,19 +76,18 @@ export async function createPatient(
     // Verificar si ya existe un paciente con ese teléfono
     const { data: existingPatient } = await supabase
       .from('pacientes')
-      .select('id, nombre_completo, telefono, email, fecha_nacimiento, origen_lead, created_at, updated_at')
+      .select('*')
       .eq('telefono', normalizedPhone)
       .maybeSingle();
 
     if (existingPatient) {
-      // Mapear y retornar existente usando mappers centrales
-      const paciente = mapPacienteFromDB(existingPatient as unknown as PacienteRow);
+      const paciente = mapPacienteFromDB(existingPatient as PacienteRow);
       return { success: true, data: paciente };
     }
 
     // Preparar datos para insertar (SOLO columnas existentes)
     const insertPayload = {
-      nombre_completo: data.nombre.trim(),
+      nombre: data.nombre.trim(),
       telefono: normalizedPhone,
       email: data.email?.trim() || null,
       origen_lead: 'Agenda', // Default
@@ -101,7 +100,7 @@ export async function createPatient(
       .from('pacientes')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert(insertPayload as any)
-      .select('id, nombre_completo, telefono, email, fecha_nacimiento, origen_lead, created_at, updated_at')
+      .select('*')
       .single();
 
     if (insertError) {
@@ -113,25 +112,23 @@ export async function createPatient(
       const { data: existingLead } = await supabase
         .from('leads')
         .select('id')
-        .eq('telefono_whatsapp', normalizedPhone)
+        .eq('telefono', normalizedPhone)
         .maybeSingle();
 
-      if (existingLead) {
+      if (existingLead && newPatient) {
         await supabase
           .from('leads')
           .update({
-            estado: 'Convertido',
-            paciente_id: newPatient.id,
-            fecha_conversion: new Date().toISOString()
-          })
+            estado: 'convertido',
+            convertido_a_paciente_id: newPatient.id,
+          } as never)
           .eq('id', existingLead.id);
       }
     } catch {
       // No bloqueamos la creación del paciente si falla la actualización del lead
     }
 
-    // Mapear a tipo Paciente
-    const paciente = mapPacienteFromDB(newPatient as unknown as PacienteRow);
+    const paciente = mapPacienteFromDB(newPatient as PacienteRow);
 
     return { success: true, data: paciente };
   } catch (error) {
@@ -153,14 +150,14 @@ export async function findPatientByPhone(
 
     const { data, error } = await supabase
       .from('pacientes')
-      .select('id, nombre_completo, telefono, email, fecha_nacimiento, origen_lead, created_at, updated_at')
+      .select('*')
       .eq('telefono', normalizedPhone)
       .maybeSingle();
 
     if (error) return { success: false, error: error.message };
     if (!data) return { success: true, data: null };
 
-    const paciente = mapPacienteFromDB(data as unknown as PacienteRow);
+    const paciente = mapPacienteFromDB(data as PacienteRow);
     return { success: true, data: paciente };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' };
@@ -178,14 +175,14 @@ export async function findPatientByEmail(
 
     const { data, error } = await supabase
       .from('pacientes')
-      .select('id, nombre_completo, telefono, email, fecha_nacimiento, origen_lead, created_at, updated_at')
+      .select('*')
       .eq('email', email.trim().toLowerCase())
       .maybeSingle();
 
     if (error) return { success: false, error: error.message };
     if (!data) return { success: true, data: null };
 
-    const paciente = mapPacienteFromDB(data as unknown as PacienteRow);
+    const paciente = mapPacienteFromDB(data as PacienteRow);
     return { success: true, data: paciente };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' };

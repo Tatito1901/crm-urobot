@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Home, Target, MessageCircle, Users, MoreHorizontal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
-import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import { ThemeToggle } from "./ThemeToggle";
 
 type NavItem = { readonly label: string; readonly href: string };
@@ -143,12 +143,12 @@ export function Sidebar() {
 }
 
 // Items principales para bottom nav (máximo 5 para UX óptima)
-const BOTTOM_NAV_ITEMS: readonly { label: string; href: string; icon: string }[] = [
-  { label: "Inicio", href: "/dashboard", icon: "🏠" },
-  { label: "Leads", href: "/leads", icon: "🎯" },
-  { label: "Chat", href: "/conversaciones", icon: "💬" },
-  { label: "Pacientes", href: "/pacientes", icon: "👥" },
-  { label: "Más", href: "#more", icon: "☰" }, // Abre menú con resto de opciones
+const BOTTOM_NAV_ITEMS: readonly { label: string; href: string; icon: ReactNode }[] = [
+  { label: "Inicio", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
+  { label: "Leads", href: "/leads", icon: <Target className="w-5 h-5" /> },
+  { label: "Chat", href: "/conversaciones", icon: <MessageCircle className="w-5 h-5" /> },
+  { label: "Pacientes", href: "/pacientes", icon: <Users className="w-5 h-5" /> },
+  { label: "Más", href: "#more", icon: <MoreHorizontal className="w-5 h-5" /> },
 ];
 
 // Items secundarios (accesibles desde "Más")
@@ -156,7 +156,7 @@ const SECONDARY_NAV_ITEMS: readonly NavItem[] = [
   { label: "Consultas", href: "/consultas" },
   { label: "Confirmaciones", href: "/confirmaciones" },
   { label: "Estadísticas", href: "/estadisticas" },
-  { label: "🤖 UroBot", href: "/urobot" },
+  { label: "UroBot", href: "/urobot" },
 ];
 
 export function BottomNav() {
@@ -274,7 +274,7 @@ export function BottomNav() {
                   aria-expanded={showMore}
                   aria-label="Más opciones"
                 >
-                  <span className="text-lg leading-none">{showMore ? "✕" : item.icon}</span>
+                  {showMore ? <span className="text-lg leading-none">✕</span> : item.icon}
                   <span className="text-[10px] font-medium">{showMore ? "Cerrar" : item.label}</span>
                 </button>
               );
@@ -294,7 +294,7 @@ export function BottomNav() {
                     : "text-muted-foreground"
                 )}
               >
-                <span className="text-lg leading-none">{item.icon}</span>
+                {item.icon}
                 <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
             );
@@ -307,135 +307,3 @@ export function BottomNav() {
   );
 }
 
-export function MobileSidebar() {
-  const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Swipe-to-close gesture
-  const swipeRef = useSwipeGesture(() => setOpen(false), undefined, 75);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [open]);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-lg border border-border bg-card/80 px-4 py-3 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-all duration-100 hover:bg-card active:scale-95 min-h-[44px] min-w-[44px]"
-        aria-expanded={open}
-        aria-label="Abrir menú principal"
-      >
-        <span className="sr-only">Abrir menú</span>
-        <span className="flex flex-col gap-1">
-          <span className="h-0.5 w-5 rounded-full bg-foreground" />
-          <span className="h-0.5 w-5 rounded-full bg-foreground" />
-          <span className="h-0.5 w-5 rounded-full bg-foreground" />
-        </span>
-      </button>
-
-      {open ? (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/20 dark:bg-black/55 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-            aria-label="Cerrar menú"
-          />
-          <aside ref={swipeRef} className="relative h-full w-72 max-w-[85%] translate-x-0 bg-sidebar p-6 shadow-2xl border-r border-sidebar-border">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase tracking-[0.32em] text-muted-foreground">CRM Clínico</p>
-                <p className="text-lg font-semibold text-foreground">Dr. Mario Martínez</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <ThemeToggle />
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-100"
-                  aria-label="Cerrar menú"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-
-            <nav className="mt-8" aria-label="Menú móvil">
-              <ul className="flex flex-col gap-2 text-base">
-                {navItems.map((item) => {
-                  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-                  return (
-                    <li key={item.label}>
-                      <Link
-                        href={item.href}
-                        aria-current={isActive ? "page" : undefined}
-                        className={cn(
-                          "flex items-center justify-between rounded-2xl border border-transparent px-3 py-2.5 font-medium transition-colors",
-                          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
-                          isActive 
-                            ? "border-blue-100 bg-blue-50 text-blue-700 dark:border-white/25 dark:bg-white/12 dark:text-white"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                        )}
-                        onClick={() => setOpen(false)}
-                      >
-                        <span>{item.label}</span>
-                        <span aria-hidden>→</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-
-              <form action={signOutAction} className="mt-6">
-                <button
-                  type="submit"
-                  className={cn(
-                    "w-full flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-base font-medium text-foreground transition-all duration-100",
-                    "hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-200",
-                    "active:bg-red-100 dark:active:bg-red-500/15 active:scale-95",
-                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
-                  )}
-                >
-                  <svg 
-                    className="h-5 w-5" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
-                    />
-                  </svg>
-                  Cerrar sesión
-                </button>
-              </form>
-            </nav>
-          </aside>
-        </div>
-      ) : null}
-    </>
-  );
-}

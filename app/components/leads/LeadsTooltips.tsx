@@ -141,8 +141,8 @@ export const StatsTooltips = {
  */
 export const FilterTooltips = {
   'all': GLOSARIO.filtros.ejemplos['Todos'],
-  'Nuevo': GLOSARIO.filtros.ejemplos['Nuevos'],
-  'En seguimiento': GLOSARIO.filtros.ejemplos['Seguimiento'],
-  'Convertido': GLOSARIO.filtros.ejemplos['Convertidos'],
-  'Descartado': GLOSARIO.filtros.ejemplos['Descartados'],
+  'nuevo': GLOSARIO.filtros.ejemplos['Nuevos'],
+  'contactado': GLOSARIO.filtros.ejemplos['Seguimiento'],
+  'convertido': GLOSARIO.filtros.ejemplos['Convertidos'],
+  'descartado': GLOSARIO.filtros.ejemplos['Descartados'],
 };

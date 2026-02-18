@@ -51,13 +51,13 @@ export function PageShell({
   return (
     <div
       className={cn(
-        "relative transition-colors duration-300",
+        "relative",
         "bg-background text-foreground",
         className
       )}
     >
       {accent && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-40 overflow-hidden" aria-hidden>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-40 overflow-hidden" aria-hidden style={{ contain: 'strict', willChange: 'opacity' }}>
           <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/20 blur-[180px] dark:bg-blue-500/40" />
         </div>
       )}

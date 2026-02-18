@@ -178,13 +178,7 @@
   }
 }
 
-/* Mejoras de touch targets para móviles */
-@media (pointer: coarse) {
-  button, a, input[type="checkbox"], input[type="radio"] {
-    min-height: 44px; /* iOS Human Interface Guidelines */
-    min-width: 44px;
-  }
-}
+/* Touch targets movidos a sección unificada abajo */
 
 /* Estilos del calendario movidos a app/agenda/calendar.css */
 
@@ -427,8 +421,8 @@ html {
   opacity: 0.1;
 }
 
-/* Prevenir doble tap zoom en iOS */
-* {
+/* Prevenir doble tap zoom en iOS - solo en elementos interactivos */
+button, a, input, select, textarea, [role="button"] {
   touch-action: manipulation;
 }
 

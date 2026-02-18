@@ -53,7 +53,7 @@ async function fetchLeadByTelefono(telefono: string): Promise<Lead | null> {
   const { data, error } = await supabase
     .from('leads')
     .select('*')
-    .in('telefono_whatsapp', variantes)
+    .in('telefono', variantes)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
@@ -63,7 +63,7 @@ async function fetchLeadByTelefono(telefono: string): Promise<Lead | null> {
     const { data: dataLike, error: errorLike } = await supabase
       .from('leads')
       .select('*')
-      .or(variantes.map(v => `telefono_whatsapp.ilike.%${v.slice(-10)}%`).join(','))
+      .or(variantes.map(v => `telefono.ilike.%${v.slice(-10)}%`).join(','))
       .order('created_at', { ascending: false })
       .limit(1)
       .single();

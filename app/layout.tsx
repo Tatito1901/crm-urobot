@@ -57,7 +57,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${geistSans.variable} ${roboto.variable} antialiased bg-background text-foreground transition-colors`}>
+      <body className={`${geistSans.variable} ${roboto.variable} antialiased bg-background text-foreground`}>
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

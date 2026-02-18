@@ -93,7 +93,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
 
           // Actualizar el formulario con el ID del paciente creado
           data.patientId = patientResult.data.id;
-          data.patientName = patientResult.data.nombre || patientResult.data.nombreCompleto || 'Paciente';
+          data.patientName = patientResult.data.nombre || 'Paciente';
         } catch (error) {
           setIsCreatingPatient(false);
           throw error;
@@ -195,7 +195,7 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
             onSelect={(patient: Paciente | null) => {
               if (patient?.id) {
                 updateField('patientId', patient.id);
-                updateField('patientName', patient.nombre || patient.nombreCompleto || '');
+                updateField('patientName', patient.nombre || '');
                 setNewPatientData(null);
               } else {
                 // Limpiar selección

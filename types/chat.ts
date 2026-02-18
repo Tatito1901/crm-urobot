@@ -2,58 +2,44 @@
  * ============================================================
  * TIPOS CHAT - SINCRONIZADO CON BD REAL
  * ============================================================
- * Fuente de verdad: Supabase tabla 'conversaciones'
- * Última sync: 2025-12-05
+ * Fuente de verdad: Supabase tablas 'conversaciones' + 'mensajes'
+ * Última sync: 2026-02-17 (nueva BD whpnvmquoycvsxcmvtac)
  */
 
 import type { Tables } from './database';
 
 // ============================================================
-// TIPO BD
+// TIPOS BD (nueva estructura: conversaciones + mensajes)
 // ============================================================
 
-// Extendemos el tipo generado automáticamente si le faltan campos multimedia
-// O lo redefinimos si es necesario para mayor precisión
-export interface ConversacionRow {
-  id: string;
-  telefono: string;
-  rol: 'usuario' | 'asistente';
-  mensaje: string;
-  created_at: string | null;
-  
-  // Campos multimedia (pueden no estar en types generados antiguos)
-  tipo_mensaje: 'text' | 'image' | 'audio' | 'video' | 'document' | 'sticker' | 'location' | null;
-  media_url: string | null;
-  media_mime_type: string | null;
-  media_filename: string | null;
-  media_caption: string | null;
-  media_duration_seconds: number | null;
-  media_width: number | null;
-  media_height: number | null;
-}
+// Tabla conversaciones (metadata de la conversación)
+export type ConversacionRow = Tables<'conversaciones'>;
+
+// Tabla mensajes (mensajes individuales)
+export type MensajeRow = Tables<'mensajes'>;
 
 // ============================================================
 // TIPOS UI
 // ============================================================
 
-export type TipoMensaje = NonNullable<ConversacionRow['tipo_mensaje']>;
+export type TipoMensaje = 'text' | 'image' | 'audio' | 'video' | 'document' | 'sticker' | 'location';
 
 export interface Mensaje {
   id: string;
-  telefono: string;
-  contenido: string; // Mapeado de mensaje o media_caption
-  rol: 'usuario' | 'asistente';
+  conversacionId: string;
+  contenido: string;           // BD: contenido
+  remitente: string;           // BD: remitente ('usuario' | 'asistente' | 'sistema')
+  tipo: string;                // BD: tipo
   createdAt: Date;
   
   // Campos multimedia
   tipoMensaje: TipoMensaje;
-  mediaUrl?: string | null;
+  mediaUrl?: string | null;    // BD: media_url
+  tipoContenido?: string | null; // BD: tipo_contenido (mime type)
   mediaMimeType?: string | null;
   mediaFilename?: string | null;
   mediaCaption?: string | null;
   mediaDurationSeconds?: number | null;
-  mediaWidth?: number | null;
-  mediaHeight?: number | null;
 }
 
 export interface ConversacionUI {

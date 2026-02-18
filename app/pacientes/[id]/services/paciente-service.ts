@@ -109,9 +109,9 @@ export async function updatePacienteNotas(
     const { error: updateError } = await supabase
       .from('pacientes')
       .update({ 
-        notas: notas,
+        observaciones: notas,
         updated_at: new Date().toISOString()
-      })
+      } as never)
       .eq('id', pacienteId);
 
     if (updateError) {
@@ -198,11 +198,12 @@ export async function guardarMensaje(
   mensaje: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const { data, error } = await supabase.rpc('guardar_mensaje', {
+    const { data, error } = await supabase.rpc('guardar_mensaje_urobot' as never, {
       p_telefono: telefono,
-      p_rol: rol,
-      p_mensaje: mensaje,
-    });
+      p_remitente: rol,
+      p_contenido: mensaje,
+      p_tipo: 'texto_manual',
+    } as never);
 
     if (error) {
       return { success: false, error: error.message };
@@ -233,7 +234,8 @@ export async function obtenerContextoUrobot(telefono: string): Promise<{
   error?: string;
 }> {
   try {
-    const { data, error } = await supabase.rpc('obtener_contexto_urobot', {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc('obtener_contexto_urobot', {
       p_telefono: telefono,
     });
 

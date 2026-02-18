@@ -12,6 +12,7 @@ import { LeadsMetrics } from './components/LeadsMetrics';
 import { LeadsFilters } from './components/LeadsFilters';
 import { LeadsTable } from './components/LeadsTable';
 import { FunnelGuide } from './components/FunnelGuide';
+import { LeadsCleanupPanel } from './components/LeadsCleanupPanel';
 import { Loader2 } from 'lucide-react';
 
 export default function LeadsPage() {
@@ -46,7 +47,7 @@ export default function LeadsPage() {
   }), [stats]);
   
   // ✅ Handler para cambio de filtro (mapea a valores del hook)
-  const handleFilterChange = useCallback((newFilter: 'all' | 'Nuevo' | 'Contactado' | 'Interesado' | 'Convertido' | 'Descartado') => {
+  const handleFilterChange = useCallback((newFilter: 'all' | 'nuevo' | 'contactado' | 'interesado' | 'convertido' | 'descartado') => {
     setEstadoFilter(newFilter === 'all' ? '' : newFilter);
   }, [setEstadoFilter]);
 
@@ -67,6 +68,9 @@ export default function LeadsPage() {
 
       {/* Guía del Embudo (educativo para el doctor) */}
       <FunnelGuide />
+
+      {/* Panel de limpieza de leads duplicados */}
+      <LeadsCleanupPanel onComplete={handleRefresh} />
 
       <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-muted/20">
@@ -91,7 +95,7 @@ export default function LeadsPage() {
         <div>
           <div className="px-4 py-3 pb-0">
             <LeadsFilters
-              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'Nuevo' | 'Interesado' | 'Convertido' | 'Descartado'}
+              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'nuevo' | 'interesado' | 'convertido' | 'descartado'}
               onFilterChange={handleFilterChange}
               searchValue={search}
               onSearchChange={setSearch}

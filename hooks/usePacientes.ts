@@ -58,10 +58,9 @@ interface UsePacientesReturn {
 /**
  * Fetcher para pacientes
  * ✅ Campos sincronizados con BD real (types/supabase.ts)
- * ✅ Usa vista paciente_stats para estadísticas calculadas
+ * Stats (total_consultas, ultima_consulta) ahora están directamente en tabla pacientes
  */
 const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number }> => {
-  // Query principal de pacientes
   const { data, error, count } = await supabase
     .from('pacientes')
     .select('*', { count: 'exact' })
@@ -75,23 +74,8 @@ const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number 
     return { pacientes: [], count: 0 }
   }
 
-  // Obtener estadísticas de la vista paciente_stats (no tipada en Supabase)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const statsResult = await (supabase as any)
-    .from('paciente_stats')
-    .select('*')
-  
-  const statsData = (statsResult.data || []) as PacienteStatsRow[]
-
-  const statsMap = new Map<string, PacienteStatsRow>(
-    statsData.map((s: PacienteStatsRow) => [s.paciente_id, s])
-  )
-
-  // Mapear los pacientes con sus estadísticas
-  const pacientes = (data as PacienteRow[]).map(row => {
-    const stats = statsMap.get(row.id) ?? null
-    return mapPacienteFromDB(row, stats)
-  })
+  // Stats ahora están directamente en la tabla pacientes (total_consultas, ultima_consulta)
+  const pacientes = (data as PacienteRow[]).map(row => mapPacienteFromDB(row))
   
   return { pacientes, count: pacientes.length }
 }

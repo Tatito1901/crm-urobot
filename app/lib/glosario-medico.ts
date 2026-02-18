@@ -18,13 +18,15 @@ export const GLOSARIO = {
     titulo: 'Etapa del Proceso',
     descripcion: 'En qué punto del proceso se encuentra cada persona interesada.',
     detalle: {
-      'Nuevo': 'Acaba de contactarnos por primera vez',
-      'Contactado': 'Ya iniciamos conversación con esta persona',
-      'Interesado': 'Mostró interés real en agendar consulta',
-      'Calificado': 'Cumple requisitos y está listo para agendar',
-      'Convertido': 'Ya agendó su primera consulta (ahora es paciente)',
-      'No_Interesado': 'Decidió no continuar',
-      'Perdido': 'Dejó de responder o no se pudo contactar'
+      'nuevo': 'Acaba de contactarnos por primera vez',
+      'contactado': 'Ya iniciamos conversación con esta persona',
+      'interesado': 'Mostró interés real en agendar consulta',
+      'calificado': 'Cumple requisitos y está listo para agendar',
+      'escalado': 'Requiere atención especial del equipo',
+      'cita_agendada': 'Tiene cita programada',
+      'convertido': 'Ya agendó su primera consulta (ahora es paciente)',
+      'no_interesado': 'Decidió no continuar',
+      'descartado': 'Dejó de responder o no se pudo contactar'
     }
   },
 

@@ -66,7 +66,7 @@ export const DESTINO_COLORS: Record<TipoDestino, string> = {
 export interface DestinoPaciente {
   // === Campos directos de BD ===
   id: string;
-  pacienteId: string;               // BD: paciente_id (FK)
+  pacienteId: string | null;         // BD: paciente_id (FK)
   tipoDestino: TipoDestino;         // BD: tipo_destino
   fechaRegistro: string | null;     // BD: fecha_registro
   observaciones: string | null;     // BD: observaciones
@@ -96,19 +96,21 @@ export interface DestinoPaciente {
 
 export function mapDestinoPacienteFromDB(row: DestinoPacienteRow): DestinoPaciente {
   const tipoDestino = isTipoDestino(row.tipo_destino) ? row.tipo_destino : 'pendiente';
+  // Safe access for columns that may differ between old/new schema
+  const r = row as Record<string, unknown>;
   
   return {
     id: row.id,
     pacienteId: row.paciente_id,
     tipoDestino,
-    fechaRegistro: row.fecha_registro,
-    observaciones: row.observaciones,
-    motivoAlta: row.motivo_alta,
+    fechaRegistro: (r.fecha_registro as string | null) ?? (r.fecha_programada as string | null) ?? null,
+    observaciones: (r.observaciones as string | null) ?? (row.notas as string | null) ?? null,
+    motivoAlta: (r.motivo_alta as string | null) ?? null,
     tipoCirugia: row.tipo_cirugia,
     monto: row.monto,
-    moneda: isMoneda(row.moneda) ? row.moneda : 'MXN',
-    fechaEvento: row.fecha_evento,
-    sedeOperacion: row.sede_operacion,
+    moneda: isMoneda(r.moneda) ? r.moneda as Moneda : 'MXN',
+    fechaEvento: (r.fecha_evento as string | null) ?? (r.fecha_programada as string | null) ?? null,
+    sedeOperacion: (r.sede_operacion as string | null) ?? null,
     notas: row.notas,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -148,17 +150,20 @@ export interface CreateDestinoInput {
   notas?: string;
 }
 
-export function prepareDestinoForInsert(input: CreateDestinoInput): Partial<DestinoPacienteRow> {
+export function prepareDestinoForInsert(input: CreateDestinoInput): Record<string, unknown> {
+  // Build notas combining observaciones, motivoAlta, sedeOperacion into single field
+  const notasParts: string[] = [];
+  if (input.observaciones) notasParts.push(input.observaciones);
+  if (input.motivoAlta) notasParts.push(`Motivo alta: ${input.motivoAlta}`);
+  if (input.sedeOperacion) notasParts.push(`Sede: ${input.sedeOperacion}`);
+  if (input.notas) notasParts.push(input.notas);
+  
   return {
     paciente_id: input.pacienteId,
     tipo_destino: input.tipoDestino,
-    observaciones: input.observaciones ?? null,
-    motivo_alta: input.motivoAlta ?? null,
     tipo_cirugia: input.tipoCirugia ?? null,
     monto: input.monto ?? null,
-    moneda: input.moneda ?? 'MXN',
-    fecha_evento: input.fechaEvento ?? null,
-    sede_operacion: input.sedeOperacion ?? null,
-    notas: input.notas ?? null,
+    fecha_programada: input.fechaEvento ?? null,
+    notas: notasParts.length > 0 ? notasParts.join(' | ') : null,
   };
 }

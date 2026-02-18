@@ -57,7 +57,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
   const router = useRouter();
   const [showDestino, setShowDestino] = useState(true);
   const [isEditingNotas, setIsEditingNotas] = useState(false);
-  const [notas, setNotas] = useState(paciente.notas || '');
+  const [notas, setNotas] = useState(paciente.observaciones || '');
   const [isDestinoModalOpen, setIsDestinoModalOpen] = useState(false);
   
   // Convertir destino de BD a formato UI si existe
@@ -389,7 +389,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                 size="sm"
                 onClick={() => {
                   setIsEditingNotas(false);
-                  setNotas(paciente.notas || '');
+                  setNotas(paciente.observaciones || '');
                 }}
                 className="flex-1"
               >
@@ -400,7 +400,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
         ) : (
           <div className="p-3 rounded-lg bg-muted/30 border border-border">
             <p className="text-sm text-muted-foreground italic leading-relaxed">
-              {paciente.notas || 'Sin notas registradas.'}
+              {paciente.observaciones || 'Sin notas registradas.'}
             </p>
           </div>
         )}

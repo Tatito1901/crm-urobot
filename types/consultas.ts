@@ -91,7 +91,7 @@ export function mapConsultaFromDB(row: ConsultaRow, pacienteNombre?: string): Co
     id: row.id,
     consultaId: row.consulta_id,
     pacienteId: row.paciente_id,
-    sede: isConsultaSede(row.sede) ? row.sede : null,
+    sede: isConsultaSede((row as Record<string, unknown>).sede) ? (row as Record<string, unknown>).sede as ConsultaSede : null,
     fechaHoraInicio: row.fecha_hora_inicio,
     fechaHoraFin: row.fecha_hora_fin,
     estadoCita: isConsultaEstado(row.estado_cita) ? row.estado_cita : 'Programada',

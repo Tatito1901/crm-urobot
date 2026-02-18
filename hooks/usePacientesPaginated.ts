@@ -112,24 +112,29 @@ const fetchPacientesPaginated = async (
   }
   
   const pacientes: Paciente[] = (result.data || []).map((p: Record<string, unknown>) => {
-    const nombreCompleto = p.nombreCompleto as string | null;
+    const nombre = (p.nombre as string) || (p.telefono as string) || '';
     const telefono = p.telefono as string;
     
     return {
       id: p.id as string,
-      nombreCompleto,
+      nombre,
+      apellido: (p.apellido as string | null) ?? null,
       telefono,
-      email: p.email as string | null,
+      email: (p.email as string | null) ?? null,
+      fechaNacimiento: (p.fecha_nacimiento as string | null) ?? null,
+      genero: (p.genero as string | null) ?? null,
+      fuente: (p.fuente as string | null) ?? null,
+      origenLead: (p.origen_lead as string | null) ?? null,
       estado: ((p.estado as string) || 'Activo') as 'Activo' | 'Inactivo' | 'Alta',
-      origenLead: p.origenLead as string | null,
-      createdAt: p.createdAt as string,
-      updatedAt: null,
-      fechaNacimiento: null,
-      notas: null,
+      esActivo: (p.es_activo as boolean) ?? true,
+      observaciones: (p.observaciones as string | null) ?? null,
+      leadId: (p.lead_id as string | null) ?? null,
+      createdAt: (p.created_at as string) ?? null,
+      updatedAt: (p.updated_at as string | null) ?? null,
       // Campos calculados/UI
-      nombre: nombreCompleto || telefono, // Display name requerido
-      totalConsultas: (p.totalConsultas as number) || 0,
-      ultimaConsulta: p.ultimaConsulta as string | null,
+      nombreDisplay: nombre || telefono,
+      totalConsultas: (p.total_consultas as number) || 0,
+      ultimaConsulta: (p.ultima_consulta as string | null) ?? null,
     };
   });
   

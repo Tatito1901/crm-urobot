@@ -56,7 +56,7 @@ export function enrichConsulta(consulta: Consulta): Consulta {
  */
 export function enrichLead(lead: Lead): Lead {
   const now = Date.now();
-  const primerContacto = lead.primerContacto ? new Date(lead.primerContacto).getTime() : now;
+  const primerContacto = lead.createdAt ? new Date(lead.createdAt).getTime() : now;
   const ultimaInteraccion = lead.ultimaInteraccion ? new Date(lead.ultimaInteraccion).getTime() : null;
   
   const diasDesdeContacto = Math.floor((now - primerContacto) / (1000 * 60 * 60 * 24));
@@ -64,7 +64,7 @@ export function enrichLead(lead: Lead): Lead {
     ? Math.floor((now - ultimaInteraccion) / (1000 * 60 * 60 * 24))
     : null;
   
-  const esCaliente = (lead.totalInteracciones || 0) >= 5 && (diasDesdeUltimaInteraccion || 999) <= 2;
+  const esCaliente = (lead.totalMensajes || 0) >= 5 && (diasDesdeUltimaInteraccion || 999) <= 2;
   const esInactivo = (diasDesdeUltimaInteraccion || 0) >= 7;
   
   return {

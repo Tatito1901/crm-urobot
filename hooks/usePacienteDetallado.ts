@@ -8,8 +8,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { Database } from '@/types/supabase-generated';
-import type { Paciente, PacienteRow, PacienteStatsRow } from '@/types/pacientes';
+import type { Database } from '@/types/supabase';
+import type { Paciente, PacienteRow } from '@/types/pacientes';
 import { mapPacienteFromDB } from '@/types/pacientes';
 import type { Consulta } from '@/types/consultas';
 import type { DestinoPaciente, DestinoPacienteRow } from '@/types/destinos-pacientes';
@@ -67,25 +67,8 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       if (pacienteError) throw pacienteError;
       if (!pacienteData) throw new Error('Paciente no encontrado');
 
-      // Obtener estadísticas de la vista
-      type PacienteStatsView = Database['public']['Views']['paciente_stats']['Row'];
-      const statsResult = await supabase
-        .from('paciente_stats')
-        .select('*')
-        .eq('paciente_id', pacienteId)
-        .single() as { data: PacienteStatsView | null; error: { code?: string } | null };
-      
-      const statsData = statsResult.data as PacienteStatsRow | null;
-      const statsError = statsResult.error;
-
-      // PGRST116 es "Results contain 0 rows" - aceptable si no hay stats
-      if (statsError && statsError.code !== 'PGRST116') { /* silenciado */ }
-
-      // Mapear paciente con sus estadísticas
-      const pacienteMapeado = mapPacienteFromDB(
-        pacienteData as PacienteRow,
-        statsData as PacienteStatsRow | null
-      );
+      // Mapear paciente (stats ahora están en la tabla pacientes directamente)
+      const pacienteMapeado = mapPacienteFromDB(pacienteData as PacienteRow);
 
       // Obtener destinos del paciente
       const { data: destinosData, error: destinosError } = await supabase
@@ -126,16 +109,16 @@ export function usePacienteDetallado(pacienteId: string): UsePacienteDetalladoRe
       setConsultas(consultasMapeadas);
 
       // Obtener notas clínicas / episodios del paciente
-      type ConsultasNotasRow = Database['public']['Tables']['consultas_notas']['Row'];
-      const { data: notasData, error: notasError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: notasData, error: notasError } = await (supabase as any)
         .from('consultas_notas')
         .select('id, paciente_id, consulta_id, fecha, titulo, nota, origen, created_at')
         .eq('paciente_id', pacienteId)
-        .order('fecha', { ascending: false }) as { data: ConsultasNotasRow[] | null; error: unknown };
+        .order('fecha', { ascending: false });
 
       if (notasError) { /* silenciado - no crítico */ }
 
-      const notasMapeadas: NotaClinica[] = (notasData || []).map((row) => ({
+      const notasMapeadas: NotaClinica[] = (notasData || []).map((row: Record<string, string | null>) => ({
         id: row.id,
         pacienteId: row.paciente_id || pacienteId,
         consultaId: row.consulta_id,

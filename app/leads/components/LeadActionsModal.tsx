@@ -42,13 +42,15 @@ interface LeadActionsModalProps {
 
 // Estados con configuración visual
 const ESTADOS_CONFIG: { estado: LeadEstado; icon: React.ReactNode; label: string; color: string }[] = [
-  { estado: 'Nuevo', icon: <Star className="w-4 h-4" />, label: 'Nuevo', color: 'bg-blue-500' },
-  { estado: 'Contactado', icon: <MessageSquare className="w-4 h-4" />, label: 'Contactado', color: 'bg-cyan-500' },
-  { estado: 'Interesado', icon: <Zap className="w-4 h-4" />, label: 'Interesado', color: 'bg-amber-500' },
-  { estado: 'Calificado', icon: <Check className="w-4 h-4" />, label: 'Calificado', color: 'bg-emerald-500' },
-  { estado: 'Convertido', icon: <User className="w-4 h-4" />, label: 'Paciente', color: 'bg-green-600' },
-  { estado: 'No_Interesado', icon: <XCircle className="w-4 h-4" />, label: 'No interesado', color: 'bg-slate-400' },
-  { estado: 'Perdido', icon: <X className="w-4 h-4" />, label: 'Perdido', color: 'bg-red-500' },
+  { estado: 'nuevo', icon: <Star className="w-4 h-4" />, label: 'Nuevo', color: 'bg-blue-500' },
+  { estado: 'contactado', icon: <MessageSquare className="w-4 h-4" />, label: 'Contactado', color: 'bg-cyan-500' },
+  { estado: 'interesado', icon: <Zap className="w-4 h-4" />, label: 'Interesado', color: 'bg-amber-500' },
+  { estado: 'calificado', icon: <Check className="w-4 h-4" />, label: 'Calificado', color: 'bg-emerald-500' },
+  { estado: 'escalado', icon: <Zap className="w-4 h-4" />, label: 'Escalado', color: 'bg-orange-500' },
+  { estado: 'cita_agendada', icon: <Calendar className="w-4 h-4" />, label: 'Cita agendada', color: 'bg-teal-500' },
+  { estado: 'convertido', icon: <User className="w-4 h-4" />, label: 'Paciente', color: 'bg-green-600' },
+  { estado: 'no_interesado', icon: <XCircle className="w-4 h-4" />, label: 'No interesado', color: 'bg-slate-400' },
+  { estado: 'descartado', icon: <X className="w-4 h-4" />, label: 'Descartado', color: 'bg-red-500' },
 ];
 
 // ============================================================
@@ -98,7 +100,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
   const handleSelectPlantilla = useCallback((plantilla: PlantillaMensaje) => {
     setSelectedPlantilla(plantilla);
     const mensajePersonalizado = personalizarPlantilla(plantilla.mensaje, {
-      nombre: lead.nombreCompleto || lead.nombre || 'paciente',
+      nombre: lead.nombre || 'paciente',
     });
     setMensaje(mensajePersonalizado);
   }, [lead]);
@@ -159,9 +161,9 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
       />
       
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
         <div 
-          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md 
+          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-lg lg:max-w-xl
                      animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
           onClick={e => e.stopPropagation()}
         >
@@ -177,21 +179,21 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold
-                ${lead.estado === 'Convertido' ? 'bg-emerald-500' : 
-                  lead.estado === 'Interesado' ? 'bg-amber-500' : 
-                  lead.estado === 'Calificado' ? 'bg-green-500' : 'bg-blue-500'}`}
+                ${lead.estado === 'convertido' ? 'bg-emerald-500' : 
+                  lead.estado === 'interesado' ? 'bg-amber-500' : 
+                  lead.estado === 'calificado' ? 'bg-green-500' : 'bg-blue-500'}`}
               >
                 {(lead.nombre || lead.telefono).slice(0, 2).toUpperCase()}
               </div>
               
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                  {lead.nombre || lead.nombreCompleto || 'Sin nombre'}
+                  {lead.nombre || 'Sin nombre'}
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
-                    ${lead.estado === 'Convertido' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 
-                      lead.estado === 'Interesado' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : 
+                    ${lead.estado === 'convertido' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 
+                      lead.estado === 'interesado' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : 
                       'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'}`}
                   >
                     {etapaConfig?.icon} {etapaConfig?.nombre || lead.estado}
@@ -249,7 +251,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
           </div>
 
           {/* Contenido */}
-          <div className="p-5 max-h-[50vh] overflow-y-auto">
+          <div className="p-4 sm:p-5 max-h-[60vh] sm:max-h-[55vh] overflow-y-auto">
             {activeTab === 'mensaje' ? (
               <div className="space-y-4">
                 {/* Plantillas */}
@@ -257,20 +259,20 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                   <label className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 block">
                     Plantillas rápidas
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {plantillas.slice(0, 4).map((plantilla) => (
                       <button
                         key={plantilla.id}
                         onClick={() => handleSelectPlantilla(plantilla)}
-                        className={`p-3 text-left rounded-xl border transition-all
+                        className={`p-3 sm:p-4 text-left rounded-xl border transition-all active:scale-[0.98]
                           ${selectedPlantilla?.id === plantilla.id 
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10' 
-                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-sm' 
+                            : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                       >
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
                           {plantilla.nombre}
                         </p>
-                        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
                           {plantilla.descripcion}
                         </p>
                       </button>
@@ -280,39 +282,42 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
 
                 {/* Editor de mensaje */}
                 {selectedPlantilla && (
-                  <div className="space-y-2 animate-in fade-in duration-200">
+                  <div className="space-y-3 animate-in fade-in duration-200">
                     <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Mensaje personalizado
                     </label>
                     <textarea
                       value={mensaje}
                       onChange={(e) => setMensaje(e.target.value)}
-                      rows={4}
-                      className="w-full px-3 py-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 
-                               dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 
-                               focus:ring-blue-500/30 focus:border-blue-500 resize-none"
+                      rows={6}
+                      className="w-full px-4 py-3 text-sm leading-relaxed bg-slate-50 dark:bg-slate-800 
+                               border border-slate-200 dark:border-slate-700 rounded-xl 
+                               focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 
+                               resize-y min-h-[120px] sm:min-h-[150px] max-h-[300px]"
                       placeholder="Escribe tu mensaje..."
                     />
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 pt-1">
                       <button
                         onClick={handleEnviar}
                         disabled={enviando || !mensaje.trim()}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 
                                  bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold 
-                                 rounded-xl transition-all disabled:opacity-50"
+                                 rounded-xl transition-all disabled:opacity-50 active:scale-[0.98]"
                       >
                         {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                        Enviar por WhatsApp
+                        <span className="hidden sm:inline">Enviar por WhatsApp</span>
+                        <span className="sm:hidden">Enviar</span>
                       </button>
                       <button
                         onClick={handleCopiar}
                         disabled={!mensaje.trim()}
-                        className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 
-                                 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                        title="Copiar"
+                        className="px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 
+                                 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-2"
+                        title="Copiar mensaje"
                       >
                         {copiado ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-500" />}
+                        <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-300">Copiar</span>
                       </button>
                     </div>
                   </div>
@@ -320,18 +325,23 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
 
                 {/* Acción directa si no hay plantilla seleccionada */}
                 {!selectedPlantilla && (
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 
-                             bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold 
-                             rounded-xl transition-all"
-                  >
-                    <Phone className="w-4 h-4" />
-                    Abrir WhatsApp directo
-                    <ExternalLink className="w-4 h-4 ml-1 opacity-70" />
-                  </a>
+                  <div className="pt-2">
+                    <p className="text-xs text-slate-400 text-center mb-3">
+                      Selecciona una plantilla arriba o abre WhatsApp directamente
+                    </p>
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-3.5 
+                               bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold 
+                               rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/20"
+                    >
+                      <Phone className="w-5 h-5" />
+                      Abrir WhatsApp directo
+                      <ExternalLink className="w-4 h-4 ml-1 opacity-70" />
+                    </a>
+                  </div>
                 )}
               </div>
             ) : (

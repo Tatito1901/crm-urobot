@@ -34,8 +34,7 @@ interface UseLeadsReturn {
   }
 }
 
-// Tipo para el JOIN eliminado - usamos datos directos de la tabla leads
-// ya que nombre_completo ahora se guarda en la tabla leads
+// Usamos datos directos de la tabla leads (columna nombre)
 
 /**
  * Fetcher para leads
@@ -91,13 +90,15 @@ export function useLeads(): UseLeadsReturn {
     for (const l of leads) {
       // Estado
       switch (l.estado) {
-        case 'Nuevo': nuevos++; break
-        case 'Contactado':
-        case 'Interesado':
-        case 'Calificado': enSeguimiento++; break
-        case 'Convertido': convertidos++; break
-        case 'No_Interesado':
-        case 'Perdido': descartados++; break
+        case 'nuevo': nuevos++; break
+        case 'contactado':
+        case 'interesado':
+        case 'calificado':
+        case 'escalado': enSeguimiento++; break
+        case 'convertido':
+        case 'cita_agendada': convertidos++; break
+        case 'no_interesado':
+        case 'descartado': descartados++; break
       }
       
       // Flags

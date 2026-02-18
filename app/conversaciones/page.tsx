@@ -40,53 +40,65 @@ export default function ConversacionesPage() {
   }, [telefonoParam, telefonoActivo, setTelefonoActivo])
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isMobileViewingChat, setIsMobileViewingChat] = useState(false)
   const [showActionsPanel, setShowActionsPanel] = useState(false)
   const [filtroActivo, setFiltroActivo] = useState<'todos' | 'leads' | 'pacientes' | 'recientes'>('todos')
   const chatContainerRef = useRef<HTMLDivElement>(null)
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Filtrar conversaciones por búsqueda y filtro activo (Memoizado)
-  const filteredConversaciones = useMemo(() => {
-    let resultado = conversaciones;
+  // Debounce search para no filtrar en cada keystroke
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 250)
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current) }
+  }, [searchQuery])
+
+  // ✅ OPTIMIZADO: Single-pass para conteos + filtro combinado
+  const { filteredConversaciones, conteosPorTipo } = useMemo(() => {
+    const hace24h = Date.now() - 24 * 60 * 60 * 1000
+    const query = debouncedSearch.toLowerCase()
     
-    // Filtro por tipo
-    if (filtroActivo === 'leads') {
-      resultado = resultado.filter(c => c.tipoContacto === 'lead');
-    } else if (filtroActivo === 'pacientes') {
-      resultado = resultado.filter(c => c.tipoContacto === 'paciente');
-    } else if (filtroActivo === 'recientes') {
-      const hace24h = Date.now() - 24 * 60 * 60 * 1000;
-      resultado = resultado.filter(c => new Date(c.ultimaFecha).getTime() > hace24h);
+    // Single pass: contar tipos + filtrar al mismo tiempo
+    let leads = 0, pacientes = 0, recientes = 0
+    const filtered: typeof conversaciones = []
+    
+    for (const c of conversaciones) {
+      // Conteos (siempre, para badges)
+      if (c.tipoContacto === 'lead') leads++
+      if (c.tipoContacto === 'paciente') pacientes++
+      const esReciente = new Date(c.ultimaFecha).getTime() > hace24h
+      if (esReciente) recientes++
+      
+      // Filtro por tipo
+      if (filtroActivo === 'leads' && c.tipoContacto !== 'lead') continue
+      if (filtroActivo === 'pacientes' && c.tipoContacto !== 'paciente') continue
+      if (filtroActivo === 'recientes' && !esReciente) continue
+      
+      // Filtro por búsqueda
+      if (query && !c.telefono.includes(query) && !(c.nombreContacto?.toLowerCase().includes(query))) continue
+      
+      filtered.push(c)
     }
     
-    // Filtro por búsqueda
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      resultado = resultado.filter(conv => 
-        conv.telefono.includes(query) ||
-        (conv.nombreContacto?.toLowerCase().includes(query) ?? false)
-      );
+    return {
+      filteredConversaciones: filtered,
+      conteosPorTipo: {
+        todos: conversaciones.length,
+        leads,
+        pacientes,
+        recientes,
+      }
     }
-    
-    return resultado;
-  }, [conversaciones, searchQuery, filtroActivo]);
+  }, [conversaciones, debouncedSearch, filtroActivo])
 
-  // Contar por tipo para los filtros
-  const conteosPorTipo = useMemo(() => ({
-    todos: conversaciones.length,
-    leads: conversaciones.filter(c => c.tipoContacto === 'lead').length,
-    pacientes: conversaciones.filter(c => c.tipoContacto === 'paciente').length,
-    recientes: conversaciones.filter(c => {
-      const hace24h = Date.now() - 24 * 60 * 60 * 1000;
-      return new Date(c.ultimaFecha).getTime() > hace24h;
-    }).length,
-  }), [conversaciones])
-
-  // Seleccionar conversación
-  const handleSelectConversation = (telefono: string) => {
+  // Seleccionar conversación (memoizado)
+  const handleSelectConversation = useCallback((telefono: string) => {
     setTelefonoActivo(telefono)
     setIsMobileViewingChat(true)
-  }
+  }, [setTelefonoActivo])
 
   // Auto-scroll al final cuando cambian los mensajes
   useEffect(() => {
@@ -162,7 +174,7 @@ export default function ConversacionesPage() {
           w-full sm:w-[320px] lg:w-[380px] border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col 
           bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shrink-0 z-10
           absolute sm:relative inset-0 h-full
-          transition-transform duration-300 ease-in-out
+          transition-transform duration-300 ease-in-out will-change-transform
           ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
         `}>
           {/* Header Desktop del Sidebar - Más minimalista */}
@@ -302,7 +314,7 @@ export default function ConversacionesPage() {
         <main className={`
           flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden
           absolute sm:relative inset-0 h-full
-          transition-transform duration-300 ease-in-out
+          transition-transform duration-300 ease-in-out will-change-transform
           bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900
           ${isMobileViewingChat ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}
         `}>
@@ -408,13 +420,13 @@ export default function ConversacionesPage() {
                         <div className="space-y-3">
                           {grupo.mensajes.map((msg, idx) => {
                             const prevMsg = grupo.mensajes[idx - 1];
-                            const isConsecutive = prevMsg && prevMsg.rol === msg.rol;
+                            const isConsecutive = prevMsg && prevMsg.remitente === msg.remitente;
                             
                             return (
                               <MessageBubble
                                 key={msg.id}
                                 contenido={msg.contenido}
-                                rol={msg.rol}
+                                rol={msg.remitente as 'usuario' | 'asistente'}
                                 createdAt={msg.createdAt}
                                 isConsecutive={!!isConsecutive}
                                 tipoMensaje={msg.tipoMensaje}

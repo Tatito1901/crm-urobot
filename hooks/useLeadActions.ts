@@ -87,10 +87,32 @@ const CONFIG = {
  * Analiza el historial de conversación de un lead
  */
 async function analizarHistorialConversacion(telefono: string): Promise<HistorialContacto> {
-  const { data: mensajes, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+  
+  // Primero buscar la conversación por teléfono
+  const { data: conv } = await sb
     .from('conversaciones')
-    .select('rol, created_at, mensaje')
+    .select('id')
     .eq('telefono', telefono)
+    .limit(1)
+    .single();
+
+  if (!conv) {
+    return {
+      totalMensajesEnviados: 0,
+      totalMensajesRecibidos: 0,
+      diasSinRespuesta: 999,
+      intentosSeguimiento: 0,
+      respondioAlguna: false,
+      tasaRespuesta: 0,
+    };
+  }
+
+  const { data: mensajes, error } = await sb
+    .from('mensajes')
+    .select('remitente, created_at, contenido')
+    .eq('conversacion_id', conv.id)
     .order('created_at', { ascending: true });
 
   if (error || !mensajes) {
@@ -104,14 +126,14 @@ async function analizarHistorialConversacion(telefono: string): Promise<Historia
     };
   }
 
-  const enviados = mensajes.filter(m => m.rol === 'asistente');
-  const recibidos = mensajes.filter(m => m.rol === 'usuario');
+  const enviados = mensajes.filter((m: Record<string, unknown>) => m.remitente === 'asistente');
+  const recibidos = mensajes.filter((m: Record<string, unknown>) => m.remitente === 'usuario');
   
   const ultimoEnviado = enviados.length > 0 
-    ? new Date(enviados[enviados.length - 1].created_at!) 
+    ? new Date(enviados[enviados.length - 1].created_at as string) 
     : undefined;
   const ultimoRecibido = recibidos.length > 0 
-    ? new Date(recibidos[recibidos.length - 1].created_at!) 
+    ? new Date(recibidos[recibidos.length - 1].created_at as string) 
     : undefined;
 
   // Calcular días sin respuesta
@@ -131,7 +153,7 @@ async function analizarHistorialConversacion(telefono: string): Promise<Historia
   let esperandoRespuesta = false;
   
   for (const msg of mensajes) {
-    if (msg.rol === 'asistente') {
+    if ((msg as Record<string, unknown>).remitente === 'asistente') {
       if (esperandoRespuesta) {
         intentosSeguimiento++;
       }
@@ -168,11 +190,12 @@ function generarRecomendacion(
   const alertas: string[] = [];
   
   // === CASO 1: Lead ya convertido ===
-  if (lead.estado === 'Convertido') {
+  if (lead.estado === 'convertido') {
     return {
       accion: 'esperar',
       razon: '✅ Este lead ya es paciente',
-      prioridad: 'baja',
+      diasEsperar: 0,
+      prioridad: 'no_contactar',
       alertas: [],
     };
   }
@@ -188,7 +211,7 @@ function generarRecomendacion(
   }
 
   // === CASO 3: Lead nuevo sin contactar ===
-  if (lead.estado === 'Nuevo' && historial.totalMensajesEnviados === 0) {
+  if (lead.estado === 'nuevo' && historial.totalMensajesEnviados === 0) {
     return {
       accion: 'urgente',
       razon: '🚨 Lead nuevo sin contactar. Responder en menos de 1 hora aumenta 7x la conversión.',
@@ -209,7 +232,7 @@ function generarRecomendacion(
       return {
         accion: 'urgente',
         razon: `⚡ El lead respondió hace ${horasSinResponder}h. Momento ideal para avanzar.`,
-        plantillaSugerida: lead.estado === 'Contactado' ? 'info-servicios' : 'confirmar-interes',
+        plantillaSugerida: lead.estado === 'contactado' ? 'info-servicios' : 'confirmar-interes',
         prioridad: 'alta',
         alertas: ['Respuesta reciente pendiente de atender'],
       };
@@ -264,13 +287,15 @@ function generarRecomendacion(
 
   // === CASO DEFAULT: Contactar según etapa ===
   const plantillasPorEtapa: Record<LeadEstado, string> = {
-    'Nuevo': 'saludo-inicial',
-    'Contactado': 'info-servicios',
-    'Interesado': 'enviar-costos',
-    'Calificado': 'agendar-cita',
-    'Convertido': 'preparacion-cita',
-    'No_Interesado': 'reactivar-lead',
-    'Perdido': 'reactivar-lead',
+    'nuevo': 'saludo-inicial',
+    'contactado': 'info-servicios',
+    'interesado': 'enviar-costos',
+    'calificado': 'agendar-cita',
+    'escalado': 'seguimiento-escalado',
+    'cita_agendada': 'preparacion-cita',
+    'convertido': 'preparacion-cita',
+    'no_interesado': 'reactivar-lead',
+    'descartado': 'reactivar-lead',
   };
 
   return {
@@ -343,8 +368,7 @@ async function cambiarEstadoLead(
     .update({
       estado: nuevoEstado,
       updated_at: timestamp,
-      // Si se convierte, registrar fecha
-      ...(nuevoEstado === 'Convertido' && { fecha_conversion: timestamp }),
+      // Convertido no necesita campo adicional en nueva BD
     })
     .eq('id', leadId);
 
@@ -438,9 +462,9 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
     await supabase
       .from('leads')
       .update({ 
-        total_interacciones: (lead.totalInteracciones || 0) + 1,
+        total_mensajes: (lead.totalMensajes || 0) + 1,
         ultima_interaccion: new Date().toISOString(),
-      })
+      } as never)
       .eq('id', lead.id);
     
     // Refrescar datos
@@ -468,7 +492,7 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
   // Marcar como no molestar
   const marcarComoNoMolestar = useCallback(async () => {
     if (!lead) return;
-    await cambiarEstadoLead(lead.id, 'No_Interesado', lead.estado);
+    await cambiarEstadoLead(lead.id, 'no_interesado', lead.estado);
     await registrarAccion(
       lead.id,
       'etapa_cambiada',

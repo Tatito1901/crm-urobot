@@ -8,8 +8,7 @@ import { Badge } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { ThemeToggle } from '@/app/components/common/ThemeToggle';
 import { useStats } from '@/hooks/useStats';
-import { useLeads } from '@/hooks/useLeads';
-import { useConsultas } from '@/hooks/useConsultas';
+import { useDashboardActivity } from '@/hooks/useDashboardActivity';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { EmptyState } from '@/app/components/common/SkeletonLoader';
@@ -26,12 +25,11 @@ const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart
 });
 
 export default function DashboardPage() {
-  // ✅ Datos reales centralizados desde useStats
-  const { kpi, consultasPorSede, loading: loadingStats, refresh: refreshStats } = useStats();
+  // ✅ Datos reales centralizados desde useStats (RPC ~2KB)
+  const { kpi, consultasPorSede, funnelLeads, loading: loadingStats, refresh: refreshStats } = useStats();
   
-  // Hooks específicos para listas detalladas
-  const { leads, loading: loadingLeads, refetch: refetchLeads } = useLeads();
-  const { consultas, loading: loadingConsultas, refetch: refetchConsultas } = useConsultas();
+  // ✅ OPTIMIZADO: Solo 5 leads recientes + 5 consultas próximas (~2KB en vez de ~200KB+)
+  const { recentLeads, upcomingConsultas, loading: loadingActivity, refresh: refreshActivity } = useDashboardActivity();
 
   const [activeTab, setActiveTab] = useState<'actividad' | 'graficas'>('actividad');
 
@@ -42,7 +40,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleRefresh = async () => {
-    await Promise.all([refreshStats(), refetchLeads(), refetchConsultas()]);
+    await Promise.all([refreshStats(), refreshActivity()]);
   };
 
   // Métricas adaptadas desde useStats (KPI) - Memoizado para evitar recreación en re-renders
@@ -91,73 +89,39 @@ export default function DashboardPage() {
     color: sede.fill || '#3b82f6'
   })), [consultasPorSede]);
 
-  // Datos para gráfico de barras (leads por estado) - Optimizado
+  // ✅ OPTIMIZADO: Datos de gráfico de barras vienen del RPC (funnelLeads), no de iterar ALL leads
   const leadsChartData = useMemo(() => {
-    const contadores = {
-      Nuevo: 0,
-      Seguimiento: 0,
-      Convertido: 0,
-      Descartado: 0,
-    };
-
-    const estadosSeguimiento = ['Contactado', 'Interesado', 'Calificado'];
-    const estadosDescartado = ['No_Interesado', 'Perdido'];
-
-    leads.forEach((lead) => {
-      if (lead.estado === 'Nuevo') contadores.Nuevo++;
-      else if (lead.estado === 'Convertido') contadores.Convertido++;
-      else if (estadosSeguimiento.includes(lead.estado)) contadores.Seguimiento++;
-      else if (estadosDescartado.includes(lead.estado)) contadores.Descartado++;
-    });
-
-    return [
-      { label: 'Nuevo', value: contadores.Nuevo, color: '#3b82f6' },
-      { label: 'Seguimiento', value: contadores.Seguimiento, color: '#8b5cf6' },
-      { label: 'Convertido', value: contadores.Convertido, color: '#10b981' },
-      { label: 'Descartado', value: contadores.Descartado, color: '#64748b' },
-    ];
-  }, [leads]);
-
-  // Métricas de leads calculadas
-  const leadsStats = useMemo(() => {
-    const total = leads.length;
-    if (total === 0) return { total: 0, convertidos: 0, enProceso: 0, tasaConversion: 0 };
-
-    let convertidos = 0;
-    let enProceso = 0;
-
-    // Estados que consideramos "En proceso"
-    const estadosEnProceso = ['Nuevo', 'Contactado', 'Interesado', 'Calificado'];
-
-    // Single pass loop
-    for (const l of leads) {
-      if (l.estado === 'Convertido') convertidos++;
-      else if (estadosEnProceso.includes(l.estado)) enProceso++;
+    if (funnelLeads.length === 0) {
+      return [
+        { label: 'Nuevo', value: 0, color: '#3b82f6' },
+        { label: 'Seguimiento', value: 0, color: '#8b5cf6' },
+        { label: 'Convertido', value: 0, color: '#10b981' },
+        { label: 'Descartado', value: 0, color: '#64748b' },
+      ];
     }
+    const colorMap: Record<string, string> = {
+      'nuevo': '#3b82f6', 'contactado': '#8b5cf6', 'interesado': '#a78bfa',
+      'calificado': '#7c3aed', 'escalado': '#f59e0b', 'cita_agendada': '#14b8a6',
+      'convertido': '#10b981', 'no_interesado': '#94a3b8', 'descartado': '#64748b',
+    };
+    return funnelLeads.map(f => ({
+      label: f.name,
+      value: f.value,
+      color: f.fill || colorMap[f.name] || '#3b82f6',
+    }));
+  }, [funnelLeads]);
 
-    const tasaConversion = Math.round((convertidos / total) * 100);
-    return { total, convertidos, enProceso, tasaConversion };
-  }, [leads]);
-
-  // Datos para MVP - optimizado con useMemo y slice temprano
-  const recentLeads = useMemo(() => {
-    // Evitar sort de todo el array si es muy grande, idealmente esto debería venir ordenado del backend
-    // Como viene de useLeads (SWR), asumimos que puede no estar ordenado por fecha reciente
-    return [...leads]
-      .sort((a, b) => new Date(b.primerContacto || 0).getTime() - new Date(a.primerContacto || 0).getTime())
-      .slice(0, 5);
-  }, [leads]);
-
-  const upcomingConsultas = useMemo(() => {
-    const now = new Date();
-    return consultas
-      .filter((c) => new Date(c.fechaHoraInicio) >= now)
-      .sort((a, b) => new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime())
-      .slice(0, 5);
-  }, [consultas]);
+  // Métricas de leads calculadas desde KPIs (ya vienen del servidor)
+  const leadsStats = useMemo(() => {
+    const total = kpi.totalLeads;
+    const convertidos = leadsChartData.find(d => d.label === 'convertido')?.value ?? 0;
+    const descartados = leadsChartData.filter(d => ['no_interesado', 'descartado'].includes(d.label)).reduce((s, d) => s + d.value, 0);
+    const enProceso = total - convertidos - descartados;
+    return { total, convertidos, enProceso, tasaConversion: kpi.tasaConversion };
+  }, [kpi, leadsChartData]);
 
   // Mostrar loading hasta que esté montado en cliente para evitar hydration mismatch
-  const isLoadingAny = !mounted || loadingStats || loadingLeads || loadingConsultas;
+  const isLoadingAny = !mounted || loadingStats || loadingActivity;
 
   return (
     <ErrorBoundary>
@@ -235,11 +199,11 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate">
-                      Leads Recientes {mounted && loadingLeads && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
+                      Leads Recientes {mounted && loadingActivity && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Últimos 5 contactos registrados</p>
                   </div>
-                  <Badge label={mounted ? `${leads.length}` : '—'} variant="outline" className="border-border text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
+                  <Badge label={mounted ? `${recentLeads.length}` : '—'} variant="outline" className="border-border text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="max-h-[320px] sm:max-h-[400px] overflow-y-auto overscroll-contain">
@@ -268,7 +232,7 @@ export default function DashboardPage() {
                                 <span className="capitalize truncate">{lead.fuente}</span>
                               </div>
                             </div>
-                            <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} className="shrink-0 text-[10px] sm:text-xs" />
+                            <Badge label={lead.estado} tone={STATE_COLORS[lead.estado as keyof typeof STATE_COLORS]} className="shrink-0 text-[10px] sm:text-xs" />
                           </div>
                         ))}
                       </div>
@@ -282,7 +246,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4">
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate">
-                      Consultas Próximas {mounted && loadingConsultas && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
+                      Consultas Próximas {mounted && loadingActivity && <span className="ml-1.5 animate-spin text-blue-500 text-xs">↻</span>}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Agenda para los próximos días</p>
                   </div>
@@ -315,7 +279,7 @@ export default function DashboardPage() {
                                 <span className="font-medium text-foreground shrink-0">{consulta.sede}</span>
                               </div>
                             </div>
-                            <Badge label={consulta.estadoCita} tone={STATE_COLORS[consulta.estadoCita]} className="shrink-0 text-[10px] sm:text-xs" />
+                            <Badge label={consulta.estadoCita} tone={STATE_COLORS[consulta.estadoCita as keyof typeof STATE_COLORS]} className="shrink-0 text-[10px] sm:text-xs" />
                           </div>
                         ))}
                       </div>

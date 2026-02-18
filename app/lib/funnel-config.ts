@@ -66,7 +66,7 @@ export const PLANTILLAS_MENSAJE: PlantillaMensaje[] = [
     mensaje: `¡Hola! Gracias por contactarnos. Soy del consultorio del Dr. [NOMBRE].
 
 ¿En qué podemos ayudarte? Estamos disponibles para resolver tus dudas sobre nuestros servicios.`,
-    etapasAplica: ['Nuevo'],
+    etapasAplica: ['nuevo'],
     descripcion: 'Primer mensaje de bienvenida para leads nuevos'
   },
   {
@@ -75,7 +75,7 @@ export const PLANTILLAS_MENSAJE: PlantillaMensaje[] = [
     mensaje: `¡Hola! Recibimos tu mensaje.
 
 Un momento, en breve te atendemos personalmente. ¿Podrías compartirnos tu nombre completo?`,
-    etapasAplica: ['Nuevo'],
+    etapasAplica: ['nuevo'],
     descripcion: 'Respuesta inmediata mientras se prepara respuesta completa'
   },
 
@@ -91,7 +91,7 @@ Contamos con los siguientes servicios:
 • Procedimientos especializados
 
 ¿Hay algún tema específico que te interese conocer más?`,
-    etapasAplica: ['Contactado'],
+    etapasAplica: ['contactado'],
     descripcion: 'Presentar servicios disponibles'
   },
   {
@@ -102,7 +102,7 @@ Contamos con los siguientes servicios:
 Hace unos días nos contactaste y queremos saber si aún podemos ayudarte.
 
 ¿Tienes alguna duda sobre nuestros servicios? Estamos para atenderte.`,
-    etapasAplica: ['Contactado', 'Interesado'],
+    etapasAplica: ['contactado', 'interesado'],
     descripcion: 'Reactivar conversación con lead que no ha respondido'
   },
 
@@ -120,7 +120,7 @@ Estos son nuestros costos:
 🕐 Horarios: Lunes a Viernes 9am-6pm, Sábado 9am-2pm
 
 ¿Te gustaría agendar una cita?`,
-    etapasAplica: ['Interesado'],
+    etapasAplica: ['interesado'],
     descripcion: 'Enviar información de precios cuando el lead pregunta'
   },
   {
@@ -133,7 +133,7 @@ Para agendar tu cita necesito:
 2. ¿Prefieres mañana o tarde?
 
 Tenemos disponibilidad esta semana. ¿Qué te parece?`,
-    etapasAplica: ['Interesado'],
+    etapasAplica: ['interesado'],
     descripcion: 'Confirmar interés y solicitar preferencia de horario'
   },
 
@@ -154,7 +154,7 @@ Recuerda traer:
 • Estudios previos (si tienes)
 
 Te enviaremos recordatorio un día antes. ¡Te esperamos!`,
-    etapasAplica: ['Calificado'],
+    etapasAplica: ['calificado'],
     descripcion: 'Confirmar cita agendada con todos los detalles'
   },
   {
@@ -168,7 +168,7 @@ Para tu próxima consulta te recomendamos:
 • Estudios previos relacionados
 
 ¿Tienes alguna pregunta antes de tu cita?`,
-    etapasAplica: ['Calificado', 'Convertido'],
+    etapasAplica: ['calificado', 'convertido'],
     descripcion: 'Instrucciones de preparación pre-consulta'
   },
 
@@ -183,7 +183,7 @@ Hace tiempo nos contactaste y queremos saber cómo estás.
 Si aún necesitas atención urológica, seguimos disponibles para ayudarte. Actualmente tenemos disponibilidad para esta semana.
 
 ¿Te gustaría retomar la conversación?`,
-    etapasAplica: ['Contactado', 'Interesado', 'No_Interesado'],
+    etapasAplica: ['contactado', 'interesado', 'no_interesado'],
     descripcion: 'Mensaje para reactivar leads inactivos o perdidos'
   },
 
@@ -196,7 +196,7 @@ Si aún necesitas atención urológica, seguimos disponibles para ayudarte. Actu
 Si en el futuro necesitas atención urológica, no dudes en contactarnos.
 
 ¡Te deseamos lo mejor!`,
-    etapasAplica: ['No_Interesado', 'Perdido'],
+    etapasAplica: ['no_interesado', 'descartado'],
     descripcion: 'Cierre amable cuando el lead no está interesado'
   },
 ];
@@ -207,7 +207,7 @@ Si en el futuro necesitas atención urológica, no dudes en contactarnos.
 
 export const ETAPAS_FUNNEL: EtapaFunnel[] = [
   {
-    estado: 'Nuevo',
+    estado: 'nuevo',
     nombre: 'Nuevo Lead',
     descripcion: 'Persona que acaba de contactar por primera vez',
     objetivo: 'Responder en menos de 1 hora para maximizar conversión',
@@ -222,7 +222,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         label: 'Enviar saludo',
         icon: '👋',
         descripcion: 'Enviar mensaje de bienvenida',
-        siguienteEtapa: 'Contactado',
+        siguienteEtapa: 'contactado',
         plantillaSugerida: 'saludo-inicial',
         color: 'blue'
       },
@@ -231,7 +231,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         label: 'Marcar spam',
         icon: '🚫',
         descripcion: 'No es un lead real',
-        siguienteEtapa: 'Perdido',
+        siguienteEtapa: 'descartado',
         color: 'red'
       }
     ],
@@ -239,7 +239,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '🆕'
   },
   {
-    estado: 'Contactado',
+    estado: 'contactado',
     nombre: 'En Conversación',
     descripcion: 'Ya iniciamos contacto, esperando respuesta o dando información',
     objetivo: 'Identificar necesidades y despertar interés',
@@ -270,7 +270,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         label: 'Marcar interesado',
         icon: '🎯',
         descripcion: 'Mostró interés real',
-        siguienteEtapa: 'Interesado',
+        siguienteEtapa: 'interesado',
         color: 'purple'
       },
       {
@@ -278,7 +278,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         label: 'No interesado',
         icon: '✖',
         descripcion: 'Decidió no continuar',
-        siguienteEtapa: 'No_Interesado',
+        siguienteEtapa: 'no_interesado',
         color: 'gray'
       }
     ],
@@ -286,7 +286,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '💬'
   },
   {
-    estado: 'Interesado',
+    estado: 'interesado',
     nombre: 'Interesado Activo',
     descripcion: 'Preguntó por precios, disponibilidad o servicios específicos',
     objetivo: 'Cerrar la venta agendando una cita',
@@ -317,7 +317,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         label: 'Listo para agendar',
         icon: '✅',
         descripcion: 'Confirmó que quiere cita',
-        siguienteEtapa: 'Calificado',
+        siguienteEtapa: 'calificado',
         color: 'emerald'
       }
     ],
@@ -325,7 +325,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '🎯'
   },
   {
-    estado: 'Calificado',
+    estado: 'calificado',
     nombre: 'Listo para Agendar',
     descripcion: 'Confirmó interés y está listo para su primera cita',
     objetivo: 'Confirmar cita y convertir a paciente',
@@ -341,7 +341,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         icon: '📅',
         descripcion: 'Enviar confirmación de cita',
         plantillaSugerida: 'agendar-cita',
-        siguienteEtapa: 'Convertido',
+        siguienteEtapa: 'convertido',
         color: 'emerald'
       },
       {
@@ -357,7 +357,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '✅'
   },
   {
-    estado: 'Convertido',
+    estado: 'convertido',
     nombre: 'Paciente',
     descripcion: '¡Éxito! Este lead ya es paciente con cita agendada',
     objetivo: 'Asegurar asistencia y satisfacción',
@@ -387,7 +387,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '🏆'
   },
   {
-    estado: 'No_Interesado',
+    estado: 'no_interesado',
     nombre: 'No Interesado',
     descripcion: 'Decidió no continuar con el proceso',
     objetivo: 'Dejar puerta abierta para futuro',
@@ -410,7 +410,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         icon: '🙏',
         descripcion: 'Enviar despedida',
         plantillaSugerida: 'agradecer-no-interes',
-        siguienteEtapa: 'Perdido',
+        siguienteEtapa: 'descartado',
         color: 'gray'
       }
     ],
@@ -418,8 +418,8 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '✖'
   },
   {
-    estado: 'Perdido',
-    nombre: 'Perdido',
+    estado: 'descartado',
+    nombre: 'descartado',
     descripcion: 'Sin respuesta prolongada o cerrado',
     objetivo: 'Archivar y analizar motivo',
     tiempoIdeal: 'N/A',
@@ -433,7 +433,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         icon: '🔄',
         descripcion: 'Último intento de reactivación',
         plantillaSugerida: 'reactivar-lead',
-        siguienteEtapa: 'Contactado',
+        siguienteEtapa: 'contactado',
         color: 'amber'
       }
     ],

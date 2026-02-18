@@ -111,12 +111,13 @@ const defaultStats: ConversacionesStats = {
 // FETCHER
 // ============================================================
 
-// Tipos para queries
-interface ConversacionRow {
-  telefono: string;
-  rol: string;
-  mensaje: string | null;
+// Tipos para queries - now from mensajes table joined with conversaciones
+interface MensajeStatsRow {
+  remitente: string;
+  contenido: string | null;
   created_at: string;
+  conversacion_id: string;
+  conversaciones: { telefono: string } | null;
 }
 
 interface UrobotLogRow {
@@ -137,44 +138,58 @@ async function fetchConversacionesStats(dias: number): Promise<ConversacionesSta
   hoy.setHours(0, 0, 0, 0);
   const hoyISO = hoy.toISOString();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = supabase as any;
+
   // Query paralelos para mejor rendimiento
   const [
-    conversacionesRes,
+    mensajesRes,
     urobotLogsRes,
-    conversacionesHoyRes,
+    mensajesHoyRes,
   ] = await Promise.all([
-    // Todos los mensajes del período
-    supabase
-      .from('conversaciones')
-      .select('telefono, rol, mensaje, created_at')
+    // Todos los mensajes del período (from mensajes joined with conversaciones for telefono)
+    sb
+      .from('mensajes')
+      .select('remitente, contenido, created_at, conversacion_id, conversaciones(telefono)')
       .gte('created_at', fechaInicioISO)
       .order('created_at', { ascending: false }),
     
-    // Logs de UroBot del período (tabla no tipada, usar any)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any)
+    // Logs de UroBot del período
+    sb
       .from('urobot_logs')
       .select('telefono, tipo_interaccion, tiempo_respuesta_ms, requirio_escalacion, herramientas_llamadas, created_at')
       .gte('created_at', fechaInicioISO),
     
     // Mensajes de hoy
-    supabase
-      .from('conversaciones')
-      .select('telefono, rol')
+    sb
+      .from('mensajes')
+      .select('remitente, conversaciones(telefono)')
       .gte('created_at', hoyISO),
   ]);
 
-  const conversaciones = (conversacionesRes.data || []) as ConversacionRow[];
+  const mensajesRaw = (mensajesRes.data || []) as MensajeStatsRow[];
   const urobotLogs = (urobotLogsRes.data || []) as UrobotLogRow[];
-  const conversacionesHoy = (conversacionesHoyRes.data || []) as { telefono: string; rol: string }[];
+  const mensajesHoyRaw = (mensajesHoyRes.data || []) as { remitente: string; conversaciones: { telefono: string } | null }[];
+
+  // Normalize: extract telefono from joined conversaciones
+  const conversaciones = mensajesRaw.map(m => ({
+    telefono: m.conversaciones?.telefono || '',
+    rol: m.remitente,
+    mensaje: m.contenido,
+    created_at: m.created_at,
+  }));
+  const conversacionesHoy = mensajesHoyRaw.map(m => ({
+    telefono: m.conversaciones?.telefono || '',
+    rol: m.remitente,
+  }));
 
   // ============================================================
   // CALCULAR KPIs
   // ============================================================
   
   // Mensajes por rol
-  const mensajesRecibidos = conversaciones.filter(c => c.rol === 'usuario');
-  const mensajesEnviados = conversaciones.filter(c => c.rol === 'asistente');
+  const mensajesRecibidos = conversaciones.filter((c: { rol: string }) => c.rol === 'usuario');
+  const mensajesEnviados = conversaciones.filter((c: { rol: string }) => c.rol === 'asistente');
   
   // Usuarios únicos
   const telefonosUnicos = new Set(conversaciones.map(c => c.telefono));

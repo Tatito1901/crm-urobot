@@ -20,23 +20,14 @@ interface LeadsStats {
   enSeguimiento: number;
   convertidos: number;
   descartados: number;
-  ultimaSemana: number;
-  ultimoMes: number;
-  // Nuevas métricas de clasificación
-  prospectos: number;
-  pacientesExistentes: number;
-  reenganche: number;
-  referidos: number;
-  prioridadAlta: number;
-  pendientesSeguimiento: number;
-  scorePromedio: number;
+  escalados: number;
+  calientes: number;
+  inactivos: number;
 }
 
 const DEFAULT_STATS: LeadsStats = {
   total: 0, nuevos: 0, interesados: 0, enSeguimiento: 0, 
-  convertidos: 0, descartados: 0, ultimaSemana: 0, ultimoMes: 0,
-  prospectos: 0, pacientesExistentes: 0, reenganche: 0, referidos: 0,
-  prioridadAlta: 0, pendientesSeguimiento: 0, scorePromedio: 0,
+  convertidos: 0, descartados: 0, escalados: 0, calientes: 0, inactivos: 0,
 };
 
 const fetchStats = async (): Promise<LeadsStats> => {
@@ -52,15 +43,9 @@ const fetchStats = async (): Promise<LeadsStats> => {
     enSeguimiento: (s.contactado || 0) + (s.calificado || 0),
     convertidos: s.convertido || 0,
     descartados: s.descartado || 0,
-    ultimaSemana: 0, // No calculado en RPC actual
-    ultimoMes: 0,    // No calculado en RPC actual
-    prospectos: s.activos || 0,
-    pacientesExistentes: 0,
-    reenganche: 0,
-    referidos: 0,
-    prioridadAlta: s.calientes || 0,
-    pendientesSeguimiento: s.inactivos || 0,
-    scorePromedio: 0,
+    escalados: s.escalado || 0,
+    calientes: s.calientes || 0,
+    inactivos: s.inactivos || 0,
   };
 };
 
@@ -86,81 +71,63 @@ const fetchLeadsPaginated = async (
   
   if (!result) return { data: [], totalCount: 0 };
   
-  // IMPORTANTE: Filtrar leads que ya son pacientes (tienen paciente_id)
-  // Si alguien ya es paciente, NO es lead
+  // Filtrar leads ya convertidos
   const leadsActivos = (result.data || []).filter(
-    (l: Record<string, unknown>) => !l.pacienteId
+    (l: Record<string, unknown>) => !l.convertido_a_paciente_id
   );
   
   const leads: Lead[] = leadsActivos.map((l: Record<string, unknown>) => {
-    const telefono = l.telefonoWhatsapp as string;
-    const nombreCompleto = l.nombreCompleto as string | null;
-    const ultimaInteraccion = l.ultimaInteraccion as string | null;
-    const totalInteracciones = (l.totalInteracciones as number) || 0;
-    const tipoContacto = (l.tipoContacto as string) || 'prospecto';
-    const proximoSeguimiento = l.proximoSeguimiento as string | null;
-    const estadoLead = ((l.estado as string) || 'Nuevo') as Lead['estado'];
+    const telefono = (l.telefono as string) || '';
+    const nombre = (l.nombre as string) || telefono;
+    const ultimaInteraccion = l.ultima_interaccion as string | null;
+    const totalMensajes = (l.total_mensajes as number) || 0;
+    const temperatura = ((l.temperatura as string) || 'frio') as Lead['temperatura'];
+    const fechaSiguienteAccion = l.fecha_siguiente_accion as string | null;
+    const estadoLead = ((l.estado as string) || 'nuevo') as Lead['estado'];
     
-    // Calcular días desde última interacción
     const diasDesdeUltimaInteraccion = ultimaInteraccion 
       ? Math.floor((Date.now() - new Date(ultimaInteraccion).getTime()) / (1000 * 60 * 60 * 24))
       : 999;
     
-    // Lead inactivo si no hay interacción en más de 7 días
     const esInactivo = diasDesdeUltimaInteraccion > 7;
+    const esCaliente = temperatura === 'caliente' || temperatura === 'muy_caliente';
     
-    // Lead caliente si tiene interacción reciente (<2 días) y muchos mensajes (>5)
-    const esCaliente = diasDesdeUltimaInteraccion <= 2 && totalInteracciones >= 5;
-    
-    // Requiere seguimiento si la fecha ya pasó
-    const requiereSeguimiento = proximoSeguimiento 
-      ? new Date(proximoSeguimiento).getTime() <= Date.now()
+    const requiereSeguimiento = fechaSiguienteAccion 
+      ? new Date(fechaSiguienteAccion).getTime() <= Date.now()
       : false;
-    
-    // Score y prioridad vienen de la BD (si existen)
-    const scoreDB = (l.score as number) || 0;
-    const prioridadDB = ((l.prioridad as string) || 'media') as Lead['prioridad'];
     
     return {
       id: l.id as string,
-      pacienteId: null, // Ya filtramos los que tienen pacienteId
+      nombre,
       telefono,
-      nombreCompleto,
       estado: estadoLead,
-      fuente: ((l.fuenteLead as string) || 'Otro') as Lead['fuente'],
-      canalMarketing: l.canalMarketing as string | null,
-      notas: null,
-      sessionId: null,
-      primerContacto: l.createdAt as string | null,
+      fuente: ((l.fuente as string) || 'Otro') as Lead['fuente'],
+      canal: (l.canal as string) || null,
+      temperatura,
+      notas: (l.notas as string) || null,
+      email: (l.email as string) || null,
+      convertidoAPacienteId: null,
+      totalMensajes,
       ultimaInteraccion,
-      fechaConversion: null,
-      totalInteracciones,
-      createdAt: l.createdAt as string | null,
-      updatedAt: null,
-      // Campos de clasificación (de BD)
-      tipoContacto: tipoContacto as Lead['tipoContacto'],
-      motivoContacto: ((l.motivoContacto as string) || 'consulta_nueva') as Lead['motivoContacto'],
-      prioridad: prioridadDB,
-      score: scoreDB,
-      etiquetas: (l.etiquetas as string[]) || [],
-      ultimoSeguimiento: l.ultimoSeguimiento as string | null,
-      proximoSeguimiento,
-      asignadoA: l.asignadoA as string | null,
-      notasSeguimiento: l.notasSeguimiento as string | null,
-      // Campos calculados
-      nombre: nombreCompleto || telefono,
-      temperatura: esCaliente ? 'Caliente' : (esInactivo ? 'Frio' : 'Tibio') as Lead['temperatura'],
+      scoreTotal: (l.score_total as number) || 0,
+      calificacion: (l.calificacion as string) || null,
+      etapaFunnel: (l.etapa_funnel as string) || null,
+      subestado: (l.subestado as string) || null,
+      accionRecomendada: (l.accion_recomendada as string) || null,
+      fechaSiguienteAccion,
+      createdAt: (l.created_at as string) || '',
+      updatedAt: (l.updated_at as string) || '',
+      // Calculados
+      nombreDisplay: nombre,
       diasDesdeContacto: 0,
       diasDesdeUltimaInteraccion,
-      esCliente: false, // Ya filtramos los que son clientes
-      esPacienteExistente: tipoContacto === 'paciente_existente',
+      esCliente: false,
       esCaliente,
       esInactivo,
       requiereSeguimiento,
     };
   });
   
-  // Ajustar totalCount porque filtramos los que ya son pacientes
   const totalFiltrado = leads.length < (result.data || []).length 
     ? Math.max(0, Number(result.total_count) - ((result.data || []).length - leads.length))
     : Number(result.total_count) || 0;

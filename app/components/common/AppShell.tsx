@@ -5,7 +5,6 @@ import { lazy, Suspense, type PropsWithChildren } from 'react'
 import { usePrefetchRoutes } from '@/hooks/usePrefetchRoutes'
 
 // Lazy loading de componentes pesados para optimizar carga inicial
-const MobileSidebar = lazy(() => import('./Sidebar').then(mod => ({ default: mod.MobileSidebar })))
 const Sidebar = lazy(() => import('./Sidebar').then(mod => ({ default: mod.Sidebar })))
 const BottomNav = lazy(() => import('./Sidebar').then(mod => ({ default: mod.BottomNav })))
 
@@ -25,10 +24,7 @@ export function AppShell({ children }: PropsWithChildren) {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-background transition-colors duration-300 overflow-hidden">
-      <Suspense fallback={null}>
-        <MobileSidebar />
-      </Suspense>
+    <div className="flex min-h-screen w-full bg-background overflow-hidden">
       <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80 shrink-0" />}>
         <Sidebar />
       </Suspense>
