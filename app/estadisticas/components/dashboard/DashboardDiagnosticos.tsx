@@ -54,14 +54,14 @@ export function DashboardDiagnosticos({ data }: Props) {
             type="number" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 11 }}
           />
           <YAxis 
             dataKey="name" 
             type="category" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 11 }}
             width={95}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }} />

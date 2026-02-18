@@ -59,7 +59,7 @@ export function DashboardProcedimientos({ data }: Props) {
             dataKey="shortName" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 10 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 10 }}
             angle={-45}
             textAnchor="end"
             height={60}
@@ -67,7 +67,7 @@ export function DashboardProcedimientos({ data }: Props) {
           <YAxis 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 11 }}
             allowDecimals={false}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }} />

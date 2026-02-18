@@ -3,7 +3,9 @@
  * TIPOS DESTINOS PACIENTES - HISTORIAL DE ACCIONES
  * ============================================================
  * Fuente de verdad: Supabase tabla 'destinos_pacientes'
- * Última sync: 2025-12-01
+ * Última sync: 2026-02-18
+ * BD columns: id, paciente_id, tipo_destino, tipo_cirugia, monto,
+ *   fecha_programada, estado, notas, created_at, updated_at
  */
 
 import type { Tables } from './database';
@@ -68,20 +70,11 @@ export interface DestinoPaciente {
   id: string;
   pacienteId: string | null;         // BD: paciente_id (FK)
   tipoDestino: TipoDestino;         // BD: tipo_destino
-  fechaRegistro: string | null;     // BD: fecha_registro
-  observaciones: string | null;     // BD: observaciones
-  
-  // === Campos específicos Alta ===
-  motivoAlta: string | null;        // BD: motivo_alta
-  
-  // === Campos específicos Presupuesto/Cirugía ===
   tipoCirugia: string | null;       // BD: tipo_cirugia
-  monto: number | null;             // BD: monto
-  moneda: Moneda;                   // BD: moneda (Default: 'MXN')
-  fechaEvento: string | null;       // BD: fecha_evento
-  sedeOperacion: string | null;     // BD: sede_operacion
+  monto: number | null;             // BD: monto (numeric)
+  fechaProgramada: string | null;   // BD: fecha_programada (date)
+  estado: string | null;            // BD: estado (default 'pendiente')
   notas: string | null;             // BD: notas
-  
   createdAt: string | null;         // BD: created_at
   updatedAt: string | null;         // BD: updated_at
   
@@ -96,21 +89,15 @@ export interface DestinoPaciente {
 
 export function mapDestinoPacienteFromDB(row: DestinoPacienteRow): DestinoPaciente {
   const tipoDestino = isTipoDestino(row.tipo_destino) ? row.tipo_destino : 'pendiente';
-  // Safe access for columns that may differ between old/new schema
-  const r = row as Record<string, unknown>;
   
   return {
     id: row.id,
     pacienteId: row.paciente_id,
     tipoDestino,
-    fechaRegistro: (r.fecha_registro as string | null) ?? (r.fecha_programada as string | null) ?? null,
-    observaciones: (r.observaciones as string | null) ?? (row.notas as string | null) ?? null,
-    motivoAlta: (r.motivo_alta as string | null) ?? null,
     tipoCirugia: row.tipo_cirugia,
     monto: row.monto,
-    moneda: isMoneda(r.moneda) ? r.moneda as Moneda : 'MXN',
-    fechaEvento: (r.fecha_evento as string | null) ?? (r.fecha_programada as string | null) ?? null,
-    sedeOperacion: (r.sede_operacion as string | null) ?? null,
+    fechaProgramada: row.fecha_programada,
+    estado: row.estado,
     notas: row.notas,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -140,30 +127,19 @@ export function isMoneda(value: unknown): value is Moneda {
 export interface CreateDestinoInput {
   pacienteId: string;
   tipoDestino: TipoDestino;
-  observaciones?: string;
-  motivoAlta?: string;
   tipoCirugia?: string;
   monto?: number;
-  moneda?: Moneda;
-  fechaEvento?: string;
-  sedeOperacion?: string;
+  fechaProgramada?: string;
   notas?: string;
 }
 
 export function prepareDestinoForInsert(input: CreateDestinoInput): Record<string, unknown> {
-  // Build notas combining observaciones, motivoAlta, sedeOperacion into single field
-  const notasParts: string[] = [];
-  if (input.observaciones) notasParts.push(input.observaciones);
-  if (input.motivoAlta) notasParts.push(`Motivo alta: ${input.motivoAlta}`);
-  if (input.sedeOperacion) notasParts.push(`Sede: ${input.sedeOperacion}`);
-  if (input.notas) notasParts.push(input.notas);
-  
   return {
     paciente_id: input.pacienteId,
     tipo_destino: input.tipoDestino,
     tipo_cirugia: input.tipoCirugia ?? null,
     monto: input.monto ?? null,
-    fecha_programada: input.fechaEvento ?? null,
-    notas: notasParts.length > 0 ? notasParts.join(' | ') : null,
+    fecha_programada: input.fechaProgramada ?? null,
+    notas: input.notas ?? null,
   };
 }

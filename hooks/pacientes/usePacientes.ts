@@ -3,16 +3,42 @@
  * HOOK: usePacientes
  * ============================================================
  * Hook optimizado con SWR para pacientes
- * ✅ SWR: Caché, deduplicación y revalidación automática
+ * ✅ v3: RPC get_pacientes_with_stats — stats y métricas en PostgreSQL
+ * ✅ Elimina SELECT * y useMemo client-side
  */
 
-import { useMemo } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import { type Paciente, type PacienteRow, type PacienteStatsRow, mapPacienteFromDB } from '@/types/pacientes'
+import { type Paciente, type PacienteEstado, isPacienteEstado } from '@/types/pacientes'
 import { SWR_CONFIG_STANDARD } from '@/lib/swr-config'
 
 const supabase = createClient()
+
+interface PacienteStats {
+  total: number
+  activos: number
+  inactivos: number
+  recientes: number
+  requierenAtencion: number
+  conConsultas: number
+  sinConsultas: number
+}
+
+interface PacienteMetricas {
+  tasaRetencion: number
+  pacientesFrecuentes: number
+  conDatosCompletos: number
+  sinEmail: number
+  enRiesgo: number
+  porFuente: {
+    whatsapp: number
+    referido: number
+    web: number
+    otros: number
+  }
+  nuevosMes: number
+  recurrentesMes: number
+}
 
 interface UsePacientesReturn {
   pacientes: Paciente[]
@@ -20,177 +46,125 @@ interface UsePacientesReturn {
   error: Error | null
   refetch: (options?: { silent?: boolean }) => Promise<void>
   totalCount: number
-  stats: {
-    total: number
-    activos: number
-    inactivos: number
-    recientes: number
-    requierenAtencion: number
-    conConsultas: number
-    sinConsultas: number
-  }
-  metricas: {
-    // Métricas de retención
-    tasaRetencion: number          // % pacientes con 2+ consultas
-    pacientesFrecuentes: number    // 5+ consultas
-    
-    // Métricas de datos
-    conDatosCompletos: number      // Email + teléfono
-    sinEmail: number               // Falta email
-    
-    // Métricas de riesgo
-    enRiesgo: number              // 180+ días sin consulta
-    
-    // Distribución
-    porFuente: {
-      whatsapp: number
-      referido: number
-      web: number
-      otros: number
-    }
-    
-    // Temporales
-    nuevosMes: number             // Últimos 30 días
-    recurrentesMes: number        // Con consulta en últimos 30d
-  }
+  stats: PacienteStats
+  metricas: PacienteMetricas
+}
+
+const DEFAULT_STATS: PacienteStats = {
+  total: 0, activos: 0, inactivos: 0, recientes: 0,
+  requierenAtencion: 0, conConsultas: 0, sinConsultas: 0,
+}
+
+const DEFAULT_METRICAS: PacienteMetricas = {
+  tasaRetencion: 0, pacientesFrecuentes: 0, conDatosCompletos: 0,
+  sinEmail: 0, enRiesgo: 0,
+  porFuente: { whatsapp: 0, referido: 0, web: 0, otros: 0 },
+  nuevosMes: 0, recurrentesMes: 0,
+}
+
+interface RPCResult {
+  pacientes: Record<string, unknown>[]
+  stats: Record<string, number>
+  metricas: Record<string, unknown>
+  count: number
 }
 
 /**
- * Fetcher para pacientes
- * ✅ Campos sincronizados con BD real (types/supabase.ts)
- * Stats (total_consultas, ultima_consulta) ahora están directamente en tabla pacientes
+ * Fetcher v3: RPC get_pacientes_with_stats
+ * ✅ Stats y métricas calculadas en PostgreSQL (0 cómputo client-side)
+ * ✅ Solo campos necesarios (no SELECT *)
  */
-const fetchPacientes = async (): Promise<{ pacientes: Paciente[], count: number }> => {
-  const { data, error, count } = await supabase
-    .from('pacientes')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
+const fetchPacientes = async (): Promise<{ pacientes: Paciente[], stats: PacienteStats, metricas: PacienteMetricas, count: number }> => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc('get_pacientes_with_stats')
 
-  if (error) {
-    throw error
+  if (error) throw error
+
+  const d = data as RPCResult | null
+  if (!d) return { pacientes: [], stats: DEFAULT_STATS, metricas: DEFAULT_METRICAS, count: 0 }
+
+  // Mapear pacientes desde la RPC
+  const pacientes: Paciente[] = (d.pacientes || []).map((p: Record<string, unknown>) => {
+    const nombre = (p.nombre as string) || ''
+    const apellido = (p.apellido as string) || null
+    const telefono = (p.telefono as string) || ''
+    const estadoRaw = (p.estado as string) || 'activo'
+    const estado: PacienteEstado = isPacienteEstado(estadoRaw) ? estadoRaw : 'activo'
+
+    return {
+      id: p.id as string,
+      nombre,
+      apellido,
+      telefono,
+      email: (p.email as string) || null,
+      fechaNacimiento: (p.fecha_nacimiento as string) || null,
+      genero: (p.sexo as string) || null,
+      fuente: null,
+      origenLead: (p.origen_lead as string) || null,
+      estado,
+      esActivo: estado === 'activo',
+      observaciones: (p.notas as string) || null,
+      leadId: null,
+      createdAt: (p.created_at as string) || null,
+      updatedAt: (p.updated_at as string) || null,
+      nombreDisplay: nombre || telefono,
+      totalConsultas: (p.total_consultas as number) ?? undefined,
+      ultimaConsulta: (p.ultima_consulta as string) || null,
+    }
+  })
+
+  // Stats pre-calculadas del servidor
+  const s = d.stats || {}
+  const stats: PacienteStats = {
+    total: Number(s.total) || 0,
+    activos: Number(s.activos) || 0,
+    inactivos: Number(s.inactivos) || 0,
+    recientes: Number(s.recientes) || 0,
+    requierenAtencion: Number(s.requierenAtencion) || 0,
+    conConsultas: Number(s.conConsultas) || 0,
+    sinConsultas: Number(s.sinConsultas) || 0,
   }
 
-  if (!data) {
-    return { pacientes: [], count: 0 }
+  // Métricas pre-calculadas del servidor
+  const m = d.metricas || {} as Record<string, unknown>
+  const pf = (m.porFuente || {}) as Record<string, number>
+  const metricas: PacienteMetricas = {
+    tasaRetencion: Number(m.tasaRetencion) || 0,
+    pacientesFrecuentes: Number(m.pacientesFrecuentes) || 0,
+    conDatosCompletos: Number(m.conDatosCompletos) || 0,
+    sinEmail: Number(m.sinEmail) || 0,
+    enRiesgo: Number(m.enRiesgo) || 0,
+    porFuente: {
+      whatsapp: Number(pf.whatsapp) || 0,
+      referido: Number(pf.referido) || 0,
+      web: Number(pf.web) || 0,
+      otros: Number(pf.otros) || 0,
+    },
+    nuevosMes: Number(m.nuevosMes) || 0,
+    recurrentesMes: Number(m.recurrentesMes) || 0,
   }
 
-  // Stats ahora están directamente en la tabla pacientes (total_consultas, ultima_consulta)
-  const pacientes = (data as PacienteRow[]).map(row => mapPacienteFromDB(row))
-  
-  return { pacientes, count: pacientes.length }
+  return { pacientes, stats, metricas, count: d.count || pacientes.length }
 }
 
 /**
  * Hook para gestionar pacientes
- *
- * ✅ QUICK WIN #3: Configuración SWR optimizada
- * - Revalida automáticamente cuando vuelves a la pestaña (mejor UX)
- * - Caché de 5 minutos (menos requests duplicados con 2 usuarios)
- * - Retry automático en caso de error de red
- * - Mantiene datos previos mientras recarga (sin parpadeos)
+ * ✅ v3: Stats y métricas server-side via RPC (eliminó useMemo pesado)
  */
 export function usePacientes(): UsePacientesReturn {
-  const { data, error, isLoading, mutate } = useSWR<{ pacientes: Paciente[], count: number }>(
+  const { data, error, isLoading, mutate } = useSWR(
     'pacientes',
     fetchPacientes,
     SWR_CONFIG_STANDARD
   )
 
-  const pacientes = data?.pacientes || []
-  
-  // ✅ OPTIMIZACIÓN: Single-pass memoizado para todos los cálculos
-  const { stats, metricas } = useMemo(() => {
-    const now = Date.now()
-    const hace30Dias = now - 30 * 24 * 60 * 60 * 1000
-    const hace180Dias = now - 180 * 24 * 60 * 60 * 1000
-    
-    // Contadores
-    let activos = 0, inactivos = 0, recientes = 0, requierenAtencion = 0
-    let conConsultas = 0, sinConsultas = 0
-    let retenidos = 0, frecuentes = 0, conDatosCompletos = 0, sinEmail = 0, enRiesgo = 0
-    let whatsapp = 0, referido = 0, web = 0
-    let nuevosMes = 0, recurrentesMes = 0
-    
-    for (const p of pacientes) {
-      const totalConsultas = p.totalConsultas ?? 0
-      const createdAtTime = p.createdAt ? new Date(p.createdAt).getTime() : 0
-      const ultimaConsultaTime = p.ultimaConsulta ? new Date(p.ultimaConsulta).getTime() : 0
-      const esActivo = p.estado === 'Activo'
-      
-      // Estado
-      if (esActivo) activos++
-      else if (p.estado === 'Inactivo') inactivos++
-      
-      // Recientes
-      if (createdAtTime >= hace30Dias) {
-        recientes++
-        nuevosMes++
-      }
-      
-      // Requieren atención
-      if (esActivo && ultimaConsultaTime > 0 && ultimaConsultaTime < hace180Dias) {
-        requierenAtencion++
-        enRiesgo++
-      }
-      
-      // Consultas
-      if (totalConsultas > 0) {
-        conConsultas++
-        if (totalConsultas >= 2) retenidos++
-        if (totalConsultas >= 5) frecuentes++
-      } else {
-        sinConsultas++
-      }
-      
-      // Datos completos
-      const tieneEmail = p.email && p.email.trim() !== ''
-      const tieneTelefono = p.telefono && p.telefono.trim() !== ''
-      if (tieneEmail && tieneTelefono) conDatosCompletos++
-      if (!tieneEmail) sinEmail++
-      
-      // Fuente
-      const origen = (p.origenLead || '').toLowerCase()
-      if (origen.includes('whatsapp')) whatsapp++
-      else if (origen.includes('referido') || origen.includes('recomendación')) referido++
-      else if (origen.includes('web') || origen.includes('sitio')) web++
-      
-      // Recurrentes mes
-      if (ultimaConsultaTime >= hace30Dias) recurrentesMes++
-    }
-    
-    const total = pacientes.length
-    const otros = Math.max(0, total - (whatsapp + referido + web))
-    
-    return {
-      stats: {
-        total,
-        activos,
-        inactivos,
-        recientes,
-        requierenAtencion,
-        conConsultas,
-        sinConsultas,
-      },
-      metricas: {
-        tasaRetencion: conConsultas > 0 ? Math.round((retenidos / conConsultas) * 100) : 0,
-        pacientesFrecuentes: frecuentes,
-        conDatosCompletos,
-        sinEmail,
-        enRiesgo,
-        porFuente: { whatsapp, referido, web, otros },
-        nuevosMes,
-        recurrentesMes,
-      }
-    }
-  }, [pacientes])
-
   return {
-    pacientes,
+    pacientes: data?.pacientes || [],
     loading: isLoading,
     error: error || null,
     refetch: async () => { await mutate() },
     totalCount: data?.count || 0,
-    stats,
-    metricas,
+    stats: data?.stats || DEFAULT_STATS,
+    metricas: data?.metricas || DEFAULT_METRICAS,
   }
 }

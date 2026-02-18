@@ -41,10 +41,11 @@ interface ConversationActionsPanelProps {
   isMobile?: boolean;
 }
 
-// Estados con iconos de Lucide
+// Estados con iconos de Lucide — sincronizado con catalog_estados_lead
 const ESTADOS_CONFIG: { estado: LeadEstado; icon: React.ReactNode; label: string; color: string }[] = [
-  { estado: 'interesado', icon: <Star className="w-3.5 h-3.5" />, label: 'Interesado', color: 'text-amber-500' },
-  { estado: 'calificado', icon: <Check className="w-3.5 h-3.5" />, label: 'Calificado', color: 'text-emerald-500' },
+  { estado: 'contactado', icon: <MessageSquare className="w-3.5 h-3.5" />, label: 'Contactado', color: 'text-amber-500' },
+  { estado: 'cita_propuesta', icon: <Calendar className="w-3.5 h-3.5" />, label: 'Cita propuesta', color: 'text-purple-500' },
+  { estado: 'cita_agendada', icon: <Calendar className="w-3.5 h-3.5" />, label: 'Cita agendada', color: 'text-emerald-500' },
   { estado: 'convertido', icon: <Zap className="w-3.5 h-3.5" />, label: 'Paciente', color: 'text-blue-500' },
   { estado: 'no_interesado', icon: <XCircle className="w-3.5 h-3.5" />, label: 'No interesa', color: 'text-slate-400' },
 ];
@@ -204,8 +205,8 @@ export function ConversationActionsPanel({
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Estado actual</span>
                   <div className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1
-                    ${lead.estado === 'convertido' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 
-                      lead.estado === 'interesado' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : 
+                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 
+                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : 
                       'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'}`}
                   >
                     {etapaConfig?.icon} {etapaConfig?.nombre || lead.estado}

@@ -3,7 +3,8 @@
  * TIPOS PACIENTES - SINCRONIZADO CON BD REAL
  * ============================================================
  * Fuente de verdad: Supabase tabla 'pacientes'
- * Última sync: 2026-02-17 (nueva BD whpnvmquoycvsxcmvtac)
+ * Última sync: 2026-02-18 (BD whpnvmquoycvsxcmvtac)
+ * CHECK constraint: activo, inactivo, alta, seguimiento
  */
 
 import type { Tables } from './database';
@@ -23,7 +24,7 @@ export interface PacienteStatsRow {
 // ============================================================
 // CONSTANTES Y ENUMS
 // ============================================================
-export const PACIENTE_ESTADOS = ['Activo', 'Inactivo', 'Alta'] as const;
+export const PACIENTE_ESTADOS = ['activo', 'inactivo', 'alta', 'seguimiento'] as const;
 export type PacienteEstado = (typeof PACIENTE_ESTADOS)[number];
 
 // ============================================================
@@ -82,7 +83,7 @@ export function mapPacienteFromDB(
     genero,
     fuente,
     origenLead: row.origen_lead,
-    estado: isPacienteEstado(row.estado) ? row.estado : 'Activo',
+    estado: isPacienteEstado(row.estado) ? row.estado : 'activo',
     esActivo,
     observaciones,
     leadId,

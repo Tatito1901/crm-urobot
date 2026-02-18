@@ -3,7 +3,7 @@
 import React, { useCallback } from 'react';
 import { Search } from 'lucide-react';
 
-type FilterStatus = 'all' | 'nuevo' | 'contactado' | 'interesado' | 'convertido' | 'descartado';
+type FilterStatus = 'all' | 'nuevo' | 'interactuando' | 'contactado' | 'cita_propuesta' | 'cita_agendada' | 'perdido';
 
 interface LeadsFiltersProps {
   currentFilter: FilterStatus;
@@ -16,10 +16,12 @@ interface LeadsFiltersProps {
 // Nota: "Convertidos" no aparece porque si ya son pacientes, NO son leads
 const FILTERS: { id: FilterStatus; label: string }[] = [
   { id: 'all', label: 'Todos' },
-  { id: 'nuevo', label: '� Nuevos' },
-  { id: 'contactado', label: '🟡 En seguimiento' },
-  { id: 'interesado', label: '🟣 Interesados' },
-  { id: 'descartado', label: '⚫ Descartados' },
+  { id: 'nuevo', label: '🆕 Nuevos' },
+  { id: 'interactuando', label: '🤖 Bot' },
+  { id: 'contactado', label: '� Contactados' },
+  { id: 'cita_propuesta', label: '📋 Propuestas' },
+  { id: 'cita_agendada', label: '� Agendados' },
+  { id: 'perdido', label: '💤 Perdidos' },
 ];
 
 export const LeadsFilters = React.memo(function LeadsFilters({

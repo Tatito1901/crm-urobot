@@ -5,17 +5,24 @@
  * Sistema unificado de etapas, acciones y plantillas de mensaje
  * para seguimiento de leads en el consultorio médico.
  * 
+ * Sincronizado con catalog_estados_lead (BD)
+ * 
  * EMBUDO DE CONVERSIÓN:
- * ┌─────────────────────────────────────────────────────────┐
- * │  1. NUEVO          → Primer contacto, sin respuesta aún │
- * │  2. CONTACTADO     → Ya respondimos, en conversación    │
- * │  3. INTERESADO     → Preguntó precio/disponibilidad     │
- * │  4. CALIFICADO     → Listo para agendar, cumple perfil  │
- * │  5. CONVERTIDO     → Cita agendada = PACIENTE           │
- * │  ─────────────────────────────────────────────────────  │
- * │  ✖ NO_INTERESADO   → Decidió no continuar               │
- * │  ✖ PERDIDO         → Sin respuesta prolongada           │
- * └─────────────────────────────────────────────────────────┘
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │  1. NUEVO            → Primer contacto, sin respuesta aún   │
+ * │  2. INTERACTUANDO    → Bot chateando con el lead            │
+ * │  3. CONTACTADO       → Humano ha intervenido                │
+ * │  4. CITA_PROPUESTA   → Se ofreció fecha de cita             │
+ * │  5. CITA_AGENDADA    → Cita confirmada en calendario        │
+ * │  6. SHOW             → Asistió a la cita                    │
+ * │  7. CONVERTIDO       → Paciente registrado (terminal)       │
+ * │  ─────────────────────────────────────────────────────────  │
+ * │  ↻ EN_SEGUIMIENTO    → Requiere follow-up humano            │
+ * │  ✖ NO_SHOW           → No asistió (reagendable)             │
+ * │  ✖ PERDIDO           → Sin respuesta prolongada             │
+ * │  ✖ NO_INTERESADO     → Decidió no continuar                 │
+ * │  ✖ DESCARTADO        → Spam/irrelevante                     │
+ * └─────────────────────────────────────────────────────────────┘
  */
 
 import type { LeadEstado } from '@/types/leads';
@@ -75,11 +82,11 @@ export const PLANTILLAS_MENSAJE: PlantillaMensaje[] = [
     mensaje: `¡Hola! Recibimos tu mensaje.
 
 Un momento, en breve te atendemos personalmente. ¿Podrías compartirnos tu nombre completo?`,
-    etapasAplica: ['nuevo'],
+    etapasAplica: ['nuevo', 'interactuando'],
     descripcion: 'Respuesta inmediata mientras se prepara respuesta completa'
   },
 
-  // === ETAPA: CONTACTADO ===
+  // === ETAPA: CONTACTADO / EN_SEGUIMIENTO ===
   {
     id: 'info-servicios',
     nombre: '📋 Información de servicios',
@@ -91,7 +98,7 @@ Contamos con los siguientes servicios:
 • Procedimientos especializados
 
 ¿Hay algún tema específico que te interese conocer más?`,
-    etapasAplica: ['contactado'],
+    etapasAplica: ['contactado', 'en_seguimiento'],
     descripcion: 'Presentar servicios disponibles'
   },
   {
@@ -102,11 +109,11 @@ Contamos con los siguientes servicios:
 Hace unos días nos contactaste y queremos saber si aún podemos ayudarte.
 
 ¿Tienes alguna duda sobre nuestros servicios? Estamos para atenderte.`,
-    etapasAplica: ['contactado', 'interesado'],
+    etapasAplica: ['contactado', 'en_seguimiento', 'cita_propuesta'],
     descripcion: 'Reactivar conversación con lead que no ha respondido'
   },
 
-  // === ETAPA: INTERESADO ===
+  // === ETAPA: CITA_PROPUESTA ===
   {
     id: 'enviar-costos',
     nombre: '💰 Costos y opciones',
@@ -120,7 +127,7 @@ Estos son nuestros costos:
 🕐 Horarios: Lunes a Viernes 9am-6pm, Sábado 9am-2pm
 
 ¿Te gustaría agendar una cita?`,
-    etapasAplica: ['interesado'],
+    etapasAplica: ['contactado', 'cita_propuesta'],
     descripcion: 'Enviar información de precios cuando el lead pregunta'
   },
   {
@@ -133,14 +140,14 @@ Para agendar tu cita necesito:
 2. ¿Prefieres mañana o tarde?
 
 Tenemos disponibilidad esta semana. ¿Qué te parece?`,
-    etapasAplica: ['interesado'],
+    etapasAplica: ['cita_propuesta', 'en_seguimiento'],
     descripcion: 'Confirmar interés y solicitar preferencia de horario'
   },
 
-  // === ETAPA: CALIFICADO ===
+  // === ETAPA: CITA_AGENDADA ===
   {
     id: 'agendar-cita',
-    nombre: '📅 Agendar cita',
+    nombre: '📅 Confirmar cita',
     mensaje: `¡Perfecto, [NOMBRE]!
 
 Tu cita queda agendada:
@@ -154,7 +161,7 @@ Recuerda traer:
 • Estudios previos (si tienes)
 
 Te enviaremos recordatorio un día antes. ¡Te esperamos!`,
-    etapasAplica: ['calificado'],
+    etapasAplica: ['cita_agendada'],
     descripcion: 'Confirmar cita agendada con todos los detalles'
   },
   {
@@ -168,8 +175,23 @@ Para tu próxima consulta te recomendamos:
 • Estudios previos relacionados
 
 ¿Tienes alguna pregunta antes de tu cita?`,
-    etapasAplica: ['calificado', 'convertido'],
+    etapasAplica: ['cita_agendada', 'show'],
     descripcion: 'Instrucciones de preparación pre-consulta'
+  },
+
+  // === ETAPA: NO_SHOW ===
+  {
+    id: 'reagendar-no-show',
+    nombre: '📅 Reagendar (no asistió)',
+    mensaje: `¡Hola [NOMBRE]!
+
+Notamos que no pudiste asistir a tu cita. ¡No te preocupes!
+
+¿Te gustaría reagendar? Tenemos disponibilidad esta semana.
+
+Quedamos atentos a tu respuesta.`,
+    etapasAplica: ['no_show'],
+    descripcion: 'Mensaje para reagendar cuando el paciente no asistió'
   },
 
   // === REACTIVACIÓN ===
@@ -183,7 +205,7 @@ Hace tiempo nos contactaste y queremos saber cómo estás.
 Si aún necesitas atención urológica, seguimos disponibles para ayudarte. Actualmente tenemos disponibilidad para esta semana.
 
 ¿Te gustaría retomar la conversación?`,
-    etapasAplica: ['contactado', 'interesado', 'no_interesado'],
+    etapasAplica: ['en_seguimiento', 'perdido', 'no_interesado'],
     descripcion: 'Mensaje para reactivar leads inactivos o perdidos'
   },
 
@@ -196,7 +218,7 @@ Si aún necesitas atención urológica, seguimos disponibles para ayudarte. Actu
 Si en el futuro necesitas atención urológica, no dudes en contactarnos.
 
 ¡Te deseamos lo mejor!`,
-    etapasAplica: ['no_interesado', 'descartado'],
+    etapasAplica: ['no_interesado', 'descartado', 'perdido'],
     descripcion: 'Cierre amable cuando el lead no está interesado'
   },
 ];
@@ -206,6 +228,7 @@ Si en el futuro necesitas atención urológica, no dudes en contactarnos.
 // ============================================================
 
 export const ETAPAS_FUNNEL: EtapaFunnel[] = [
+  // === PIPELINE PRINCIPAL ===
   {
     estado: 'nuevo',
     nombre: 'Nuevo Lead',
@@ -222,7 +245,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         label: 'Enviar saludo',
         icon: '👋',
         descripcion: 'Enviar mensaje de bienvenida',
-        siguienteEtapa: 'contactado',
+        siguienteEtapa: 'interactuando',
         plantillaSugerida: 'saludo-inicial',
         color: 'blue'
       },
@@ -239,10 +262,49 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '🆕'
   },
   {
+    estado: 'interactuando',
+    nombre: 'Interactuando',
+    descripcion: 'El bot está chateando activamente con el lead',
+    objetivo: 'Identificar necesidad y escalar a humano si requiere',
+    tiempoIdeal: 'Automático',
+    indicadores: [
+      'Mensajes intercambiados',
+      'Problema detectado'
+    ],
+    acciones: [
+      {
+        id: 'respuesta-rapida',
+        label: 'Respuesta rápida',
+        icon: '⚡',
+        descripcion: 'Enviar respuesta inmediata',
+        plantillaSugerida: 'respuesta-rapida',
+        color: 'blue'
+      },
+      {
+        id: 'marcar-contactado',
+        label: 'Tomar control',
+        icon: '👤',
+        descripcion: 'Intervención humana directa',
+        siguienteEtapa: 'contactado',
+        color: 'cyan'
+      },
+      {
+        id: 'marcar-perdido',
+        label: 'Sin respuesta',
+        icon: '✖',
+        descripcion: 'No respondió al bot',
+        siguienteEtapa: 'perdido',
+        color: 'gray'
+      }
+    ],
+    color: 'sky',
+    icon: '🤖'
+  },
+  {
     estado: 'contactado',
-    nombre: 'En Conversación',
-    descripcion: 'Ya iniciamos contacto, esperando respuesta o dando información',
-    objetivo: 'Identificar necesidades y despertar interés',
+    nombre: 'Contactado',
+    descripcion: 'Humano ha intervenido en la conversación',
+    objetivo: 'Identificar necesidades y ofrecer cita',
     tiempoIdeal: '1-3 días',
     indicadores: [
       'Número de mensajes intercambiados',
@@ -266,11 +328,12 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         color: 'amber'
       },
       {
-        id: 'marcar-interesado',
-        label: 'Marcar interesado',
-        icon: '🎯',
-        descripcion: 'Mostró interés real',
-        siguienteEtapa: 'interesado',
+        id: 'proponer-cita',
+        label: 'Proponer cita',
+        icon: '📅',
+        descripcion: 'Ofrecer fecha de consulta',
+        siguienteEtapa: 'cita_propuesta',
+        plantillaSugerida: 'enviar-costos',
         color: 'purple'
       },
       {
@@ -286,64 +349,95 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     icon: '💬'
   },
   {
-    estado: 'interesado',
-    nombre: 'Interesado Activo',
-    descripcion: 'Preguntó por precios, disponibilidad o servicios específicos',
-    objetivo: 'Cerrar la venta agendando una cita',
-    tiempoIdeal: '1-2 días',
-    indicadores: [
-      'Preguntas sobre costos',
-      'Solicitud de horarios'
-    ],
-    acciones: [
-      {
-        id: 'enviar-costos',
-        label: 'Enviar costos',
-        icon: '💰',
-        descripcion: 'Compartir precios y opciones',
-        plantillaSugerida: 'enviar-costos',
-        color: 'emerald'
-      },
-      {
-        id: 'ofrecer-cita',
-        label: 'Ofrecer agendar',
-        icon: '📅',
-        descripcion: 'Proponer agendar cita',
-        plantillaSugerida: 'confirmar-interes',
-        color: 'purple'
-      },
-      {
-        id: 'marcar-calificado',
-        label: 'Listo para agendar',
-        icon: '✅',
-        descripcion: 'Confirmó que quiere cita',
-        siguienteEtapa: 'calificado',
-        color: 'emerald'
-      }
-    ],
-    color: 'purple',
-    icon: '🎯'
-  },
-  {
-    estado: 'calificado',
-    nombre: 'Listo para Agendar',
-    descripcion: 'Confirmó interés y está listo para su primera cita',
-    objetivo: 'Confirmar cita y convertir a paciente',
+    estado: 'cita_propuesta',
+    nombre: 'Cita Propuesta',
+    descripcion: 'Se ofreció fecha/hora de cita, esperando confirmación',
+    objetivo: 'Lograr que confirme la cita',
     tiempoIdeal: '< 24 horas',
     indicadores: [
-      'Cita agendada',
-      'Confirmación recibida'
+      'Tiempo de respuesta',
+      'Tasa de confirmación'
     ],
     acciones: [
       {
         id: 'confirmar-cita',
-        label: 'Confirmar cita',
-        icon: '📅',
-        descripcion: 'Enviar confirmación de cita',
-        plantillaSugerida: 'agendar-cita',
-        siguienteEtapa: 'convertido',
+        label: 'Cita confirmada',
+        icon: '✅',
+        descripcion: 'El paciente aceptó la fecha',
+        siguienteEtapa: 'cita_agendada',
         color: 'emerald'
       },
+      {
+        id: 'seguimiento-propuesta',
+        label: 'Dar seguimiento',
+        icon: '🔔',
+        descripcion: 'No ha confirmado aún',
+        plantillaSugerida: 'seguimiento-sin-respuesta',
+        color: 'amber'
+      },
+      {
+        id: 'ofrecer-otra-fecha',
+        label: 'Otra fecha',
+        icon: '📅',
+        descripcion: 'Proponer fecha alternativa',
+        plantillaSugerida: 'confirmar-interes',
+        color: 'blue'
+      }
+    ],
+    color: 'purple',
+    icon: '📋'
+  },
+  {
+    estado: 'en_seguimiento',
+    nombre: 'En Seguimiento',
+    descripcion: 'Requiere follow-up humano (no respondió, necesita más info)',
+    objetivo: 'Reengancharlo y avanzar hacia cita',
+    tiempoIdeal: '3-5 días',
+    indicadores: [
+      'Intentos de seguimiento',
+      'Tasa de reactivación'
+    ],
+    acciones: [
+      {
+        id: 'enviar-seguimiento',
+        label: 'Dar seguimiento',
+        icon: '�',
+        descripcion: 'Enviar mensaje de seguimiento',
+        plantillaSugerida: 'seguimiento-sin-respuesta',
+        color: 'amber'
+      },
+      {
+        id: 'proponer-cita-seguimiento',
+        label: 'Proponer cita',
+        icon: '📅',
+        descripcion: 'Ofrecer agendar cita',
+        siguienteEtapa: 'cita_propuesta',
+        plantillaSugerida: 'confirmar-interes',
+        color: 'purple'
+      },
+      {
+        id: 'marcar-perdido-seguimiento',
+        label: 'Marcar perdido',
+        icon: '✖',
+        descripcion: 'Demasiados intentos sin respuesta',
+        siguienteEtapa: 'perdido',
+        color: 'gray'
+      }
+    ],
+    color: 'orange',
+    icon: '🔄'
+  },
+  {
+    estado: 'cita_agendada',
+    nombre: 'Cita Agendada',
+    descripcion: 'Cita confirmada en calendario, esperando el día',
+    objetivo: 'Asegurar asistencia (recordatorios)',
+    tiempoIdeal: 'Hasta día de cita',
+    indicadores: [
+      'Recordatorio enviado',
+      'Confirmación de asistencia'
+    ],
+    acciones: [
       {
         id: 'enviar-preparacion',
         label: 'Enviar preparación',
@@ -351,16 +445,71 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         descripcion: 'Instrucciones pre-consulta',
         plantillaSugerida: 'preparacion-cita',
         color: 'blue'
+      },
+      {
+        id: 'confirmar-cita-agendada',
+        label: 'Confirmar cita',
+        icon: '📅',
+        descripcion: 'Enviar confirmación de cita',
+        plantillaSugerida: 'agendar-cita',
+        color: 'emerald'
+      },
+      {
+        id: 'marcar-show',
+        label: 'Asistió',
+        icon: '✅',
+        descripcion: 'El paciente asistió a la cita',
+        siguienteEtapa: 'show',
+        color: 'emerald'
+      },
+      {
+        id: 'marcar-no-show',
+        label: 'No asistió',
+        icon: '❌',
+        descripcion: 'El paciente no se presentó',
+        siguienteEtapa: 'no_show',
+        color: 'red'
       }
     ],
     color: 'emerald',
+    icon: '📅'
+  },
+  // === POST-CITA ===
+  {
+    estado: 'show',
+    nombre: 'Asistió',
+    descripcion: 'El paciente asistió a su cita',
+    objetivo: 'Convertir a paciente registrado',
+    tiempoIdeal: 'Inmediato',
+    indicadores: [
+      'Registro como paciente',
+      'Próxima cita agendada'
+    ],
+    acciones: [
+      {
+        id: 'convertir-paciente',
+        label: 'Convertir a paciente',
+        icon: '🏆',
+        descripcion: 'Registrar como paciente formal',
+        siguienteEtapa: 'convertido',
+        color: 'emerald'
+      },
+      {
+        id: 'agendar-seguimiento',
+        label: 'Agendar seguimiento',
+        icon: '📅',
+        descripcion: 'Programar siguiente consulta',
+        color: 'blue'
+      }
+    ],
+    color: 'teal',
     icon: '✅'
   },
   {
     estado: 'convertido',
     nombre: 'Paciente',
-    descripcion: '¡Éxito! Este lead ya es paciente con cita agendada',
-    objetivo: 'Asegurar asistencia y satisfacción',
+    descripcion: '¡Éxito! Este lead ya es paciente registrado',
+    objetivo: 'Asegurar satisfacción y retención',
     tiempoIdeal: 'N/A',
     indicadores: [
       'Cita completada',
@@ -386,6 +535,71 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
     color: 'emerald',
     icon: '🏆'
   },
+  // === ESTADOS NEGATIVOS ===
+  {
+    estado: 'no_show',
+    nombre: 'No Asistió',
+    descripcion: 'Tenía cita agendada pero no se presentó',
+    objetivo: 'Reagendar si es posible',
+    tiempoIdeal: '1-2 días',
+    indicadores: [
+      'Motivo de inasistencia',
+      'Intención de reagendar'
+    ],
+    acciones: [
+      {
+        id: 'reagendar',
+        label: 'Reagendar cita',
+        icon: '📅',
+        descripcion: 'Proponer nueva fecha',
+        siguienteEtapa: 'cita_agendada',
+        plantillaSugerida: 'reagendar-no-show',
+        color: 'amber'
+      },
+      {
+        id: 'marcar-perdido-noshow',
+        label: 'Marcar perdido',
+        icon: '✖',
+        descripcion: 'No quiere reagendar',
+        siguienteEtapa: 'perdido',
+        color: 'gray'
+      }
+    ],
+    color: 'red',
+    icon: '❌'
+  },
+  {
+    estado: 'perdido',
+    nombre: 'Perdido',
+    descripcion: 'Sin respuesta prolongada o abandonó el proceso',
+    objetivo: 'Intentar reactivar o archivar',
+    tiempoIdeal: 'N/A',
+    indicadores: [
+      'Motivo de pérdida',
+      'Intentos de reactivación'
+    ],
+    acciones: [
+      {
+        id: 'reactivar-perdido',
+        label: 'Intentar reactivar',
+        icon: '🔄',
+        descripcion: 'Último intento de reactivación',
+        plantillaSugerida: 'reactivar-lead',
+        siguienteEtapa: 'contactado',
+        color: 'amber'
+      },
+      {
+        id: 'cerrar-perdido',
+        label: 'Cerrar definitivamente',
+        icon: '🙏',
+        descripcion: 'Enviar despedida y archivar',
+        plantillaSugerida: 'agradecer-no-interes',
+        color: 'gray'
+      }
+    ],
+    color: 'slate',
+    icon: '💤'
+  },
   {
     estado: 'no_interesado',
     nombre: 'No Interesado',
@@ -402,6 +616,7 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         icon: '🔄',
         descripcion: 'Enviar mensaje de reactivación',
         plantillaSugerida: 'reactivar-lead',
+        siguienteEtapa: 'contactado',
         color: 'amber'
       },
       {
@@ -410,7 +625,6 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
         icon: '🙏',
         descripcion: 'Enviar despedida',
         plantillaSugerida: 'agradecer-no-interes',
-        siguienteEtapa: 'descartado',
         color: 'gray'
       }
     ],
@@ -419,26 +633,16 @@ export const ETAPAS_FUNNEL: EtapaFunnel[] = [
   },
   {
     estado: 'descartado',
-    nombre: 'descartado',
-    descripcion: 'Sin respuesta prolongada o cerrado',
-    objetivo: 'Archivar y analizar motivo',
+    nombre: 'Descartado',
+    descripcion: 'Spam, número equivocado o irrelevante',
+    objetivo: 'Archivar',
     tiempoIdeal: 'N/A',
     indicadores: [
-      'Motivo de pérdida'
+      'Motivo de descarte'
     ],
-    acciones: [
-      {
-        id: 'reactivar-perdido',
-        label: 'Intentar reactivar',
-        icon: '🔄',
-        descripcion: 'Último intento de reactivación',
-        plantillaSugerida: 'reactivar-lead',
-        siguienteEtapa: 'contactado',
-        color: 'amber'
-      }
-    ],
+    acciones: [],
     color: 'red',
-    icon: '💤'
+    icon: '�'
   }
 ];
 

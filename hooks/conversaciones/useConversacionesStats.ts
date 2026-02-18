@@ -108,281 +108,57 @@ const defaultStats: ConversacionesStats = {
 };
 
 // ============================================================
-// FETCHER
+// FETCHER — Usa RPC server-side (1 sola llamada)
 // ============================================================
 
-// Tipos para queries - now from mensajes table joined with conversaciones
-interface MensajeStatsRow {
-  remitente: string;
-  contenido: string | null;
-  created_at: string;
-  conversacion_id: string;
-  conversaciones: { telefono: string } | null;
-}
-
-interface UrobotLogRow {
-  telefono: string | null;
-  tipo_interaccion: string | null;
-  tiempo_respuesta_ms: number | null;
-  requirio_escalacion: boolean | null;
-  herramientas_llamadas: unknown;
-  created_at: string;
-}
-
+/**
+ * ✅ OPTIMIZADO: Una sola llamada RPC que ejecuta toda la agregación en PostgreSQL
+ * Antes: 3 queries paralelas + procesamiento pesado en JS del navegador
+ * Ahora: 1 RPC que retorna jsonb pre-calculado
+ */
 async function fetchConversacionesStats(dias: number): Promise<ConversacionesStats> {
-  const fechaInicio = new Date();
-  fechaInicio.setDate(fechaInicio.getDate() - dias);
-  const fechaInicioISO = fechaInicio.toISOString();
-  
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  const hoyISO = hoy.toISOString();
+  const { data, error } = await supabase.rpc('get_conversaciones_stats' as never, {
+    p_dias: dias,
+  } as never);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any;
+  if (error) throw error;
 
-  // Query paralelos para mejor rendimiento
-  const [
-    mensajesRes,
-    urobotLogsRes,
-    mensajesHoyRes,
-  ] = await Promise.all([
-    // Todos los mensajes del período (from mensajes joined with conversaciones for telefono)
-    sb
-      .from('mensajes')
-      .select('remitente, contenido, created_at, conversacion_id, conversaciones(telefono)')
-      .gte('created_at', fechaInicioISO)
-      .order('created_at', { ascending: false }),
-    
-    // Logs de UroBot del período
-    sb
-      .from('urobot_logs')
-      .select('telefono, tipo_interaccion, tiempo_respuesta_ms, requirio_escalacion, herramientas_llamadas, created_at')
-      .gte('created_at', fechaInicioISO),
-    
-    // Mensajes de hoy
-    sb
-      .from('mensajes')
-      .select('remitente, conversaciones(telefono)')
-      .gte('created_at', hoyISO),
-  ]);
+  const d = data as Record<string, unknown> | null;
+  if (!d) return defaultStats;
 
-  const mensajesRaw = (mensajesRes.data || []) as MensajeStatsRow[];
-  const urobotLogs = (urobotLogsRes.data || []) as UrobotLogRow[];
-  const mensajesHoyRaw = (mensajesHoyRes.data || []) as { remitente: string; conversaciones: { telefono: string } | null }[];
-
-  // Normalize: extract telefono from joined conversaciones
-  const conversaciones = mensajesRaw.map(m => ({
-    telefono: m.conversaciones?.telefono || '',
-    rol: m.remitente,
-    mensaje: m.contenido,
-    created_at: m.created_at,
-  }));
-  const conversacionesHoy = mensajesHoyRaw.map(m => ({
-    telefono: m.conversaciones?.telefono || '',
-    rol: m.remitente,
-  }));
-
-  // ============================================================
-  // CALCULAR KPIs
-  // ============================================================
-  
-  // Mensajes por rol
-  const mensajesRecibidos = conversaciones.filter((c: { rol: string }) => c.rol === 'usuario');
-  const mensajesEnviados = conversaciones.filter((c: { rol: string }) => c.rol === 'asistente');
-  
-  // Usuarios únicos
-  const telefonosUnicos = new Set(conversaciones.map(c => c.telefono));
-  const telefonosHoy = new Set(conversacionesHoy.map(c => c.telefono));
-  
-  // Mensajes hoy
-  const mensajesRecibidosHoy = conversacionesHoy.filter(c => c.rol === 'usuario').length;
-  const mensajesEnviadosHoy = conversacionesHoy.filter(c => c.rol === 'asistente').length;
-  
-  // Tiempo de respuesta promedio
-  const tiemposRespuesta = urobotLogs
-    .filter(l => l.tiempo_respuesta_ms && l.tiempo_respuesta_ms > 0)
-    .map(l => l.tiempo_respuesta_ms as number);
-  const tiempoRespuestaPromedio = tiemposRespuesta.length > 0
-    ? Math.round(tiemposRespuesta.reduce((a, b) => a + b, 0) / tiemposRespuesta.length)
-    : 0;
-  
-  // Citas agendadas por bot
-  const citasAgendadas = urobotLogs.filter(l => {
-    const herramientas = l.herramientas_llamadas as string[] | null;
-    return herramientas?.some(h => 
-      h.includes('agendar') || h.includes('cita') || h.includes('appointment')
-    );
-  }).length;
-  
-  // Escalaciones
-  const escalaciones = urobotLogs.filter(l => l.requirio_escalacion).length;
-  
-  // Usuarios recurrentes (más de 3 mensajes)
-  const mensajesPorUsuario = new Map<string, number>();
-  conversaciones.forEach(c => {
-    mensajesPorUsuario.set(c.telefono, (mensajesPorUsuario.get(c.telefono) || 0) + 1);
-  });
-  const usuariosRecurrentes = Array.from(mensajesPorUsuario.values()).filter(count => count > 3).length;
-  
-  // Tasa de respuesta
-  const tasaRespuesta = mensajesRecibidos.length > 0
-    ? Math.round((mensajesEnviados.length / mensajesRecibidos.length) * 100)
-    : 0;
+  const kpiRaw = (d.kpi || {}) as Record<string, number>;
 
   const kpi: ConversacionesKPI = {
-    totalMensajesRecibidos: mensajesRecibidos.length,
-    totalMensajesEnviados: mensajesEnviados.length,
-    totalConversaciones: telefonosUnicos.size,
-    mensajesRecibidosHoy,
-    mensajesEnviadosHoy,
-    conversacionesHoy: telefonosHoy.size,
-    promedioMensajesPorConversacion: telefonosUnicos.size > 0
-      ? Math.round(conversaciones.length / telefonosUnicos.size)
-      : 0,
-    tiempoRespuestaPromedio,
-    preguntasRespondidas: urobotLogs.length,
-    citasAgendadasPorBot: citasAgendadas,
-    escalacionesHumano: escalaciones,
-    usuariosRecurrentes,
-    tasaRespuesta,
+    totalMensajesRecibidos: Number(kpiRaw.totalMensajesRecibidos) || 0,
+    totalMensajesEnviados: Number(kpiRaw.totalMensajesEnviados) || 0,
+    totalConversaciones: Number(kpiRaw.totalConversaciones) || 0,
+    mensajesRecibidosHoy: Number(kpiRaw.mensajesRecibidosHoy) || 0,
+    mensajesEnviadosHoy: Number(kpiRaw.mensajesEnviadosHoy) || 0,
+    conversacionesHoy: Number(kpiRaw.conversacionesHoy) || 0,
+    promedioMensajesPorConversacion: Number(kpiRaw.promedioMensajesPorConversacion) || 0,
+    tiempoRespuestaPromedio: Number(kpiRaw.tiempoRespuestaPromedio) || 0,
+    preguntasRespondidas: Number(kpiRaw.preguntasRespondidas) || 0,
+    citasAgendadasPorBot: Number(kpiRaw.citasAgendadasPorBot) || 0,
+    escalacionesHumano: Number(kpiRaw.escalacionesHumano) || 0,
+    usuariosRecurrentes: Number(kpiRaw.usuariosRecurrentes) || 0,
+    tasaRespuesta: Number(kpiRaw.tasaRespuesta) || 0,
   };
 
-  // ============================================================
-  // MENSAJES POR HORA
-  // ============================================================
-  
-  const porHora = new Map<number, { recibidos: number; enviados: number }>();
-  for (let i = 0; i < 24; i++) {
-    porHora.set(i, { recibidos: 0, enviados: 0 });
-  }
-  
-  conversaciones.forEach(c => {
-    const hora = new Date(c.created_at).getHours();
-    const current = porHora.get(hora)!;
-    if (c.rol === 'usuario') {
-      current.recibidos++;
-    } else {
-      current.enviados++;
-    }
-  });
-  
-  const mensajesPorHora: MensajesPorHora[] = Array.from(porHora.entries())
-    .map(([hora, data]) => ({
-      hora: `${hora.toString().padStart(2, '0')}:00`,
-      recibidos: data.recibidos,
-      enviados: data.enviados,
-    }));
-
-  // ============================================================
-  // TIPOS DE INTERACCIÓN
-  // ============================================================
-  
-  const tiposCount = new Map<string, number>();
-  urobotLogs.forEach(log => {
-    const tipo = log.tipo_interaccion || 'general';
-    tiposCount.set(tipo, (tiposCount.get(tipo) || 0) + 1);
-  });
-  
-  const totalInteracciones = urobotLogs.length;
-  const tiposInteraccion: TipoInteraccion[] = Array.from(tiposCount.entries())
-    .map(([tipo, cantidad]) => ({
-      tipo: formatTipoInteraccion(tipo),
-      cantidad,
-      porcentaje: totalInteracciones > 0 ? Math.round((cantidad / totalInteracciones) * 100) : 0,
-    }))
-    .sort((a, b) => b.cantidad - a.cantidad)
-    .slice(0, 6);
-
-  // ============================================================
-  // TOP PREGUNTAS (basado en keywords de mensajes)
-  // ============================================================
-  
-  const categoriasKeywords: Record<string, string[]> = {
-    'Citas y Horarios': ['cita', 'agendar', 'horario', 'disponible', 'fecha', 'hora'],
-    'Precios y Costos': ['precio', 'costo', 'cuanto', 'pago', 'tarifa', 'cobr'],
-    'Ubicación': ['donde', 'ubicacion', 'direccion', 'llegar', 'consultorio'],
-    'Procedimientos': ['cirugia', 'procedimiento', 'operacion', 'tratamiento'],
-    'Síntomas': ['dolor', 'sintoma', 'molestia', 'ardor', 'orina'],
-    'Resultados': ['resultado', 'estudio', 'analisis', 'laboratorio'],
-  };
-  
-  const categoriasCount = new Map<string, number>();
-  mensajesRecibidos.forEach(msg => {
-    const mensajeLower = (msg.mensaje || '').toLowerCase();
-    for (const [categoria, keywords] of Object.entries(categoriasKeywords)) {
-      if (keywords.some(kw => mensajeLower.includes(kw))) {
-        categoriasCount.set(categoria, (categoriasCount.get(categoria) || 0) + 1);
-        break;
-      }
-    }
-  });
-  
-  const topPreguntas: TopPregunta[] = Array.from(categoriasCount.entries())
-    .map(([categoria, cantidad]) => ({ categoria, cantidad }))
-    .sort((a, b) => b.cantidad - a.cantidad);
-
-  // ============================================================
-  // CONVERSACIONES RECIENTES
-  // ============================================================
-  
-  const ultimosPorTelefono = new Map<string, { mensaje: string; fecha: string; count: number }>();
-  conversaciones.forEach(c => {
-    if (!ultimosPorTelefono.has(c.telefono)) {
-      ultimosPorTelefono.set(c.telefono, {
-        mensaje: c.mensaje?.substring(0, 50) || '',
-        fecha: c.created_at,
-        count: 1,
-      });
-    } else {
-      ultimosPorTelefono.get(c.telefono)!.count++;
-    }
-  });
-  
-  const conversacionesRecientes: ConversacionReciente[] = Array.from(ultimosPorTelefono.entries())
-    .slice(0, 10)
-    .map(([telefono, data]) => ({
-      telefono: `***${telefono.slice(-4)}`,
-      totalMensajes: data.count,
-      ultimoMensaje: data.mensaje,
-      fecha: data.fecha,
-      tipoContacto: 'desconocido' as const,
-    }));
-
-  // ============================================================
-  // MENSAJES POR DÍA
-  // ============================================================
-  
-  const porDia = new Map<string, { recibidos: number; enviados: number }>();
-  conversaciones.forEach(c => {
-    const fecha = new Date(c.created_at).toISOString().split('T')[0];
-    if (!porDia.has(fecha)) {
-      porDia.set(fecha, { recibidos: 0, enviados: 0 });
-    }
-    const current = porDia.get(fecha)!;
-    if (c.rol === 'usuario') {
-      current.recibidos++;
-    } else {
-      current.enviados++;
-    }
-  });
-  
-  const mensajesPorDia = Array.from(porDia.entries())
-    .map(([fecha, data]) => ({
-      fecha: formatFechaCorta(fecha),
-      recibidos: data.recibidos,
-      enviados: data.enviados,
-    }))
-    .sort((a, b) => a.fecha.localeCompare(b.fecha))
-    .slice(-14); // Últimos 14 días
+  // Los tipos de interacción necesitan el formateo de emoji (client-side)
+  const tiposRaw = (d.tiposInteraccion || []) as { tipo: string; cantidad: number; porcentaje: number }[];
+  const tiposInteraccion: TipoInteraccion[] = tiposRaw.map(t => ({
+    tipo: formatTipoInteraccion(t.tipo),
+    cantidad: Number(t.cantidad),
+    porcentaje: Number(t.porcentaje),
+  }));
 
   return {
     kpi,
-    mensajesPorHora,
+    mensajesPorHora: (d.mensajesPorHora || []) as MensajesPorHora[],
     tiposInteraccion,
-    topPreguntas,
-    conversacionesRecientes,
-    mensajesPorDia,
+    topPreguntas: (d.topPreguntas || []) as TopPregunta[],
+    conversacionesRecientes: (d.conversacionesRecientes || []) as ConversacionReciente[],
+    mensajesPorDia: (d.mensajesPorDia || []) as { fecha: string; recibidos: number; enviados: number }[],
   };
 }
 
@@ -402,11 +178,6 @@ function formatTipoInteraccion(tipo: string): string {
     'precios': '💰 Precios',
   };
   return map[tipo.toLowerCase()] || `💬 ${tipo}`;
-}
-
-function formatFechaCorta(fecha: string): string {
-  const d = new Date(fecha);
-  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 }
 
 // ============================================================

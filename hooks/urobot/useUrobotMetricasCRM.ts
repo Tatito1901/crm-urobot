@@ -153,10 +153,10 @@ const INTENT_CONFIG: Record<string, { icono: string; label: string }> = {
 };
 
 const FUNNEL_COLORS = {
-  intentos: '#3b82f6',
-  agendadas: '#10b981',
-  confirmadas: '#8b5cf6',
-  completadas: '#06b6d4',
+  intentos: 'var(--chart-blue)',
+  agendadas: 'var(--chart-emerald)',
+  confirmadas: 'var(--chart-purple)',
+  completadas: 'var(--chart-cyan)',
 };
 
 // ============================================================

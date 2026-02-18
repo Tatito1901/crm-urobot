@@ -22,6 +22,33 @@
   --color-gray-700: #616161;
   --color-gray-900: #111;
 
+  /* Chart Colors - Paleta unificada para gráficos */
+  --chart-blue: #3b82f6;
+  --chart-emerald: #10b981;
+  --chart-purple: #8b5cf6;
+  --chart-amber: #f59e0b;
+  --chart-rose: #f43f5e;
+  --chart-cyan: #06b6d4;
+  --chart-indigo: #6366f1;
+  --chart-teal: #14b8a6;
+  --chart-orange: #f97316;
+  --chart-slate: #64748b;
+
+  /* Calendar Status Colors */
+  --cal-programada: rgba(59, 130, 246, 0.85);
+  --cal-programada-border: rgb(96 165 250);
+  --cal-confirmada: rgba(16, 185, 129, 0.85);
+  --cal-confirmada-border: rgb(52 211 153);
+  --cal-reagendada: rgba(245, 158, 11, 0.85);
+  --cal-reagendada-border: rgb(251 191 36);
+  --cal-cancelada: rgba(107, 114, 128, 0.6);
+  --cal-cancelada-border: rgb(156 163 175);
+
+  /* Calendar Accent */
+  --cal-today: rgb(59 130 246);
+  --cal-scrollbar: rgb(51 65 85);
+  --cal-scrollbar-hover: rgb(71 85 105);
+
   /* Calendar Layout */
   --sidebar-w: 280px;
   --header-h: 80px;

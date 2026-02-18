@@ -40,14 +40,19 @@ interface LeadActionsModalProps {
   onRefresh?: () => void;
 }
 
-// Estados con configuración visual
+// Estados con configuración visual — sincronizado con catalog_estados_lead
 const ESTADOS_CONFIG: { estado: LeadEstado; icon: React.ReactNode; label: string; color: string }[] = [
   { estado: 'nuevo', icon: <Star className="w-4 h-4" />, label: 'Nuevo', color: 'bg-blue-500' },
-  { estado: 'contactado', icon: <MessageSquare className="w-4 h-4" />, label: 'Contactado', color: 'bg-cyan-500' },
-  { estado: 'interesado', icon: <Zap className="w-4 h-4" />, label: 'Interesado', color: 'bg-amber-500' },
-  { estado: 'calificado', icon: <Check className="w-4 h-4" />, label: 'Calificado', color: 'bg-emerald-500' },
+  { estado: 'interactuando', icon: <Zap className="w-4 h-4" />, label: 'Bot activo', color: 'bg-sky-500' },
+  { estado: 'contactado', icon: <MessageSquare className="w-4 h-4" />, label: 'Contactado', color: 'bg-amber-500' },
+  { estado: 'cita_propuesta', icon: <Calendar className="w-4 h-4" />, label: 'Cita propuesta', color: 'bg-purple-500' },
+  { estado: 'en_seguimiento', icon: <Clock className="w-4 h-4" />, label: 'En seguimiento', color: 'bg-orange-500' },
+  { estado: 'cita_agendada', icon: <Calendar className="w-4 h-4" />, label: 'Cita agendada', color: 'bg-emerald-500' },
+  { estado: 'show', icon: <Check className="w-4 h-4" />, label: 'Asistió', color: 'bg-teal-500' },
   { estado: 'convertido', icon: <User className="w-4 h-4" />, label: 'Paciente', color: 'bg-green-600' },
-  { estado: 'no_interesado', icon: <XCircle className="w-4 h-4" />, label: 'No interesado', color: 'bg-slate-400' },
+  { estado: 'no_show', icon: <XCircle className="w-4 h-4" />, label: 'No asistió', color: 'bg-red-400' },
+  { estado: 'perdido', icon: <X className="w-4 h-4" />, label: 'Perdido', color: 'bg-slate-400' },
+  { estado: 'no_interesado', icon: <XCircle className="w-4 h-4" />, label: 'No interesado', color: 'bg-slate-500' },
   { estado: 'descartado', icon: <X className="w-4 h-4" />, label: 'Descartado', color: 'bg-red-500' },
 ];
 
@@ -177,9 +182,9 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold
-                ${lead.estado === 'convertido' ? 'bg-emerald-500' : 
-                  lead.estado === 'interesado' ? 'bg-amber-500' : 
-                  lead.estado === 'calificado' ? 'bg-green-500' : 'bg-blue-500'}`}
+                ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-500' : 
+                  lead.estado === 'cita_agendada' ? 'bg-green-500' : 
+                  lead.estado === 'cita_propuesta' ? 'bg-purple-500' : 'bg-blue-500'}`}
               >
                 {(lead.nombre || lead.telefono).slice(0, 2).toUpperCase()}
               </div>
@@ -190,8 +195,8 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
-                    ${lead.estado === 'convertido' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 
-                      lead.estado === 'interesado' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : 
+                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 
+                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : 
                       'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'}`}
                   >
                     {etapaConfig?.icon} {etapaConfig?.nombre || lead.estado}

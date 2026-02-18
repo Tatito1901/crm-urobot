@@ -8,6 +8,9 @@ import { useUrobotStats, marcarAlertaRevisada } from '@/hooks/urobot/useUrobotSt
 import { useConversacionesStats } from '@/hooks/conversaciones/useConversacionesStats';
 import { useUrobotMetricasCRM } from '@/hooks/urobot/useUrobotMetricasCRM';
 import { Bot, RefreshCw, XCircle, AlertTriangle, MessageCircle, Activity, Target } from 'lucide-react';
+import { RefreshButton } from '@/app/components/common/RefreshButton';
+import { TabBar } from '@/app/components/common/TabBar';
+import { buttons, spacing, layouts } from '@/app/lib/design-system';
 
 // Componentes optimizados
 import { UrobotMetrics } from './components/UrobotMetrics';
@@ -119,92 +122,66 @@ export default function UrobotPage() {
           <select
             value={dias}
             onChange={(e) => setDias(Number(e.target.value))}
-            className="px-2 sm:px-3 py-1.5 rounded-lg bg-muted border border-border text-sm"
+            className={buttons.select}
           >
             <option value={1}>24h</option>
             <option value={7}>7 días</option>
             <option value={30}>30 días</option>
           </select>
-          <button
-            onClick={handleRefresh}
-            disabled={showLoading}
-            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-sm font-medium hover:bg-cyan-500/30 disabled:opacity-50 transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 ${showLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Actualizar</span>
-          </button>
+          <RefreshButton onClick={handleRefresh} loading={showLoading} variant="cyan" />
         </div>
       }
     >
       {/* Tabs de navegación */}
-      <div className="mb-4 sm:mb-6 border-b border-border overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
-        <div className="flex gap-0.5 sm:gap-1 min-w-max">
-          <button
-            onClick={() => setActiveTab('crm')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px
-              ${activeTab === 'crm' 
-                ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400' 
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-              }`}
-          >
-            <Target className="w-4 h-4" />
-            <span>Conversiones</span>
-            {crmResumen.citasAgendadas > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                {crmResumen.citasAgendadas}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('mensajes')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px
-              ${activeTab === 'mensajes' 
-                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' 
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-              }`}
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>Mensajes</span>
-            <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-muted">
-              {convKpi.totalMensajesRecibidos + convKpi.totalMensajesEnviados}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab('monitoreo')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px
-              ${activeTab === 'monitoreo' 
-                ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400' 
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-              }`}
-          >
-            <Activity className="w-4 h-4" />
-            <span>Monitoreo</span>
-            {kpi.alertasPendientes > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-red-500/20 text-red-600 dark:text-red-400">
-                {kpi.alertasPendientes}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
+      <TabBar
+        variant="icon"
+        flush
+        tabs={[
+          {
+            key: 'crm',
+            label: 'Conversiones',
+            icon: <Target className="w-4 h-4" />,
+            badge: crmResumen.citasAgendadas > 0 ? crmResumen.citasAgendadas : undefined,
+            badgeColor: 'emerald',
+            accentColor: 'emerald',
+          },
+          {
+            key: 'mensajes',
+            label: 'Mensajes',
+            icon: <MessageCircle className="w-4 h-4" />,
+            badge: convKpi.totalMensajesRecibidos + convKpi.totalMensajesEnviados,
+            accentColor: 'cyan',
+          },
+          {
+            key: 'monitoreo',
+            label: 'Monitoreo',
+            icon: <Activity className="w-4 h-4" />,
+            badge: kpi.alertasPendientes > 0 ? kpi.alertasPendientes : undefined,
+            badgeColor: 'red',
+            accentColor: 'cyan',
+          },
+        ]}
+        active={activeTab}
+        onChange={(key) => setActiveTab(key as TabView)}
+      />
       {/* ============================================================ */}
       {/* TAB: CRM - Métricas de conversión */}
       {/* ============================================================ */}
       {activeTab === 'crm' && (
         <>
           {/* KPIs de conversiones */}
-          <section className="mb-4 sm:mb-8">
+          <section className={spacing.sectionGap}>
             <MetricasCRMKPIs resumen={crmResumen} />
           </section>
 
           {/* Funnel + Intenciones */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
+          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
             <FunnelConversion funnel={crmData.funnel} />
             <IntentsDistribucion intents={crmData.intents} />
           </div>
 
           {/* Sentiment + Actividad */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
+          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
             <SentimentPanel 
               positivo={crmResumen.sentimentPositivo}
               negativo={crmResumen.sentimentNegativo}
@@ -215,7 +192,7 @@ export default function UrobotPage() {
           </div>
 
           {/* Gráfico de evolución */}
-          <div className="mb-4 sm:mb-8">
+          <div className={spacing.sectionGap}>
             <ActivityChart data={stats.evolucionHoras} />
           </div>
         </>
@@ -227,12 +204,12 @@ export default function UrobotPage() {
       {activeTab === 'mensajes' && (
         <>
           {/* KPIs de conversaciones */}
-          <section className="mb-4 sm:mb-8">
+          <section className={spacing.sectionGap}>
             <ConversacionesKPIs kpi={convKpi} />
           </section>
 
           {/* Fila principal: Resumen + Actividad por hora */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
+          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
             <MensajesResumen 
               recibidos={convKpi.totalMensajesRecibidos}
               enviados={convKpi.totalMensajesEnviados}
@@ -242,13 +219,13 @@ export default function UrobotPage() {
           </div>
 
           {/* Segunda fila: Tipos de interacción + Top preguntas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
+          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
             <TiposInteraccionCard tipos={convStats.tiposInteraccion} />
             <TopPreguntasCard preguntas={convStats.topPreguntas} />
           </div>
 
           {/* Gráfico de evolución */}
-          <div className="mb-4 sm:mb-8">
+          <div className={spacing.sectionGap}>
             <ActivityChart data={stats.evolucionHoras} />
           </div>
         </>
@@ -260,18 +237,18 @@ export default function UrobotPage() {
       {activeTab === 'monitoreo' && (
         <>
           {/* KPIs técnicos */}
-          <section className="mb-4 sm:mb-8">
+          <section className={spacing.sectionGap}>
             <UrobotMetrics kpi={kpi} />
           </section>
 
           {/* Gráficos principales */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
+          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
             <ActivityChart data={stats.evolucionHoras} />
             <InteractionsPieChart data={stats.interaccionesPorTipo} />
           </div>
 
           {/* Segunda fila de gráficos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-8">
+          <div className={`${layouts.grid3} ${spacing.sectionGap}`}>
             <HorizontalBarChart 
               data={stats.erroresPorTipo} 
               title="Errores por Tipo"
@@ -290,7 +267,7 @@ export default function UrobotPage() {
           </div>
 
           {/* Tablas de errores y alertas */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
+          <div className={layouts.grid2}>
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">

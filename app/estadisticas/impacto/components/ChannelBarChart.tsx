@@ -23,15 +23,15 @@ const CANAL_COLORS: Record<string, string> = {
   'Facebook Ads': '#1877f2',
   'Google Ads': '#ea4335',
   'Instagram Ads': '#e4405f',
-  'Orgánico': '#10b981',
-  'Referido': '#8b5cf6',
+  'Orgánico': 'var(--chart-emerald)',
+  'Referido': 'var(--chart-purple)',
   'WhatsApp Directo': '#25d366',
-  'Doctoralia': '#00b8a9',
-  'Otro': '#64748b',
+  'Doctoralia': 'var(--chart-teal)',
+  'Otro': 'var(--chart-slate)',
 };
 
 function getColor(canal: string): string {
-  return CANAL_COLORS[canal] || '#64748b';
+  return CANAL_COLORS[canal] || 'var(--chart-slate)';
 }
 
 export function ChannelBarChart({ data }: ChannelBarChartProps) {
@@ -63,23 +63,23 @@ export function ChannelBarChart({ data }: ChannelBarChartProps) {
           layout="vertical"
           margin={{ top: 5, right: 40, left: 10, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.15} horizontal={true} vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-slate)" strokeOpacity={0.15} horizontal={true} vertical={false} />
           <XAxis 
             type="number"
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={11} 
             tickLine={false} 
             axisLine={false}
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
           />
           <YAxis 
             type="category"
             dataKey="canal"
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={11} 
             tickLine={false} 
             axisLine={false}
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
             width={100}
           />
           <Tooltip 
@@ -109,7 +109,7 @@ export function ChannelBarChart({ data }: ChannelBarChartProps) {
               dataKey="tasa" 
               position="right" 
               formatter={(value) => `${value}%`}
-              style={{ fontSize: '10px', fill: '#64748b' }}
+              style={{ fontSize: '10px', fill: 'var(--chart-slate)' }}
             />
           </Bar>
         </BarChart>

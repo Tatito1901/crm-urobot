@@ -40,29 +40,29 @@ export function TrendChart({ data }: TrendChartProps) {
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
             <linearGradient id="colorConsultas" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="var(--chart-blue)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--chart-blue)" stopOpacity={0}/>
             </linearGradient>
             <linearGradient id="colorCompletadas" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              <stop offset="5%" stopColor="var(--chart-emerald)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--chart-emerald)" stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.15} vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-slate)" strokeOpacity={0.15} vertical={false} />
           <XAxis 
             dataKey="name" 
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={11} 
             tickLine={false} 
             axisLine={false}
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
           />
           <YAxis 
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={11} 
             tickLine={false} 
             axisLine={false}
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
           />
           <Tooltip 
             contentStyle={{
@@ -81,7 +81,7 @@ export function TrendChart({ data }: TrendChartProps) {
             type="monotone"
             dataKey="consultas"
             name="Programadas"
-            stroke="#3b82f6"
+            stroke="var(--chart-blue)"
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#colorConsultas)"
@@ -90,7 +90,7 @@ export function TrendChart({ data }: TrendChartProps) {
             type="monotone"
             dataKey="completadas"
             name="Completadas"
-            stroke="#10b981"
+            stroke="var(--chart-emerald)"
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#colorCompletadas)"

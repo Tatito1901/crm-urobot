@@ -59,7 +59,7 @@ export const DashboardDestinosChart = memo(function DashboardDestinosChart({ dat
           <Legend 
             iconType="circle" 
             iconSize={8}
-            wrapperStyle={{ fontSize: '10px', paddingTop: '5px', color: '#64748b' }} 
+            wrapperStyle={{ fontSize: '10px', paddingTop: '5px', color: 'var(--chart-slate)' }} 
           />
         </PieChart>
       </ResponsiveContainer>

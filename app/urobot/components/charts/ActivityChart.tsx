@@ -70,12 +70,12 @@ export const ActivityChart = React.memo(function ActivityChart({ data, title = '
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="mensajesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--chart-blue)" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="var(--chart-blue)" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="erroresGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--chart-rose)" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="var(--chart-rose)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid 
@@ -101,7 +101,7 @@ export const ActivityChart = React.memo(function ActivityChart({ data, title = '
               <Area 
                 type="monotone" 
                 dataKey="mensajes" 
-                stroke="#3b82f6" 
+                stroke="var(--chart-blue)" 
                 fill="url(#mensajesGradient)"
                 name="Mensajes"
                 strokeWidth={2}
@@ -109,7 +109,7 @@ export const ActivityChart = React.memo(function ActivityChart({ data, title = '
               <Area 
                 type="monotone" 
                 dataKey="errores" 
-                stroke="#ef4444" 
+                stroke="var(--chart-rose)" 
                 fill="url(#erroresGradient)"
                 name="Errores"
                 strokeWidth={2}

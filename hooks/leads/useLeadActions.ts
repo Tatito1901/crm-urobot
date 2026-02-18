@@ -11,6 +11,7 @@
 import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
+import { invalidateDomain } from '@/lib/swr-config';
 import type { Lead, LeadEstado } from '@/types/leads';
 
 const supabase = createClient();
@@ -288,14 +289,17 @@ function generarRecomendacion(
   // === CASO DEFAULT: Contactar según etapa ===
   const plantillasPorEtapa: Record<LeadEstado, string> = {
     'nuevo': 'saludo-inicial',
+    'interactuando': 'respuesta-rapida',
     'contactado': 'info-servicios',
-    'interesado': 'enviar-costos',
-    'calificado': 'agendar-cita',
-    'escalado': 'seguimiento-escalado',
+    'cita_propuesta': 'enviar-costos',
+    'en_seguimiento': 'seguimiento-sin-respuesta',
     'cita_agendada': 'preparacion-cita',
+    'show': 'preparacion-cita',
     'convertido': 'preparacion-cita',
+    'no_show': 'reagendar-no-show',
+    'perdido': 'reactivar-lead',
     'no_interesado': 'reactivar-lead',
-    'descartado': 'reactivar-lead',
+    'descartado': 'agradecer-no-interes',
   };
 
   return {
@@ -466,15 +470,16 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
       } as never)
       .eq('id', lead.id);
     
-    // Refrescar datos
-    await mutate();
+    // ✅ Invalidar dominio completo: leads + dashboard + historial local
+    await Promise.all([invalidateDomain('leads'), mutate()]);
   }, [lead, mutate]);
 
   // Cambiar estado
   const cambiarEstado = useCallback(async (nuevoEstado: LeadEstado) => {
     if (!lead) return;
     await cambiarEstadoLead(lead.id, nuevoEstado, lead.estado);
-    await mutate();
+    // ✅ Invalida: leads-list, leads-stats, lead-by-telefono-*, dashboard-*, stats-dashboard
+    await Promise.all([invalidateDomain('leads'), mutate()]);
   }, [lead, mutate]);
 
   // Registrar llamada
@@ -485,7 +490,7 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
       'llamada_realizada',
       `Llamada realizada${notas ? `: ${notas}` : ''}`
     );
-    await mutate();
+    await Promise.all([invalidateDomain('leads'), mutate()]);
   }, [lead, mutate]);
 
   // Marcar como no molestar
@@ -497,7 +502,7 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
       'etapa_cambiada',
       'Marcado como "No molestar" - Demasiados intentos sin respuesta'
     );
-    await mutate();
+    await Promise.all([invalidateDomain('leads'), mutate()]);
   }, [lead, mutate]);
 
   // Helper para generar URL
@@ -515,7 +520,7 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
     registrarLlamada,
     marcarComoNoMolestar,
     generarURLWhatsApp,
-    refetch: async () => { await mutate(); },
+    refetch: async () => { await Promise.all([invalidateDomain('leads'), mutate()]); },
   };
 }
 

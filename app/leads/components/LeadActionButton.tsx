@@ -75,9 +75,10 @@ export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
     
     switch (lead.estado) {
       case 'nuevo': return { label: '👋', color: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20', disabled: false };
+      case 'interactuando': return { label: '🤖', color: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20', disabled: false };
       case 'contactado': return { label: '📋', color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20', disabled: false };
-      case 'interesado': return { label: '💰', color: 'bg-purple-100 text-purple-600 dark:bg-purple-500/20', disabled: false };
-      case 'calificado': return { label: '📅', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20', disabled: false };
+      case 'cita_propuesta': return { label: '💰', color: 'bg-purple-100 text-purple-600 dark:bg-purple-500/20', disabled: false };
+      case 'cita_agendada': return { label: '📅', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20', disabled: false };
       default: return { label: '💬', color: 'bg-slate-100 text-slate-600', disabled: false };
     }
   };

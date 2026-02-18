@@ -19,14 +19,17 @@ export const GLOSARIO = {
     descripcion: 'En qué punto del proceso se encuentra cada persona interesada.',
     detalle: {
       'nuevo': 'Acaba de contactarnos por primera vez',
-      'contactado': 'Ya iniciamos conversación con esta persona',
-      'interesado': 'Mostró interés real en agendar consulta',
-      'calificado': 'Cumple requisitos y está listo para agendar',
-      'escalado': 'Requiere atención especial del equipo',
-      'cita_agendada': 'Tiene cita programada',
-      'convertido': 'Ya agendó su primera consulta (ahora es paciente)',
+      'interactuando': 'El bot está chateando activamente con esta persona',
+      'contactado': 'Ya iniciamos conversación humana con esta persona',
+      'cita_propuesta': 'Se le ofreció fecha de cita, esperando confirmación',
+      'en_seguimiento': 'Requiere seguimiento humano adicional',
+      'cita_agendada': 'Tiene cita confirmada en calendario',
+      'show': 'Asistió a su cita',
+      'convertido': 'Ya es paciente registrado',
+      'no_show': 'No asistió a su cita agendada',
+      'perdido': 'Sin respuesta prolongada',
       'no_interesado': 'Decidió no continuar',
-      'descartado': 'Dejó de responder o no se pudo contactar'
+      'descartado': 'Spam o número equivocado'
     }
   },
 

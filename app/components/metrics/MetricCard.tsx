@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import { metricColors, type MetricColor } from '@/app/lib/design-system';
 
 interface MetricCardProps {
   title: string;
   value: number | string;
   percentage?: number;
-  color?: 'emerald' | 'blue' | 'purple' | 'amber' | 'red' | 'cyan' | 'fuchsia' | 'green' | 'orange' | 'teal';
+  color?: MetricColor;
   icon?: React.ReactNode;
   description?: string;
   subtitle?: string;
@@ -69,18 +70,6 @@ function useAnimatedNumber(targetValue: number, duration = 600, enabled = true) 
   return displayValue;
 }
 
-const colorClasses = {
-  emerald: { label: 'text-emerald-400 dark:text-emerald-300', value: 'text-foreground', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
-  green: { label: 'text-emerald-400 dark:text-emerald-300', value: 'text-foreground', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
-  blue: { label: 'text-sky-400 dark:text-sky-300', value: 'text-foreground', border: 'border-sky-500/10 dark:border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400' },
-  purple: { label: 'text-violet-400 dark:text-violet-300', value: 'text-foreground', border: 'border-violet-500/10 dark:border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400' },
-  amber: { label: 'text-amber-400 dark:text-amber-300', value: 'text-foreground', border: 'border-amber-500/10 dark:border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400' },
-  orange: { label: 'text-orange-400 dark:text-orange-300', value: 'text-foreground', border: 'border-orange-500/10 dark:border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400' },
-  red: { label: 'text-rose-400 dark:text-rose-300', value: 'text-foreground', border: 'border-rose-500/10 dark:border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400' },
-  cyan: { label: 'text-cyan-400 dark:text-cyan-300', value: 'text-foreground', border: 'border-cyan-500/10 dark:border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400' },
-  teal: { label: 'text-teal-400 dark:text-teal-300', value: 'text-foreground', border: 'border-teal-500/10 dark:border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400' },
-  fuchsia: { label: 'text-fuchsia-400 dark:text-fuchsia-300', value: 'text-foreground', border: 'border-fuchsia-500/10 dark:border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400' },
-};
 
 export const MetricCard = React.memo(({
   title,
@@ -102,7 +91,7 @@ export const MetricCard = React.memo(({
   }, []);
 
   const finalDescription = description || subtitle;
-  const colors = colorClasses[color];
+  const colors = metricColors[color];
   
   // Extraer valor numérico para animación
   const numericValue = typeof value === 'number' ? value : 
@@ -135,7 +124,7 @@ export const MetricCard = React.memo(({
         {isLoading ? (
           <div className="h-8 w-20 bg-white/[0.05] rounded-md animate-pulse" />
         ) : (
-          <div className={`text-2xl font-extrabold ${colors.value} tabular-nums tracking-tight font-jakarta`}>
+          <div className={`text-2xl font-extrabold text-foreground tabular-nums tracking-tight font-jakarta`}>
             {percentage !== undefined ? `${percentage}%` : displayValue}
           </div>
         )}

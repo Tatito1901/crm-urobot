@@ -62,7 +62,7 @@ export const DashboardSourcesChart = memo(function DashboardSourcesChart({ data 
             align="right" 
             iconType="circle" 
             iconSize={8}
-            wrapperStyle={{ fontSize: '10px', color: '#64748b', paddingLeft: '8px', maxWidth: '45%' }} 
+            wrapperStyle={{ fontSize: '10px', color: 'var(--chart-slate)', paddingLeft: '8px', maxWidth: '45%' }} 
             formatter={(value) => <span className="truncate block max-w-[80px]">{value}</span>}
           />
         </PieChart>

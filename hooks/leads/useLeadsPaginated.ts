@@ -10,40 +10,45 @@ import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { SWR_CONFIG_STANDARD, SWR_CONFIG_DASHBOARD, CACHE_KEYS } from '@/lib/swr-config';
 import type { Lead } from '@/types/leads';
+import { LEAD_ESTADO_DISPLAY, LEAD_ESTADOS_ACTIVOS } from '@/types/leads';
 
 const supabase = createClient();
 
 interface LeadsStats {
   total: number;
   nuevos: number;
-  interesados: number;
+  interactuando: number;
+  contactados: number;
+  citaPropuesta: number;
   enSeguimiento: number;
+  citaAgendada: number;
   convertidos: number;
-  descartados: number;
-  escalados: number;
+  perdidos: number;
   calientes: number;
   inactivos: number;
 }
 
 const DEFAULT_STATS: LeadsStats = {
-  total: 0, nuevos: 0, interesados: 0, enSeguimiento: 0, 
-  convertidos: 0, descartados: 0, escalados: 0, calientes: 0, inactivos: 0,
+  total: 0, nuevos: 0, interactuando: 0, contactados: 0, citaPropuesta: 0,
+  enSeguimiento: 0, citaAgendada: 0, convertidos: 0, perdidos: 0, calientes: 0, inactivos: 0,
 };
 
 const fetchStats = async (): Promise<LeadsStats> => {
   const { data, error } = await supabase.rpc('get_leads_stats_optimized' as never);
   if (error) return DEFAULT_STATS;
   
-  // Mapear campos de la RPC real (get_leads_stats_optimized) a la interfaz del hook
+  // Mapear campos de la RPC real (get_leads_stats_optimized) — sincronizado con BD
   const s = data as Record<string, number>;
   return {
     total: s.total || 0,
     nuevos: s.nuevos || 0,
-    interesados: s.interactuando || 0,
-    enSeguimiento: (s.cita_propuesta || 0),
+    interactuando: s.interactuando || 0,
+    contactados: s.contactados || 0,
+    citaPropuesta: s.cita_propuesta || 0,
+    enSeguimiento: s.en_seguimiento || 0,
+    citaAgendada: s.cita_agendada || 0,
     convertidos: s.convertidos || 0,
-    descartados: s.perdidos || 0,
-    escalados: s.cita_agendada || 0,
+    perdidos: s.perdidos || 0,
     calientes: s.calientes || 0,
     inactivos: 0, // No disponible en esta RPC
   };
@@ -90,7 +95,7 @@ const fetchLeadsPaginated = async (
       : 999;
     
     const esInactivo = diasDesdeUltimaInteraccion > 7;
-    const esCaliente = temperatura === 'caliente' || temperatura === 'muy_caliente';
+    const esCaliente = temperatura === 'caliente' || temperatura === 'muy_caliente' || temperatura === 'urgente';
     
     const requiereSeguimiento = fechaSiguienteAccion 
       ? new Date(fechaSiguienteAccion).getTime() <= Date.now()
@@ -112,7 +117,7 @@ const fetchLeadsPaginated = async (
       scoreTotal: (l.score_total as number) || 0,
       calificacion: (l.calificacion as string) || null,
       etapaFunnel: (l.etapa_funnel as string) || null,
-      subestado: (l.subestado as string) || null,
+      subestado: (l.subestado as Lead['subestado']) || null,
       accionRecomendada: (l.accion_recomendada as string) || null,
       fechaSiguienteAccion,
       createdAt: (l.created_at as string) || '',
@@ -121,9 +126,11 @@ const fetchLeadsPaginated = async (
       nombreDisplay: nombre,
       diasDesdeContacto: 0,
       diasDesdeUltimaInteraccion,
+      estadoDisplay: LEAD_ESTADO_DISPLAY[estadoLead] || estadoLead,
       esCliente: false,
       esCaliente,
       esInactivo,
+      esEnPipeline: (LEAD_ESTADOS_ACTIVOS as readonly string[]).includes(estadoLead),
       requiereSeguimiento,
     };
   });

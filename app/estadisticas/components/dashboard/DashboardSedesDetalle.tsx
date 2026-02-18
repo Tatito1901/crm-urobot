@@ -38,7 +38,7 @@ export function DashboardSedesDetalle({ data }: Props) {
             <div className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full"
               style={{ 
                 backgroundColor: sede.tasaAsistencia >= 90 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                color: sede.tasaAsistencia >= 90 ? '#10b981' : '#f59e0b'
+                color: sede.tasaAsistencia >= 90 ? 'var(--chart-emerald)' : 'var(--chart-amber)'
               }}
             >
               <TrendingUp className="w-3 h-3" />

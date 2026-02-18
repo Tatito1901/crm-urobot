@@ -145,8 +145,8 @@ export const SWR_CONFIG_REALTIME: SWRConfiguration = {
   revalidateOnFocus: true,         // ✅ Actualizar al volver a la pestaña
   revalidateOnReconnect: true,     // ✅ Actualizar al reconectar
   revalidateIfStale: true,         // ✅ Auto-revalidar datos antiguos
-  dedupingInterval: 30 * 1000,     // 30 segundos de deduplicación
-  refreshInterval: 30 * 1000,      // ✅ Polling cada 30 segundos
+  dedupingInterval: 60 * 1000,     // 60 segundos de deduplicación (antes 30s)
+  refreshInterval: 60 * 1000,      // ✅ Polling cada 60 segundos (antes 30s — reduce API calls 50%)
   keepPreviousData: true,
   shouldRetryOnError: true,
   errorRetryCount: 2,
@@ -168,6 +168,134 @@ export const CACHE_KEYS = {
   STATS: 'stats-dashboard',
   RECORDATORIOS: 'recordatorios-list',
 } as const;
+
+// ============================================================
+// INVALIDACIÓN CENTRALIZADA POR DOMINIO
+// ============================================================
+
+/**
+ * Dominios de datos y sus prefijos de cache key asociados.
+ * Cuando mutas datos de un dominio, se invalidan TODAS las keys relacionadas.
+ * 
+ * Ejemplo: cambiar estado de un lead invalida:
+ *   - leads (lista, paginado, stats, historial)
+ *   - dashboard (stats generales, actividad reciente)
+ */
+type CacheDomain = 'leads' | 'pacientes' | 'consultas' | 'conversaciones' | 'dashboard' | 'urobot';
+
+const DOMAIN_PREFIXES: Record<CacheDomain, string[]> = {
+  leads: [
+    'leads',            // leads-list, leads-list-stats
+    'lead-',            // lead-by-telefono-*, lead-historial-*
+  ],
+  pacientes: [
+    'pacientes',        // pacientes-list
+  ],
+  consultas: [
+    'consultas',        // consultas-list, consultas-combined
+  ],
+  conversaciones: [
+    'conversaciones',   // conversaciones-list, conversaciones-stats-*
+    'conv-mensajes-',   // conv-mensajes-{telefono}
+  ],
+  dashboard: [
+    'stats-dashboard',  // useStats
+    'dashboard-',       // dashboard-activity
+  ],
+  urobot: [
+    'urobot-',          // urobot-metricas-crm-*, urobot-stats-*
+  ],
+};
+
+/**
+ * Relaciones entre dominios: cuando mutas un dominio,
+ * también se invalidan sus dominios relacionados.
+ * 
+ * leads → dashboard (stats cambian)
+ * consultas → dashboard, pacientes (stats + contadores)
+ * conversaciones → dashboard (actividad reciente)
+ */
+const DOMAIN_RELATIONS: Record<CacheDomain, CacheDomain[]> = {
+  leads: ['dashboard'],
+  pacientes: ['dashboard'],
+  consultas: ['dashboard', 'pacientes'],
+  conversaciones: ['dashboard'],
+  dashboard: [],
+  urobot: [],
+};
+
+/**
+ * Referencia global al cache Map de SWR.
+ * Se setea desde el provider en providers.tsx.
+ * Necesario para poder invalidar keys sin acceso al hook.
+ */
+let _cacheRef: Map<string, unknown> | null = null;
+let _globalMutate: ((key: string) => Promise<unknown>) | null = null;
+
+/**
+ * Registra la referencia al cache de SWR (llamar desde providers.tsx)
+ */
+export function registerSWRCache(cache: Map<string, unknown>, mutate: (key: string) => Promise<unknown>): void {
+  _cacheRef = cache;
+  _globalMutate = mutate;
+}
+
+/**
+ * Invalida todas las cache keys que pertenecen a un dominio + sus relaciones.
+ * 
+ * @example
+ * // Después de cambiar estado de un lead:
+ * await invalidateDomain('leads')
+ * // → Invalida: leads-list, lead-by-telefono-*, stats-dashboard, dashboard-activity
+ * 
+ * @example
+ * // Después de crear una consulta:
+ * await invalidateDomain('consultas')
+ * // → Invalida: consultas-*, stats-dashboard, dashboard-*, pacientes-list
+ */
+export async function invalidateDomain(domain: CacheDomain): Promise<void> {
+  if (!_cacheRef || !_globalMutate) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[SWR] invalidateDomain llamado antes de registerSWRCache')
+    }
+    return;
+  }
+
+  // Recolectar todos los prefijos a invalidar (dominio + relacionados)
+  const domainsToInvalidate = [domain, ...DOMAIN_RELATIONS[domain]];
+  const prefixes = domainsToInvalidate.flatMap(d => DOMAIN_PREFIXES[d]);
+
+  // Encontrar todas las keys activas que matchean los prefijos
+  const keysToInvalidate: string[] = [];
+  _cacheRef.forEach((_value, key) => {
+    if (prefixes.some(prefix => key.startsWith(prefix))) {
+      keysToInvalidate.push(key);
+    }
+  });
+
+  // Invalidar todas las keys en paralelo
+  await Promise.allSettled(
+    keysToInvalidate.map(key => _globalMutate!(key))
+  );
+
+  if (process.env.NODE_ENV === 'development' && keysToInvalidate.length > 0) {
+    console.log(`[SWR] invalidateDomain('${domain}') → ${keysToInvalidate.length} keys:`, keysToInvalidate);
+  }
+}
+
+/**
+ * Invalida múltiples dominios a la vez.
+ * 
+ * @example
+ * await invalidateDomains(['leads', 'conversaciones'])
+ */
+export async function invalidateDomains(domains: CacheDomain[]): Promise<void> {
+  await Promise.allSettled(domains.map(d => invalidateDomain(d)));
+}
+
+// ============================================================
+// UTILIDADES DE LIMPIEZA
+// ============================================================
 
 /**
  * Limpiar caché específico (útil después de mutaciones)

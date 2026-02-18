@@ -3,7 +3,7 @@
  * TIPOS CONSULTAS - SINCRONIZADO CON BD REAL
  * ============================================================
  * Fuente de verdad: Supabase tabla 'consultas'
- * Última sync: 2025-12-01
+ * Última sync: 2026-02-18
  */
 
 import type { Tables } from './database';
@@ -20,7 +20,8 @@ export type ConsultaRow = Tables<'consultas'>;
 // Estados disponibles en BD (estado_cita)
 export const CONSULTA_ESTADOS = ['Programada', 'Pendiente', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada', 'No Asistió'] as const;
 
-// Sedes disponibles (FK a tabla sedes)
+// Sedes disponibles (FK a tabla sedes via sede_id UUID)
+// Nota: la tabla sedes almacena sede (text), display_name, direccion, etc.
 // TRINIDAD es histórica (ya no activa) pero tiene datos de pacientes anteriores
 export const CONSULTA_SEDES = ['POLANCO', 'SATELITE', 'TRINIDAD'] as const;
 
@@ -40,7 +41,8 @@ export interface Consulta {
   id: string;
   consultaId: string | null;       // BD: consulta_id
   pacienteId: string | null;       // BD: paciente_id
-  sede: ConsultaSede | null;       // BD: sede (FK → sedes)
+  sedeId: string | null;            // BD: sede_id (UUID FK → sedes)
+  sede: ConsultaSede | null;       // Display: nombre de sede (via JOIN o lookup)
   fechaHoraInicio: string;         // BD: fecha_hora_inicio (timestamptz)
   fechaHoraFin: string | null;     // BD: fecha_hora_fin (timestamptz) - puede ser null
   estadoCita: ConsultaEstado;      // BD: estado_cita
@@ -91,7 +93,8 @@ export function mapConsultaFromDB(row: ConsultaRow, pacienteNombre?: string): Co
     id: row.id,
     consultaId: row.consulta_id,
     pacienteId: row.paciente_id,
-    sede: isConsultaSede((row as Record<string, unknown>).sede) ? (row as Record<string, unknown>).sede as ConsultaSede : null,
+    sedeId: row.sede_id,
+    sede: null, // Populated via JOIN if available
     fechaHoraInicio: row.fecha_hora_inicio,
     fechaHoraFin: row.fecha_hora_fin,
     estadoCita: isConsultaEstado(row.estado_cita) ? row.estado_cita : 'Programada',

@@ -46,24 +46,24 @@ export const DashboardFunnelChart = memo(function DashboardFunnelChart({ data, h
     <div className="w-full overflow-hidden" style={{ height: `${height}px` }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.2} horizontal={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-slate)" strokeOpacity={0.2} horizontal={false} />
           <XAxis 
             type="number" 
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={10} 
             tickLine={false} 
             axisLine={false} 
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
           />
           <YAxis 
             dataKey="name" 
             type="category" 
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={10} 
             tickLine={false} 
             axisLine={false} 
             width={70} 
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
           />
           <Tooltip 
             cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}

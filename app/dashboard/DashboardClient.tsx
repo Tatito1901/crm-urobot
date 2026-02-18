@@ -7,12 +7,15 @@ import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
 import { Badge } from '@/app/components/crm/ui';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { ThemeToggle } from '@/app/components/common/ThemeToggle';
+import { RefreshButton } from '@/app/components/common/RefreshButton';
+import { TabBar } from '@/app/components/common/TabBar';
 import { useStats } from '@/hooks/dashboard/useStats';
 import type { KPIData, ChartData } from '@/hooks/dashboard/useStats';
 import { useDashboardActivity } from '@/hooks/dashboard/useDashboardActivity';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { EmptyState } from '@/app/components/common/SkeletonLoader';
+import { cards, listItems, layouts, chartColors, accentColors } from '@/app/lib/design-system';
 
 // Lazy load de gráficos pesados para mejorar rendimiento mobile y reducir TBT (Total Blocking Time)
 const DonutChart = dynamicImport(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
@@ -123,28 +126,23 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
   const sedesChartData = useMemo(() => consultasPorSede.map(sede => ({
     label: sede.name,
     value: sede.value,
-    color: sede.fill || '#3b82f6'
+    color: sede.fill || chartColors.blue
   })), [consultasPorSede]);
 
   // ✅ OPTIMIZADO: Datos de gráfico de barras vienen del RPC (funnelLeads), no de iterar ALL leads
   const leadsChartData = useMemo(() => {
     if (funnelLeads.length === 0) {
       return [
-        { label: 'Nuevo', value: 0, color: '#3b82f6' },
-        { label: 'Seguimiento', value: 0, color: '#8b5cf6' },
-        { label: 'Convertido', value: 0, color: '#10b981' },
-        { label: 'Descartado', value: 0, color: '#64748b' },
+        { label: 'Nuevo', value: 0, color: chartColors.blue },
+        { label: 'Seguimiento', value: 0, color: chartColors.purple },
+        { label: 'Convertido', value: 0, color: chartColors.emerald },
+        { label: 'Descartado', value: 0, color: chartColors.slate },
       ];
     }
-    const colorMap: Record<string, string> = {
-      'nuevo': '#3b82f6', 'contactado': '#8b5cf6', 'interesado': '#a78bfa',
-      'calificado': '#7c3aed', 'escalado': '#f59e0b', 'cita_agendada': '#14b8a6',
-      'convertido': '#10b981', 'no_interesado': '#94a3b8', 'descartado': '#64748b',
-    };
     return funnelLeads.map(f => ({
       label: f.name,
       value: f.value,
-      color: f.fill || colorMap[f.name] || '#3b82f6',
+      color: f.fill || chartColors.leadState[f.name] || chartColors.blue,
     }));
   }, [funnelLeads]);
 
@@ -176,20 +174,13 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
         headerSlot={
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <button
-              onClick={handleRefresh}
-              disabled={isLoadingAny}
-              className="flex items-center justify-center gap-1.5 rounded-xl bg-teal-500/10 dark:bg-teal-500/10 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-semibold text-teal-600 dark:text-teal-300 border border-teal-500/20 dark:border-teal-400/15 hover:bg-teal-500/15 dark:hover:bg-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px] transition-all duration-150"
-            >
-              <span className={isLoadingAny ? 'animate-spin' : ''}>↻</span>
-              <span className="hidden sm:inline">Actualizar</span>
-            </button>
+            <RefreshButton onClick={handleRefresh} loading={isLoadingAny} />
           </div>
         }
       >
         <div className="flex flex-col gap-3 sm:gap-4">
           {/* Métricas principales */}
-          <section className="grid gap-2 grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-5 lg:gap-3">
+          <section className={layouts.kpiGrid5}>
             {metrics.map((metric) => (
               <MetricCard
                 key={metric.title}
@@ -203,36 +194,20 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
           </section>
 
           {/* Tabs sección secundaria - Responsivo */}
-          <div className="mb-4 sm:mb-6 flex items-center gap-4 sm:gap-8 border-b border-border overflow-x-auto scrollbar-hide">
-            <button
-              type="button"
-              onClick={() => setActiveTab('actividad')}
-              className={`relative pb-2.5 sm:pb-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                activeTab === 'actividad'
-                  ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Actividad reciente
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('graficas')}
-              className={`relative pb-2.5 sm:pb-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                activeTab === 'graficas'
-                  ? 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Gráficas
-            </button>
-          </div>
+          <TabBar
+            tabs={[
+              { key: 'actividad', label: 'Actividad reciente' },
+              { key: 'graficas', label: 'Gráficas' },
+            ]}
+            active={activeTab}
+            onChange={(key) => setActiveTab(key as 'actividad' | 'graficas')}
+          />
 
           {activeTab === 'actividad' ? (
             <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Leads recientes */}
-              <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm shine-top">
-                <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4">
+              <div className={cards.glassWithHeader}>
+                <div className={cards.glassHeader}>
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate font-jakarta">
                       Leads Recientes {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
@@ -242,23 +217,16 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                   <Badge label={`${recentLeads.length}`} variant="outline" className="border-white/10 text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <div className="max-h-[320px] sm:max-h-[400px] overflow-y-auto overscroll-contain">
+                  <div className={listItems.scrollable}>
                     {recentLeads.length === 0 ? (
-                      <div className="flex h-28 sm:h-32 items-center justify-center text-xs sm:text-sm text-muted-foreground">
-                        No hay leads recientes
-                      </div>
+                      <div className={listItems.empty}>No hay leads recientes</div>
                     ) : (
-                      <div className="divide-y divide-border">
+                      <div className={listItems.divider}>
                         {recentLeads.map((lead) => (
-                          <div
-                            key={lead.id}
-                            className="group flex cursor-pointer items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 transition-colors hover:bg-muted/50 active:bg-muted/70"
-                          >
+                          <div key={lead.id} className={listItems.row}>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-xs sm:text-sm font-medium text-foreground group-hover:text-primary">
-                                {lead.nombre || lead.telefono}
-                              </p>
-                              <div className="mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                              <p className={listItems.rowTitle}>{lead.nombre || lead.telefono}</p>
+                              <div className={listItems.rowMeta}>
                                 <span className="truncate">{formatDate(lead.primerContacto || '')}</span>
                                 <span className="shrink-0">•</span>
                                 <span className="capitalize truncate">{lead.fuente}</span>
@@ -274,8 +242,8 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
               </div>
 
               {/* Consultas próximas */}
-              <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm shine-top">
-                <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4">
+              <div className={cards.glassWithHeader}>
+                <div className={cards.glassHeader}>
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate font-jakarta">
                       Consultas Próximas {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
@@ -285,23 +253,16 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                   <Badge label={`${upcomingConsultas.length}`} variant="outline" className="border-white/10 text-muted-foreground shrink-0 text-[10px] sm:text-xs" />
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <div className="max-h-[320px] sm:max-h-[400px] overflow-y-auto overscroll-contain">
+                  <div className={listItems.scrollable}>
                     {upcomingConsultas.length === 0 ? (
-                      <div className="flex h-28 sm:h-32 items-center justify-center text-xs sm:text-sm text-muted-foreground">
-                        No hay consultas próximas
-                      </div>
+                      <div className={listItems.empty}>No hay consultas próximas</div>
                     ) : (
-                      <div className="divide-y divide-border">
+                      <div className={listItems.divider}>
                         {upcomingConsultas.map((consulta) => (
-                          <div
-                            key={consulta.id}
-                            className="group flex cursor-pointer items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 transition-colors hover:bg-muted/50 active:bg-muted/70"
-                          >
+                          <div key={consulta.id} className={listItems.row}>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-xs sm:text-sm font-medium text-foreground group-hover:text-primary">
-                                {consulta.paciente || 'Paciente'}
-                              </p>
-                              <div className="mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                              <p className={listItems.rowTitle}>{consulta.paciente || 'Paciente'}</p>
+                              <div className={listItems.rowMeta}>
                                 <span className="truncate">{formatDate(consulta.fechaHoraInicio)}</span>
                                 <span className="shrink-0">•</span>
                                 <span className="font-medium text-foreground shrink-0">{consulta.sede}</span>
@@ -319,8 +280,8 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
           ) : (
             <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               {/* Gráfico de leads por estado */}
-              <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm min-h-[380px] sm:min-h-[420px] shine-top">
-                <div className="flex items-start justify-between gap-3 border-b border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4">
+              <div className={`${cards.glassWithHeader} min-h-[380px] sm:min-h-[420px]`}>
+                <div className={cards.glassHeader}>
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground font-jakarta">Leads por Estado</h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Distribución del funnel</p>
@@ -374,7 +335,7 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
               </div>
 
               {/* Gráfico de consultas por sede */}
-              <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm min-h-[380px] sm:min-h-[420px] shine-top">
+              <div className={`${cards.glassWithHeader} min-h-[380px] sm:min-h-[420px]`}>
                 <div className="border-b border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4">
                   <h3 className="font-semibold text-sm sm:text-base text-card-foreground font-jakarta">Consultas por Sede</h3>
                   <p className="text-[10px] sm:text-xs text-muted-foreground">Próximas 4 semanas</p>

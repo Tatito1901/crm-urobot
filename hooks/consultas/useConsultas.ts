@@ -94,23 +94,29 @@ interface CombinedConsultasResponse {
 }
 
 /**
- * Fetcher combinado - consultas con JOIN a pacientes + stats calculados
- * ✅ Usa queries directas (no RPC)
+ * ✅ OPTIMIZADO: Stats vía RPC server-side + consultas lista en paralelo
+ * Antes: 1 query de 500 rows con JOINs + cómputo pesado client-side
+ * Ahora: 2 queries paralelas — 1 RPC ligera + 1 lista con solo campos necesarios
  */
 const fetchConsultasWithStats = async (): Promise<CombinedConsultasResponse> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sb = supabase as any
   
-  // Fetch consultas con nombre de paciente via JOIN
-  const { data: rawConsultas, error, count } = await sb
-    .from('consultas')
-    .select('*, pacientes!consultas_paciente_id_fkey(nombre, apellido), sedes!consultas_sede_id_fkey(sede)', { count: 'exact' })
-    .order('fecha_hora_inicio', { ascending: false })
-    .limit(500)
+  // ✅ Paralelo: stats RPC + lista consultas
+  const [statsResult, consultasResult] = await Promise.all([
+    // Stats calculadas en PostgreSQL (0 rows transferidas)
+    sb.rpc('get_consultas_stats'),
+    // Lista con solo campos necesarios para la UI
+    sb
+      .from('consultas')
+      .select('*, pacientes!consultas_paciente_id_fkey(nombre, apellido), sedes!consultas_sede_id_fkey(sede)', { count: 'exact' })
+      .order('fecha_hora_inicio', { ascending: false })
+      .limit(200)
+  ])
   
-  if (error) throw error
+  if (consultasResult.error) throw consultasResult.error
   
-  const rows = (rawConsultas || []) as Array<Record<string, unknown>>
+  const rows = (consultasResult.data || []) as Array<Record<string, unknown>>
   
   // Mapear consultas resolviendo paciente nombre y sede
   const consultas = rows.map((row) => {
@@ -120,7 +126,6 @@ const fetchConsultasWithStats = async (): Promise<CombinedConsultasResponse> => 
       ? [pacienteJoin.nombre, pacienteJoin.apellido].filter(Boolean).join(' ') || 'Paciente sin nombre'
       : 'Paciente sin nombre'
     
-    // Destructure out JOIN fields, inject sede as text for the mapper
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { pacientes: _p, sedes: _s, ...restRow } = row as Record<string, unknown>
     const rowWithSede = { ...restRow, sede: sedeJoin?.sede || null }
@@ -128,64 +133,42 @@ const fetchConsultasWithStats = async (): Promise<CombinedConsultasResponse> => 
     return mapConsultaFromDB(rowWithSede as unknown as ConsultaRow, pacienteNombre)
   })
   
-  // Calcular stats client-side
-  const now = new Date()
-  const startOfWeek = new Date(now)
-  startOfWeek.setDate(now.getDate() - now.getDay())
-  startOfWeek.setHours(0, 0, 0, 0)
-  const todayStr = now.toISOString().split('T')[0]
-  
-  let programadas = 0, confirmadas = 0, completadas = 0, canceladas = 0
-  let reagendadas = 0, noAsistio = 0, hoy = 0, semana = 0
-  let polanco = 0, satelite = 0, primeraVez = 0, seguimiento = 0
-  let totalDuracion = 0, countDuracion = 0
-  let confPendientes = 0, confConfirmadas = 0, confVencidas = 0
-  
-  for (const c of consultas) {
-    // Estado
-    switch (c.estadoCita) {
-      case 'Programada': case 'Pendiente': programadas++; break
-      case 'Confirmada': confirmadas++; break
-      case 'Completada': completadas++; break
-      case 'Cancelada': canceladas++; break
-      case 'Reagendada': reagendadas++; break
-      case 'No Asistió': noAsistio++; break
-    }
-    // Fecha
-    if (c.fechaConsulta === todayStr) hoy++
-    if (new Date(c.fechaHoraInicio) >= startOfWeek) semana++
-    // Sede
-    if (c.sede === 'POLANCO') polanco++
-    else if (c.sede === 'SATELITE') satelite++
-    // Tipo
-    if (c.tipoCita === 'Primera Vez') primeraVez++
-    else if (c.tipoCita === 'Seguimiento') seguimiento++
-    // Duración
-    if (c.duracionMinutos > 0) { totalDuracion += c.duracionMinutos; countDuracion++ }
-    // Confirmación
-    if (c.estadoConfirmacion === 'Pendiente') confPendientes++
-    else if (c.estadoConfirmacion === 'Confirmada' || c.confirmadoPaciente) confConfirmadas++
-    else if (c.estadoCita === 'No Asistió' || c.estadoCita === 'Cancelada') confVencidas++
-  }
-  
-  const total = consultas.length
-  const tasaConfirmacion = total > 0 ? Math.round((confirmadas / total) * 100) : 0
-  const tasaCancelacion = total > 0 ? Math.round((canceladas / total) * 100) : 0
-  const finalizadas = completadas + noAsistio
-  const tasaAsistencia = finalizadas > 0 ? Math.round((completadas / finalizadas) * 100) : 0
+  // Parse stats de la RPC (ya calculadas server-side)
+  const rpcStats = statsResult.data as Record<string, unknown> | null
+  const metricsRaw = (rpcStats?.metricas || {}) as Record<string, unknown>
+  const porSedeRaw = (metricsRaw.porSede || {}) as Record<string, number>
+  const confirmacionesRaw = (metricsRaw.confirmaciones || {}) as Record<string, number>
   
   const stats: ConsultasStatsResponse = {
-    total, programadas, confirmadas, completadas, canceladas, reagendadas, noAsistio, hoy, semana,
+    total: Number(rpcStats?.total) || consultas.length,
+    programadas: Number(rpcStats?.programadas) || 0,
+    confirmadas: Number(rpcStats?.confirmadas) || 0,
+    completadas: Number(rpcStats?.completadas) || 0,
+    canceladas: Number(rpcStats?.canceladas) || 0,
+    reagendadas: Number(rpcStats?.reagendadas) || 0,
+    noAsistio: Number(rpcStats?.noAsistio) || 0,
+    hoy: Number(rpcStats?.hoy) || 0,
+    semana: Number(rpcStats?.semana) || 0,
     metricas: {
-      tasaConfirmacion, tasaCancelacion, tasaAsistencia,
-      confirmaciones: { pendientes: confPendientes, confirmadas: confConfirmadas, vencidas: confVencidas },
-      porSede: { polanco, satelite },
-      promedioDuracion: countDuracion > 0 ? Math.round(totalDuracion / countDuracion) : 30,
-      primeraVez, seguimiento,
+      tasaConfirmacion: Number(metricsRaw.tasaConfirmacion) || 0,
+      tasaCancelacion: Number(metricsRaw.tasaCancelacion) || 0,
+      tasaAsistencia: Number(metricsRaw.tasaAsistencia) || 0,
+      confirmaciones: {
+        pendientes: Number(confirmacionesRaw.pendientes) || 0,
+        confirmadas: Number(confirmacionesRaw.confirmadas) || 0,
+        vencidas: Number(confirmacionesRaw.vencidas) || 0,
+      },
+      porSede: {
+        polanco: Number(porSedeRaw.POLANCO || porSedeRaw.polanco) || 0,
+        satelite: Number(porSedeRaw.SATELITE || porSedeRaw.satelite) || 0,
+      },
+      promedioDuracion: Number(metricsRaw.promedioDuracion) || 30,
+      primeraVez: Number(metricsRaw.primeraVez) || 0,
+      seguimiento: Number(metricsRaw.seguimiento) || 0,
     }
   }
   
-  return { consultas, stats, totalCount: count || total }
+  return { consultas, stats, totalCount: consultasResult.count || consultas.length }
 }
 
 /**

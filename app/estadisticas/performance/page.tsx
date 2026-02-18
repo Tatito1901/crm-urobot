@@ -16,13 +16,13 @@ const RechartsBarChart = dynamic(
     return { default: ({ data, CustomTooltip }: { data: any[]; CustomTooltip: React.FC<any> }) => (
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.2} vertical={false} />
-          <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#64748b' }} />
-          <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: '#64748b' }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-slate)" strokeOpacity={0.2} vertical={false} />
+          <XAxis dataKey="name" stroke="var(--chart-slate)" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: 'var(--chart-slate)' }} />
+          <YAxis stroke="var(--chart-slate)" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: 'var(--chart-slate)' }} />
           <Tooltip cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} content={<CustomTooltip />} />
           <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={50}>
             {data.map((entry: { fill?: string }, index: number) => (
-              <Cell key={`cell-${index}`} fill={entry.fill || '#64748b'} />
+              <Cell key={`cell-${index}`} fill={entry.fill || 'var(--chart-slate)'} />
             ))}
           </Bar>
         </BarChart>

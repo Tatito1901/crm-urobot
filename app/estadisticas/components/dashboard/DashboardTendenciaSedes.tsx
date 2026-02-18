@@ -58,12 +58,12 @@ export function DashboardTendenciaSedes({ data }: Props) {
         >
           <defs>
             <linearGradient id="colorPolanco" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="var(--chart-blue)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--chart-blue)" stopOpacity={0}/>
             </linearGradient>
             <linearGradient id="colorSatelite" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              <stop offset="5%" stopColor="var(--chart-emerald)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--chart-emerald)" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" vertical={false} />
@@ -71,12 +71,12 @@ export function DashboardTendenciaSedes({ data }: Props) {
             dataKey="mes" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 10 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 10 }}
           />
           <YAxis 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 10 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 10 }}
             allowDecimals={false}
           />
           <Tooltip content={<CustomTooltip />} />
@@ -88,7 +88,7 @@ export function DashboardTendenciaSedes({ data }: Props) {
           <Area
             type="monotone"
             dataKey="polanco"
-            stroke="#3b82f6"
+            stroke="var(--chart-blue)"
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#colorPolanco)"
@@ -96,7 +96,7 @@ export function DashboardTendenciaSedes({ data }: Props) {
           <Area
             type="monotone"
             dataKey="satelite"
-            stroke="#10b981"
+            stroke="var(--chart-emerald)"
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#colorSatelite)"

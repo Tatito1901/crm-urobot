@@ -27,7 +27,7 @@ const RechartsPieChart = dynamic(
             label={({ name, percent }: { name?: string; percent?: number }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
           >
             {data.map((entry: { fill?: string }, index: number) => (
-              <Cell key={`cell-${index}`} fill={entry.fill || '#64748b'} stroke="transparent" />
+              <Cell key={`cell-${index}`} fill={entry.fill || 'var(--chart-slate)'} stroke="transparent" />
             ))}
           </Pie>
           <Tooltip 
@@ -38,7 +38,7 @@ const RechartsPieChart = dynamic(
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-xs shadow-lg">
                     <p className="font-bold text-foreground mb-2">{p.name}</p>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: String(p.payload?.fill || '#64748b') }} />
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: String(p.payload?.fill || 'var(--chart-slate)') }} />
                       <span className="text-muted-foreground">Total:</span>
                       <span className="font-medium text-foreground ml-auto">{p.value}</span>
                     </div>
@@ -48,7 +48,7 @@ const RechartsPieChart = dynamic(
               return null;
             }}
           />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: '#64748b' }} />
+          <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: 'var(--chart-slate)' }} />
         </PieChart>
       </ResponsiveContainer>
     )};

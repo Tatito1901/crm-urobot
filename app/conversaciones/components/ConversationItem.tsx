@@ -80,9 +80,9 @@ export const ConversationItem = memo(function ConversationItem({
     return fecha.getTime() > hace2h;
   };
   
-  // Verificar si necesita atención (lead nuevo o interesado sin cita)
+  // Verificar si necesita atención (lead nuevo o interactuando sin cita)
   const necesitaAtencion = tipoContacto === 'lead' && 
-    (estadoLead === 'nuevo' || estadoLead === 'interesado') && 
+    (estadoLead === 'nuevo' || estadoLead === 'interactuando') && 
     citasValidas === 0;
 
   // Limpiar preview del mensaje (quitar formato markdown)
@@ -177,11 +177,11 @@ export const ConversationItem = memo(function ConversationItem({
             {/* Mostrar estado del lead cuando NO es paciente */}
             {estadoLead && tipoContacto !== 'paciente' && (
               <span className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
-                estadoLead === 'convertido' 
+                estadoLead === 'convertido' || estadoLead === 'show'
                   ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                  : estadoLead === 'interesado' 
+                  : estadoLead === 'cita_propuesta' || estadoLead === 'cita_agendada'
                     ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                    : estadoLead === 'contactado'
+                    : estadoLead === 'contactado' || estadoLead === 'interactuando'
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                       : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
               }`}>

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useStats } from '@/hooks/dashboard/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { spacing, cards } from '@/app/lib/design-system';
+import { spacing, cards, layouts, progress, typography } from '@/app/lib/design-system';
 import { 
   Users, 
   Calendar, 
@@ -110,7 +110,7 @@ export default function EstadisticasPage() {
       description="Visión estratégica del rendimiento operativo, comercial y de marketing."
     >
       {/* KPIs Principales */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+      <section className={`${layouts.kpiGrid} ${spacing.sectionGap}`}>
         <KpiCard
           title="Pacientes"
           value={kpi.totalPacientes}
@@ -144,7 +144,7 @@ export default function EstadisticasPage() {
       </section>
 
       {/* Gráficos Principales - Fila 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-6">
+      <div className={`${layouts.grid2} ${spacing.sectionGapSm}`}>
         
         {/* Evolución Mensual */}
         <Card className={`${cards.base} min-w-0`}>
@@ -208,7 +208,7 @@ export default function EstadisticasPage() {
       </div>
 
       {/* Gráficos Secundarios - Fila 2 */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+      <div className={layouts.grid4}>
 
         {/* Marketing: Fuentes */}
         <Card className={`${cards.base} min-w-0`}>
@@ -269,7 +269,7 @@ export default function EstadisticasPage() {
       </div>
 
       {/* Patrones y Métricas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-6">
+      <div className={`${layouts.grid2} mt-3 sm:mt-6`}>
         <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
@@ -300,9 +300,9 @@ export default function EstadisticasPage() {
                   <span className="text-sm text-muted-foreground">Tasa de Asistencia</span>
                   <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{kpi.tasaAsistencia}%</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className={progress.track}>
                   <div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all"
+                    className={`${progress.bar} ${progress.barGradientEmerald}`}
                     style={{ width: `${kpi.tasaAsistencia}%` }}
                   />
                 </div>
@@ -314,9 +314,9 @@ export default function EstadisticasPage() {
                   <span className="text-sm text-muted-foreground">Tasa de Conversión</span>
                   <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{kpi.tasaConversion}%</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className={progress.track}>
                   <div 
-                    className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full transition-all"
+                    className={`${progress.bar} ${progress.barGradientTeal}`}
                     style={{ width: `${kpi.tasaConversion}%` }}
                   />
                 </div>

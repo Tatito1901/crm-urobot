@@ -3,67 +3,84 @@
  * TIPOS LEADS - SINCRONIZADO CON BD REAL
  * ============================================================
  * Fuente de verdad: Supabase tabla 'leads'
- * Última sync: 2026-02-17 (nueva BD whpnvmquoycvsxcmvtac)
+ * Última sync: 2026-02-18 (BD whpnvmquoycvsxcmvtac)
+ * 
+ * CHECK constraints en BD:
+ *   leads_estado_check: nuevo, contactado, interactuando, cita_propuesta,
+ *     cita_agendada, en_seguimiento, convertido, descartado, no_interesado,
+ *     perdido, show, no_show
+ *   leads_temperatura_check: frio, tibio, caliente, muy_caliente, urgente
+ *   leads_fuente_check: whatsapp, whatsapp_directo, meta_ads, instagram,
+ *     google_ads, referido, sitio_web, doctoralia, otro
+ *   leads_subestado_check: en_espera, seguimiento_sugerido, listo_para_contactar,
+ *     requiere_atencion, paciente_respondio, pregunto_precio, describio_sintomas,
+ *     solicito_cita, cita_confirmada, escalado_pendiente
  */
 
+import type { Tables } from './database';
 import { type CanalMarketing, normalizeCanalMarketing } from './canales-marketing';
 
 // ============================================================
-// TIPO BD (manual - tipos generados están incompletos)
+// TIPO BD (automático de Supabase)
 // ============================================================
-export interface LeadRow {
-  id: string;
-  nombre: string;
-  telefono: string;
-  telefono_normalizado: string | null;
-  estado: string;
-  fuente: string;
-  canal: string | null;
-  temperatura: string;
-  notas: string | null;
-  email: string | null;
-  convertido_a_paciente_id: string | null;
-  total_mensajes: number | null;
-  ultima_interaccion: string | null;
-  score_total: number | null;
-  scores: Record<string, unknown> | null;
-  signals: Record<string, unknown> | null;
-  calificacion: string | null;
-  etapa_funnel: string | null;
-  etapa_funnel_at: string | null;
-  subestado: string | null;
-  nombre_confirmado: string | null;
-  nombre_pendiente_confirmar: boolean | null;
-  accion_recomendada: string | null;
-  fecha_siguiente_accion: string | null;
-  motivo_descarte: string | null;
-  motivo_escalado: string | null;
-  escalado_at: string | null;
-  ultimo_mensaje_bot: string | null;
-  ultimo_mensaje_bot_at: string | null;
-  ultimo_mensaje_usuario: string | null;
-  ultimo_mensaje_usuario_at: string | null;
-  campana_id: string | null;
-  campana_url: string | null;
-  campana_headline: string | null;
-  ctwa_clid: string | null;
-  referral_data: Record<string, unknown> | null;
-  deleted_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type LeadRow = Tables<'leads'>;
 
 // ============================================================
 // CONSTANTES Y ENUMS
 // ============================================================
 
-// Estados de lead (estado) - Default en BD: 'Nuevo'
-export const LEAD_ESTADOS = ['nuevo', 'contactado', 'interesado', 'calificado', 'escalado', 'cita_agendada', 'convertido', 'no_interesado', 'descartado'] as const;
+// Estados de lead (estado) - Sincronizado con leads_estado_check
+// Flujo principal: nuevo → interactuando → contactado → cita_propuesta → cita_agendada → show → convertido
+// Flujo alterno: (cualquiera) → en_seguimiento | perdido | no_interesado | descartado
+// Post-cita: cita_agendada → show | no_show
+export const LEAD_ESTADOS = [
+  'nuevo', 'interactuando', 'contactado', 'cita_propuesta',
+  'en_seguimiento', 'cita_agendada', 'show', 'convertido',
+  'no_show', 'perdido', 'no_interesado', 'descartado'
+] as const;
 export type LeadEstado = (typeof LEAD_ESTADOS)[number];
 
-// Temperaturas calculadas (NO existe en BD)
-export const LEAD_TEMPERATURAS = ['frio', 'tibio', 'caliente', 'muy_caliente'] as const;
+// Temperaturas - Sincronizado con leads_temperatura_check
+export const LEAD_TEMPERATURAS = ['frio', 'tibio', 'caliente', 'muy_caliente', 'urgente'] as const;
 export type LeadTemperatura = (typeof LEAD_TEMPERATURAS)[number];
+
+// Subestados - Sincronizado con leads_subestado_check
+export const LEAD_SUBESTADOS = [
+  'en_espera', 'seguimiento_sugerido', 'listo_para_contactar',
+  'requiere_atencion', 'paciente_respondio', 'pregunto_precio',
+  'describio_sintomas', 'solicito_cita', 'cita_confirmada', 'escalado_pendiente'
+] as const;
+export type LeadSubestado = (typeof LEAD_SUBESTADOS)[number];
+
+// Estados terminales (no permiten transiciones)
+export const LEAD_ESTADOS_TERMINALES: LeadEstado[] = ['convertido'];
+
+// Estados "activos" en el pipeline
+export const LEAD_ESTADOS_ACTIVOS: LeadEstado[] = [
+  'nuevo', 'interactuando', 'contactado', 'cita_propuesta',
+  'en_seguimiento', 'cita_agendada'
+];
+
+// Estados "cerrados" (no activos)
+export const LEAD_ESTADOS_CERRADOS: LeadEstado[] = [
+  'convertido', 'perdido', 'no_interesado', 'descartado'
+];
+
+// Display names para cada estado
+export const LEAD_ESTADO_DISPLAY: Record<LeadEstado, string> = {
+  nuevo: 'Nuevo',
+  interactuando: 'Interactuando',
+  contactado: 'Contactado',
+  cita_propuesta: 'Cita Propuesta',
+  en_seguimiento: 'En Seguimiento',
+  cita_agendada: 'Cita Agendada',
+  show: 'Asistió',
+  convertido: 'Convertido',
+  no_show: 'No Asistió',
+  perdido: 'Perdido',
+  no_interesado: 'No Interesado',
+  descartado: 'Descartado',
+};
 
 
 // ============================================================
@@ -75,10 +92,10 @@ export interface Lead {
   id: string;
   nombre: string;                      // BD: nombre
   telefono: string;                     // BD: telefono
-  estado: LeadEstado;                   // BD: estado
-  fuente: CanalMarketing;              // BD: fuente (normalizado)
+  estado: LeadEstado;                   // BD: estado (CHECK constraint)
+  fuente: CanalMarketing;              // BD: fuente (normalizado a display)
   canal: string | null;                // BD: canal
-  temperatura: LeadTemperatura;        // BD: temperatura
+  temperatura: LeadTemperatura;        // BD: temperatura (CHECK constraint)
   notas: string | null;                // BD: notas
   email: string | null;                // BD: email
   convertidoAPacienteId: string | null;// BD: convertido_a_paciente_id
@@ -87,7 +104,7 @@ export interface Lead {
   scoreTotal: number;                  // BD: score_total
   calificacion: string | null;         // BD: calificacion
   etapaFunnel: string | null;          // BD: etapa_funnel
-  subestado: string | null;            // BD: subestado
+  subestado: LeadSubestado | null;     // BD: subestado (CHECK constraint)
   accionRecomendada: string | null;    // BD: accion_recomendada
   fechaSiguienteAccion: string | null; // BD: fecha_siguiente_accion
   createdAt: string;
@@ -95,11 +112,13 @@ export interface Lead {
   
   // === Campos calculados/UI ===
   nombreDisplay: string;               // Display name
+  estadoDisplay: string;               // LEAD_ESTADO_DISPLAY[estado]
   diasDesdeContacto: number;
   diasDesdeUltimaInteraccion: number | null;
   esCliente: boolean;                  // true si convertido_a_paciente_id existe
   esCaliente: boolean;
   esInactivo: boolean;
+  esEnPipeline: boolean;               // true si estado in LEAD_ESTADOS_ACTIVOS
   requiereSeguimiento: boolean;        // true si fecha_siguiente_accion <= hoy
 }
 
@@ -121,15 +140,17 @@ export function mapLeadFromDB(row: LeadRow): Lead {
   const diasDesdeContacto = Math.floor((now - createdAt) / (1000 * 60 * 60 * 24));
   const diasDesdeUltima = ultimaInteraccion ? Math.floor((now - ultimaInteraccion) / (1000 * 60 * 60 * 24)) : null;
   
+  const estado: LeadEstado = isLeadEstado(row.estado) ? row.estado : 'nuevo';
   const temperatura: LeadTemperatura = isLeadTemperatura(row.temperatura) ? row.temperatura : 'frio';
-  const esCaliente = temperatura === 'caliente' || temperatura === 'muy_caliente';
+  const esCaliente = temperatura === 'caliente' || temperatura === 'muy_caliente' || temperatura === 'urgente';
   const esInactivo = (diasDesdeUltima || 0) > 7;
+  const subestado = isLeadSubestado(row.subestado) ? row.subestado : null;
 
   return {
     id: row.id,
     nombre: row.nombre || row.telefono,
     telefono: row.telefono,
-    estado: isLeadEstado(row.estado) ? row.estado : 'nuevo',
+    estado,
     fuente: normalizeCanalMarketing(row.fuente),
     canal: row.canal,
     temperatura,
@@ -141,7 +162,7 @@ export function mapLeadFromDB(row: LeadRow): Lead {
     scoreTotal: row.score_total || 0,
     calificacion: row.calificacion,
     etapaFunnel: row.etapa_funnel,
-    subestado: row.subestado,
+    subestado,
     accionRecomendada: row.accion_recomendada,
     fechaSiguienteAccion: row.fecha_siguiente_accion,
     createdAt: row.created_at,
@@ -149,11 +170,13 @@ export function mapLeadFromDB(row: LeadRow): Lead {
     
     // Calculados
     nombreDisplay: row.nombre || row.telefono,
+    estadoDisplay: LEAD_ESTADO_DISPLAY[estado] || estado,
     diasDesdeContacto,
     diasDesdeUltimaInteraccion: diasDesdeUltima,
     esCliente: !!row.convertido_a_paciente_id,
     esCaliente,
     esInactivo,
+    esEnPipeline: (LEAD_ESTADOS_ACTIVOS as readonly string[]).includes(estado),
     requiereSeguimiento: fechaSiguienteAccion !== null && fechaSiguienteAccion <= now,
   };
 }
@@ -168,4 +191,8 @@ export function isLeadEstado(value: unknown): value is LeadEstado {
 
 export function isLeadTemperatura(value: unknown): value is LeadTemperatura {
   return typeof value === 'string' && (LEAD_TEMPERATURAS as readonly string[]).includes(value);
+}
+
+export function isLeadSubestado(value: unknown): value is LeadSubestado {
+  return typeof value === 'string' && (LEAD_SUBESTADOS as readonly string[]).includes(value);
 }

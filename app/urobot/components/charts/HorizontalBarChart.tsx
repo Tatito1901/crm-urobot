@@ -94,7 +94,7 @@ export const HorizontalBarChart = React.memo(function HorizontalBarChart({
                 maxBarSize={20}
               >
                 {processedData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill || '#3b82f6'} />
+                  <Cell key={`cell-${index}`} fill={entry.fill || 'var(--chart-blue)'} />
                 ))}
               </Bar>
             </BarChart>

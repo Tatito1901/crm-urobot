@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import { SWR_CONFIG_REALTIME, CACHE_KEYS } from '@/lib/swr-config'
+import { SWR_CONFIG_REALTIME, CACHE_KEYS, invalidateDomain } from '@/lib/swr-config'
 import type { MensajeRow, Mensaje, ConversacionUI, TipoMensaje } from '@/types/chat'
 
 const supabase = createClient()
@@ -171,10 +171,12 @@ export function useConversaciones(): UseConversacionesReturn {
 
     if (error) throw error
 
-    mutateConversaciones()
-    if (telefono === telefonoActivo) {
-      mutateMensajes()
-    }
+    // ✅ Invalidar dominio conversaciones + dashboard + caches locales
+    await Promise.all([
+      invalidateDomain('conversaciones'),
+      mutateConversaciones(),
+      telefono === telefonoActivo ? mutateMensajes() : Promise.resolve(),
+    ])
   }, [mutateConversaciones, mutateMensajes, telefonoActivo])
 
   // Total no leídos (siempre 0 por ahora)

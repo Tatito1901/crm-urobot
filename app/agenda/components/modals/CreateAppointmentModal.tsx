@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { useAppointmentForm } from '../../hooks/useAppointmentForm';
 import { formatShortTime } from '../../lib/agenda-utils';
 import { createPatient } from '../../services/patients-service';
+import { invalidateDomain } from '@/lib/swr-config';
 import type { TimeSlot } from '@/types/agenda';
 import type { CreateAppointmentData } from '../../services/appointments-service';
 import type { Paciente } from '@/types/pacientes';
@@ -94,6 +95,9 @@ export const CreateAppointmentModal: React.FC<CreateAppointmentModalProps> = ({
           // Actualizar el formulario con el ID del paciente creado
           data.patientId = patientResult.data.id;
           data.patientName = patientResult.data.nombre || 'Paciente';
+          // Invalidar caches de pacientes y leads (patients-service actualiza lead asociado)
+          invalidateDomain('pacientes');
+          invalidateDomain('leads');
         } catch (error) {
           setIsCreatingPatient(false);
           throw error;

@@ -20,13 +20,13 @@ interface Props {
 
 // Colores por día
 const dayColors: Record<string, string> = {
-  'Dom': '#94a3b8',
-  'Lun': '#3b82f6',
-  'Mar': '#8b5cf6',
-  'Mié': '#10b981',
-  'Jue': '#f59e0b',
-  'Vie': '#ef4444',
-  'Sáb': '#ec4899',
+  'Dom': 'var(--chart-slate)',
+  'Lun': 'var(--chart-blue)',
+  'Mar': 'var(--chart-purple)',
+  'Mié': 'var(--chart-emerald)',
+  'Jue': 'var(--chart-amber)',
+  'Vie': 'var(--chart-rose)',
+  'Sáb': 'var(--chart-rose)',
 };
 
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ value: number; payload: DemandaDia }> }) => {
@@ -73,23 +73,23 @@ export function DashboardDemandaDias({ data }: Props) {
             dataKey="name" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 11, fontWeight: 500 }}
           />
           <YAxis 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 11 }}
             allowDecimals={false}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }} />
           <ReferenceLine 
             y={promedio} 
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             strokeDasharray="5 5" 
             label={{ 
               value: `Prom: ${promedio}`, 
               position: 'right',
-              fill: '#64748b',
+              fill: 'var(--chart-slate)',
               fontSize: 10
             }} 
           />
@@ -99,7 +99,7 @@ export function DashboardDemandaDias({ data }: Props) {
             maxBarSize={50}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={dayColors[entry.name] || '#64748b'} />
+              <Cell key={`cell-${index}`} fill={dayColors[entry.name] || 'var(--chart-slate)'} />
             ))}
           </Bar>
         </BarChart>

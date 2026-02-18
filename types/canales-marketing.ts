@@ -2,16 +2,21 @@
  * ============================================================
  * CANALES DE MARKETING - Orígenes de Leads
  * ============================================================
- * Definición de canales consistente con la base de datos
+ * Fuente de verdad: leads_fuente_check en BD
+ * DB values: whatsapp, whatsapp_directo, meta_ads, instagram,
+ *            google_ads, referido, sitio_web, doctoralia, otro
+ * Última sync: 2026-02-18
  */
 
 export const CANALES_MARKETING = [
-  'Facebook Ads',
+  'Meta Ads',
   'Google Ads',
-  'Instagram Ads',
+  'Instagram',
   'Orgánico',
   'Referido',
   'WhatsApp Directo',
+  'Doctoralia',
+  'Sitio Web',
   'Otro'
 ] as const;
 
@@ -21,7 +26,7 @@ export type CanalMarketing = typeof CANALES_MARKETING[number];
  * Colores para cada canal (para badges y visualización)
  */
 export const CANAL_COLORS: Record<CanalMarketing, { bg: string; text: string; border: string; icon: string }> = {
-  'Facebook Ads': {
+  'Meta Ads': {
     bg: 'bg-blue-50 dark:bg-blue-500/10',
     text: 'text-blue-700 dark:text-blue-300',
     border: 'border-blue-200 dark:border-blue-500/30',
@@ -33,7 +38,7 @@ export const CANAL_COLORS: Record<CanalMarketing, { bg: string; text: string; bo
     border: 'border-red-200 dark:border-red-500/30',
     icon: '🔍'
   },
-  'Instagram Ads': {
+  'Instagram': {
     bg: 'bg-pink-50 dark:bg-pink-500/10',
     text: 'text-pink-700 dark:text-pink-300',
     border: 'border-pink-200 dark:border-pink-500/30',
@@ -56,6 +61,18 @@ export const CANAL_COLORS: Record<CanalMarketing, { bg: string; text: string; bo
     text: 'text-emerald-700 dark:text-emerald-300',
     border: 'border-emerald-200 dark:border-emerald-500/30',
     icon: '💬'
+  },
+  'Doctoralia': {
+    bg: 'bg-teal-50 dark:bg-teal-500/10',
+    text: 'text-teal-700 dark:text-teal-300',
+    border: 'border-teal-200 dark:border-teal-500/30',
+    icon: '🏥'
+  },
+  'Sitio Web': {
+    bg: 'bg-cyan-50 dark:bg-cyan-500/10',
+    text: 'text-cyan-700 dark:text-cyan-300',
+    border: 'border-cyan-200 dark:border-cyan-500/30',
+    icon: '🌐'
   },
   'Otro': {
     bg: 'bg-slate-50 dark:bg-slate-500/10',
@@ -87,17 +104,19 @@ export function normalizeCanalMarketing(value: string | null | undefined): Canal
   
   // Mapeo de variantes comunes a valores estándar
   const mappings: Record<string, CanalMarketing> = {
-    // Facebook
-    'facebook': 'Facebook Ads',
-    'facebook ads': 'Facebook Ads',
-    'fb': 'Facebook Ads',
-    'fb ads': 'Facebook Ads',
-    'meta': 'Facebook Ads',
-    'meta ads': 'Facebook Ads',
+    // Meta Ads (BD: meta_ads) — covers Facebook & Instagram paid
+    'facebook': 'Meta Ads',
+    'facebook ads': 'Meta Ads',
+    'fb': 'Meta Ads',
+    'fb ads': 'Meta Ads',
+    'meta': 'Meta Ads',
+    'meta ads': 'Meta Ads',
+    'meta_ads': 'Meta Ads',
     
-    // Google
+    // Google (BD: google_ads)
     'google': 'Google Ads',
     'google ads': 'Google Ads',
+    'google_ads': 'Google Ads',
     'adwords': 'Google Ads',
     'sem': 'Google Ads',
     'click to chat link': 'Google Ads',
@@ -106,33 +125,46 @@ export function normalizeCanalMarketing(value: string | null | undefined): Canal
     'click_to_chat': 'Google Ads',
     'ctc': 'Google Ads',
     
-    // Instagram
-    'instagram': 'Instagram Ads',
-    'instagram ads': 'Instagram Ads',
-    'ig': 'Instagram Ads',
-    'ig ads': 'Instagram Ads',
+    // Instagram (BD: instagram)
+    'instagram': 'Instagram',
+    'instagram ads': 'Instagram',
+    'ig': 'Instagram',
+    'ig ads': 'Instagram',
     
-    // Orgánico
+    // Orgánico (BD: organico)
     'organico': 'Orgánico',
     'orgánico': 'Orgánico',
     'organic': 'Orgánico',
     'seo': 'Orgánico',
     
-    // Referido
+    // Referido (BD: referido)
     'referido': 'Referido',
     'referral': 'Referido',
     'referencia': 'Referido',
     'recomendacion': 'Referido',
     'recomendación': 'Referido',
     
-    // WhatsApp
+    // WhatsApp (BD: whatsapp, whatsapp_directo)
     'whatsapp': 'WhatsApp Directo',
     'whatsapp directo': 'WhatsApp Directo',
+    'whatsapp_directo': 'WhatsApp Directo',
     'wa': 'WhatsApp Directo',
     'wsp': 'WhatsApp Directo',
     'directo': 'WhatsApp Directo',
     
-    // Otro
+    // Doctoralia (BD: doctoralia)
+    'doctoralia': 'Doctoralia',
+    
+    // Sitio Web (BD: sitio_web)
+    'sitio_web': 'Sitio Web',
+    'sitio web': 'Sitio Web',
+    'landing': 'Sitio Web',
+    'landing_page': 'Sitio Web',
+    'landing page': 'Sitio Web',
+    'website': 'Sitio Web',
+    'web': 'Sitio Web',
+    
+    // Otro (BD: otro)
     'otro': 'Otro',
     'other': 'Otro',
     'desconocido': 'Otro',

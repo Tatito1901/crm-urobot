@@ -93,13 +93,13 @@ export const BarChart: React.FC<BarChartProps> = React.memo(({ data, height = 20
             dataKey="label"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 10, fontWeight: 500 }}
             dy={10}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 10, fontWeight: 500 }}
             allowDecimals={false}
           />
           <Tooltip

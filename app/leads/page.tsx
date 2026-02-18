@@ -35,19 +35,22 @@ export default function LeadsPage() {
     refresh,
   } = useLeadsPaginated({ pageSize: 8 });
   
-  // Stats ya vienen del servidor
+  // Stats ya vienen del servidor — sincronizado con BD estados
   const leadsStats = useMemo(() => ({
     total: stats.total,
-    nuevo: stats.nuevos,
-    contactado: stats.enSeguimiento, // Leads contactados (en seguimiento)
-    interesado: stats.interesados,
-    convertido: stats.convertidos,
-    descartado: stats.descartados,
-    activos: stats.nuevos + stats.enSeguimiento + stats.interesados, // Pipeline activo
+    nuevos: stats.nuevos,
+    interactuando: stats.interactuando,
+    contactados: stats.contactados,
+    citaPropuesta: stats.citaPropuesta,
+    enSeguimiento: stats.enSeguimiento,
+    citaAgendada: stats.citaAgendada,
+    convertidos: stats.convertidos,
+    perdidos: stats.perdidos,
+    activos: stats.nuevos + stats.interactuando + stats.contactados + stats.citaPropuesta + stats.enSeguimiento + stats.citaAgendada,
   }), [stats]);
   
   // ✅ Handler para cambio de filtro (mapea a valores del hook)
-  const handleFilterChange = useCallback((newFilter: 'all' | 'nuevo' | 'contactado' | 'interesado' | 'convertido' | 'descartado') => {
+  const handleFilterChange = useCallback((newFilter: 'all' | 'nuevo' | 'interactuando' | 'contactado' | 'cita_propuesta' | 'cita_agendada' | 'perdido') => {
     setEstadoFilter(newFilter === 'all' ? '' : newFilter);
   }, [setEstadoFilter]);
 
@@ -95,7 +98,7 @@ export default function LeadsPage() {
         <div>
           <div className="px-4 py-3 pb-0">
             <LeadsFilters
-              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'nuevo' | 'interesado' | 'convertido' | 'descartado'}
+              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'nuevo' | 'interactuando' | 'contactado' | 'cita_propuesta' | 'cita_agendada' | 'perdido'}
               onFilterChange={handleFilterChange}
               searchValue={search}
               onSearchChange={setSearch}

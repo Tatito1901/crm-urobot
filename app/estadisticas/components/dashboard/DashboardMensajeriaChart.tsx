@@ -53,7 +53,7 @@ export const DashboardMensajeriaChart = memo(function DashboardMensajeriaChart({
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: '#64748b' }} />
+          <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: 'var(--chart-slate)' }} />
         </PieChart>
       </ResponsiveContainer>
     </div>

@@ -17,6 +17,7 @@ import { useConsultas } from '@/hooks/consultas/useConsultas';
 import type { Consulta } from '@/types/consultas';
 import type { Appointment } from '@/types/agenda';
 import type { CreateAppointmentData, UpdateAppointmentData } from './services/appointments-service';
+import { invalidateDomain } from '@/lib/swr-config';
 import { Sidebar } from './components/calendar/Sidebar';
 import { HeaderBar } from './components/calendar/HeaderBar';
 import { DaysHeader } from './components/calendar/DaysHeader';
@@ -292,6 +293,7 @@ export default function AgendaPage() {
 
       if (result.success) {
         await refetch();
+        invalidateDomain('consultas');
         return { success: true };
       }
 
@@ -323,6 +325,7 @@ export default function AgendaPage() {
 
       if (result.success) {
         await refetch();
+        invalidateDomain('consultas');
         return { success: true };
       }
 
@@ -344,6 +347,7 @@ export default function AgendaPage() {
 
       if (result.success) {
         await refetch();
+        invalidateDomain('consultas');
         return { success: true };
       }
 
@@ -362,6 +366,7 @@ export default function AgendaPage() {
 
       if (result.success) {
         await refetch();
+        invalidateDomain('consultas');
         return { success: true };
       }
 
@@ -380,6 +385,7 @@ export default function AgendaPage() {
 
       if (result.success) {
         await refetch();
+        invalidateDomain('consultas');
         return { success: true };
       }
 

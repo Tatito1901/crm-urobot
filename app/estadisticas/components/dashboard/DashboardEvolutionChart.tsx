@@ -48,38 +48,38 @@ export const DashboardEvolutionChart = memo(function DashboardEvolutionChart({ d
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorConsultas" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="var(--chart-blue)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--chart-blue)" stopOpacity={0}/>
             </linearGradient>
             <linearGradient id="colorPacientes" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+              <stop offset="5%" stopColor="var(--chart-emerald)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--chart-emerald)" stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#64748b" strokeOpacity={0.2} vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-slate)" strokeOpacity={0.2} vertical={false} />
           <XAxis 
             dataKey="name" 
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={11} 
             tickLine={false} 
             axisLine={false} 
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
           />
           <YAxis 
-            stroke="#94a3b8" 
+            stroke="var(--chart-slate)" 
             fontSize={10} 
             tickLine={false} 
             axisLine={false} 
-            tick={{ fill: '#64748b' }}
+            tick={{ fill: 'var(--chart-slate)' }}
             width={35}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Area type="monotone" dataKey="consultas" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorConsultas)" name="Consultas" />
-          <Area type="monotone" dataKey="pacientes" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorPacientes)" name="Pacientes" />
+          <Area type="monotone" dataKey="consultas" stroke="var(--chart-blue)" strokeWidth={2} fillOpacity={1} fill="url(#colorConsultas)" name="Consultas" />
+          <Area type="monotone" dataKey="pacientes" stroke="var(--chart-emerald)" strokeWidth={2} fillOpacity={1} fill="url(#colorPacientes)" name="Pacientes" />
           <Legend 
             iconType="circle" 
             iconSize={8}
-            wrapperStyle={{ fontSize: '10px', paddingTop: '8px', color: '#64748b' }} 
+            wrapperStyle={{ fontSize: '10px', paddingTop: '8px', color: 'var(--chart-slate)' }} 
           />
         </AreaChart>
       </ResponsiveContainer>

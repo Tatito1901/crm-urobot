@@ -92,7 +92,7 @@ export const InteractionsPieChart = React.memo(function InteractionsPieChart({
                 {data.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.fill || '#94a3b8'} 
+                    fill={entry.fill || 'var(--chart-slate)'} 
                     className="stroke-background"
                     strokeWidth={2}
                   />

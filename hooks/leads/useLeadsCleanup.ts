@@ -10,6 +10,7 @@
 
 import { useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { invalidateDomain } from '@/lib/swr-config';
 
 const supabase = createClient();
 
@@ -238,8 +239,9 @@ export function useLeadsCleanup(): UseLeadsCleanupReturn {
         if (error) throw error;
       }
 
-      // Remover de la lista
+      // Remover de la lista e invalidar caches
       setLeadsPendientes(prev => prev.filter(l => l.id !== leadId));
+      await invalidateDomain('leads');
       return true;
       
     } catch (err) {
@@ -305,6 +307,8 @@ export function useLeadsCleanup(): UseLeadsCleanupReturn {
 
       setLeadsPendientes([]);
       setLastResult(result);
+      // ✅ Invalidar caches después de limpieza masiva
+      await invalidateDomain('leads');
       return result;
       
     } catch (err) {

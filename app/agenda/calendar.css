@@ -25,7 +25,7 @@
 }
 
 .sx__week-grid-day--today .sx__week-grid-day-number {
-  background: rgb(59 130 246);
+  background: var(--cal-today);
   color: white;
   border-radius: 50%;
   width: 32px;
@@ -115,17 +115,17 @@
 }
 
 .sx__current-time-line {
-  border-top: 2px solid rgb(59 130 246);
+  border-top: 2px solid var(--cal-today);
   z-index: 5;
 }
 
 .sx__current-time-indicator {
-  background: rgb(59 130 246);
+  background: var(--cal-today);
   width: 10px;
   height: 10px;
   border-radius: 50%;
   margin-left: -5px;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cal-today) 20%, transparent);
 }
 
 .sx__date-picker-wrapper {
@@ -145,7 +145,7 @@
 }
 
 .sx__date-picker-day--selected {
-  background: rgb(59 130 246);
+  background: var(--cal-today);
   color: white;
   font-weight: 500;
 }
@@ -161,12 +161,12 @@
 }
 
 .sx__week-grid::-webkit-scrollbar-thumb {
-  background: rgb(51 65 85);
+  background: var(--cal-scrollbar);
   border-radius: 4px;
 }
 
 .sx__week-grid::-webkit-scrollbar-thumb:hover {
-  background: rgb(71 85 105);
+  background: var(--cal-scrollbar-hover);
 }
 
 .sx__week-grid {
@@ -179,23 +179,23 @@
 }
 
 .sx__event[data-calendar-id="programada"] {
-  background: rgba(59, 130, 246, 0.85);
-  border-left: 3px solid rgb(96 165 250);
+  background: var(--cal-programada);
+  border-left: 3px solid var(--cal-programada-border);
 }
 
 .sx__event[data-calendar-id="confirmada"] {
-  background: rgba(16, 185, 129, 0.85);
-  border-left: 3px solid rgb(52 211 153);
+  background: var(--cal-confirmada);
+  border-left: 3px solid var(--cal-confirmada-border);
 }
 
 .sx__event[data-calendar-id="reagendada"] {
-  background: rgba(245, 158, 11, 0.85);
-  border-left: 3px solid rgb(251 191 36);
+  background: var(--cal-reagendada);
+  border-left: 3px solid var(--cal-reagendada-border);
 }
 
 .sx__event[data-calendar-id="cancelada"] {
-  background: rgba(107, 114, 128, 0.6);
-  border-left: 3px solid rgb(156 163 175);
+  background: var(--cal-cancelada);
+  border-left: 3px solid var(--cal-cancelada-border);
   opacity: 0.8;
 }
 

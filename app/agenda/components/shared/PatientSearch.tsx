@@ -245,7 +245,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
                       )}
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full ${
-                          patient.estado === 'Activo'
+                          patient.estado === 'activo'
                             ? 'bg-emerald-500/10 text-emerald-500'
                             : 'bg-slate-500/10 text-slate-500'
                         }`}

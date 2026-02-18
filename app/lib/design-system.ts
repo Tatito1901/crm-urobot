@@ -2,31 +2,28 @@
  * ============================================================
  * DESIGN SYSTEM - CRM UROBOT
  * ============================================================
- * Sistema de diseño unificado para consistencia visual
+ * FUENTE ÚNICA DE VERDAD para estilos de toda la plataforma.
  * 
- * IMPORTANTE: Usar componentes de shadcn/ui como base:
- * - Card, CardHeader, CardTitle, CardContent → @/components/ui/card
- * - Button → @/components/ui/button
- * - Badge → @/components/ui/badge
- * - Table → @/components/ui/table
- * - Skeleton → @/components/ui/skeleton
- * - Tooltip → @/components/ui/tooltip
- * - Input → @/components/ui/input
+ * REGLA: Nunca hardcodear colores hex, rgba, oklch en TSX.
+ *        Siempre importar tokens desde aquí.
+ * 
+ * Componentes base: shadcn/ui (Card, Button, Badge, Table, etc.)
  */
 
 import { cn } from "@/lib/utils";
 
 // ==================== TYPOGRAPHY ====================
-// Tamaños consistentes en toda la plataforma
 export const typography = {
   // Títulos de página
   pageTitle: 'text-lg sm:text-xl font-bold text-foreground font-jakarta tracking-tight',
   pageSubtitle: 'text-sm text-muted-foreground',
   
   // Títulos de sección/card
-  sectionTitle: 'text-sm font-semibold text-foreground',
+  sectionTitle: 'text-base font-semibold text-foreground',
   cardTitle: 'text-sm font-semibold text-foreground',
+  cardTitleWithIcon: 'text-sm font-semibold text-foreground flex items-center gap-2',
   cardDescription: 'text-xs text-muted-foreground',
+  cardDescriptionSmall: 'text-[11px] text-muted-foreground',
   
   // Body text
   body: 'text-sm text-foreground',
@@ -35,11 +32,13 @@ export const typography = {
   // Labels y metadata
   label: 'text-[11px] text-muted-foreground uppercase tracking-wider font-medium',
   labelSmall: 'text-[10px] text-muted-foreground uppercase tracking-wider font-medium',
+  labelBold: 'text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground',
   metadata: 'text-xs text-muted-foreground',
   metadataSmall: 'text-[11px] text-muted-foreground',
   
   // Métricas y números
   metric: 'text-xl sm:text-2xl font-extrabold text-foreground tabular-nums font-jakarta tracking-tight',
+  metricLarge: 'text-2xl sm:text-3xl font-extrabold text-foreground tabular-nums font-jakarta tracking-tight',
   metricMedium: 'text-lg font-bold text-foreground tabular-nums font-jakarta tracking-tight',
   metricSmall: 'text-base font-semibold text-foreground tabular-nums font-jakarta',
   number: 'tabular-nums font-medium',
@@ -48,71 +47,250 @@ export const typography = {
   tableHeader: 'text-[11px] uppercase tracking-wider font-medium text-muted-foreground',
   tableCell: 'text-sm text-foreground',
   tableCellSmall: 'text-xs text-muted-foreground',
-};
+} as const;
+
+// ==================== CHART COLORS ====================
+// Paleta unificada para TODOS los gráficos (Recharts, DonutChart, BarChart, etc.)
+export const chartColors = {
+  // Colores semánticos para estados de datos
+  blue: 'var(--chart-blue)',
+  emerald: 'var(--chart-emerald)',
+  purple: 'var(--chart-purple)',
+  amber: 'var(--chart-amber)',
+  rose: 'var(--chart-rose)',
+  cyan: 'var(--chart-cyan)',
+  indigo: 'var(--chart-indigo)',
+  teal: 'var(--chart-teal)',
+  orange: 'var(--chart-orange)',
+  slate: 'var(--chart-slate)',
+  
+  // Secuencia ordenada para gráficos con N categorías
+  sequence: [
+    'var(--chart-blue)',
+    'var(--chart-emerald)',
+    'var(--chart-purple)',
+    'var(--chart-amber)',
+    'var(--chart-cyan)',
+    'var(--chart-rose)',
+    'var(--chart-indigo)',
+    'var(--chart-teal)',
+    'var(--chart-orange)',
+    'var(--chart-slate)',
+  ],
+
+  // Mapa de estados de leads a colores
+  leadState: {
+    nuevo: 'var(--chart-blue)',
+    contactado: 'var(--chart-purple)',
+    interesado: 'var(--chart-indigo)',
+    calificado: 'var(--chart-cyan)',
+    escalado: 'var(--chart-amber)',
+    cita_agendada: 'var(--chart-teal)',
+    convertido: 'var(--chart-emerald)',
+    no_interesado: 'var(--chart-slate)',
+    descartado: 'var(--chart-rose)',
+  } as Record<string, string>,
+
+  // Mapa de estados de consultas
+  consultaState: {
+    Programada: 'var(--chart-blue)',
+    Confirmada: 'var(--chart-emerald)',
+    Reagendada: 'var(--chart-amber)',
+    Cancelada: 'var(--chart-slate)',
+    Completada: 'var(--chart-teal)',
+  } as Record<string, string>,
+} as const;
+
+// ==================== ACCENT COLORS ====================
+// Colores semánticos para acentos en UI (Tailwind classes)
+export const accentColors = {
+  primary: {
+    text: 'text-teal-600 dark:text-teal-400',
+    bg: 'bg-teal-500/10',
+    border: 'border-teal-500/20 dark:border-teal-400/15',
+    hover: 'hover:bg-teal-500/15 dark:hover:bg-teal-500/20',
+    dot: 'bg-teal-500',
+  },
+  success: {
+    text: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500/20',
+    hover: 'hover:bg-emerald-500/15',
+    dot: 'bg-emerald-500',
+  },
+  warning: {
+    text: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
+    hover: 'hover:bg-amber-500/15',
+    dot: 'bg-amber-500',
+  },
+  danger: {
+    text: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-500/20',
+    hover: 'hover:bg-rose-500/15',
+    dot: 'bg-rose-500',
+  },
+  info: {
+    text: 'text-cyan-600 dark:text-cyan-400',
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/20',
+    hover: 'hover:bg-cyan-500/15',
+    dot: 'bg-cyan-500',
+  },
+  neutral: {
+    text: 'text-muted-foreground',
+    bg: 'bg-muted',
+    border: 'border-border',
+    hover: 'hover:bg-muted/80',
+    dot: 'bg-muted-foreground',
+  },
+} as const;
 
 // ==================== BADGES / CHIPS ====================
-// Estilos consistentes para todos los badges
 export const badges = {
-  // Base (aplicar siempre)
   base: 'inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-md border',
-  
-  // Variantes de tamaño
   sm: 'px-1.5 py-0.5 text-[10px]',
   md: 'px-2 py-0.5 text-[11px]',
   lg: 'px-2.5 py-1 text-xs',
-};
+} as const;
 
 // ==================== SPACING ====================
 export const spacing = {
-  // Card spacing
   cardHeader: 'pb-4',
   cardContent: 'pt-0',
   cardPadding: 'p-5',
-  
-  // Container
   container: 'px-4 sm:px-6',
   containerY: 'py-6 sm:py-8',
-  
+  // Section margins entre bloques de contenido
+  sectionGap: 'mb-4 sm:mb-6 md:mb-8',
+  sectionGapSm: 'mb-3 sm:mb-4',
   // Gaps
   gap: { xs: 'gap-2', sm: 'gap-3', md: 'gap-4', lg: 'gap-6' },
   stack: { xs: 'space-y-2', sm: 'space-y-3', md: 'space-y-4', lg: 'space-y-6' },
-};
+} as const;
 
 // ==================== LAYOUTS ====================
-// Grids responsivos pre-configurados
 export const layouts = {
-  // Grid columns
-  grid2: 'grid grid-cols-1 sm:grid-cols-2 gap-4',
-  grid3: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4',
-  grid4: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4',
-  grid5: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4',
-};
+  grid2: 'grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4',
+  grid3: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4',
+  grid4: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4',
+  grid5: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3',
+  // KPI grids
+  kpiGrid: 'grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4',
+  kpiGrid5: 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3',
+} as const;
 
 // ==================== CARDS ====================
-// Variantes de Card (base viene de shadcn, estas son extensiones)
 export const cards = {
-  base: 'overflow-hidden', // Previene desbordamiento de contenido
+  // Base para todas las cards
+  base: 'overflow-hidden',
+  // Card tipo glass (para Dashboard, cards principales)
+  glass: 'overflow-hidden rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm shine-top',
+  // Card con header separado (glass + header border)
+  glassWithHeader: 'flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm shine-top',
+  // Header dentro de card glass
+  glassHeader: 'flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4',
+  // Card interactiva
   interactive: 'cursor-pointer hover:border-ring/50 hover:bg-accent/30 active:scale-[0.98] transition-all overflow-hidden',
   mobileCard: 'min-h-[80px] flex flex-col justify-center overflow-hidden',
-  chart: 'overflow-hidden min-w-0', // Para cards con gráficos
-};
+  chart: 'overflow-hidden min-w-0',
+} as const;
+
+// ==================== BUTTONS ====================
+export const buttons = {
+  // Refresh / action button (usado en headers de página)
+  refresh: cn(
+    'flex items-center justify-center gap-1.5 rounded-xl',
+    'px-3 py-1.5 sm:px-4 sm:py-2 min-h-[36px]',
+    'text-xs font-semibold transition-all duration-150',
+    'disabled:opacity-50 disabled:cursor-not-allowed',
+  ),
+  // Variantes de color para refresh
+  refreshTeal: 'bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/20 dark:border-teal-400/15 hover:bg-teal-500/15 dark:hover:bg-teal-500/20',
+  refreshCyan: 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/30',
+  // Select / dropdown pequeño
+  select: 'px-2 sm:px-3 py-1.5 rounded-lg bg-muted border border-border text-sm',
+} as const;
+
+// ==================== TABS ====================
+export const tabs = {
+  // Container de tabs
+  container: 'mb-4 sm:mb-6 flex items-center gap-4 sm:gap-8 border-b border-border overflow-x-auto scrollbar-hide',
+  containerFlush: 'mb-4 sm:mb-6 border-b border-border overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0',
+  // Tab items wrapper
+  list: 'flex gap-0.5 sm:gap-1 min-w-max',
+  // Tab individual
+  tab: 'relative pb-2.5 sm:pb-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200',
+  tabWithIcon: 'flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px',
+  // Estados
+  tabActive: 'text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary',
+  tabInactive: 'text-muted-foreground hover:text-foreground',
+  // Tab con icono activo/inactivo (para bordes de color)
+  tabIconActive: (color: string) => `border-${color}-500 text-${color}-600 dark:text-${color}-400`,
+  tabIconInactive: 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
+  // Badge counter dentro de tab
+  tabBadge: 'ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-muted',
+  tabBadgeAccent: (color: string) => `ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-${color}-500/20 text-${color}-600 dark:text-${color}-400`,
+} as const;
+
+// ==================== LIST ITEMS ====================
+export const listItems = {
+  // Item de lista clickeable (leads recientes, consultas próximas)
+  row: 'group flex cursor-pointer items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 transition-colors hover:bg-muted/50 active:bg-muted/70',
+  // Título del item
+  rowTitle: 'truncate text-xs sm:text-sm font-medium text-foreground group-hover:text-primary',
+  // Metadata del item
+  rowMeta: 'mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground',
+  // Divisor
+  divider: 'divide-y divide-border',
+  // Empty state dentro de lista
+  empty: 'flex h-28 sm:h-32 items-center justify-center text-xs sm:text-sm text-muted-foreground',
+  // Contenedor scrollable
+  scrollable: 'max-h-[320px] sm:max-h-[400px] overflow-y-auto overscroll-contain',
+} as const;
+
+// ==================== METRIC CARD COLORS ====================
+// Paleta unificada para MetricCard / KpiCard
+export const metricColors = {
+  emerald: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
+  green: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
+  blue: { label: 'text-sky-400 dark:text-sky-300', border: 'border-sky-500/10 dark:border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400' },
+  purple: { label: 'text-violet-400 dark:text-violet-300', border: 'border-violet-500/10 dark:border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400' },
+  amber: { label: 'text-amber-400 dark:text-amber-300', border: 'border-amber-500/10 dark:border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400' },
+  orange: { label: 'text-orange-400 dark:text-orange-300', border: 'border-orange-500/10 dark:border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400' },
+  red: { label: 'text-rose-400 dark:text-rose-300', border: 'border-rose-500/10 dark:border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400' },
+  cyan: { label: 'text-cyan-400 dark:text-cyan-300', border: 'border-cyan-500/10 dark:border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400' },
+  teal: { label: 'text-teal-400 dark:text-teal-300', border: 'border-teal-500/10 dark:border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400' },
+  fuchsia: { label: 'text-fuchsia-400 dark:text-fuchsia-300', border: 'border-fuchsia-500/10 dark:border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400' },
+} as const;
+
+export type MetricColor = keyof typeof metricColors;
 
 // ==================== INPUTS ====================
-// Usar <Input> de shadcn, estos son helpers para clases adicionales
 export const inputs = {
-  base: '', // Usar <Input> de shadcn directamente
-  search: 'pl-10', // Para inputs con icono de búsqueda
-};
+  base: '',
+  search: 'pl-10',
+} as const;
 
-// ==================== TABLES (legacy - usar shadcn Table) ====================
-// Mantener temporalmente para compatibilidad
+// ==================== TABLES ====================
 export const tables = {
   wrapper: 'w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm',
   thead: 'bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground',
   th: 'px-4 py-3 font-medium',
   td: 'px-4 py-3',
   tr: 'border-b border-border hover:bg-muted/30 transition-colors',
-};
+} as const;
+
+// ==================== PROGRESS BARS ====================
+export const progress = {
+  track: 'h-2 bg-muted rounded-full overflow-hidden',
+  bar: 'h-full rounded-full transition-all',
+  barGradientEmerald: 'bg-gradient-to-r from-emerald-500 to-green-400',
+  barGradientTeal: 'bg-gradient-to-r from-teal-500 to-cyan-400',
+  barGradientBlue: 'bg-gradient-to-r from-blue-500 to-sky-400',
+} as const;
 
 // Re-exportar cn para conveniencia
 export { cn };
