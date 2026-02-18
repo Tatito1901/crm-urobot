@@ -318,38 +318,37 @@ async function registrarAccion(
   leadId: string,
   tipo: TipoAccion,
   descripcion: string,
-  metadata?: {
+  _metadata?: {
     plantillaUsada?: string;
     etapaAnterior?: LeadEstado;
     etapaNueva?: LeadEstado;
   }
 ): Promise<void> {
-  // Actualizar notas_seguimiento del lead con la acción
+  // Actualizar notas del lead con la acción (BD: columna 'notas')
   const timestamp = new Date().toISOString();
   const accionTexto = `[${timestamp.split('T')[0]}] ${descripcion}`;
   
   // Obtener notas actuales
   const { data: leadData } = await supabase
     .from('leads')
-    .select('notas_seguimiento, ultimo_seguimiento')
+    .select('notas, ultima_interaccion')
     .eq('id', leadId)
     .single();
 
-  // Type assertion - estos campos existen en BD
-  const lead = leadData as { notas_seguimiento: string | null; ultimo_seguimiento: string | null } | null;
-  const notasActuales = lead?.notas_seguimiento || '';
+  const lead = leadData as { notas: string | null; ultima_interaccion: string | null } | null;
+  const notasActuales = lead?.notas || '';
   const nuevasNotas = notasActuales 
     ? `${accionTexto}\n---\n${notasActuales}`
     : accionTexto;
 
-  // Actualizar lead
+  // Actualizar lead con campos reales de BD
   await supabase
     .from('leads')
     .update({
-      notas_seguimiento: nuevasNotas.substring(0, 2000), // Limitar tamaño
-      ultimo_seguimiento: timestamp,
+      notas: nuevasNotas.substring(0, 2000),
+      ultima_interaccion: timestamp,
       updated_at: timestamp,
-    })
+    } as never)
     .eq('id', leadId);
 }
 

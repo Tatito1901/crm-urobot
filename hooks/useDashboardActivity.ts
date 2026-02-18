@@ -85,17 +85,24 @@ const fetchDashboardActivity = async (): Promise<DashboardActivity> => {
   return { recentLeads, upcomingConsultas }
 }
 
-export function useDashboardActivity() {
+/**
+ * @param initialData - Datos pre-cargados desde Server Component (RSC pattern)
+ *                      Se usa como fallbackData de SWR para render instantáneo sin flash de loading
+ */
+export function useDashboardActivity(initialData?: DashboardActivity) {
   const { data, error, isLoading, mutate } = useSWR(
     'dashboard-activity',
     fetchDashboardActivity,
-    SWR_CONFIG_STANDARD
+    {
+      ...SWR_CONFIG_STANDARD,
+      ...(initialData ? { fallbackData: initialData } : {}),
+    }
   )
 
   return {
     recentLeads: data?.recentLeads ?? [],
     upcomingConsultas: data?.upcomingConsultas ?? [],
-    loading: isLoading,
+    loading: isLoading && !initialData,
     error: error ?? null,
     refresh: async () => { await mutate() },
   }

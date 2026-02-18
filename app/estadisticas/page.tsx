@@ -22,8 +22,6 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
-export const dynamicConfig = 'force-dynamic';
-
 // Lazy Loading de Gráficos para reducir bundle size inicial
 const EvolutionChart = dynamic(() => import('./components/dashboard/DashboardEvolutionChart').then(mod => mod.DashboardEvolutionChart), {
   loading: () => <Skeleton className="h-[300px] w-full" />,
@@ -99,7 +97,7 @@ function KpiCard({
 
   return (
     <div 
-      className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[140px]"
+      className="bg-card dark:bg-white/[0.03] border border-border dark:border-white/[0.06] rounded-xl p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top"
       title={tooltip}
     >
       <div className="flex justify-between items-start mb-3">
@@ -115,7 +113,7 @@ function KpiCard({
       </div>
       <div className="min-w-0">
         <h3 className="text-muted-foreground text-[10px] sm:text-[11px] font-bold uppercase tracking-wider sm:tracking-widest mb-1 truncate">{title}</h3>
-        <div className="text-2xl sm:text-3xl font-bold text-foreground mb-1 tracking-tight truncate">{formatValue(value)}</div>
+        <div className="text-2xl sm:text-3xl font-extrabold text-foreground mb-1 tracking-tight truncate font-jakarta">{formatValue(value)}</div>
         <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">{subtext}</p>
       </div>
     </div>
@@ -163,7 +161,7 @@ export default function EstadisticasPage() {
       description="Visión estratégica del rendimiento operativo, comercial y de marketing."
     >
       {/* KPIs Principales */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
         <KpiCard
           title="Pacientes"
           value={kpi.totalPacientes}
@@ -197,13 +195,13 @@ export default function EstadisticasPage() {
       </section>
 
       {/* Gráficos Principales - Fila 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-6">
         
         {/* Evolución Mensual */}
         <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-blue-500" />
+              <TrendingUp className="w-4 h-4 text-teal-500" />
               Crecimiento Operativo
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground">Consultas vs Pacientes Nuevos (6 meses)</CardDescription>
@@ -230,7 +228,7 @@ export default function EstadisticasPage() {
       </div>
 
       {/* Análisis de Ocupación y Predicciones */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-6">
         {/* Heatmap de Ocupación */}
         <Card className={`${cards.base} xl:col-span-2 min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
@@ -261,7 +259,7 @@ export default function EstadisticasPage() {
       </div>
 
       {/* Gráficos Secundarios - Fila 2 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
 
         {/* Marketing: Fuentes */}
         <Card className={`${cards.base} min-w-0`}>
@@ -322,7 +320,7 @@ export default function EstadisticasPage() {
       </div>
 
       {/* Patrones y Métricas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4 sm:mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-6">
         <Card className={`${cards.base} min-w-0`}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
@@ -365,11 +363,11 @@ export default function EstadisticasPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-muted-foreground">Tasa de Conversión</span>
-                  <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{kpi.tasaConversion}%</span>
+                  <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{kpi.tasaConversion}%</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all"
+                    className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full transition-all"
                     style={{ width: `${kpi.tasaConversion}%` }}
                   />
                 </div>

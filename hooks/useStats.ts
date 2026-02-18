@@ -64,26 +64,54 @@ const defaultKPI: KPIData = {
 const supabase = createClient();
 
 /**
- * Fetcher optimizado v2 - usa RPC para cálculos en servidor
- * ✅ Una sola llamada en lugar de 4
- * ✅ Payload reducido de ~400KB a ~2KB
+ * Fetcher optimizado v2 - usa RPC get_dashboard_stats_fast
+ * ✅ Una sola llamada
+ * ✅ Payload reducido
+ * 
+ * RPC retorna: {leads: {total, hoy, semana, por_estado, por_temperatura, por_fuente},
+ *               conversaciones: {activas, total}, escalamientos: {pendientes, total_hoy},
+ *               consultas: {programadas, hoy, completadas_mes}, pacientes: {total, nuevos_mes}}
  */
 const fetchStats = async (): Promise<StatsData> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_dashboard_stats');
+  const { data, error } = await (supabase as any).rpc('get_dashboard_stats_fast');
 
   if (error) throw error;
 
-  // La RPC retorna exactamente la estructura que necesitamos
+  const d = data as Record<string, Record<string, unknown>> | null;
+  if (!d) return { kpi: defaultKPI, consultasPorSede: [], estadoCitas: [], evolucionMensual: [], funnelLeads: [], fuentesCaptacion: [], metricasMensajeria: [], destinosPacientes: [] };
+
+  const leads = d.leads || {};
+  const consultas = d.consultas || {};
+  const pacientes = d.pacientes || {};
+  const porEstado = (leads.por_estado || {}) as Record<string, number>;
+  const porFuente = (leads.por_fuente || {}) as Record<string, number>;
+
+  // Construir KPI desde la estructura real
+  const kpi: KPIData = {
+    totalPacientes: Number(pacientes.total) || 0,
+    pacientesNuevosMes: Number(pacientes.nuevos_mes) || 0,
+    consultasMes: Number(consultas.completadas_mes) || 0,
+    consultasConfirmadasMes: Number(consultas.programadas) || 0,
+    tasaAsistencia: 0,
+    tasaConversion: 0,
+    totalLeads: Number(leads.total) || 0,
+    leadsNuevosMes: Number(leads.hoy) || 0,
+  };
+
+  // Construir charts desde por_estado y por_fuente
+  const funnelLeads: ChartData[] = Object.entries(porEstado).map(([name, value]) => ({ name, value: Number(value) }));
+  const fuentesCaptacion: ChartData[] = Object.entries(porFuente).map(([name, value]) => ({ name, value: Number(value) }));
+
   return {
-    kpi: data?.kpi || defaultKPI,
-    consultasPorSede: data?.consultasPorSede || [],
-    estadoCitas: data?.estadoCitas || [],
-    evolucionMensual: data?.evolucionMensual || [],
-    funnelLeads: data?.funnelLeads || [],
-    fuentesCaptacion: data?.fuentesCaptacion || [],
-    metricasMensajeria: data?.metricasMensajeria || [],
-    destinosPacientes: data?.destinosPacientes || [],
+    kpi,
+    consultasPorSede: [],
+    estadoCitas: [],
+    evolucionMensual: [],
+    funnelLeads,
+    fuentesCaptacion,
+    metricasMensajeria: [],
+    destinosPacientes: [],
   };
 };
 
@@ -93,15 +121,22 @@ const fetchStats = async (): Promise<StatsData> => {
  * ✅ Mantiene datos previos mientras recarga
  * ✅ Deduplicación automática de requests
  */
-export function useStats() {
+/**
+ * @param initialData - Datos pre-cargados desde Server Component (RSC pattern)
+ *                      Se usa como fallbackData de SWR para render instantáneo sin flash de loading
+ */
+export function useStats(initialData?: StatsData) {
   const { data, error, isLoading, mutate } = useSWR<StatsData>(
     CACHE_KEYS.STATS,
     fetchStats,
-    SWR_CONFIG_DASHBOARD
+    {
+      ...SWR_CONFIG_DASHBOARD,
+      ...(initialData ? { fallbackData: initialData } : {}),
+    }
   );
 
   return {
-    loading: isLoading,
+    loading: isLoading && !initialData,
     error: error || null,
     refresh: () => mutate(),
     kpi: data?.kpi || defaultKPI,

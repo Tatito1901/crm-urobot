@@ -70,16 +70,16 @@ function useAnimatedNumber(targetValue: number, duration = 600, enabled = true) 
 }
 
 const colorClasses = {
-  emerald: { label: 'text-emerald-500 dark:text-emerald-300', value: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20', icon: 'text-emerald-400' },
-  green: { label: 'text-emerald-500 dark:text-emerald-300', value: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20', icon: 'text-emerald-400' },
-  blue: { label: 'text-blue-500 dark:text-blue-300', value: 'text-foreground', border: 'border-blue-500/20', icon: 'text-blue-400' },
-  purple: { label: 'text-purple-500 dark:text-purple-300', value: 'text-foreground', border: 'border-purple-500/20', icon: 'text-purple-400' },
-  amber: { label: 'text-amber-500 dark:text-amber-300', value: 'text-foreground', border: 'border-amber-500/20', icon: 'text-amber-400' },
-  orange: { label: 'text-amber-500 dark:text-amber-300', value: 'text-foreground', border: 'border-amber-500/20', icon: 'text-amber-400' },
-  red: { label: 'text-red-500 dark:text-red-300', value: 'text-foreground', border: 'border-red-500/20', icon: 'text-red-400' },
-  cyan: { label: 'text-cyan-500 dark:text-cyan-300', value: 'text-foreground', border: 'border-cyan-500/20', icon: 'text-cyan-400' },
-  teal: { label: 'text-cyan-500 dark:text-cyan-300', value: 'text-foreground', border: 'border-cyan-500/20', icon: 'text-cyan-400' },
-  fuchsia: { label: 'text-fuchsia-500 dark:text-fuchsia-300', value: 'text-foreground', border: 'border-fuchsia-500/20', icon: 'text-fuchsia-400' },
+  emerald: { label: 'text-emerald-400 dark:text-emerald-300', value: 'text-foreground', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
+  green: { label: 'text-emerald-400 dark:text-emerald-300', value: 'text-foreground', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
+  blue: { label: 'text-sky-400 dark:text-sky-300', value: 'text-foreground', border: 'border-sky-500/10 dark:border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400' },
+  purple: { label: 'text-violet-400 dark:text-violet-300', value: 'text-foreground', border: 'border-violet-500/10 dark:border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400' },
+  amber: { label: 'text-amber-400 dark:text-amber-300', value: 'text-foreground', border: 'border-amber-500/10 dark:border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400' },
+  orange: { label: 'text-orange-400 dark:text-orange-300', value: 'text-foreground', border: 'border-orange-500/10 dark:border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400' },
+  red: { label: 'text-rose-400 dark:text-rose-300', value: 'text-foreground', border: 'border-rose-500/10 dark:border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400' },
+  cyan: { label: 'text-cyan-400 dark:text-cyan-300', value: 'text-foreground', border: 'border-cyan-500/10 dark:border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400' },
+  teal: { label: 'text-teal-400 dark:text-teal-300', value: 'text-foreground', border: 'border-teal-500/10 dark:border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400' },
+  fuchsia: { label: 'text-fuchsia-400 dark:text-fuchsia-300', value: 'text-foreground', border: 'border-fuchsia-500/10 dark:border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400' },
 };
 
 export const MetricCard = React.memo(({
@@ -119,33 +119,36 @@ export const MetricCard = React.memo(({
     (animate && typeof value === 'number') ? animatedValue.toLocaleString('es-MX') : value;
   
   return (
-    <div className={`bg-card border ${colors.border} rounded-lg p-3.5 flex flex-col justify-between relative overflow-hidden group min-h-[100px]`}>
-      {/* Icono de fondo grande */}
+    <div className={`relative overflow-hidden rounded-xl border ${colors.border} bg-card dark:bg-white/[0.03] p-3 sm:p-4 flex flex-col justify-between group min-h-[90px] sm:min-h-[108px] transition-all duration-200 hover:bg-white/[0.05] dark:shadow-lg ${colors.glow} shine-top`}>
+      {/* Subtle background icon */}
       {icon && (
-        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-          <span className={`${colors.icon} [&>svg]:w-10 [&>svg]:h-10`}>{icon}</span>
+        <div className="absolute -top-1 -right-1 p-2 transition-opacity duration-200 opacity-100 group-hover:opacity-100">
+          <span className={`${colors.icon} [&>svg]:w-12 [&>svg]:h-12`}>{icon}</span>
         </div>
       )}
       
-      <div>
-        <div className={`text-[11px] ${colors.label} mb-0.5 font-medium`}>{title}</div>
+      <div className="relative">
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <span className={`h-1.5 w-1.5 rounded-full ${colors.dot} opacity-70`} />
+          <span className={`text-[10px] ${colors.label} font-semibold uppercase tracking-wider`}>{title}</span>
+        </div>
         {isLoading ? (
-          <div className="h-7 w-16 bg-muted/50 rounded animate-pulse" />
+          <div className="h-8 w-20 bg-white/[0.05] rounded-md animate-pulse" />
         ) : (
-          <div className={`text-2xl font-bold ${colors.value} tabular-nums`}>
+          <div className={`text-2xl font-extrabold ${colors.value} tabular-nums tracking-tight font-jakarta`}>
             {percentage !== undefined ? `${percentage}%` : displayValue}
           </div>
         )}
       </div>
       
-      <div className="text-[10px] text-muted-foreground mt-1">
+      <div className="text-[10px] text-muted-foreground mt-2">
         {isLoading ? (
-          <div className="h-3 w-20 bg-muted/50 rounded animate-pulse" />
+          <div className="h-3 w-24 bg-white/[0.05] rounded animate-pulse" />
         ) : (
           <>
             {finalDescription}
             {trend && (
-              <span className={`ml-1 ${trend.isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <span className={`ml-1.5 font-semibold ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {trend.isPositive ? '↑' : '↓'}{Math.abs(trend.value)}%
               </span>
             )}

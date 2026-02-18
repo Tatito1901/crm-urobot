@@ -34,9 +34,9 @@ export function PageShell({
   className,
 }: PageShellProps) {
   const layoutClasses = compact
-    ? "relative flex w-full flex-col gap-3 px-3 py-3 pt-4 sm:gap-3 sm:px-6 sm:py-4 md:gap-3 lg:px-8 lg:py-4 xl:px-10"
+    ? "relative flex w-full flex-col gap-2.5 px-3 py-2.5 pt-3 sm:gap-3 sm:px-6 sm:py-4 md:gap-3 lg:px-8 lg:py-4 xl:px-10"
     : cn(
-        "relative mx-auto flex w-full flex-col gap-4 px-3 pb-20 pt-4 sm:gap-6 sm:px-6 sm:pb-24 sm:pt-8 md:gap-8 lg:px-8 lg:pt-10 lg:pb-20 xl:px-10",
+        "relative mx-auto flex w-full flex-col gap-3 px-3 pb-24 pt-3 sm:gap-5 sm:px-6 sm:pb-24 sm:pt-6 md:gap-6 lg:px-8 lg:pt-10 lg:pb-20 xl:px-10",
         fullWidth ? "max-w-full" : "max-w-6xl"
       );
 
@@ -57,8 +57,9 @@ export function PageShell({
       )}
     >
       {accent && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-40 overflow-hidden" aria-hidden style={{ contain: 'strict', willChange: 'opacity' }}>
-          <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-blue-500/20 blur-[180px] dark:bg-blue-500/40" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-30 overflow-hidden" aria-hidden style={{ contain: 'strict', willChange: 'opacity' }}>
+          <div className="absolute left-1/3 top-[-15%] h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-teal-500/15 blur-[160px] dark:bg-teal-500/20" />
+          <div className="absolute right-[10%] top-[5%] h-[300px] w-[300px] rounded-full bg-cyan-500/10 blur-[120px] dark:bg-cyan-500/15" />
         </div>
       )}
       <div className={layoutClasses}>

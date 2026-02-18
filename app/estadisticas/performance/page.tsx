@@ -88,7 +88,7 @@ export default function PerformancePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[500px] w-full">
+          <div className="h-[350px] sm:h-[500px] w-full">
             <RechartsBarChart data={estadoCitas} CustomTooltip={CustomTooltip} />
           </div>
         </CardContent>

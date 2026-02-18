@@ -70,13 +70,13 @@ export function DashboardKPIsClinico({ data }: Props) {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
       {kpis.map((kpi, index) => {
         const Icon = kpi.icon;
         return (
           <div 
             key={index}
-            className="bg-card border border-border rounded-xl p-3 hover:border-primary/30 transition-all group"
+            className="bg-card border border-border rounded-xl p-2.5 sm:p-3 hover:border-primary/30 transition-all group"
             title={kpi.tooltip}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -87,7 +87,7 @@ export function DashboardKPIsClinico({ data }: Props) {
                 {kpi.label}
               </span>
             </div>
-            <div className="text-xl font-bold text-foreground tabular-nums">
+            <div className="text-lg sm:text-xl font-bold text-foreground tabular-nums">
               {kpi.value}
             </div>
           </div>

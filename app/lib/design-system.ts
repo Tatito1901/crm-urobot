@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 // Tamaños consistentes en toda la plataforma
 export const typography = {
   // Títulos de página
-  pageTitle: 'text-lg sm:text-xl font-semibold text-foreground',
+  pageTitle: 'text-lg sm:text-xl font-bold text-foreground font-jakarta tracking-tight',
   pageSubtitle: 'text-sm text-muted-foreground',
   
   // Títulos de sección/card
@@ -39,9 +39,9 @@ export const typography = {
   metadataSmall: 'text-[11px] text-muted-foreground',
   
   // Métricas y números
-  metric: 'text-xl sm:text-2xl font-bold text-foreground tabular-nums',
-  metricMedium: 'text-lg font-semibold text-foreground tabular-nums',
-  metricSmall: 'text-base font-semibold text-foreground tabular-nums',
+  metric: 'text-xl sm:text-2xl font-extrabold text-foreground tabular-nums font-jakarta tracking-tight',
+  metricMedium: 'text-lg font-bold text-foreground tabular-nums font-jakarta tracking-tight',
+  metricSmall: 'text-base font-semibold text-foreground tabular-nums font-jakarta',
   number: 'tabular-nums font-medium',
   
   // Tablas

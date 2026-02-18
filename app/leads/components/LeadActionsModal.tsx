@@ -46,8 +46,6 @@ const ESTADOS_CONFIG: { estado: LeadEstado; icon: React.ReactNode; label: string
   { estado: 'contactado', icon: <MessageSquare className="w-4 h-4" />, label: 'Contactado', color: 'bg-cyan-500' },
   { estado: 'interesado', icon: <Zap className="w-4 h-4" />, label: 'Interesado', color: 'bg-amber-500' },
   { estado: 'calificado', icon: <Check className="w-4 h-4" />, label: 'Calificado', color: 'bg-emerald-500' },
-  { estado: 'escalado', icon: <Zap className="w-4 h-4" />, label: 'Escalado', color: 'bg-orange-500' },
-  { estado: 'cita_agendada', icon: <Calendar className="w-4 h-4" />, label: 'Cita agendada', color: 'bg-teal-500' },
   { estado: 'convertido', icon: <User className="w-4 h-4" />, label: 'Paciente', color: 'bg-green-600' },
   { estado: 'no_interesado', icon: <XCircle className="w-4 h-4" />, label: 'No interesado', color: 'bg-slate-400' },
   { estado: 'descartado', icon: <X className="w-4 h-4" />, label: 'Descartado', color: 'bg-red-500' },

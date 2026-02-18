@@ -33,16 +33,18 @@ export default function Error({ error, reset }: ErrorPageProps) {
   }, [error]);
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950/50">
-      <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 text-center">
+    <div className="min-h-[80vh] flex items-center justify-center p-4 bg-background relative overflow-hidden">
+      {/* Atmospheric glow */}
+      <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 h-[300px] w-[300px] rounded-full bg-teal-500/[0.04] blur-[100px]" aria-hidden />
+      <div className="relative max-w-md w-full bg-white dark:bg-white/[0.03] rounded-xl shadow-sm border border-slate-200 dark:border-white/[0.06] p-8 text-center shine-top">
         
         {/* Icono Corporativo */}
-        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Activity className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <div className="w-16 h-16 bg-teal-50 dark:bg-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-6 ring-1 ring-teal-500/20">
+          <Activity className="w-8 h-8 text-teal-600 dark:text-teal-400" />
         </div>
 
         {/* Textos Principales */}
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3">
+        <h1 className="text-xl font-bold text-foreground mb-3 font-jakarta">
           {info.titulo}
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">
@@ -54,8 +56,8 @@ export default function Error({ error, reset }: ErrorPageProps) {
           <button
             onClick={reset}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 
-                       bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium 
-                       transition-colors shadow-sm shadow-blue-600/10"
+                       bg-teal-600 hover:bg-teal-500 text-white rounded-lg font-medium 
+                       transition-colors shadow-sm shadow-teal-600/20"
           >
             <RefreshCw className="w-4 h-4" />
             Reintentar operación
@@ -64,9 +66,9 @@ export default function Error({ error, reset }: ErrorPageProps) {
           <Link
             href="/dashboard"
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 
-                       bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 
-                       border border-slate-200 dark:border-slate-700 rounded-lg font-medium 
-                       hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                       bg-white dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 
+                       border border-slate-200 dark:border-white/[0.08] rounded-lg font-medium 
+                       hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors"
           >
             <Home className="w-4 h-4" />
             Regresar al Dashboard
@@ -93,7 +95,7 @@ export default function Error({ error, reset }: ErrorPageProps) {
         <div className="text-left">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-blue-600 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-teal-500 transition-colors"
           >
             {showDetails ? 'Ocultar diagnóstico' : 'Ver diagnóstico técnico'}
             <ChevronDown className={`w-3 h-3 transition-transform ${showDetails ? 'rotate-180' : ''}`} />

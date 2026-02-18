@@ -72,8 +72,8 @@ export default function LeadsPage() {
       {/* Panel de limpieza de leads duplicados */}
       <LeadsCleanupPanel onComplete={handleRefresh} />
 
-      <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-muted/20">
+      <div className={`${cards.base} overflow-hidden rounded-xl border border-border dark:border-white/[0.06] bg-card dark:bg-white/[0.02]`}>
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border dark:border-white/[0.06] bg-muted/20 dark:bg-white/[0.02]">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-foreground">Base de Datos de Leads</span>
             <QuickGuide />

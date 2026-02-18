@@ -411,7 +411,7 @@ export const MessageBubble = memo(function MessageBubble({
   };
 
   return (
-    <div className={`flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? '-mt-1.5 sm:-mt-2' : ''}`}>
+    <div className={`cv-auto-message flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? '-mt-1.5 sm:-mt-2' : ''}`}>
       <div className={`flex flex-col max-w-[88%] sm:max-w-[75%] lg:max-w-[65%] ${isAsistente ? 'items-start' : 'items-end'}`}>
         
         {/* Bubble - estilo minimalista y elegante */}

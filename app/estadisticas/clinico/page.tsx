@@ -111,12 +111,12 @@ export default function ClinicoPage() {
       description="Insights avanzados de diagnósticos, procedimientos, rendimiento por sede y patrones de demanda."
     >
       {/* KPIs Clínicos Principales */}
-      <section className="mb-8">
+      <section className="mb-4 sm:mb-8">
         <DashboardKPIsClinico data={kpiClinico} />
       </section>
 
       {/* Fila 1: Diagnósticos y Procedimientos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-3 sm:mb-6">
         
         {/* Top Diagnósticos */}
         <Card className={cards.base}>
@@ -153,7 +153,7 @@ export default function ClinicoPage() {
       </div>
 
       {/* Fila 2: Tendencia por Sedes y Rendimiento Detallado */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 mb-3 sm:mb-6">
         
         {/* Tendencia Mensual por Sede */}
         <Card className={`${cards.base} lg:col-span-2`}>
@@ -190,7 +190,7 @@ export default function ClinicoPage() {
       </div>
 
       {/* Fila 3: Demanda por Día y Pacientes Fieles */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
         
         {/* Demanda por Día */}
         <Card className={cards.base}>
@@ -227,7 +227,7 @@ export default function ClinicoPage() {
       </div>
 
       {/* Insights Footer */}
-      <div className="mt-8 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl">
+      <div className="mt-4 sm:mt-8 p-3 sm:p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl">
         <div className="flex items-start gap-3">
           <FileText className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
           <div>

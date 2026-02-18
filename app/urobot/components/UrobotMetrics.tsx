@@ -20,9 +20,9 @@ interface UrobotMetricsProps {
 
 export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMetricsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {/* Fila 1: Métricas principales */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard
           title="Total Mensajes"
           value={kpi.totalMensajes.toLocaleString()}
@@ -52,7 +52,7 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
       </div>
       
       {/* Fila 2: Métricas secundarias */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard
           title="Usuarios Únicos"
           value={kpi.usuariosUnicos}

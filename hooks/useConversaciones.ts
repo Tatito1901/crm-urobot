@@ -88,42 +88,31 @@ const inferirTipoMensaje = (tipo: string | null, tipoContenido: string | null, m
   return 'document'
 }
 
+/**
+ * ✅ BEST PRACTICE: async-parallel — Eliminado waterfall de 2 queries secuenciales
+ * Antes: 1) SELECT id FROM conversaciones WHERE telefono = X  (waterfall)
+ *        2) SELECT * FROM mensajes WHERE conversacion_id = id
+ * Ahora: Una sola llamada RPC con JOIN interno en el servidor
+ */
 const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any
-
-  // Primero encontrar la conversación por teléfono
-  const { data: convData, error: convError } = await sb
-    .from('conversaciones')
-    .select('id')
-    .eq('telefono', telefono)
-    .limit(1)
-    .single()
-
-  if (convError || !convData) return []
-
-  const conversacionId = convData.id as string
-
-  // Obtener mensajes de la conversación
-  const { data, error } = await sb
-    .from('mensajes')
-    .select('id, conversacion_id, contenido, remitente, tipo, created_at, media_url, tipo_contenido')
-    .eq('conversacion_id', conversacionId)
-    .order('created_at', { ascending: false })
-    .limit(200)
+  const { data, error } = await supabase.rpc('get_mensajes_por_telefono' as never, {
+    p_telefono: telefono,
+    p_limit: 200,
+  } as never)
 
   if (error) throw error
 
+  const rows = (data || []) as Record<string, unknown>[]
   const mensajesInvalidos = ['undefined', 'Interacción registrada', 'null']
 
-  return (data || [])
-    .filter((row: Record<string, unknown>) => {
+  return rows
+    .filter((row) => {
       const contenido = ((row.contenido as string) || '').trim()
       const tieneMedia = !!row.media_url
       const esInvalido = mensajesInvalidos.includes(contenido) && !tieneMedia
       return !esInvalido && (contenido.length > 0 || tieneMedia)
     })
-    .map((row: Record<string, unknown>): Mensaje => ({
+    .map((row): Mensaje => ({
       id: row.id as string,
       conversacionId: row.conversacion_id as string,
       contenido: (row.contenido as string) || '[Archivo adjunto]',

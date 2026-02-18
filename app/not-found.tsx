@@ -45,8 +45,10 @@ export default function NotFound() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center space-y-8">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Atmospheric glow */}
+      <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 h-[300px] w-[300px] rounded-full bg-teal-500/[0.04] blur-[100px]" aria-hidden />
+      <div className="relative max-w-md w-full text-center space-y-8">
         
         {/* Robot ASCII Art animado */}
         <div className={`font-mono text-2xl sm:text-3xl leading-tight transition-all duration-100 ${glitch ? 'text-red-500 translate-x-1' : 'text-primary'}`}>
@@ -66,16 +68,16 @@ export default function NotFound() {
 
         {/* Código de error */}
         <div className="space-y-2">
-          <h1 className="text-7xl sm:text-8xl font-bold text-muted-foreground/30">
+          <h1 className="text-7xl sm:text-8xl font-extrabold text-muted-foreground/20 font-jakarta">
             404
           </h1>
-          <p className="text-lg sm:text-xl font-medium text-foreground">
+          <p className="text-lg sm:text-xl font-semibold text-foreground font-jakarta">
             Página no encontrada
           </p>
         </div>
 
         {/* Mensaje del robot */}
-        <div className="bg-muted/50 border border-border rounded-2xl p-4 space-y-2">
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 space-y-2 shine-top">
           <p className="text-sm text-muted-foreground font-mono">
             🤖 UroBot dice:
           </p>
@@ -85,11 +87,11 @@ export default function NotFound() {
         </div>
 
         {/* Tips */}
-        <div className="text-left bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl p-4">
-          <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2">
+        <div className="text-left bg-teal-50 dark:bg-teal-500/[0.06] border border-teal-200 dark:border-teal-500/20 rounded-xl p-4">
+          <p className="text-xs font-semibold text-teal-700 dark:text-teal-400 mb-2">
             💡 Sugerencias:
           </p>
-          <ul className="text-sm text-blue-600 dark:text-blue-300 space-y-1">
+          <ul className="text-sm text-teal-600 dark:text-teal-300 space-y-1">
             {TIPS.map((tip, i) => (
               <li key={i}>• {tip}</li>
             ))}

@@ -95,7 +95,7 @@ export async function createPatient(
     };
 
     // Insertar el nuevo paciente
-    // Casting as any para evitar errores de tipos desactualizados en types/supabase.ts
+    // Casting as any para evitar errores de tipos desactualizados en types/database.ts
     const { data: newPatient, error: insertError } = await supabase
       .from('pacientes')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

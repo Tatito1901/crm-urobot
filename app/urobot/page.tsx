@@ -149,8 +149,8 @@ export default function UrobotPage() {
       }
     >
       {/* Tabs de navegación */}
-      <div className="mb-6 border-b border-border overflow-x-auto scrollbar-hide">
-        <div className="flex gap-1 min-w-max">
+      <div className="mb-4 sm:mb-6 border-b border-border overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
+        <div className="flex gap-0.5 sm:gap-1 min-w-max">
           <button
             onClick={() => setActiveTab('crm')}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px
@@ -205,18 +205,18 @@ export default function UrobotPage() {
       {activeTab === 'crm' && (
         <>
           {/* KPIs de conversiones */}
-          <section className="mb-8">
+          <section className="mb-4 sm:mb-8">
             <MetricasCRMKPIs resumen={crmResumen} />
           </section>
 
           {/* Funnel + Intenciones */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
             <FunnelConversion funnel={crmData.funnel} />
             <IntentsDistribucion intents={crmData.intents} />
           </div>
 
           {/* Sentiment + Actividad */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
             <SentimentPanel 
               positivo={crmResumen.sentimentPositivo}
               negativo={crmResumen.sentimentNegativo}
@@ -227,7 +227,7 @@ export default function UrobotPage() {
           </div>
 
           {/* Gráfico de evolución */}
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-8">
             <ActivityChart data={stats.evolucionHoras} />
           </div>
         </>
@@ -239,12 +239,12 @@ export default function UrobotPage() {
       {activeTab === 'mensajes' && (
         <>
           {/* KPIs de conversaciones */}
-          <section className="mb-8">
+          <section className="mb-4 sm:mb-8">
             <ConversacionesKPIs kpi={convKpi} />
           </section>
 
           {/* Fila principal: Resumen + Actividad por hora */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
             <MensajesResumen 
               recibidos={convKpi.totalMensajesRecibidos}
               enviados={convKpi.totalMensajesEnviados}
@@ -254,13 +254,13 @@ export default function UrobotPage() {
           </div>
 
           {/* Segunda fila: Tipos de interacción + Top preguntas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
             <TiposInteraccionCard tipos={convStats.tiposInteraccion} />
             <TopPreguntasCard preguntas={convStats.topPreguntas} />
           </div>
 
           {/* Gráfico de evolución */}
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-8">
             <ActivityChart data={stats.evolucionHoras} />
           </div>
         </>
@@ -272,18 +272,18 @@ export default function UrobotPage() {
       {activeTab === 'monitoreo' && (
         <>
           {/* KPIs técnicos */}
-          <section className="mb-8">
+          <section className="mb-4 sm:mb-8">
             <UrobotMetrics kpi={kpi} />
           </section>
 
           {/* Gráficos principales */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
             <ActivityChart data={stats.evolucionHoras} />
             <InteractionsPieChart data={stats.interaccionesPorTipo} />
           </div>
 
           {/* Segunda fila de gráficos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-8">
             <HorizontalBarChart 
               data={stats.erroresPorTipo} 
               title="Errores por Tipo"
@@ -302,7 +302,7 @@ export default function UrobotPage() {
           </div>
 
           {/* Tablas de errores y alertas */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">

@@ -68,8 +68,8 @@ export function StatisticsTabs() {
 
   return (
     <div className="border-b border-border bg-background sticky top-0 z-20">
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex space-x-6 overflow-x-auto scrollbar-hide">
+      <div className="px-3 sm:px-6 lg:px-8">
+        <div className="flex space-x-3 sm:space-x-6 overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -79,7 +79,7 @@ export function StatisticsTabs() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-all whitespace-nowrap",
+                  "group inline-flex items-center gap-1.5 sm:gap-2 border-b-2 px-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all whitespace-nowrap",
                   isActive
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"

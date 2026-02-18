@@ -20,26 +20,14 @@ import { useIsMobile, useSlowConnection } from './useIsMobile';
 const PREFETCH_MAP: Record<string, string[]> = {
   '/dashboard': [
     '/agenda',
-    '/pacientes',
     '/leads',
     '/consultas',
   ],
-  '/agenda': [
-    '/pacientes',
-    '/confirmaciones',
-  ],
-  '/pacientes': [
-    '/agenda',
-  ],
+  '/agenda': [],
   '/leads': [
-    '/pacientes',
     '/agenda',
   ],
   '/consultas': [
-    '/agenda',
-    '/pacientes',
-  ],
-  '/confirmaciones': [
     '/agenda',
   ],
   '/metricas': [

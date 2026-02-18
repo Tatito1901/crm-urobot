@@ -49,12 +49,13 @@ export default function GlobalError({
     <html lang="es">
       <head>
         <style dangerouslySetInnerHTML={{ __html: `
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+          /* NOTA: @import de Google Fonts eliminado — bloquea renderizado.
+             global-error.tsx no puede usar next/font, así que usamos system fonts. */
           
           body {
             margin: 0;
             padding: 0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             background: #f1f5f9; /* Slate 100 */
             color: #334155; /* Slate 700 */
             min-height: 100vh;

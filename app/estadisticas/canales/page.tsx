@@ -94,7 +94,7 @@ export default function CanalesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[500px] w-full flex items-center justify-center">
+          <div className="h-[350px] sm:h-[500px] w-full flex items-center justify-center">
             <RechartsPieChart data={fuentesCaptacion} />
           </div>
         </CardContent>

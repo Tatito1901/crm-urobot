@@ -21,17 +21,17 @@ export const KPICard = React.memo(function KPICard({
 }: KPICardProps) {
   return (
     <Card className="bg-card border-border hover:border-border/80 transition-colors">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between gap-3">
+      <CardContent className="p-2.5 sm:p-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground font-medium truncate">{title}</p>
-            <p className={`text-xl sm:text-2xl font-bold ${color} tabular-nums`}>{value}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium truncate">{title}</p>
+            <p className={`text-lg sm:text-2xl font-bold ${color} tabular-nums leading-tight`}>{value}</p>
             {subtitle && (
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>
+              <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>
             )}
           </div>
-          <div className={`p-2 sm:p-3 rounded-xl bg-muted/50 ${color} shrink-0`}>
-            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className={`p-1.5 sm:p-3 rounded-lg sm:rounded-xl bg-muted/50 ${color} shrink-0`}>
+            <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
           </div>
         </div>
       </CardContent>

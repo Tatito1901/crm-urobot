@@ -35,9 +35,9 @@ interface MetricasCRMKPIsProps {
 
 export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: MetricasCRMKPIsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {/* Fila 1: Conversiones */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard
           title="Citas Agendadas"
           value={resumen.citasAgendadas}
@@ -67,7 +67,7 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
       </div>
 
       {/* Fila 2: Volumen y Performance */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard
           title="Total Mensajes"
           value={resumen.totalMensajes.toLocaleString()}
@@ -337,7 +337,7 @@ export const ActividadHeatmap = React.memo(function ActividadHeatmap({ datos }: 
       </CardHeader>
       <CardContent className="space-y-3 overflow-hidden">
         {/* Heatmap */}
-        <div className="grid grid-cols-16 gap-0.5 overflow-hidden">
+        <div className="grid grid-cols-8 sm:grid-cols-16 gap-0.5 overflow-hidden">
           {horasVisibles.map((hora) => {
             const intensidad = maxMensajes > 0 ? hora.mensajes / maxMensajes : 0;
             return (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useHasMounted } from '@/hooks/useHasMounted'
 import { useConversaciones } from '@/hooks/useConversaciones'
 import { MessageCircle, Search, ArrowLeft, RefreshCw, ExternalLink, MessageSquare, Sparkles, Phone, Filter, Users, UserCheck } from 'lucide-react'
 import { format } from 'date-fns'
@@ -10,14 +11,22 @@ import { ConversationItem } from './components/ConversationItem'
 import { MessageBubble } from './components/MessageBubble'
 import { ConversationActionsPanel } from './components/ConversationActionsPanel'
 
+// ✅ BEST PRACTICE: rendering-hoist-jsx — Array estático fuera del componente
+const FILTER_ICON_MAP = { MessageSquare, RefreshCw, Users, UserCheck } as const
+const FILTER_OPTIONS = [
+  { id: 'todos', label: 'Todos', icon: 'MessageSquare' as const },
+  { id: 'recientes', label: '24h', icon: 'RefreshCw' as const },
+  { id: 'leads', label: 'Leads', icon: 'Users' as const },
+  { id: 'pacientes', label: 'Pacientes', icon: 'UserCheck' as const },
+] as const
+
 export default function ConversacionesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const telefonoParam = searchParams.get('telefono')
   
-  // Estado para evitar hydration mismatch
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
+  // ✅ BEST PRACTICE: Hook reutilizable para hydration safety
+  const mounted = useHasMounted()
 
   const {
     conversaciones,
@@ -147,13 +156,13 @@ export default function ConversacionesPage() {
   }, [router])
 
   return (
-    <div className="h-[calc(100dvh-4rem)] lg:h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-hidden">
+    <div className="h-[calc(100dvh-4rem)] lg:h-screen flex flex-col bg-background overflow-hidden">
       {/* Header Mobile (Solo visible si NO estamos viendo chat) */}
       {!isMobileViewingChat && (
-        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between safe-area-top">
+        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-white/[0.06] bg-white/80 dark:bg-white/[0.03] backdrop-blur-xl flex items-center justify-between safe-area-top">
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold text-foreground">Mensajes</h1>
-            <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+            <span className="text-xs text-muted-foreground bg-muted dark:bg-white/[0.06] px-2 py-0.5 rounded-full">
               {mounted ? conversaciones.length : 0}
             </span>
           </div>
@@ -161,7 +170,7 @@ export default function ConversacionesPage() {
             onClick={() => refetch()} 
             className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
-            <RefreshCw className={`w-4 h-4 text-slate-600 dark:text-slate-400 ${mounted && isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
           </button>
         </header>
       )}
@@ -171,17 +180,17 @@ export default function ConversacionesPage() {
         
         {/* ========== SIDEBAR ========== */}
         <aside className={`
-          w-full sm:w-[320px] lg:w-[380px] border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col 
-          bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shrink-0 z-10
+          w-full sm:w-[280px] md:w-[320px] lg:w-[380px] border-r border-slate-200/80 dark:border-white/[0.06] flex flex-col 
+          bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl shrink-0 z-10
           absolute sm:relative inset-0 h-full
           transition-transform duration-300 ease-in-out will-change-transform
           ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
         `}>
           {/* Header Desktop del Sidebar - Más minimalista */}
-          <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-slate-200/50 dark:border-slate-800/50">
+          <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-slate-200/50 dark:border-white/[0.06]">
             <div>
-              <h2 className="font-semibold text-slate-800 dark:text-slate-100 text-lg">Mensajes</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{mounted ? conversaciones.length : 0} conversaciones</p>
+              <h2 className="font-semibold text-foreground text-lg font-jakarta">Mensajes</h2>
+              <p className="text-xs text-muted-foreground">{mounted ? conversaciones.length : 0} conversaciones</p>
             </div>
             <button 
               onClick={() => refetch()} 
@@ -203,36 +212,34 @@ export default function ConversacionesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm bg-slate-100 dark:bg-slate-800/60 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-blue-500/20
+                         focus:outline-none focus:ring-2 focus:ring-teal-500/20
                          placeholder:text-slate-400 transition-all"
               />
             </div>
             
             {/* Filtros rápidos - Pills */}
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-              {([
-                { id: 'todos', label: 'Todos', icon: <MessageSquare className="w-3 h-3" /> },
-                { id: 'recientes', label: '24h', icon: <RefreshCw className="w-3 h-3" /> },
-                { id: 'leads', label: 'Leads', icon: <Users className="w-3 h-3" /> },
-                { id: 'pacientes', label: 'Pacientes', icon: <UserCheck className="w-3 h-3" /> },
-              ] as const).map(({ id, label, icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setFiltroActivo(id)}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
-                    ${filtroActivo === id 
-                      ? 'bg-blue-500 text-white shadow-sm' 
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
-                >
-                  {icon}
-                  <span>{label}</span>
-                  {conteosPorTipo[id] > 0 && (
-                    <span className={`ml-0.5 text-[10px] ${filtroActivo === id ? 'text-white/80' : 'text-slate-400'}`}>
-                      {conteosPorTipo[id]}
-                    </span>
-                  )}
-                </button>
-              ))}
+              {FILTER_OPTIONS.map(({ id, label, icon }) => {
+                const Icon = FILTER_ICON_MAP[icon]
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setFiltroActivo(id)}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
+                      ${filtroActivo === id 
+                        ? 'bg-teal-500 text-white shadow-sm shadow-teal-500/20' 
+                        : 'bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.08]'}`}
+                  >
+                    <Icon className="w-3 h-3" />
+                    <span>{label}</span>
+                    {conteosPorTipo[id] > 0 && (
+                      <span className={`ml-0.5 text-[10px] ${filtroActivo === id ? 'text-white/80' : 'text-slate-400'}`}>
+                        {conteosPorTipo[id]}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -374,7 +381,7 @@ export default function ConversacionesPage() {
                     onClick={() => setShowActionsPanel(!showActionsPanel)}
                     className={`p-2 sm:p-2.5 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center
                       ${showActionsPanel 
-                        ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' 
+                        ? 'bg-teal-100 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400' 
                         : 'hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500'}`}
                     title={showActionsPanel ? 'Cerrar acciones' : 'Acciones de lead'}
                   >
@@ -386,13 +393,13 @@ export default function ConversacionesPage() {
               {/* Lista de Mensajes - Fondo limpio */}
               <div 
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto px-2 sm:px-6 py-3 sm:py-4 scroll-smooth bg-slate-50/50 dark:bg-slate-950/50 overscroll-contain"
+                className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-6 py-2.5 sm:py-4 scroll-smooth bg-slate-50/50 dark:bg-slate-950/50 overscroll-contain"
               >
                 {isLoadingMensajes ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
+                      <div className="w-12 h-12 rounded-2xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                        <RefreshCw className="w-6 h-6 animate-spin text-teal-500" />
                       </div>
                       <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Cargando mensajes...</span>
                     </div>
@@ -468,8 +475,8 @@ export default function ConversacionesPage() {
                     </a>
                     <button
                       onClick={() => setShowActionsPanel(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 
-                               text-white text-xs font-medium rounded-lg transition-colors shadow-sm lg:hidden"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500 hover:bg-teal-600 
+                               text-white text-xs font-medium rounded-lg transition-colors shadow-sm shadow-teal-500/20 lg:hidden"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>Acciones</span>

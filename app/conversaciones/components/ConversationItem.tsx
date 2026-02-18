@@ -98,7 +98,7 @@ export const ConversationItem = memo(function ConversationItem({
     <button
       onClick={() => onSelect(telefono)}
       className={`
-        group w-full px-3 py-3.5 sm:py-3 flex items-center gap-3 text-left transition-all duration-200
+        cv-auto-item group w-full px-3 py-3.5 sm:py-3 flex items-center gap-3 text-left transition-all duration-200
         active:bg-slate-100 dark:active:bg-slate-800
         ${isActive 
           ? 'bg-blue-50 dark:bg-blue-950/40 border-l-2 border-blue-500' 

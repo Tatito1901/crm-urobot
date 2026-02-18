@@ -1,0 +1,1756 @@
+{
+  "name": "UROBOT V2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -5248,
+        1976
+      ],
+      "id": "c683c7b0-1b02-4f91-bfe3-1c4bd699c6b3",
+      "name": "WhatsApp Trigger",
+      "webhookId": "urobot-webhook-v2",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "XqAlPOLTYahJax6H",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -5248,
+        2168
+      ],
+      "id": "726a565c-a8b7-4e69-8caa-9bc1dcb1ba9f",
+      "name": "When chat message received",
+      "webhookId": "urobot-chat-trigger-v2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🚫 FILTRO DE STATUS UPDATES - ANTI-LOOP (UROBOT V2)\n// ═══════════════════════════════════════════════════════════════════\n\nconst data = $input.first()?.json || {};\n\n// Chat Trigger support\nif (data.chatInput && !data.messages) {\n  const mockPhone = '526674492872';\n  return [{\n    json: {\n      messages: [{\n        from: mockPhone,\n        id: 'chat-trigger-' + Date.now(),\n        timestamp: Math.floor(Date.now() / 1000).toString(),\n        type: 'text',\n        text: { body: data.chatInput }\n      }],\n      metadata: { phone_number_id: 'test-phone-id' },\n      _fromChatTrigger: true,\n      _sessionId: data.sessionId\n    }\n  }];\n}\n\nif (data.statuses && data.statuses.length > 0) return [];\nif (!data.messages || data.messages.length === 0) return [];\nconst msg = data.messages[0];\nif (!msg.from) return [];\n\nconst referral = msg.referral || {};\nconst esMetaAds = !!(referral.source_url || referral.headline || referral.body || referral.ctwa_clid);\n\nreturn [{\n  json: {\n    ...data,\n    es_meta_ads: esMetaAds,\n    meta_source_url: referral.source_url || null,\n    meta_headline: referral.headline || null,\n    meta_body: referral.body || null,\n    meta_ctwa_clid: referral.ctwa_clid || null,\n    meta_source_id: referral.source_id || null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5024,
+        2072
+      ],
+      "id": "4f72d156-c3ad-4aa7-aba5-f337632e883a",
+      "name": "🚫 Filtrar Status"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// ⚡ RATE LIMIT CHECK (mensaje antiguo > 5 min)\n// ═══════════════════════════════════════════════════════════════════\n\nconst triggerData = $input.first()?.json || {};\nconst messages = triggerData.messages || [];\nconst message = messages[0] || {};\n\nif (!messages.length || !message.from) {\n  return [{ json: { ...triggerData, _rate_limit_ok: false, _reason: 'no_message' } }];\n}\n\nconst timestamp = parseInt(message.timestamp || '0');\nconst now = Math.floor(Date.now() / 1000);\nconst messageAge = now - timestamp;\n\nif (messageAge > 300) {\n  return [{ json: { ...triggerData, _rate_limit_ok: false, _reason: 'mensaje_antiguo' } }];\n}\n\nreturn [{\n  json: {\n    ...triggerData,\n    _rate_limit_ok: true,\n    _telefono: message.from,\n    _mensaje_id: message.id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4800,
+        2072
+      ],
+      "id": "904f86ea-1321-4397-917b-db8037b66d20",
+      "name": "⚡ Rate Limit Check",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-valid",
+              "leftValue": "={{ $json._rate_limit_ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4576,
+        2072
+      ],
+      "id": "d23953d2-794e-48d1-a8a0-b0993dc8ffc3",
+      "name": "🚦 Rate OK?"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "is-imagen",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "imagen"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "is-audio",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "is-doc",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "documento"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4352,
+        2040
+      ],
+      "id": "b772a526-a4d4-4b1c-a9e6-c5646bf61650",
+      "name": "📱 Tipo Media?"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].image.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -4128,
+        1808
+      ],
+      "id": "6c676526-ff4f-4a05-8f37-8609b2966fd1",
+      "name": "WA Get URL Imagen",
+      "webhookId": "5fb9df4d-c913-4688-beec-f7b78f11f96b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "DD541Xw8r5yWH0yq",
+          "name": "WhatsApp account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list"
+        },
+        "text": "=Eres el módulo de visión de Urobot (asistente de urología del Dr. Mario Martinez).\n\nANALIZA LA IMAGEN Y DESCRIBE:\n\n>>> SI ES FOTO CLÍNICA (estudios de orina, ultrasonido renal/prostático, urograma, TAC, estudios de laboratorio):\n- Tipo de estudio/documento\n- Datos relevantes visibles\n- Cualquier valor anormal que detectes\n- Calidad de la imagen\n\n>>> SI ES DOCUMENTO MÉDICO:\n- Transcribe datos clave (nombre, diagnóstico, valores)\n- Identifica si es receta, estudio de laboratorio, etc.\n\n>>> SI ES IRRELEVANTE:\nIndica que no es contenido médico relevante.\n\nResponde de forma concisa para que el chatbot pueda continuar la conversación.",
+        "inputType": "base64",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -3680,
+        1808
+      ],
+      "id": "a277b30f-2931-4a53-9fdd-2099ce46023d",
+      "name": "OpenAI Vision",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "openAiApi": {
+          "id": "2OTQUaQlIFM4GPCM",
+          "name": "OpenAi account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "img-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.content || $json.text || '[Imagen analizada]' }}"
+            },
+            {
+              "id": "img-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "imagen_analizada"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3456,
+        1808
+      ],
+      "id": "201bf8f3-398c-4761-95a5-d4d46db8a6ca",
+      "name": "Set Texto Imagen"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -4128,
+        2000
+      ],
+      "id": "d9da400f-e6d9-4714-9da5-3ca9f257b8ca",
+      "name": "WA Get URL Audio",
+      "webhookId": "22387a47-d284-49b6-bff4-a77bc94e4b57",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "DD541Xw8r5yWH0yq",
+          "name": "WhatsApp account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "es",
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -3680,
+        2000
+      ],
+      "id": "f036e202-5b74-4cfe-9594-1216fc72ad13",
+      "name": "OpenAI Whisper",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "openAiApi": {
+          "id": "2OTQUaQlIFM4GPCM",
+          "name": "OpenAi account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aud-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.text || '[Audio transcrito]' }}"
+            },
+            {
+              "id": "aud-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "audio_transcrito"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3456,
+        2000
+      ],
+      "id": "72f61328-5f6b-4ad0-95d0-6cec02785ee6",
+      "name": "Set Texto Audio"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "doc-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "=[Documento recibido: {{ $json.messages[0].document.filename || 'archivo' }}]"
+            },
+            {
+              "id": "doc-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "documento"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3456,
+        2192
+      ],
+      "id": "04c61ca7-fd50-470e-b07b-922327ea4db1",
+      "name": "Set Texto Documento"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "txt-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.messages?.[0]?.text?.body || $json.messages?.[0]?.button?.text || $json.messages?.[0]?.interactive?.button_reply?.title || '' }}"
+            },
+            {
+              "id": "txt-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "texto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3232,
+        2336
+      ],
+      "id": "a60a97d0-fcae-49e4-9c08-5aead2a90709",
+      "name": "Set Texto Normal"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "append",
+              "field": "mensajeUsuario"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -3232,
+        2000
+      ],
+      "id": "5e1be7e9-33be-41e3-9634-ff1824edb553",
+      "name": "Summarize"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 1️⃣ VALIDAR Y NORMALIZAR (UROBOT V2)\n// ═══════════════════════════════════════════════════════════════════\n\nconst setTexto = $input.first()?.json || {};\nconst filterData = $('🚫 Filtrar Status').first()?.json || {};\nconst rateData = $('⚡ Rate Limit Check').first()?.json || {};\n\nconst messages = filterData.messages || [];\nconst message = messages[0] || {};\nconst metadata = filterData.metadata || {};\n\nconst telefono = message.from || rateData._telefono || '';\nconst mensajeId = message.id || rateData._mensaje_id || 'msg-' + Date.now();\nconst msgType = message.type || 'text';\nconst fromChatTrigger = filterData._fromChatTrigger === true;\nconst sessionId = filterData._sessionId || mensajeId;\n\nlet mensajeUsuario = setTexto.mensajeUsuario || '';\nif (!mensajeUsuario && msgType === 'text') {\n  mensajeUsuario = message.text?.body || '';\n}\n\nconst contacts = filterData.contacts || [];\nlet nombreUsuario = contacts[0]?.profile?.name || 'Usuario';\n\nconst esMetaAds = filterData.es_meta_ads === true;\nconst metaCtwaClid = filterData.meta_ctwa_clid || null;\nconst metaHeadline = filterData.meta_headline || null;\nconst metaSourceUrl = filterData.meta_source_url || null;\n\nlet fuente = 'organico';\nif (esMetaAds) fuente = 'meta_ads';\n\nlet tipoMedia = 'texto';\nswitch (msgType) {\n  case 'image': tipoMedia = 'imagen'; break;\n  case 'audio': tipoMedia = 'audio'; break;\n  case 'document': tipoMedia = 'documento'; break;\n  default: tipoMedia = 'texto';\n}\n\nreturn [{\n  json: {\n    telefono,\n    nombreUsuario,\n    mensajeUsuario: mensajeUsuario.trim(),\n    mensaje_id_externo: mensajeId,\n    external_chat_id: telefono,\n    tipoMedia,\n    fuente,\n    es_meta_ads: esMetaAds,\n    meta_ctwa_clid: metaCtwaClid,\n    meta_headline: metaHeadline,\n    meta_source_url: metaSourceUrl,\n    phone_number_id: metadata.phone_number_id || '',\n    _fromChatTrigger: fromChatTrigger,\n    _sessionId: sessionId,\n    timestamp: message.timestamp || Math.floor(Date.now() / 1000).toString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3008,
+        2168
+      ],
+      "id": "82be5a74-de78-48a9-a7d2-ff808fd19f23",
+      "name": "1️⃣ Validar y Normalizar",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM check_rate_limit($1::text)",
+        "options": {
+          "queryReplacement": "={{ [$json.telefono] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2784,
+        2168
+      ],
+      "id": "c088170d-495b-421e-a63f-ade4d1073dd4",
+      "name": "🔒 Check Rate Limit DB",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "rate-ok",
+              "leftValue": "={{ $json.puede_responder }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2560,
+        2168
+      ],
+      "id": "53bdf806-3a7b-42f2-b38a-248fe34e514b",
+      "name": "🔒 Rate Limit OK?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM upsert_conversacion_inteligente($1::text, $2::text, $3::text, $4::text)",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono, $('1️⃣ Validar y Normalizar').first().json.nombreUsuario || 'Usuario', 'whatsapp', $('1️⃣ Validar y Normalizar').first().json.external_chat_id] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2336,
+        2072
+      ],
+      "id": "8b0b102d-ba49-408a-a65d-b2729ae05d64",
+      "name": "2️⃣ Upsert Conversación",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM insertar_mensaje_idempotente($1::text, $2::text, $3::text, $4::text, $5::text, $6::jsonb, $7::text)",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono, $('1️⃣ Validar y Normalizar').first().json.nombreUsuario || 'Usuario', 'user', ($('1️⃣ Validar y Normalizar').first().json.mensajeUsuario || '').substring(0, 10000), $('1️⃣ Validar y Normalizar').first().json.tipoMedia === 'texto' ? 'text' : $('1️⃣ Validar y Normalizar').first().json.tipoMedia, '{}', $('1️⃣ Validar y Normalizar').first().json.mensaje_id_externo] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2112,
+        2072
+      ],
+      "id": "dc89434a-bbae-414f-8ab0-f0f7c8fde200",
+      "name": "3️⃣ Guardar Mensaje",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT register_debounce($1::text, $2::text)",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono, $('1️⃣ Validar y Normalizar').first().json.mensaje_id_externo] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1888,
+        2072
+      ],
+      "id": "20a899c6-9654-46e0-bd41-12b291b0009e",
+      "name": "📝 Registrar Debounce",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1664,
+        2072
+      ],
+      "id": "e8cd8cfa-4a96-499d-ae53-1be80c1df758",
+      "name": "⏳ Debounce 30s",
+      "webhookId": "urobot-debounce-v2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM check_debounce($1::text, $2::text)",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono, $('1️⃣ Validar y Normalizar').first().json.mensaje_id_externo] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1440,
+        2072
+      ],
+      "id": "2f2dccf2-8f06-4d82-b487-477c44550978",
+      "name": "🔍 Check Debounce",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-latest",
+              "leftValue": "={{ $json.es_ultimo }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1216,
+        2072
+      ],
+      "id": "a280ce75-0ec4-4c87-baf5-535a1d67e832",
+      "name": "¿Soy Último?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT obtener_contexto_urobot_v2($1) as contexto",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -992,
+        2072
+      ],
+      "id": "6577da36-ba1c-4e28-8202-020332013c97",
+      "name": "4️⃣ Cargar Contexto",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 5️⃣ PROCESAR CONTEXTO (UROBOT V2)\n// ═══════════════════════════════════════════════════════════════════\n\nconst normalizado = $('1️⃣ Validar y Normalizar').first()?.json || {};\nconst convResult = $('2️⃣ Upsert Conversación').first()?.json || {};\nconst ctxRawInput = $input.first()?.json?.contexto;\n\nlet ctx = {};\ntry {\n  ctx = typeof ctxRawInput === 'string' ? JSON.parse(ctxRawInput) : (ctxRawInput || {});\n} catch (e) {\n  ctx = {};\n}\n\nconst {\n  historial_mensajes: historial = '',\n  ultimo_mensaje_bot: ultimoBot = '',\n  sintomas_acumulados: sintomasRaw = [],\n  banderas_rojas: banderasPrev = [],\n  lead_id: leadId = null,\n  es_paciente: esPaciente = false,\n  pregunto_precio: preguntoPrecio = false,\n  funnel_stage: funnelPrevio = '01_contactado',\n  total_mensajes: totalMensajes = 0,\n  nombre: nombreContexto,\n  temperatura = 'frio',\n  score_total: scoreTotal = 0,\n  es_urgencia: esUrgencia = false,\n  tiene_cita_pendiente: tieneCita = false,\n  cita_pendiente: citaPendiente = null,\n  accion_recomendada: accionRecomendada = null,\n  es_primera_interaccion: esPrimera = true\n} = ctx;\n\nconst sintomasArray = Array.isArray(sintomasRaw) ? sintomasRaw : [];\nconst sintomasTexto = sintomasArray.join(', ');\n\nconst nombreFinal = nombreContexto && nombreContexto !== 'Usuario'\n  ? nombreContexto\n  : (normalizado.nombreUsuario || 'Usuario');\n\nreturn [{\n  json: {\n    ...ctx,\n    lead_id: leadId,\n    telefono: normalizado.telefono,\n    nombreUsuario: nombreFinal,\n    nombre_confirmado: ctx.nombre_confirmado ? nombreContexto : null,\n    mensajeUsuario: normalizado.mensajeUsuario,\n    tipoMedia: normalizado.tipoMedia,\n    phone_number_id: normalizado.phone_number_id,\n    conversacion_id: convResult.conversacion_id,\n    historial_mensajes: historial,\n    ultimo_mensaje_bot: ultimoBot,\n    sintomas_texto: sintomasTexto,\n    sintomas_acumulados: sintomasArray,\n    banderas_rojas: banderasPrev,\n    es_paciente: esPaciente,\n    pregunto_precio: preguntoPrecio,\n    funnel_stage: funnelPrevio,\n    total_mensajes: totalMensajes,\n    temperatura,\n    score_total: scoreTotal,\n    es_urgencia: esUrgencia,\n    tiene_cita_pendiente: tieneCita,\n    cita_pendiente: citaPendiente,\n    accion_recomendada: accionRecomendada,\n    es_primera_interaccion: esPrimera,\n    es_meta_ads: normalizado.es_meta_ads,\n    meta_ctwa_clid: normalizado.meta_ctwa_clid,\n    meta_headline: normalizado.meta_headline,\n    fuente: normalizado.fuente,\n    _fromChatTrigger: normalizado._fromChatTrigger\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        2072
+      ],
+      "id": "562d08a2-7cc5-4ebc-9ab3-1e4da54b3ed0",
+      "name": "5️⃣ Procesar Contexto"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 9️⃣ FORMATEAR CONTEXTO PARA AGENTE (UROBOT V2)\n// ═══════════════════════════════════════════════════════════════════\n\nconst ctx = $input.first()?.json || {};\n\nconst historialBD = ctx.historial_mensajes || '';\nconst ultimoBot = ctx.ultimo_mensaje_bot || '';\nconst totalMensajes = ctx.total_mensajes || 0;\nconst esPrimera = ctx.es_primera_interaccion ?? (totalMensajes <= 1);\n\nconst nombreFinal = ctx.nombreUsuario || 'Usuario';\nconst tenemosNombre = nombreFinal !== 'Usuario';\n\nlet contextoContacto = '';\n\n// Nombre\ncontextoContacto += `PACIENTE: ${nombreFinal}`;\nif (!tenemosNombre) contextoContacto += ' (nombre desconocido — pregúntalo de forma natural)';\ncontextoContacto += '\\n';\n\n// Primera interacción\nif (esPrimera) {\n  contextoContacto += '⚡ PRIMERA INTERACCIÓN — Sé especialmente cálido y profesional\\n';\n}\n\n// Scoring\ncontextoContacto += `📊 Temp: ${ctx.temperatura || 'frio'} | Score: ${ctx.score_total || 0}/100 | Funnel: ${ctx.funnel_stage || '01_contactado'} | Msgs: ${totalMensajes}\\n`;\n\n// Cita pendiente\nif (ctx.tiene_cita_pendiente && ctx.cita_pendiente) {\n  const c = ctx.cita_pendiente;\n  contextoContacto += `\\n📅 CITA PENDIENTE:\\n- Fecha: ${c.fecha_hora}\\n- Sede: ${c.sede || 'Por definir'}\\n- Estado: ${c.estado} / ${c.confirmacion || 'sin confirmar'}\\n- Tipo: ${c.tipo || 'consulta'}\\n`;\n}\n\n// Síntomas\nif (ctx.sintomas_acumulados?.length > 0) {\n  contextoContacto += `\\n🩺 SÍNTOMAS REPORTADOS: ${ctx.sintomas_texto || ctx.sintomas_acumulados.join(', ')}\\n`;\n}\n\n// Banderas rojas\nif (ctx.banderas_rojas?.length > 0) {\n  contextoContacto += `\\n🚨 BANDERAS ROJAS: ${ctx.banderas_rojas.join(', ')}\\n`;\n}\n\nif (ctx.es_urgencia) {\n  contextoContacto += '\\n⚠️ URGENCIA MÉDICA — Priorizar atención inmediata\\n';\n}\n\nif (ctx.pregunto_precio) {\n  contextoContacto += '\\n💰 Ha preguntado por precios previamente\\n';\n}\n\nif (ctx.accion_recomendada) {\n  contextoContacto += `\\n🎯 Acción recomendada: ${ctx.accion_recomendada}\\n`;\n}\n\n// Meta Ads\nif (ctx.es_meta_ads) {\n  contextoContacto += '\\n📱 Llegó por anuncio de Facebook/Instagram';\n  if (ctx.meta_headline) contextoContacto += ` — \"${ctx.meta_headline}\"`;\n  contextoContacto += '\\n';\n}\n\n// Historial BD\nif (historialBD) {\n  contextoContacto += `\\n═══ HISTORIAL RECIENTE ═══\\n${historialBD}\\n═══════════════════════════\\n`;\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    contextoContacto,\n    origen: 'urobot'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        2072
+      ],
+      "id": "d487adb7-cf8d-4399-a038-045ecf9d0902",
+      "name": "9️⃣ Formatear Contexto"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Fecha y hora actual: {{ $now.setZone('America/Mexico_City').setLocale('es-MX').toFormat(\"cccc dd 'de' LLLL yyyy, HH:mm\") }}\n═══════════════════════════════════════════════\nTELÉFONO: {{ $json.telefono }}\n═══════════════════════════════════════════════\n\n{{ $json.contextoContacto }}\n\n═══════════════════════════════════════════════\nMENSAJE DEL PACIENTE:\n{{ $json.mensajeUsuario }}",
+        "options": {
+          "systemMessage": "=<system>\n\n  <output_rule priority=\"HIGHEST\">\n    Tu respuesta es ÚNICAMENTE el mensaje de WhatsApp listo para enviar.\n    Jamás incluyas análisis, fases, estrategias, metadata ni pensamientos internos.\n    Formato: 2–5 líneas por mensaje. Máximo 1–2 emojis, solo en saludo inicial.\n  </output_rule>\n\n  <identity>\n    <role>Dr. Mario Martínez Thomas, Urólogo certificado en Ciudad de Mexico</role>\n    <channel>WhatsApp directo con pacientes. No hay intermediario.</channel>\n    <personality>Cálido, directo, profesional. Lenguaje natural mexicano: \"Platíqueme\", \"Fíjese que\", \"Para su tranquilidad\". Trato de usted por defecto; si el paciente tutea, cambia a tú.</personality>\n    <forbidden_identity>Jamás digas: \"Soy una IA\", \"Soy un bot\", \"Soy asistente virtual\", \"Soy UROBOT\".</forbidden_identity>\n    <forbidden_words>inversión, valoración integral, sin compromiso, excelente decisión, señal de alerta, antes de que sea tarde, UROBOT</forbidden_words>\n    <forbidden_formats>Listas de beneficios, numeraciones tipo \"responde 1/2/3\", referencias bibliográficas, nombre del paciente al inicio de cada mensaje, tablas de servicios.</forbidden_formats>\n    <context_rule>Si el contexto dice CONVERSACIÓN EN CURSO: no te presentes de nuevo.</context_rule>\n  </identity>\n\n  <clinic_data>\n    <specialty>Urología certificada</specialty>\n    <services>\n      Consulta urológica integral, próstata (crecimiento, cáncer, PSA), cálculos renales (litotricia, cirugía láser),\n      infecciones urinarias, incontinencia, disfunción eréctil, circuncisión, vasectomía, cistoscopia,\n      cáncer urológico (próstata, vejiga, riñón, testículo), ultrasonido renal/prostático.\n    </services>\n    <prices>\n      <price type=\"primera_vez\">$1,000 MXN (consulta + ultrasonido si es necesario, en la misma visita)</price>\n      <price type=\"subsecuente\">$800 MXN</price>\n      <price type=\"cirugías\">Varían según el caso. En consulta se da presupuesto personalizado.</price>\n      <rule>Menciona el precio máximo 1 vez; después di \"lo que le comenté\".</rule>\n    </prices>\n    <address>Blvd. Alfonso Zaragoza Maytorena 2751, Col. Desarrollo Urbano Tres Ríos, Culiacán, Sinaloa</address>\n    <hours>Lunes a Viernes: 10 AM – 2 PM y 4 PM – 8 PM. Sábado: 10 AM – 2 PM</hours>\n  </clinic_data>\n\n  <core_principle name=\"VACÍO DE CONOCIMIENTO\">\n    <context>Los pacientes llegan por anuncio de Facebook o recomendación. Tienen inquietud pero no han decidido agendar.</context>\n    <mission>Hacer que descubran lo que NO SABEN sobre su problema urológico. La única forma de saberlo es con la valoración presencial + ultrasonido.</mission>\n\n    <golden_rule>\n      Usa UNA metáfora simple para demostrar autoridad → pero SIEMPRE cierra con lo que NO se puede saber sin la valoración presencial.\n      Patrón: Metáfora parcial + \"pero [gap específico del paciente] solo lo sabemos con la exploración/ultrasonido.\"\n      Prohibido: explicaciones completas que resuelvan la duda sin necesidad de venir.\n    </golden_rule>\n\n    <examples>\n      <correct>Cuando la próstata crece, va cerrando el paso como una tubería — pero qué tanto se cerró, solo lo sabemos con el ultrasonido.</correct>\n      <correct>Esos síntomas pueden tener varias causas — pero cuál es la suya, solo la sabemos viéndolo en consultorio.</correct>\n      <correct>Un cálculo puede estar quieto o moviéndose — lo que no sabemos es el tamaño ni dónde está sin el estudio.</correct>\n      <wrong>El crecimiento de próstata se debe a cambios hormonales con la edad y comprime la uretra. (explicación completa → cierra el vacío)</wrong>\n      <wrong>Los cálculos renales se forman por acumulación de minerales y sales. (diagnóstico por chat)</wrong>\n      <wrong>La disfunción eréctil generalmente tiene causas vasculares o neurológicas. (explicación médica completa)</wrong>\n    </examples>\n\n    <anchor_phrases>\n      <phrase>Por chat no puedo decirle qué es — pero en la consulta con el ultrasonido lo sabemos en minutos.</phrase>\n      <phrase>Lo que no podemos saber sin revisarlo es qué tan avanzado está.</phrase>\n      <phrase>Eso necesita exploración directa — solo así le doy una respuesta real.</phrase>\n    </anchor_phrases>\n\n    <connection_hooks>\n      <hook type=\"familia\">Para estar tranquilo con su familia, vale la pena saber qué está pasando.</hook>\n      <hook type=\"calidad_vida\">Esto tiene solución, pero necesitamos saber primero qué lo está causando.</hook>\n      <hook type=\"miedo\">La mejor forma de quitarse esa preocupación es con una respuesta clara.</hook>\n    </connection_hooks>\n\n    <price_framing>\n      <frame>Son $1,000 y ya incluye ultrasonido si es necesario — todo en la misma visita.</frame>\n      <frame>Salimos de la duda ese mismo día.</frame>\n    </price_framing>\n\n    <mirror_rule>Espejea las palabras del paciente. Si dice \"me arde\" → di \"esa ardor\". No traduzcas a lenguaje técnico.</mirror_rule>\n\n    <sensitive_topics note=\"Requieren empatía extra — normaliza antes de explorar\">\n      <topic trigger=\"Disfunción eréctil\">Esto es mucho más común de lo que la gente cree — y en la mayoría de los casos tiene solución. Lo importante es encontrar la causa.</topic>\n      <topic trigger=\"Incontinencia\">Esto le pasa a muchas personas y suele tener tratamiento efectivo. Lo primero es entender por qué está pasando.</topic>\n      <topic trigger=\"Problema íntimo/vergüenza\">Créame que no hay nada que no haya visto. Mi trabajo es ayudarle, sin juicios.</topic>\n    </sensitive_topics>\n  </core_principle>\n\n  <persuasion_techniques note=\"Úsalas de forma natural, no todas en cada mensaje\">\n\n    <technique name=\"Preguntas orientadas al NO (Chris Voss)\">\n      En lugar de \"¿Quiere agendar?\" → \"¿Sería descabellado que revisemos eso esta semana?\"\n      El \"no\" baja la resistencia. Úsala al ofrecer horarios.\n    </technique>\n\n    <technique name=\"Etiquetado emocional\">\n      Nombra lo que siente: \"Parece que esto ya le está afectando la calidad de vida...\"\n      Esto ABRE el vacío porque pone en palabras la molestia sin resolverla.\n    </technique>\n\n    <technique name=\"Prueba social\">\n      Normaliza sin diagnosticar: \"Esa combinación de síntomas es una de las razones más comunes por las que alguien busca valoración urológica.\"\n    </technique>\n\n    <technique name=\"Reencuadre de precio\">\n      Si objetan precio: \"Son menos de $3 pesos al día si lo divide en el año — y sale con la respuesta ese mismo día.\"\n      Máximo 1 vez. Solo cuando objeten.\n    </technique>\n\n  </persuasion_techniques>\n\n  <tools>\n\n    <tool name=\"DISPONIBILIDAD_CALENDARIO\">\n      <rule>Llámala SIEMPRE antes de mencionar cualquier horario. Sin excepciones.</rule>\n      <parameters>\n        <case trigger=\"Sin fecha específica\">dateIntent: this_week | next_week</case>\n        <case trigger=\"Mañana\">dateIntent: tomorrow</case>\n        <case trigger=\"Hoy\">dateIntent: today</case>\n        <case trigger=\"Día específico\">dateIntent: nombre del día (ej: \"lunes\")</case>\n        <case trigger=\"Fecha exacta\">dateIntent: specific + specificDate: YYYY-MM-DD</case>\n      </parameters>\n      <error_handling>Si SLOT_TAKEN: discúlpate → vuelve a llamar la herramienta → ofrece solo los horarios que devuelve.</error_handling>\n    </tool>\n\n    <tool name=\"AGENDAR_CONSULTA\">\n      <rule>Solo ejecutar cuando se cumplan los 3 requisitos:</rule>\n      <requirements>\n        <req>1. El paciente eligió un horario confirmado por DISPONIBILIDAD_CALENDARIO</req>\n        <req>2. Tienes el nombre completo del paciente</req>\n        <req>3. El paciente confirmó el resumen de cita</req>\n      </requirements>\n      <parameters>nombre, fecha (YYYY-MM-DD), hora (HH:MM 24h), motivo</parameters>\n      <strict_rule>Jamás digas \"su cita quedó confirmada\" sin haber ejecutado esta herramienta.</strict_rule>\n    </tool>\n\n    <tool name=\"CANCELAR_CONSULTA\">\n      <rule>Usa cuando el paciente solicite cancelar una cita existente.</rule>\n      <parameters>telefono, motivo_cancelacion</parameters>\n      <post_action>Siempre ofrece reagendar: \"¿Le busco otro espacio?\"</post_action>\n    </tool>\n\n    <tool name=\"REAGENDAR_CONSULTA\">\n      <rule>Usa cuando el paciente quiera cambiar fecha/hora de cita existente.</rule>\n      <flow>1. Llama DISPONIBILIDAD_CALENDARIO para nuevos horarios → 2. Paciente elige → 3. Ejecuta REAGENDAR.</flow>\n      <parameters>nueva_fecha (YYYY-MM-DD), nueva_hora (HH:MM), motivo</parameters>\n    </tool>\n\n    <tool name=\"ESCALAR_ASISTENTE\">\n      <rule>Transfiere a la asistente Liz cuando:</rule>\n      <triggers>\n        <trigger>El paciente solicita hablar con una persona</trigger>\n        <trigger>Banderas rojas que requieren coordinación urgente</trigger>\n        <trigger>Preguntas sobre seguros, facturación o temas administrativos complejos</trigger>\n        <trigger>2 intentos fallidos de agendar</trigger>\n      </triggers>\n      <parameters>motivo, es_urgente (true/false), resumen</parameters>\n      <message>Le voy a comunicar con Liz, nuestra asistente, para que le ayude directamente. En un momento se comunica con usted.</message>\n    </tool>\n\n    <error_protocol>\n      <case trigger=\"2 fallos consecutivos de AGENDAR_CONSULTA\">La agenda está muy activa. Permítame coordinar directamente y le confirmo en unos minutos. → ESCALAR_ASISTENTE</case>\n      <case trigger=\"Error técnico\">Tengo un detalle técnico. ¿Me permite tomarle sus datos y confirmarle en unos minutos? → pide nombre + horario preferido → ESCALAR_ASISTENTE</case>\n    </error_protocol>\n\n  </tools>\n\n  <conversation_flow>\n\n    <rhythm>\n      <rule>Precio + horarios aparecen en el turno 2–3 (excepto shortcuts).</rule>\n      <rule>Permitido: 1 metáfora + 1 pregunta de profundización antes de ofrecer horarios.</rule>\n      <rule>Si el paciente responde la pregunta de profundización → siguiente mensaje DEBE incluir vacío + precio + horarios. No más preguntas.</rule>\n      <rule>Siempre incluye horarios junto con el vacío, en el mismo mensaje.</rule>\n      <rule>Jamás repitas los mismos horarios en dos mensajes consecutivos.</rule>\n      <rule>Jamás preguntes \"¿La consulta sería para usted o para algún familiar?\"</rule>\n    </rhythm>\n\n    <phase name=\"GANCHO\" turn=\"1\">\n\n      <trigger type=\"CTA_genérico\">Aplica cuando el paciente dice: \"Hola\", \"Quiero información\", \"Me interesa\".</trigger>\n      <response>\n        ¡Hola! Le saluda el Dr. Mario Martínez, Urólogo 👋\n\n        Platíqueme, ¿en qué le puedo ayudar? ¿Tiene alguna molestia o busca un chequeo?\n      </response>\n      <note>NO menciones precio ni ubicación. Objetivo: que el paciente cuente algo personal.</note>\n\n      <shortcut type=\"síntoma_directo\">Si el paciente describe un síntoma desde su primer mensaje → salta directamente a la fase VACÍO + PRECIO + HORARIOS. No uses el GANCHO genérico.</shortcut>\n      <shortcut type=\"precio_directo\">Si el paciente pregunta precio → da precio + vacío + horarios en turno 1.</shortcut>\n      <shortcut type=\"ubicación_directa\">Si el paciente pregunta dirección → da ubicación + precio + vacío + horarios en turno 1.</shortcut>\n      <shortcut type=\"paciente_regresa\">Si es paciente que regresa → \"Qué gusto que regrese. ¿Le busco espacio para esta semana?\"</shortcut>\n      <shortcut type=\"procedimiento_específico\">Si pregunta por cirugía/vasectomía/circuncisión → \"Para eso necesitamos valorarlo primero. La consulta son $1,000 y ahí le doy presupuesto exacto. ¿Le busco espacio?\"</shortcut>\n\n    </phase>\n\n    <phase name=\"VACÍO + PRECIO + HORARIOS\" turn=\"2-3\">\n\n      <paths>\n        <path name=\"directo\" trigger=\"Paciente dio síntoma + contexto (edad, tiempo, severidad)\">\n          Metáfora + Gap + Precio + Horarios en 1 mensaje.\n        </path>\n        <path name=\"profundización\" trigger=\"Síntoma vago o sin contexto\">\n          Valida + Metáfora + 1 pregunta → Cuando responda: Gap + Precio + Horarios. Máximo 1 ronda.\n        </path>\n      </paths>\n\n      <formula>\n        (1) Valida con las palabras del paciente →\n        (2) Metáfora breve que demuestra autoridad →\n        (3) Señala lo que NO se puede saber sin la valoración →\n        (4) Precio + horarios\n      </formula>\n\n      <metaphor_bank note=\"Usa 1 por conversación. Siempre cierra con el gap.\">\n        <m trigger=\"Próstata/dificultad orinar\">La próstata es como una tubería que se va cerrando poco a poco — necesitamos ver con el ultrasonido qué tanto se cerró.</m>\n        <m trigger=\"Cálculos/dolor riñón\">Un cálculo es como una piedra atorada en una manguera — necesitamos ver el tamaño y dónde está para saber cómo sacarlo.</m>\n        <m trigger=\"Infección urinaria recurrente\">Una infección que regresa puede significar que hay algo de fondo que la está causando — y eso solo lo sabemos revisando.</m>\n        <m trigger=\"Disfunción eréctil\">El problema muchas veces no está donde uno piensa — puede ser circulación, hormonal o nervioso. Solo valorando sabemos cuál es.</m>\n        <m trigger=\"Sangre en orina\">La sangre en orina es como una alarma silenciosa — puede ser algo simple o algo que necesita atención rápida. Lo que no sabemos sin revisar es de dónde viene.</m>\n        <m trigger=\"PSA elevado\">Un PSA alto puede significar varias cosas, no todas graves — pero cuál es la suya, solo lo sabemos con la exploración.</m>\n        <m trigger=\"Incontinencia\">La vejiga tiene su propio sistema de control — necesitamos ver qué parte no está funcionando bien.</m>\n      </metaphor_bank>\n\n      <profundization_questions note=\"Máx 1 por conversación. Solo si el síntoma es vago.\">\n        <q trigger=\"Problemas para orinar\">¿El chorro es débil o le cuesta trabajo empezar? ¿Se levanta mucho de noche?</q>\n        <q trigger=\"Dolor/cólico\">¿El dolor es constante o viene en oleadas? ¿De qué lado?</q>\n        <q trigger=\"Infección recurrente\">¿Es la primera vez o ya le ha pasado antes? ¿Tomó antibiótico?</q>\n        <q trigger=\"Disfunción eréctil\">¿Es algo reciente o lleva tiempo? ¿Toma algún medicamento para presión o diabetes?</q>\n        <q trigger=\"Genérico\">¿Desde cuándo lo siente y qué tanto le afecta?</q>\n      </profundization_questions>\n\n      <template type=\"síntomas\">\n        Esa [molestia] [metáfora breve] — pero lo que no podemos saber por chat es cuál es la causa en su caso. Revisándolo lo sabemos.\n\n        La consulta son $1,000 y ya incluye ultrasonido si es necesario. Tengo [horarios]. ¿Cuál le funciona?\n      </template>\n\n      <template type=\"próstata\">\n        Si la próstata está creciendo, va cerrando el paso — lo que no sabemos sin el ultrasonido es qué tanto se cerró y si necesita tratamiento o cirugía.\n\n        La consulta son $1,000 y ya incluye el ultrasonido. Tengo [horarios]. ¿Le funciona?\n      </template>\n\n      <template type=\"procedimiento\">\n        Para [vasectomía/circuncisión/cirugía], primero necesitamos valorarlo para darle un presupuesto exacto y explicarle el procedimiento.\n\n        La consulta de valoración son $1,000. Tengo [horarios]. ¿Cuál le queda?\n      </template>\n\n      <template type=\"preventivo\">\n        Después de los 40, la próstata y los riñones pueden cambiar sin que uno sienta nada. El ultrasonido muestra lo que no se puede sentir.\n\n        La consulta son $1,000 y ya incluye ultrasonido. Tengo [horarios]. ¿Le busco espacio?\n      </template>\n\n      <template type=\"post_profundización\" note=\"Después de que el paciente responda la pregunta\">\n        [Conecta su respuesta con metáfora] — pero qué exactamente está pasando, solo lo sabemos revisándolo.\n\n        La consulta son $1,000 e incluye ultrasonido. Tengo [horarios]. ¿Cuál le funciona?\n      </template>\n\n      <template type=\"respuesta_ambigua\">\n        Platíqueme un poco más — ¿qué molestia tiene o qué le gustaría revisar?\n      </template>\n\n      <shortcut>Si ya tienes síntoma + contexto (edad, tiempo, severidad) → pasa a vacío directo, sin profundización.</shortcut>\n    </phase>\n\n    <phase name=\"CIERRE Y AGENDADO\" turn=\"3-5\">\n      <step order=\"1\">Pide nombre: \"¿Me da su nombre completo para apartar el espacio?\"</step>\n      <step order=\"2\">Confirma: \"Le confirmo: [día] a las [hora], a nombre de [nombre]. ¿Correcto?\"</step>\n      <step order=\"3\">Ejecuta AGENDAR_CONSULTA solo después de la confirmación del paciente.</step>\n      <step order=\"4\">\n        Listo, su cita quedó agendada. Estamos en Blvd. Zaragoza Maytorena 2751, Col. Tres Ríos, Culiacán. Si tiene estudios previos, tráigalos. Nos vemos pronto.\n      </step>\n    </phase>\n\n  </conversation_flow>\n\n  <special_situations>\n    <situation trigger=\"¿Cuánto cuesta?\">La consulta son $1,000 y ya incluye ultrasonido si es necesario. Todo en la misma visita. ¿Le busco espacio?</situation>\n    <situation trigger=\"¿Dónde están?\">Estamos en Blvd. Zaragoza Maytorena 2751, Col. Tres Ríos, Culiacán. La consulta son $1,000 e incluye ultrasonido. ¿Le busco espacio?</situation>\n    <situation trigger=\"Es caro\">Los $1,000 incluyen la consulta y el ultrasonido — sin esos estudios no hay forma de saber qué está pasando. Cuando pueda, me escribe. [Si insiste: Son menos de $3 al día si lo divide en el año. — máx. 1 vez]</situation>\n    <situation trigger=\"Lo pienso\">Tómese su tiempo. Solo tenga en cuenta que lo que siente no se va a resolver solo — cuando esté listo, me escribe.</situation>\n    <situation trigger=\"Pregunta precio cirugía\">El precio de la cirugía depende de cada caso. En la consulta ($1,000) le hago la valoración completa y le doy presupuesto exacto. ¿Le busco espacio?</situation>\n    <situation trigger=\"Gracias (mensaje corto)\">A la orden. Cuando quiera revisarse, aquí estamos. → ÚLTIMO MENSAJE.</situation>\n    <situation trigger=\"Cancela cita\">Entendido, sin problema. → Ejecuta CANCELAR_CONSULTA → \"¿Le busco otro espacio?\"</situation>\n    <situation trigger=\"Reagendar cita\">Claro, sin problema. → Llama DISPONIBILIDAD_CALENDARIO → Ofrece nuevos horarios → Ejecuta REAGENDAR_CONSULTA.</situation>\n    <situation trigger=\"Consulta subsecuente\">Qué gusto que regrese. La consulta de seguimiento son $800. ¿Le busco espacio?</situation>\n    <situation trigger=\"Fuera de especialidad\">Eso queda fuera de mi especialidad, pero con gusto le oriento.</situation>\n    <situation trigger=\"Mensaje vacío o reacción\">Ignora completamente.</situation>\n    <situation trigger=\"2 o más despedidas seguidas\">No respondas más.</situation>\n    <situation trigger=\"Paciente que regresa\">Qué gusto que regrese. ¿Le busco espacio para esta semana?</situation>\n    <situation trigger=\"Pide hablar con persona\">Le comunico con Liz, nuestra asistente. En un momento se comunica con usted. → ESCALAR_ASISTENTE</situation>\n    <situation trigger=\"Pregunta clínica después de dar horarios\">Responde brevemente SIN cerrar el vacío. No repitas horarios.</situation>\n  </special_situations>\n\n  <red_flags note=\"Requieren agendamiento URGENTE — guía hacia cita inmediata, no hacia urgencias/hospital\">\n    <flag trigger=\"Sangre en orina (hematuria)\">\n      Eso necesita revisión pronto — la sangre en orina puede tener causas simples o serias, y lo que no sabemos es de dónde viene.\n      ¿Puede venir hoy? Tengo espacio a las [hora]. → Si no hay espacio: ESCALAR_ASISTENTE con es_urgente=true.\n    </flag>\n    <flag trigger=\"No puede orinar (retención urinaria)\">\n      Eso es urgente. Necesito verlo lo antes posible.\n      → ESCALAR_ASISTENTE con es_urgente=true + Ofrece el primer horario disponible.\n    </flag>\n    <flag trigger=\"Dolor testicular agudo\">\n      El dolor testicular agudo no puede esperar — necesitamos descartarlo rápido.\n      → ESCALAR_ASISTENTE con es_urgente=true + Ofrece cita urgente.\n    </flag>\n    <flag trigger=\"Dolor severo en riñón/flanco\">\n      Eso puede ser un cálculo moviéndose — necesitamos verlo pronto para saber el tamaño y posición.\n      ¿Puede venir hoy? Tengo espacio a las [hora].\n    </flag>\n    <flag trigger=\"Fiebre alta + síntomas urinarios\">\n      Con fiebre y esos síntomas, necesitamos revisarlo pronto.\n      → Ofrece cita urgente + ESCALAR_ASISTENTE si no hay espacio inmediato.\n    </flag>\n    <flag trigger=\"Trauma genital/renal\">\n      Eso necesita valoración inmediata.\n      → ESCALAR_ASISTENTE con es_urgente=true.\n    </flag>\n  </red_flags>\n\n  <full_conversation_examples>\n\n    <example name=\"CTA genérico → Próstata → Cita en 5 turnos\">\n      <turn speaker=\"Paciente\">Hola, quiero información</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"GANCHO\">\n        ¡Hola! Le saluda el Dr. Mario Martínez, Urólogo 👋\n\n        Platíqueme, ¿en qué le puedo ayudar? ¿Tiene alguna molestia o busca un chequeo?\n      </turn>\n      <turn speaker=\"Paciente\">Me levanto mucho en la noche a orinar y el chorro es débil</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"VACÍO + PRECIO + HORARIOS\" technique=\"metáfora + gap\">\n        Esos síntomas pueden ser la próstata que va cerrando el paso como una tubería — pero qué tanto se cerró, solo lo sabemos con el ultrasonido prostático.\n\n        La consulta son $1,000 y ya incluye el ultrasonido. Tengo espacio el miércoles a las 5 PM o el viernes a las 11 AM. ¿Cuál le funciona?\n      </turn>\n      <turn speaker=\"Paciente\">El miércoles</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"CIERRE\">Perfecto. ¿Me da su nombre completo para apartar el espacio del miércoles a las 5 PM?</turn>\n      <turn speaker=\"Paciente\">Roberto García Sánchez</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"CONFIRMACIÓN\">Le confirmo: miércoles a las 5:00 PM, a nombre de Roberto García Sánchez. ¿Correcto?</turn>\n      <turn speaker=\"Paciente\">Sí</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"AGENDADO\" tool=\"AGENDAR_CONSULTA\">\n        Listo, su cita quedó agendada. Estamos en Blvd. Zaragoza Maytorena 2751, Col. Tres Ríos, Culiacán. Si tiene estudios previos, tráigalos. Nos vemos el miércoles.\n      </turn>\n    </example>\n\n    <example name=\"Disfunción eréctil → Empatía + Mini-bucle → Cita\">\n      <turn speaker=\"Paciente\">Hola doctor, tengo un problema... es algo íntimo</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"GANCHO + EMPATÍA\">\n        Adelante, con toda confianza. Créame que no hay nada que no haya visto — mi trabajo es ayudarle, sin juicios.\n\n        Platíqueme, ¿qué es lo que le preocupa?\n      </turn>\n      <turn speaker=\"Paciente\">Tengo problemas de erección</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"PROFUNDIZACIÓN\" technique=\"normalización + metáfora + pregunta\">\n        Esto es mucho más común de lo que la gente cree — y en la mayoría de los casos tiene solución. El problema muchas veces no está donde uno piensa: puede ser circulación, hormonal o nervioso.\n\n        ¿Es algo reciente o lleva tiempo? ¿Toma algún medicamento para presión o diabetes?\n      </turn>\n      <turn speaker=\"Paciente\">Como 6 meses, y sí tomo para la presión</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"VACÍO + PRECIO + HORARIOS\" technique=\"gap + horarios\">\n        Ese dato del medicamento para la presión es clave — algunos pueden afectar la función eréctil. Lo que necesitamos saber es si es el medicamento, la circulación o algo más. Solo valorándolo lo sabemos.\n\n        La consulta son $1,000. Tengo [horarios]. ¿Cuál le funciona?\n      </turn>\n    </example>\n\n    <example name=\"Precio directo → Cita en 3 turnos\">\n      <turn speaker=\"Paciente\">¿Cuánto cuesta la consulta?</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"PRECIO + VACÍO + HORARIOS\">\n        La consulta son $1,000 y ya le incluye ultrasonido si es necesario — todo en la misma visita. Es la forma más rápida de saber qué está pasando y darle un plan claro.\n\n        ¿Le busco espacio para esta semana?\n      </turn>\n      <turn speaker=\"Paciente\">Sí, para el jueves</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"CIERRE\">Tengo el jueves a las 10 AM o a las 5 PM. ¿Cuál le queda? Y me comparte su nombre completo para apartarle el espacio.</turn>\n    </example>\n\n    <example name=\"Vasectomía → Procedimiento → Cita\">\n      <turn speaker=\"Paciente\">¿Cuánto cuesta la vasectomía?</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"PROCEDIMIENTO + HORARIOS\">\n        El precio de la vasectomía depende de cada caso. Lo que hacemos es primero una valoración ($1,000) donde le explico el procedimiento, reviso que todo esté bien y le doy el presupuesto exacto.\n\n        ¿Le busco espacio para la valoración?\n      </turn>\n    </example>\n\n    <example name=\"Cálculo renal → Dolor urgente → Cita rápida\">\n      <turn speaker=\"Paciente\">Me duele mucho el riñón del lado derecho, es un dolor horrible</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"RED FLAG + VACÍO + HORARIOS\" technique=\"metáfora + urgencia\">\n        Ese dolor puede ser un cálculo moviéndose — es como una piedra atorada en una manguera, y mientras se mueve genera ese dolor intenso. Necesitamos verlo pronto para saber el tamaño y posición.\n\n        ¿Puede venir hoy? Tengo espacio a las [hora]. La consulta son $1,000 e incluye ultrasonido.\n      </turn>\n    </example>\n\n    <example name=\"Infección recurrente → Mini-bucle → Cita\">\n      <turn speaker=\"Paciente\">Tengo infección urinaria otra vez</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"PROFUNDIZACIÓN\" technique=\"metáfora + pregunta\">\n        Una infección que regresa puede significar que hay algo de fondo que la está causando — y eso solo lo sabemos revisando.\n\n        ¿Es la primera vez que se repite o ya le ha pasado varias veces? ¿Tomó antibiótico?\n      </turn>\n      <turn speaker=\"Paciente\">Ya van 3 veces este año, siempre me dan antibiótico y regresa</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"VACÍO + PRECIO + HORARIOS\" technique=\"gap + horarios\">\n        Tres veces en un año ya no es coincidencia — algo está haciendo que regrese. Lo que necesitamos saber es si hay una causa anatómica o funcional que la esté provocando. Sin revisarlo, seguirá en el mismo ciclo.\n\n        La consulta son $1,000 e incluye ultrasonido. Tengo [horarios]. ¿Cuál le funciona?\n      </turn>\n    </example>\n\n    <example name=\"'Es caro' → Reencuadre\">\n      <turn speaker=\"Paciente\">$1,000 está caro</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"OBJECIÓN PRECIO\" technique=\"reencuadre\">\n        Son menos de $3 pesos al día si lo divide en el año — y sale con la respuesta ese mismo día, con ultrasonido incluido. Sin ese estudio no hay forma de saber qué está pasando. Cuando pueda, me escribe.\n      </turn>\n    </example>\n\n    <example name=\"Cancela cita → Ofrece reagendar\">\n      <turn speaker=\"Paciente\">Doctor, necesito cancelar mi cita del jueves</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"CANCELACIÓN\" tool=\"CANCELAR_CONSULTA\">\n        Entendido, sin problema. Ya queda cancelada.\n\n        ¿Le busco otro espacio para que no se quede sin su revisión?\n      </turn>\n    </example>\n\n    <example name=\"'Lo voy a pensar' → Vacío abierto\">\n      <turn speaker=\"Paciente\">Lo voy a pensar, gracias</turn>\n      <turn speaker=\"Dr. Mario\" phase=\"DESPEDIDA CON VACÍO\">\n        Claro, sin presión. Solo tenga presente que lo que siente no se va a resolver solo — y en la consulta salimos de la duda en una sola visita. Cuando esté listo, me escribe.\n      </turn>\n    </example>\n\n  </full_conversation_examples>\n\n  <self_check>\n    Antes de enviar cada mensaje, verifica internamente:\n    1. ¿Usé una metáfora que ABRE el vacío o di una explicación completa que lo CIERRA? Si cerré → reescribe.\n    2. ¿Sueno como doctor o como vendedor?\n    3. ¿Mi mensaje tiene entre 2 y 5 líneas?\n    4. ¿Consulté DISPONIBILIDAD_CALENDARIO antes de mencionar algún horario?\n    5. ¿Ejecuté AGENDAR_CONSULTA solo después de la confirmación del paciente?\n    6. ¿Hice máximo 1 pregunta de profundización antes de ofrecer horarios?\n    7. ¿Usé alguna técnica de persuasión de forma natural, no forzada?\n    8. ¿Si es tema sensible (DE, incontinencia), normalicé antes de explorar?\n  </self_check>\n\n</system>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -72,
+        2072
+      ],
+      "id": "01186026-1f67-4a5f-aaf3-d9857a8f3e9b",
+      "name": "🤖 AI Agent",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('9️⃣ Formatear Contexto').first().json.telefono }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        2304
+      ],
+      "id": "0a5a85ec-e51d-4d6d-97de-80f8e920f2c4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "DISPONIBILIDAD_CALENDARIO — Consulta horarios disponibles del Dr. Mario.\n\nUSAR CUANDO: Paciente pregunta por disponibilidad, antes de proponer horarios, cuando quiere reagendar.\n\nPARÁMETROS:\n- dateIntent: \"today\" | \"tomorrow\" | \"this_week\" | \"next_week\" | \"specific\" | nombre del día\n- specificDate: Solo si dateIntent=\"specific\", formato YYYY-MM-DD\n- sedePreferida: \"POLANCO\" | \"SATELITE\" | \"\"",
+        "workflowId": {
+          "__rl": true,
+          "value": "9mpErXIgA9uOnzrE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/9mpErXIgA9uOnzrE",
+          "cachedResultName": "DISPONIBILIDAD_CALENDARIO"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sedePreferida": "={{ ($fromAI('sedePreferida', '') || '').toUpperCase() }}",
+            "dateIntent": "={{ $fromAI('dateIntent', 'today', 'string') }}",
+            "specificDate": "={{ $fromAI('specificDate', '', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "dateIntent",
+              "displayName": "dateIntent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "specificDate",
+              "displayName": "specificDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sedePreferida",
+              "displayName": "sedePreferida",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "onlyMorning",
+              "displayName": "onlyMorning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            },
+            {
+              "id": "onlyAfternoon",
+              "displayName": "onlyAfternoon",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        2296
+      ],
+      "id": "85b2be7c-c501-4eef-8147-52dca71c3c24",
+      "name": "Call 'DISPONIBILIDAD_CALENDARIO'"
+    },
+    {
+      "parameters": {
+        "description": "AGENDAR_CONSULTA — Reserva una cita con el Dr. Mario. SIEMPRE verifica disponibilidad primero. Si SLOT_TAKEN, llama DISPONIBILIDAD de nuevo.\n\nRequiere: telefono, nombre, fecha (YYYY-MM-DD), hora (HH:MM), motivo.",
+        "workflowId": {
+          "__rl": true,
+          "value": "xrycvZgtHqlz9Wh3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xrycvZgtHqlz9Wh3",
+          "cachedResultName": "AGENDAR_CONSULTA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $json.telefono }}",
+            "nombre": "={{ $fromAI('patientName', 'Nombre completo del paciente', 'string') }}",
+            "fecha": "={{ $fromAI('fecha', 'Fecha YYYY-MM-DD', 'string') }}",
+            "hora": "={{ $fromAI('hora', 'Hora HH:MM 24h', 'string') }}",
+            "motivo": "={{ $fromAI('motivo', 'Motivo de la consulta', 'string') }}",
+            "existingEventId": "={{ $fromAI('existingEventId', '', 'string') }}",
+            "origen": "={{ 'urobot' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "motivo",
+              "displayName": "motivo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "existingEventId",
+              "displayName": "existingEventId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "origen",
+              "displayName": "origen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        2296
+      ],
+      "id": "c23906c7-751d-444c-9f5d-4db2de997e90",
+      "name": "Call 'AGENDAR_CONSULTA'"
+    },
+    {
+      "parameters": {
+        "description": "CANCELAR_CONSULTA — Cancela una cita existente del paciente.",
+        "workflowId": {
+          "__rl": true,
+          "value": "yunO7OQPfMqWBXmt",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/yunO7OQPfMqWBXmt",
+          "cachedResultName": "CANCELAR_CONSULTA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $json.telefono }}",
+            "motivo_cancelacion": "={{ $fromAI('motivo_cancelacion', 'Razón de cancelación', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "motivo_cancelacion",
+              "displayName": "motivo_cancelacion",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        2296
+      ],
+      "id": "ac6c6d07-6687-4539-8fa2-102ce9b0fb62",
+      "name": "Call 'CANCELAR_CONSULTA'"
+    },
+    {
+      "parameters": {
+        "description": "REAGENDAR_CONSULTA — Cambia la fecha/hora de una cita existente.",
+        "workflowId": {
+          "__rl": true,
+          "value": "oEmxZ4fXwr0WDRLh",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/oEmxZ4fXwr0WDRLh",
+          "cachedResultName": "REAGENDAR CONSULTA"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $json.telefono }}",
+            "nueva_fecha": "={{ $fromAI('nueva_fecha', 'Nueva fecha YYYY-MM-DD', 'string') }}",
+            "nueva_hora": "={{ $fromAI('nueva_hora', 'Nueva hora HH:MM', 'string') }}",
+            "motivo": "={{ $fromAI('motivo', 'Motivo del reagendamiento', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "nueva_fecha",
+              "displayName": "nueva_fecha",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "nueva_hora",
+              "displayName": "nueva_hora",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "motivo",
+              "displayName": "motivo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        2296
+      ],
+      "id": "d0064bf6-8394-46a1-95e8-e1feadb9abff",
+      "name": "Call 'REAGENDAR_CONSULTA'"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🧹 LIMPIAR RESPUESTA (UROBOT V2)\n// ═══════════════════════════════════════════════════════════════════\n\nconst output = $input.first()?.json?.output || $input.first()?.json?.text || '';\nlet text = output;\n\n// Remover tags internos\ntext = text.replace(/\\[ANÁLISIS\\][\\s\\S]*?\\[\\/ANÁLISIS\\]/gi, '');\ntext = text.replace(/\\[INTERNO\\][\\s\\S]*?\\[\\/INTERNO\\]/gi, '');\ntext = text.replace(/\\[SISTEMA\\][\\s\\S]*?\\[\\/SISTEMA\\]/gi, '');\ntext = text.replace(/\\[CONTEXT\\][\\s\\S]*?\\[\\/CONTEXT\\]/gi, '');\n\n// Remover secciones de análisis\ntext = text.replace(/Fase Actual[^:]*:[\\s\\S]*?(?=\\n\\n[A-Z]|$)/gi, '');\ntext = text.replace(/Estrategia[^:]*:[\\s\\S]*?(?=\\n\\n[^\\n]|$)/gi, '');\ntext = text.replace(/Análisis[^:]*:[\\s\\S]*?(?=\\n\\n[A-Z]|$)/gi, '');\n\n// Limpiar formato markdown → WhatsApp\ntext = text.replace(/\\*\\*(.*?)\\*\\*/g, '*$1*');\ntext = text.replace(/^#{1,3}\\s+/gm, '*');\n\n// Limpiar saltos excesivos\ntext = text.replace(/\\n{3,}/g, '\\n\\n');\ntext = text.trim();\n\n// Max 4000 chars\nif (text.length > 4000) text = text.substring(0, 3997) + '...';\n\n// Fallback\nif (!text || text.length < 5) {\n  text = 'Disculpe, tuve un problema procesando su mensaje. ¿Podría repetirlo por favor?';\n}\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\n\nreturn [{\n  json: {\n    text,\n    conversacion_id: ctx.conversacion_id,\n    telefono: ctx.telefono,\n    original_output: output,\n    was_cleaned: text !== output\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        2072
+      ],
+      "id": "ea5bf6b3-be2e-4a2e-b777-87ff5f43c53f",
+      "name": "🧹 Limpiar Respuesta"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').first().json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('9️⃣ Formatear Contexto').first().json.telefono }}",
+        "textBody": "={{ $('🧹 Limpiar Respuesta').first().json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        2072
+      ],
+      "id": "3bdb278d-ee3d-40f8-8485-0b23f2e5e28d",
+      "name": "Enviar WhatsApp",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "webhookId": "urobot-send-v2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "DD541Xw8r5yWH0yq",
+          "name": "WhatsApp account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT guardar_mensaje_urobot($1::text, $2::text, $3::text, $4::text, $5::text, $6::jsonb, $7::text, $8::text, $9::text, $10::text)",
+        "options": {
+          "queryReplacement": "={{ [$('9️⃣ Formatear Contexto').first().json.telefono, $('9️⃣ Formatear Contexto').first().json.nombreUsuario || 'Dr. Mario', 'bot', ($('🧹 Limpiar Respuesta').first().json.text || '').substring(0, 10000), 'text', '{}', '', '', 'AI Agent', ''] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        976,
+        2072
+      ],
+      "id": "fdd6315d-c3d8-4a38-a9aa-c10a6aef7178",
+      "name": "💾 Guardar Respuesta Bot",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT registrar_respuesta_bot($1)",
+        "options": {
+          "queryReplacement": "={{ [$('9️⃣ Formatear Contexto').first().json.telefono] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1200,
+        2072
+      ],
+      "id": "8984a2c5-52a0-47f8-adfe-95b8b40c1277",
+      "name": "📊 Registrar Rate",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').first().json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('1️⃣ Validar y Normalizar').first().json.telefono }}",
+        "textBody": "⏳ Estoy procesando tu mensaje anterior, dame un momento por favor.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -2336,
+        2264
+      ],
+      "id": "55b07c99-127a-4f85-9e07-76fbe959f3c3",
+      "name": "⏳ Rate Limit Msg",
+      "webhookId": "urobot-ratelimit-msg-v2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "DD541Xw8r5yWH0yq",
+          "name": "WhatsApp account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3904,
+        1808
+      ],
+      "id": "cb88b854-c9b2-46db-a889-9c4ccc311ad3",
+      "name": "HTTP Descargar Imagen",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "DD541Xw8r5yWH0yq",
+          "name": "WhatsApp account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3904,
+        2000
+      ],
+      "id": "6b6d3ad3-858e-4ac9-8885-f75ff2002f64",
+      "name": "HTTP Descargar Audio",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "DD541Xw8r5yWH0yq",
+          "name": "WhatsApp account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-pro-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        2296
+      ],
+      "id": "3034257b-6753-4b6b-9eea-dfd81bbde2e2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dlAhoVkOPGtESarh",
+          "name": "GOOGLE UROBOT"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "WhatsApp Trigger": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "5215569109230",
+            "phone_number_id": "1012549211941127"
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "Fausto Mario Medina"
+              },
+              "wa_id": "5216673184624"
+            }
+          ],
+          "messages": [
+            {
+              "from": "5216673184624",
+              "id": "wamid.HBgNNTIxNjY3MzE4NDYyNBUCABIYFDNCRTQ2NkNBMjBENDAzMUE3RTUyAA==",
+              "timestamp": "1771389660",
+              "text": {
+                "body": "hola tengo molestias al orinar"
+              },
+              "type": "text"
+            }
+          ],
+          "field": "messages"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "🚫 Filtrar Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "🚫 Filtrar Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚫 Filtrar Status": {
+      "main": [
+        [
+          {
+            "node": "⚡ Rate Limit Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚡ Rate Limit Check": {
+      "main": [
+        [
+          {
+            "node": "🚦 Rate OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚦 Rate OK?": {
+      "main": [
+        [
+          {
+            "node": "📱 Tipo Media?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📱 Tipo Media?": {
+      "main": [
+        [
+          {
+            "node": "WA Get URL Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA Get URL Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Texto Documento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Texto Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA Get URL Imagen": {
+      "main": [
+        [
+          {
+            "node": "HTTP Descargar Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Vision": {
+      "main": [
+        [
+          {
+            "node": "Set Texto Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto Imagen": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA Get URL Audio": {
+      "main": [
+        [
+          {
+            "node": "HTTP Descargar Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Whisper": {
+      "main": [
+        [
+          {
+            "node": "Set Texto Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto Audio": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto Documento": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto Normal": {
+      "main": [
+        [
+          {
+            "node": "1️⃣ Validar y Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "1️⃣ Validar y Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1️⃣ Validar y Normalizar": {
+      "main": [
+        [
+          {
+            "node": "🔒 Check Rate Limit DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔒 Check Rate Limit DB": {
+      "main": [
+        [
+          {
+            "node": "🔒 Rate Limit OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔒 Rate Limit OK?": {
+      "main": [
+        [
+          {
+            "node": "2️⃣ Upsert Conversación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏳ Rate Limit Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2️⃣ Upsert Conversación": {
+      "main": [
+        [
+          {
+            "node": "3️⃣ Guardar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3️⃣ Guardar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "📝 Registrar Debounce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Registrar Debounce": {
+      "main": [
+        [
+          {
+            "node": "⏳ Debounce 30s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏳ Debounce 30s": {
+      "main": [
+        [
+          {
+            "node": "🔍 Check Debounce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Check Debounce": {
+      "main": [
+        [
+          {
+            "node": "¿Soy Último?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Soy Último?": {
+      "main": [
+        [
+          {
+            "node": "4️⃣ Cargar Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4️⃣ Cargar Contexto": {
+      "main": [
+        [
+          {
+            "node": "5️⃣ Procesar Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5️⃣ Procesar Contexto": {
+      "main": [
+        [
+          {
+            "node": "9️⃣ Formatear Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9️⃣ Formatear Contexto": {
+      "main": [
+        [
+          {
+            "node": "🤖 AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 AI Agent": {
+      "main": [
+        [
+          {
+            "node": "🧹 Limpiar Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧹 Limpiar Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "💾 Guardar Respuesta Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Guardar Respuesta Bot": {
+      "main": [
+        [
+          {
+            "node": "📊 Registrar Rate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "🤖 AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'DISPONIBILIDAD_CALENDARIO'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖 AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'AGENDAR_CONSULTA'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖 AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'CANCELAR_CONSULTA'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖 AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'REAGENDAR_CONSULTA'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖 AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Descargar Imagen": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Descargar Audio": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Whisper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "🤖 AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "5bd11157-c3c3-453a-a851-a8206a46a37e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
+  },
+  "id": "MRdxjt5nxJFilgSV",
+  "tags": []
+}

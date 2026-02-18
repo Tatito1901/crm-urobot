@@ -28,9 +28,9 @@ interface ConversacionesKPIsProps {
 
 export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }: ConversacionesKPIsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {/* Fila principal: Mensajes */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard
           title="Mensajes Recibidos"
           value={kpi.totalMensajesRecibidos.toLocaleString()}
@@ -61,7 +61,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
       </div>
 
       {/* Fila secundaria: UroBot */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard
           title="Preguntas Respondidas"
           value={kpi.preguntasRespondidas.toLocaleString()}
@@ -145,15 +145,15 @@ export const MensajesResumen = React.memo(function MensajesResumen({ recibidos, 
         {/* Stats rápidos */}
         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
           <div className="text-center">
-            <p className="text-2xl font-bold text-foreground">{total.toLocaleString()}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Total mensajes</p>
+            <p className="text-lg sm:text-2xl font-bold text-foreground">{total.toLocaleString()}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">Total mensajes</p>
           </div>
           <div className="text-center border-x border-border">
-            <p className="text-2xl font-bold text-foreground">{conversaciones}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Contactos</p>
+            <p className="text-lg sm:text-2xl font-bold text-foreground">{conversaciones}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">Contactos</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-foreground">
+            <p className="text-lg sm:text-2xl font-bold text-foreground">
               {conversaciones > 0 ? Math.round(total / conversaciones) : 0}
             </p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Msgs/contacto</p>

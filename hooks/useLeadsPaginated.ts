@@ -31,21 +31,21 @@ const DEFAULT_STATS: LeadsStats = {
 };
 
 const fetchStats = async (): Promise<LeadsStats> => {
-  const { data, error } = await supabase.rpc('get_leads_stats' as never);
+  const { data, error } = await supabase.rpc('get_leads_stats_optimized' as never);
   if (error) return DEFAULT_STATS;
   
-  // Mapear campos de la RPC a la interfaz del hook
+  // Mapear campos de la RPC real (get_leads_stats_optimized) a la interfaz del hook
   const s = data as Record<string, number>;
   return {
     total: s.total || 0,
-    nuevos: s.nuevo || 0,
-    interesados: s.interesado || 0,
-    enSeguimiento: (s.contactado || 0) + (s.calificado || 0),
-    convertidos: s.convertido || 0,
-    descartados: s.descartado || 0,
-    escalados: s.escalado || 0,
+    nuevos: s.nuevos || 0,
+    interesados: s.interactuando || 0,
+    enSeguimiento: (s.cita_propuesta || 0),
+    convertidos: s.convertidos || 0,
+    descartados: s.perdidos || 0,
+    escalados: s.cita_agendada || 0,
     calientes: s.calientes || 0,
-    inactivos: s.inactivos || 0,
+    inactivos: 0, // No disponible en esta RPC
   };
 };
 
@@ -55,19 +55,17 @@ const fetchLeadsPaginated = async (
   search: string,
   estado: string
 ): Promise<{ data: Lead[]; totalCount: number }> => {
-  const offset = (page - 1) * pageSize;
-  
-  const { data, error } = await supabase.rpc('search_leads' as never, {
+  const { data, error } = await supabase.rpc('search_leads_optimized' as never, {
     p_search: search || null,
     p_estado: estado || null,
     p_limit: pageSize,
-    p_offset: offset,
+    p_page: page,
   } as never);
   
   if (error) throw error;
   
-  const results = data as unknown as Array<{ data: Record<string, unknown>[]; total_count: number }>;
-  const result = results?.[0];
+  // search_leads_optimized returns jsonb: {data: [...], total: N, page: N, limit: N}
+  const result = data as { data: Record<string, unknown>[]; total: number } | null;
   
   if (!result) return { data: [], totalCount: 0 };
   
@@ -75,6 +73,8 @@ const fetchLeadsPaginated = async (
   const leadsActivos = (result.data || []).filter(
     (l: Record<string, unknown>) => !l.convertido_a_paciente_id
   );
+  
+  const totalFromRPC = Number(result.total) || 0;
   
   const leads: Lead[] = leadsActivos.map((l: Record<string, unknown>) => {
     const telefono = (l.telefono as string) || '';
@@ -129,8 +129,8 @@ const fetchLeadsPaginated = async (
   });
   
   const totalFiltrado = leads.length < (result.data || []).length 
-    ? Math.max(0, Number(result.total_count) - ((result.data || []).length - leads.length))
-    : Number(result.total_count) || 0;
+    ? Math.max(0, totalFromRPC - ((result.data || []).length - leads.length))
+    : totalFromRPC;
   
   return { data: leads, totalCount: totalFiltrado };
 };

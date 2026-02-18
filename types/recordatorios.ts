@@ -12,26 +12,13 @@
  */
 
 // ============================================================
-// TIPO BD (definido manualmente - no está en tipos generados)
+// TIPO BD (automático de Supabase)
 // ============================================================
-export type NotificationStatus = 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled';
+import type { Tables, Enums } from './database';
 
-export interface NotificationQueueRow {
-  id: string;
-  consulta_id: string | null;
-  phone_number: string;
-  message_body: string;
-  status: NotificationStatus | null;
-  attempt_count: number | null;
-  next_attempt_at: string | null;
-  metadata: Record<string, unknown> | null;
-  created_at: string | null;
-  updated_at: string | null;
-  error_log: string | null;
-  priority: number | null;
-  reminder_type: string | null;
-  sent_at: string | null;
-}
+export type NotificationStatus = Enums<'notification_status'>;
+
+export type NotificationQueueRow = Tables<'notification_queue'>;
 
 // ============================================================
 // CONSTANTES Y ENUMS

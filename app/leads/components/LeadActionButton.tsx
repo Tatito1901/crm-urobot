@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { MoreHorizontal, ExternalLink, Loader2 } from 'lucide-react';
+import { MoreHorizontal, Loader2 } from 'lucide-react';
 import { WrapTooltip } from '@/app/components/common/InfoTooltip';
 import { getEtapaConfig, getPlantillasParaEtapa, personalizarPlantilla } from '@/app/lib/funnel-config';
 import { useLeadActions } from '@/hooks/useLeadActions';
@@ -43,20 +42,17 @@ export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
     }
   };
 
-  // Si es paciente convertido, solo mostrar link
+  // Si es paciente convertido, mostrar badge
   if (lead.estado === 'convertido' && lead.convertidoAPacienteId) {
     return (
-      <Link
-        href={`/pacientes/${lead.convertidoAPacienteId}`}
+      <span
         className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg
                    bg-emerald-50 dark:bg-emerald-500/10 
                    text-emerald-600 dark:text-emerald-400
-                   border border-emerald-200 dark:border-emerald-500/30
-                   hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"
+                   border border-emerald-200 dark:border-emerald-500/30"
       >
-        <ExternalLink className="w-3.5 h-3.5" />
-        Ver paciente
-      </Link>
+        ✅ Convertido
+      </span>
     );
   }
 

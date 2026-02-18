@@ -77,8 +77,8 @@ export default function ConsultasPage() {
 
       <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
         {/* Header con búsqueda y filtros */}
-        <div className="p-4 border-b border-border bg-muted/20">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="p-3 sm:p-4 border-b border-border bg-muted/20">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3 sm:items-center sm:justify-between">
             {/* Búsqueda */}
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -93,9 +93,9 @@ export default function ConsultasPage() {
               />
             </div>
 
-            {/* Filtros de sede */}
-            <div className="flex items-center gap-3">
-              <div className="inline-flex p-1 bg-muted/50 rounded-lg border border-border">
+            {/* Filtros de sede + refresh */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="inline-flex p-0.5 sm:p-1 bg-muted/50 rounded-lg border border-border flex-1 sm:flex-none">
                 {[
                   { key: 'all' as const, label: 'Todas', icon: <Building2 className="h-3.5 w-3.5" /> },
                   { key: 'POLANCO' as const, label: 'Polanco', icon: <MapPin className="h-3.5 w-3.5" /> },
@@ -106,7 +106,7 @@ export default function ConsultasPage() {
                     type="button"
                     onClick={() => handleSedeFilterChange(option.key)}
                     className={`
-                      px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap
+                      flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center sm:justify-start gap-1 sm:gap-1.5 whitespace-nowrap
                       ${sedeFilter === option.key
                         ? 'bg-background text-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground'
@@ -114,7 +114,7 @@ export default function ConsultasPage() {
                     `}
                   >
                     {option.icon}
-                    <span className="hidden sm:inline">{option.label}</span>
+                    <span className="hidden xs:inline sm:inline">{option.label}</span>
                   </button>
                 ))}
               </div>
@@ -122,14 +122,13 @@ export default function ConsultasPage() {
               <button
                 onClick={() => refetch()}
                 disabled={loading}
-                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 shrink-0"
                 title="Recargar datos"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
-
         </div>
 
         {/* Tabla */}

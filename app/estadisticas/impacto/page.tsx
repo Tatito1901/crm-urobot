@@ -66,10 +66,10 @@ function ComparativaCard({
   const displayValue = formato === 'porcentaje' ? `${valorActual}%` : valorActual.toLocaleString('es-MX');
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 hover:border-primary/30 transition-all">
-      <div className="flex items-start justify-between mb-3">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <Icon className="w-4 h-4 text-primary" />
+    <div className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-primary/30 transition-all">
+      <div className="flex items-start justify-between mb-2 sm:mb-3">
+        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+          <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
         </div>
         <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
           isPositive 
@@ -80,9 +80,9 @@ function ComparativaCard({
           {formatVariacion(variacion)}
         </div>
       </div>
-      <div className="text-2xl font-bold text-foreground mb-1">{displayValue}</div>
-      <div className="text-xs text-muted-foreground">{titulo}</div>
-      <div className="text-[10px] text-muted-foreground/70 mt-1">
+      <div className="text-xl sm:text-2xl font-bold text-foreground mb-0.5 sm:mb-1">{displayValue}</div>
+      <div className="text-[10px] sm:text-xs text-muted-foreground">{titulo}</div>
+      <div className="text-[9px] sm:text-[10px] text-muted-foreground/70 mt-0.5 sm:mt-1">
         Mes anterior: {formato === 'porcentaje' ? `${valorAnterior}%` : valorAnterior.toLocaleString('es-MX')}
       </div>
     </div>
@@ -103,7 +103,7 @@ function ImpactoUrobotCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`rounded-xl p-4 border transition-all ${
+    <div className={`rounded-xl p-3 sm:p-4 border transition-all ${
       highlight 
         ? 'bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border-cyan-200/50 dark:border-cyan-500/20' 
         : 'bg-card border-border hover:border-primary/30'
@@ -114,7 +114,7 @@ function ImpactoUrobotCard({
           highlight ? 'text-cyan-600 dark:text-cyan-300' : 'text-muted-foreground'
         }`}>{titulo}</span>
       </div>
-      <div className={`text-2xl font-bold ${highlight ? 'text-cyan-700 dark:text-cyan-300' : 'text-foreground'}`}>
+      <div className={`text-xl sm:text-2xl font-bold ${highlight ? 'text-cyan-700 dark:text-cyan-300' : 'text-foreground'}`}>
         {valor}
       </div>
       <div className="text-[11px] text-muted-foreground mt-1">{subtitulo}</div>
@@ -226,12 +226,12 @@ export default function ImpactoPage() {
       {/* ============================================================ */}
       {/* SECCIÓN 1: COMPARATIVA MES ACTUAL VS ANTERIOR */}
       {/* ============================================================ */}
-      <section className="mb-8">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
+      <section className="mb-4 sm:mb-8">
+        <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 sm:mb-4 flex items-center gap-2">
           <TrendingUp className="w-4 h-4" />
           Comparativa: {mesActual.periodo} vs {mesAnterior.periodo}
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <ComparativaCard
             titulo="Consultas Programadas"
             valorActual={mesActual.consultasProgramadas}
@@ -268,12 +268,12 @@ export default function ImpactoPage() {
       {/* ============================================================ */}
       {/* SECCIÓN 2: IMPACTO DE UROBOT */}
       {/* ============================================================ */}
-      <section className="mb-8">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
+      <section className="mb-4 sm:mb-8">
+        <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 sm:mb-4 flex items-center gap-2">
           <Bot className="w-4 h-4 text-cyan-500" />
           Impacto de Urobot este mes
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
           <ImpactoUrobotCard
             titulo="Usuarios Atendidos"
             valor={impactoUrobot.usuariosUnicos}
@@ -318,7 +318,7 @@ export default function ImpactoPage() {
       {/* ============================================================ */}
       {/* SECCIÓN 3: RENDIMIENTO POR CANAL + EFICIENCIA */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
         {/* Rendimiento por Canal */}
         <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
@@ -431,14 +431,14 @@ export default function ImpactoPage() {
       {/* ============================================================ */}
       {/* SECCIÓN 5: RESUMEN DE VALOR */}
       {/* ============================================================ */}
-      <div className="mt-8 p-6 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border border-cyan-200/50 dark:border-cyan-500/20 rounded-2xl">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+      <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border border-cyan-200/50 dark:border-cyan-500/20 rounded-2xl">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
           <Bot className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
           Resumen de Valor - Urobot
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           <div>
-            <div className="text-3xl font-bold text-cyan-700 dark:text-cyan-300">
+            <div className="text-2xl sm:text-3xl font-bold text-cyan-700 dark:text-cyan-300">
               {impactoUrobot.mensajesFueraHorario}
             </div>
             <div className="text-sm text-muted-foreground">
@@ -446,7 +446,7 @@ export default function ImpactoPage() {
             </div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-cyan-700 dark:text-cyan-300">
+            <div className="text-2xl sm:text-3xl font-bold text-cyan-700 dark:text-cyan-300">
               {formatTiempoRespuesta(impactoUrobot.tiempoPromedioRespuestaMs)}
             </div>
             <div className="text-sm text-muted-foreground">
@@ -454,7 +454,7 @@ export default function ImpactoPage() {
             </div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-cyan-700 dark:text-cyan-300">
+            <div className="text-2xl sm:text-3xl font-bold text-cyan-700 dark:text-cyan-300">
               24/7
             </div>
             <div className="text-sm text-muted-foreground">

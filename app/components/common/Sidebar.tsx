@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Target, MessageCircle, Users, MoreHorizontal } from "lucide-react";
+import { Home, Target, MessageCircle, MoreHorizontal, Calendar } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
@@ -16,9 +16,7 @@ const navItems: readonly NavItem[] = [
   // { label: "Agenda", href: "/agenda" }, // Temporalmente oculta
   { label: "Conversaciones", href: "/conversaciones" },
   { label: "Leads", href: "/leads" },
-  { label: "Pacientes", href: "/pacientes" },
   { label: "Consultas", href: "/consultas" },
-  { label: "Confirmaciones", href: "/confirmaciones" },
   { label: "Estadísticas", href: "/estadisticas" },
   { label: "🤖 UroBot", href: "/urobot" },
 ];
@@ -36,24 +34,34 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Main Sidebar */}
+      {/* Main Sidebar — Glass Morphism Premium */}
       <aside
-        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-sidebar-border lg:bg-sidebar lg:px-6 lg:py-8 lg:shadow-xl dark:lg:shadow-[0_25px_70px_-40px_rgba(10,33,94,0.75)] lg:backdrop-blur lg:w-60 xl:w-72 2xl:w-80 transition-all duration-300"
+        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-white/[0.06] lg:bg-sidebar lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 transition-all duration-300 relative overflow-hidden"
       >
-        <div className="flex flex-1 flex-col gap-8 overflow-hidden">
-          <header className="flex items-center gap-3 rounded-2xl border border-sidebar-border bg-sidebar-accent/50 px-4 py-3 shadow-sm">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white dark:bg-blue-500/20 dark:text-blue-100 text-lg font-semibold shadow-md dark:shadow-none">
-              DM
+        {/* Atmospheric glow */}
+        <div className="pointer-events-none absolute -top-20 -left-20 h-60 w-60 rounded-full bg-teal-500/[0.04] blur-[80px]" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-16 -right-16 h-40 w-40 rounded-full bg-cyan-500/[0.03] blur-[60px]" aria-hidden />
+
+        <div className="relative flex flex-1 flex-col gap-6 overflow-hidden">
+          {/* Brand Header */}
+          <header className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 shine-top">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 ring-1 ring-white/10 text-lg">
+              🤖
             </div>
-            <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-[0.32em] text-sidebar-foreground/60">CRM Clínico</p>
-              <p className="text-base font-semibold text-sidebar-foreground">Dr. Mario Martínez</p>
-              <p className="text-xs text-sidebar-foreground/70">Operativo en tiempo real</p>
+            <div className="space-y-0.5">
+              <p className="text-[9px] uppercase tracking-[0.35em] text-sidebar-foreground/40 font-semibold">CRM Clínico</p>
+              <p className="text-sm font-bold text-sidebar-foreground font-jakarta tracking-tight">Urobot</p>
+            </div>
+            <div className="ml-auto flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 pulse-live" />
+              <span className="text-[9px] text-emerald-400/80 font-medium">Live</span>
             </div>
           </header>
 
-          <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1">
-            <ul className="flex flex-col gap-1.5 text-sm">
+          {/* Navigation */}
+          <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1 scrollbar-hide">
+            <p className="mb-2 px-3 text-[9px] uppercase tracking-[0.3em] text-sidebar-foreground/30 font-semibold">Navegación</p>
+            <ul className="flex flex-col gap-0.5 text-[13px]">
               {navItems.map((item) => {
                 const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
                 return (
@@ -63,29 +71,24 @@ export function Sidebar() {
                       prefetch={true}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "group flex items-center gap-3 rounded-2xl border border-transparent px-3 py-3 font-medium transition-colors",
-                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400",
+                        "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-150",
+                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
                         isActive 
-                          ? "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-500/15 dark:text-white dark:border-white/10 shadow-sm"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                          ? "bg-white/[0.07] text-white border border-white/[0.08] shadow-sm shadow-teal-500/[0.05]"
+                          : "text-sidebar-foreground/50 hover:bg-white/[0.04] hover:text-sidebar-foreground/90 border border-transparent"
                       )}
                     >
-                      <span className="relative flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "h-2 w-2 rounded-full transition group-hover:opacity-70",
-                            isActive ? "bg-blue-600 dark:bg-blue-400 opacity-100" : "bg-sidebar-foreground/30 opacity-0"
-                          )}
-                          aria-hidden
-                        />
-                        <span>{item.label}</span>
-                      </span>
                       <span
-                        className="ml-auto text-xs text-sidebar-foreground/40 transition group-hover:text-sidebar-foreground/70"
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full transition-all duration-200",
+                          isActive ? "bg-teal-400 shadow-[0_0_6px_1px] shadow-teal-400/40" : "bg-sidebar-foreground/20 group-hover:bg-sidebar-foreground/40"
+                        )}
                         aria-hidden
-                      >
-                        →
-                      </span>
+                      />
+                      <span className="flex-1">{item.label}</span>
+                      {isActive && (
+                        <span className="h-4 w-0.5 rounded-full bg-teal-400/60" aria-hidden />
+                      )}
                     </Link>
                   </li>
                 );
@@ -94,30 +97,32 @@ export function Sidebar() {
           </nav>
         </div>
 
-        <footer className="space-y-3">
+        <footer className="relative space-y-3">
           <div className="flex items-center justify-between px-1">
-             <span className="text-[10px] uppercase tracking-wider text-sidebar-foreground/40 font-medium">Preferencia</span>
+             <span className="text-[9px] uppercase tracking-[0.2em] text-sidebar-foreground/30 font-semibold">Tema</span>
              <ThemeToggle />
           </div>
 
-          <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/30 px-4 py-3 text-xs text-sidebar-foreground/60">
-            <p className="font-medium text-sidebar-foreground">Agenda al día</p>
-            <span className="mt-1 block text-sidebar-foreground/60" suppressHydrationWarning>Hoy · {today}</span>
-            <p className="text-sidebar-foreground/40">Actualización automática cada 60&nbsp;min</p>
+          <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3.5 py-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-400/60" />
+              <p className="font-semibold text-sidebar-foreground/80 text-[11px]">Agenda al día</p>
+            </div>
+            <span className="mt-1.5 block text-[10px] text-sidebar-foreground/40" suppressHydrationWarning>{today}</span>
           </div>
 
           <form action={signOutAction} className="w-full">
             <button
               type="submit"
               className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-2xl border border-sidebar-border bg-sidebar px-4 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-all duration-100",
-                "hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-200",
-                "active:bg-red-100 dark:active:bg-red-500/15 active:scale-95",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400"
+                "w-full flex items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-xs font-medium text-sidebar-foreground/50 transition-all duration-150",
+                "hover:border-rose-500/20 hover:bg-rose-500/[0.06] hover:text-rose-300",
+                "active:bg-rose-500/10 active:scale-[0.98]",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
               )}
             >
               <svg
-                className="h-4 w-4"
+                className="h-3.5 w-3.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -133,7 +138,7 @@ export function Sidebar() {
             </button>
           </form>
 
-          <p className="text-center text-xs uppercase tracking-[0.2em] text-sidebar-foreground/30">
+          <p className="text-center text-[9px] uppercase tracking-[0.25em] text-sidebar-foreground/20 font-medium">
             UROBOT · CRM
           </p>
         </footer>
@@ -147,14 +152,12 @@ const BOTTOM_NAV_ITEMS: readonly { label: string; href: string; icon: ReactNode 
   { label: "Inicio", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
   { label: "Leads", href: "/leads", icon: <Target className="w-5 h-5" /> },
   { label: "Chat", href: "/conversaciones", icon: <MessageCircle className="w-5 h-5" /> },
-  { label: "Pacientes", href: "/pacientes", icon: <Users className="w-5 h-5" /> },
+  { label: "Consultas", href: "/consultas", icon: <Calendar className="w-5 h-5" /> },
   { label: "Más", href: "#more", icon: <MoreHorizontal className="w-5 h-5" /> },
 ];
 
 // Items secundarios (accesibles desde "Más")
 const SECONDARY_NAV_ITEMS: readonly NavItem[] = [
-  { label: "Consultas", href: "/consultas" },
-  { label: "Confirmaciones", href: "/confirmaciones" },
   { label: "Estadísticas", href: "/estadisticas" },
   { label: "UroBot", href: "/urobot" },
 ];
@@ -233,12 +236,12 @@ export function BottomNav() {
                       "flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
                       "active:scale-95 active:bg-muted/50 min-h-[48px]",
                       isActive
-                        ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white"
+                        ? "bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-300"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
                     <span>{item.label}</span>
-                    {isActive && <span className="ml-auto text-blue-500">•</span>}
+                    {isActive && <span className="ml-auto text-teal-400">•</span>}
                   </Link>
                 );
               })}
@@ -247,12 +250,12 @@ export function BottomNav() {
         </div>
       )}
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation — Glass Premium */}
       <nav
         aria-label="Navegación inferior"
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg shadow-[0_-4px_16px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)] lg:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.06] bg-background/90 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.4)] lg:hidden"
       >
-        <div className="flex items-center justify-around px-1 py-1">
+        <div className="flex items-center justify-around px-1 py-1.5">
           {BOTTOM_NAV_ITEMS.map((item) => {
             const isMoreButton = item.href === "#more";
             const isActive = isMoreButton 
@@ -266,9 +269,9 @@ export function BottomNav() {
                   onClick={() => setShowMore(!showMore)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
-                    "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400",
+                    "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
                     isActive
-                      ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white"
+                      ? "text-teal-400 dark:text-teal-300"
                       : "text-muted-foreground"
                   )}
                   aria-expanded={showMore}
@@ -287,13 +290,16 @@ export function BottomNav() {
                 prefetch={true}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
-                  "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400",
+                  "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
+                  "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
                   isActive 
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-white font-semibold" 
+                    ? "text-teal-400 dark:text-teal-300 font-semibold" 
                     : "text-muted-foreground"
                 )}
               >
+                {isActive && (
+                  <span className="absolute top-1 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-teal-400" aria-hidden />
+                )}
                 {item.icon}
                 <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
@@ -301,7 +307,7 @@ export function BottomNav() {
           })}
         </div>
         {/* ✅ Safe area para iPhones con notch */}
-        <div className="h-[env(safe-area-inset-bottom)] bg-background/95" />
+        <div className="h-[env(safe-area-inset-bottom)] bg-background/90" />
       </nav>
     </>
   );

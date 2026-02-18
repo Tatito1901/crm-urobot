@@ -208,13 +208,6 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
                   )}>
                     {appointment.paciente}
                   </h2>
-                  <Link 
-                    href={`/pacientes/${appointment.pacienteId}`}
-                    className="p-1.5 text-muted-foreground hover:bg-blue-500/10 rounded-md transition-all group"
-                    title="Ir al expediente completo"
-                  >
-                    <ExternalLink className="w-4 h-4 " />
-                  </Link>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="capitalize">{appointment.tipo}</span>

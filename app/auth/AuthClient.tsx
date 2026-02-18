@@ -56,9 +56,9 @@ export function AuthClient() {
             id="email"
             name="email"
             type="email"
-            placeholder="urologo@urobot.mx"
+            placeholder="correo@ejemplo.com"
             autoComplete="email"
-            className="h-11 bg-white dark:bg-black border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all rounded-xl shadow-sm"
+            className="h-11 bg-white dark:bg-white/[0.04] border-slate-300 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/20 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 dark:focus:border-teal-400 transition-all rounded-xl shadow-sm"
             required
             aria-invalid={!!state.error}
           />
@@ -79,7 +79,7 @@ export function AuthClient() {
             type="password"
             placeholder="••••••••"
             autoComplete="current-password"
-            className="h-11 bg-white dark:bg-black border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-zinc-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:border-emerald-500 transition-all rounded-xl shadow-sm"
+            className="h-11 bg-white dark:bg-white/[0.04] border-slate-300 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/20 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 dark:focus:border-teal-400 transition-all rounded-xl shadow-sm"
             required
             aria-invalid={!!state.error}
           />
@@ -89,7 +89,7 @@ export function AuthClient() {
 
         <Button 
           type="submit" 
-          className="w-full h-11 mt-2 bg-slate-950 hover:bg-slate-900 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500 dark:text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed" 
+          className="w-full h-11 mt-2 bg-slate-950 hover:bg-slate-900 text-white dark:bg-teal-600 dark:hover:bg-teal-500 dark:text-white font-bold rounded-xl transition-all shadow-lg shadow-teal-500/10 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed" 
           disabled={isPending}
         >
           {isPending ? (

@@ -156,7 +156,7 @@ export function DataTable({
       </div>
 
       {/* Mobile: Card-based layout optimizado */}
-      <div className="space-y-3 md:hidden">
+      <div className="space-y-2 md:hidden px-2 sm:px-3">
         {rows.map((row) => {
           const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
           const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
@@ -168,32 +168,24 @@ export function DataTable({
               onClick={onRowClick ? () => onRowClick(row.id) : undefined}
               onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
               className={cn(
-                "rounded-2xl border border-border/50 bg-card p-4 min-h-[80px] flex flex-col justify-center shadow-sm",
+                "rounded-xl border border-border/50 bg-card p-3 sm:p-4 min-h-[72px] flex flex-col justify-center shadow-sm",
                 onRowClick && "cursor-pointer active:scale-[0.99] transition-transform"
               )}
             >
-              <div className="flex justify-between items-start gap-3 mb-2">
+              <div className="flex justify-between items-start gap-2 sm:gap-3 mb-1.5 sm:mb-2">
                 <div className="flex-1 min-w-0">
-                  {primary && <div className="text-base font-semibold text-foreground leading-tight">{primary}</div>}
-                  {secondary && <div className="mt-1 text-sm text-muted-foreground">{secondary}</div>}
+                  {primary && <div className="text-sm sm:text-base font-semibold text-foreground leading-tight">{primary}</div>}
+                  {secondary && <div className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">{secondary}</div>}
                 </div>
               </div>
               
               {metadata.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-border/30 grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
-                  {metadata.map((key) => {
-                    const headerLabel = headers.find(h => h.key === key)?.label;
-                    return (
-                      <div key={key} className="flex flex-col gap-1">
-                        {headerLabel && typeof headerLabel === 'string' && (
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-medium">
-                            {headerLabel}
-                          </span>
-                        )}
-                        <div className="text-foreground">{row[key]}</div>
-                      </div>
-                    );
-                  })}
+                <div className="mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-border/30 flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
+                  {metadata.map((key) => (
+                    <div key={key} className="flex items-center gap-1.5">
+                      <div className="text-foreground">{row[key]}</div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

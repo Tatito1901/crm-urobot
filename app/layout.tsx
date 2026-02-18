@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Roboto } from 'next/font/google'
+import { Geist, Plus_Jakarta_Sans } from 'next/font/google'
 // ✅ OPTIMIZACIÓN: Temporal polyfill ahora se carga condicionalmente en componentes que lo necesitan
 import './globals.css'
 import { AppShell } from './components/common/AppShell'
@@ -15,18 +15,21 @@ const geistSans = Geist({
   adjustFontFallback: true, // Reduce CLS (Cumulative Layout Shift)
 })
 
-const roboto = Roboto({
-  weight: ['400', '500', '700'], // Reducido de 4 a 3 weights
-  variable: '--font-roboto',
+const jakarta = Plus_Jakarta_Sans({
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-jakarta',
   subsets: ['latin'],
   display: 'swap',
-  preload: false, // Solo preload de fuente principal
-  fallback: ['Arial', 'sans-serif'],
+  preload: false,
+  fallback: ['system-ui', 'sans-serif'],
   adjustFontFallback: true,
 })
 
 export const metadata: Metadata = {
-  title: 'CRM · Dr. Mario Martínez Thomas',
+  title: {
+    default: 'CRM · Urobot',
+    template: '%s | Urobot',
+  },
   description: 'Panel operativo para agentes asistidos por IA',
   manifest: '/manifest.json',
 }
@@ -47,9 +50,8 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        {/* DNS Prefetch y Preconnect para mejorar tiempo de carga */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Preconnect a Supabase para reducir latencia de API calls */}
+        {/* NOTA: Google Fonts preconnect eliminado — next/font self-hosts las fuentes */}
         {process.env.NEXT_PUBLIC_SUPABASE_URL && (
           <>
             <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
@@ -57,7 +59,7 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${geistSans.variable} ${roboto.variable} antialiased bg-background text-foreground`}>
+      <body className={`${geistSans.variable} ${jakarta.variable} antialiased bg-background text-foreground`}>
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>
