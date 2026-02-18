@@ -17,7 +17,10 @@ import {
   XCircle,
   Calendar,
   Clock,
-  Zap
+  Zap,
+  Brain,
+  Megaphone,
+  TrendingUp
 } from 'lucide-react';
 import { 
   getEtapaConfig, 
@@ -240,6 +243,56 @@ export function ConversationActionsPanel({
                     'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300'
                   }`}>
                     💡 {recomendacion.razon}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ===== PERFIL BEHAVIORAL COMPACTO ===== */}
+            {lead && (lead.signals || lead.esMetaAds) && (
+              <div className="bg-violet-50 dark:bg-violet-500/10 rounded-xl p-3 space-y-2">
+                <div className="flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-violet-500" />
+                  <span className="text-[11px] font-medium text-violet-600 dark:text-violet-300 uppercase tracking-wider">Perfil</span>
+                  {lead.esMetaAds && (
+                    <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded">
+                      <Megaphone className="w-3 h-3" /> Ads
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {lead.signals?.perfil_paciente && (
+                    <div className="px-2 py-1.5 bg-white dark:bg-slate-800 rounded-lg">
+                      <p className="text-[9px] text-slate-400 uppercase">Perfil</p>
+                      <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 capitalize">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</p>
+                    </div>
+                  )}
+                  {lead.signals?.prediccion_conversion && (
+                    <div className="px-2 py-1.5 bg-white dark:bg-slate-800 rounded-lg">
+                      <p className="text-[9px] text-slate-400 uppercase">Conversión</p>
+                      <p className={`text-[11px] font-semibold capitalize ${
+                        lead.signals.prediccion_conversion === 'alta' ? 'text-emerald-600' :
+                        lead.signals.prediccion_conversion === 'media' ? 'text-amber-600' : 'text-slate-500'
+                      }`}>{lead.signals.prediccion_conversion}</p>
+                    </div>
+                  )}
+                  {lead.signals?.barrera_principal && (
+                    <div className="px-2 py-1.5 bg-white dark:bg-slate-800 rounded-lg">
+                      <p className="text-[9px] text-slate-400 uppercase">Barrera</p>
+                      <p className="text-[11px] font-semibold text-amber-600 capitalize">{lead.signals.barrera_principal.replace(/_/g, ' ')}</p>
+                    </div>
+                  )}
+                  {lead.signals?.nivel_compromiso != null && (
+                    <div className="px-2 py-1.5 bg-white dark:bg-slate-800 rounded-lg">
+                      <p className="text-[9px] text-slate-400 uppercase">Compromiso</p>
+                      <p className="text-[11px] font-semibold text-violet-600">{lead.signals.nivel_compromiso}/10</p>
+                    </div>
+                  )}
+                </div>
+                {lead.signals?.incentivo_sugerido && (
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg">
+                    <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300">Incentivo: <strong className="capitalize">{lead.signals.incentivo_sugerido.replace(/_/g, ' ')}</strong></span>
                   </div>
                 )}
               </div>

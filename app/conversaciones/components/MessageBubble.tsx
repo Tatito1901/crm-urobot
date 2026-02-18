@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import { FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye } from 'lucide-react';
 import type { TipoMensaje } from '@/types/chat';
+import { FASE_DISPLAY } from '@/types/chat';
 
 interface MessageBubbleProps {
   contenido: string;
@@ -16,6 +17,9 @@ interface MessageBubbleProps {
   mediaFilename?: string | null;
   mediaCaption?: string | null;
   mediaDurationSeconds?: number | null;
+  // Clasificación de conversación
+  faseConversacion?: string | null;
+  accionBot?: string | null;
 }
 
 // Componente para renderizar imágenes con lightbox
@@ -354,6 +358,20 @@ const RichText = memo(function RichText({ content, className, isBot }: { content
   );
 });
 
+// Color map for fase badges
+const FASE_BADGE_COLORS: Record<string, string> = {
+  slate: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+  blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  cyan: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
+  violet: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
+  emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+  amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+  teal: 'bg-teal-500/10 text-teal-500 border-teal-500/20',
+  red: 'bg-red-500/10 text-red-500 border-red-500/20',
+  indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+  gray: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+};
+
 export const MessageBubble = memo(function MessageBubble({
   contenido,
   rol,
@@ -365,6 +383,8 @@ export const MessageBubble = memo(function MessageBubble({
   mediaFilename,
   mediaCaption,
   mediaDurationSeconds,
+  faseConversacion,
+  accionBot,
 }: MessageBubbleProps) {
   const isAsistente = rol !== 'usuario';
 
@@ -428,6 +448,15 @@ export const MessageBubble = memo(function MessageBubble({
             {renderContent()}
           </div>
           
+          {/* Fase badge for bot messages */}
+          {isAsistente && faseConversacion && FASE_DISPLAY[faseConversacion] && (
+            <div className="px-3 sm:px-4 pb-1">
+              <span className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border ${FASE_BADGE_COLORS[FASE_DISPLAY[faseConversacion].color] || FASE_BADGE_COLORS.gray}`}>
+                {FASE_DISPLAY[faseConversacion].label}
+              </span>
+            </div>
+          )}
+
           {/* Footer con hora - más elegante */}
           <div className={`flex items-center justify-end gap-1 sm:gap-1.5 px-3 sm:px-3.5 pb-2 sm:pb-2.5 ${isAsistente ? 'text-slate-400' : 'text-white/60'}`}>
             {tipoMensaje !== 'text' && (

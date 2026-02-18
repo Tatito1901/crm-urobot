@@ -80,8 +80,8 @@ export default function LeadsPage() {
               onClick={() => setSelectedLeadId(prev => prev ? null : leads[0]?.id ?? null)}
               className={`p-2 rounded-lg transition-colors ${
                 selectedLeadId
-                  ? 'bg-teal-100 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400'
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+                  ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400'
+                  : 'hover:bg-secondary text-muted-foreground'
               }`}
               title="Panel clínico"
             >
@@ -228,8 +228,8 @@ export default function LeadsPage() {
             onClick={handleCloseSidebar}
           />
           <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 animate-in slide-in-from-bottom duration-300">
-            <div className="bg-white dark:bg-slate-900 rounded-t-2xl max-h-[80vh] overflow-hidden flex flex-col">
-              <div className="w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mt-2 mb-1" />
+            <div className="bg-card rounded-t-2xl max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-1" />
               <LeadClinicSidebar
                 lead={selectedLead}
                 onClose={handleCloseSidebar}

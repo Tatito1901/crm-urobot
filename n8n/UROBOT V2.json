@@ -576,7 +576,7 @@
     },
     {
       "parameters": {
-        "amount": 30
+        "amount": 5
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -585,7 +585,7 @@
         2072
       ],
       "id": "e8cd8cfa-4a96-499d-ae53-1be80c1df758",
-      "name": "⏳ Debounce 30s",
+      "name": "⏳ Debounce 5s",
       "webhookId": "urobot-debounce-v2"
     },
     {
@@ -1089,9 +1089,9 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT guardar_mensaje_urobot($1::text, $2::text, $3::text, $4::text, $5::text, $6::jsonb, $7::text, $8::text, $9::text, $10::text)",
+        "query": "SELECT guardar_mensaje_urobot($1::text, $2::text, $3::text, $4::text, $5::text, $6::jsonb, $7::text, $8::text, $9::text, $10::text, $11::text, $12::integer, $13::text, $14::text, $15::boolean)",
         "options": {
-          "queryReplacement": "={{ [$('9️⃣ Formatear Contexto').first().json.telefono, $('9️⃣ Formatear Contexto').first().json.nombreUsuario || 'Dr. Mario', 'bot', ($('🧹 Limpiar Respuesta').first().json.text || '').substring(0, 10000), 'text', '{}', '', '', 'AI Agent', ''] }}"
+          "queryReplacement": "={{ [$('9️⃣ Formatear Contexto').first().json.telefono, $('9️⃣ Formatear Contexto').first().json.nombreUsuario || 'Dr. Mario', 'bot', ($('🧹 Limpiar Respuesta').first().json.text || '').substring(0, 10000), 'text', '{}', null, null, 'AI Agent', null, null, null, $('🏷️ Procesar Clasificación').first().json.fase_conversacion || null, $('🏷️ Procesar Clasificación').first().json.accion_bot || null, $('🏷️ Procesar Clasificación').first().json.espera_respuesta ?? true] }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
@@ -1675,14 +1675,14 @@
       "main": [
         [
           {
-            "node": "⏳ Debounce 30s",
+            "node": "⏳ Debounce 5s",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "⏳ Debounce 30s": {
+    "⏳ Debounce 5s": {
       "main": [
         [
           {

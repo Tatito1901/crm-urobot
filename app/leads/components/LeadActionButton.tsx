@@ -47,9 +47,9 @@ export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
     return (
       <span
         className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg
-                   bg-emerald-50 dark:bg-emerald-500/10 
+                   bg-emerald-500/10 
                    text-emerald-600 dark:text-emerald-400
-                   border border-emerald-200 dark:border-emerald-500/30"
+                   border border-emerald-500/20"
       >
         ✅ Convertido
       </span>
@@ -59,27 +59,27 @@ export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
   // Configuración del botón según estado y recomendación
   const getQuickButtonConfig = () => {
     if (recomendacion?.prioridad === 'no_contactar') {
-      return { label: '⛔', color: 'bg-slate-100 text-slate-400', disabled: true };
+      return { label: '⛔', color: 'bg-secondary text-muted-foreground', disabled: true };
     }
     if (recomendacion?.accion === 'esperar') {
       const dias = recomendacion.diasEsperar;
       // Si diasEsperar es 0 o undefined, mostrar solo el reloj
       if (dias === undefined || dias === 0) {
-        return { label: '⏳', color: 'bg-slate-100 text-slate-500', disabled: true };
+        return { label: '⏳', color: 'bg-secondary text-muted-foreground', disabled: true };
       }
-      return { label: `⏳ ${dias}d`, color: 'bg-slate-100 text-slate-500', disabled: true };
+      return { label: `⏳ ${dias}d`, color: 'bg-secondary text-muted-foreground', disabled: true };
     }
     if (recomendacion?.prioridad === 'alta') {
-      return { label: '🚨', color: 'bg-red-100 text-red-600 dark:bg-red-500/20 animate-pulse', disabled: false };
+      return { label: '🚨', color: 'bg-red-500/10 text-red-600 dark:text-red-400 animate-pulse', disabled: false };
     }
     
     switch (lead.estado) {
-      case 'nuevo': return { label: '👋', color: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20', disabled: false };
-      case 'interactuando': return { label: '🤖', color: 'bg-sky-100 text-sky-600 dark:bg-sky-500/20', disabled: false };
-      case 'contactado': return { label: '📋', color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20', disabled: false };
-      case 'cita_propuesta': return { label: '💰', color: 'bg-purple-100 text-purple-600 dark:bg-purple-500/20', disabled: false };
-      case 'cita_agendada': return { label: '📅', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20', disabled: false };
-      default: return { label: '💬', color: 'bg-slate-100 text-slate-600', disabled: false };
+      case 'nuevo': return { label: '👋', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', disabled: false };
+      case 'interactuando': return { label: '🤖', color: 'bg-sky-500/10 text-sky-600 dark:text-sky-400', disabled: false };
+      case 'contactado': return { label: '📋', color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400', disabled: false };
+      case 'cita_propuesta': return { label: '💰', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400', disabled: false };
+      case 'cita_agendada': return { label: '📅', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', disabled: false };
+      default: return { label: '💬', color: 'bg-secondary text-foreground', disabled: false };
     }
   };
 
@@ -112,10 +112,10 @@ export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
         {/* Botón para abrir modal con más opciones */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
           title="Más acciones"
         >
-          <MoreHorizontal className="w-4 h-4 text-slate-400" />
+          <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 

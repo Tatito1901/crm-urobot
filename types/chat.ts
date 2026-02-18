@@ -40,7 +40,34 @@ export interface Mensaje {
   mediaFilename?: string | null;
   mediaCaption?: string | null;
   mediaDurationSeconds?: number | null;
+
+  // Clasificación de conversación (solo mensajes outbound del bot)
+  faseConversacion?: string | null;   // BD: fase_conversacion
+  accionBot?: string | null;          // BD: accion_bot
+  esperaRespuesta?: boolean | null;   // BD: espera_respuesta
 }
+
+// Fases de conversación posibles (generadas por el clasificador híbrido en n8n)
+export const FASES_CONVERSACION = [
+  'bienvenida', 'descubrimiento', 'horarios_dados', 'oferta_cita',
+  'confirmacion', 'precio_dado', 'ubicacion_dada', 'escalamiento',
+  'seguimiento', 'conversacion'
+] as const;
+export type FaseConversacion = (typeof FASES_CONVERSACION)[number];
+
+// Display y colores para badges de fases
+export const FASE_DISPLAY: Record<string, { label: string; color: string }> = {
+  bienvenida:      { label: 'Bienvenida',    color: 'slate' },
+  descubrimiento:  { label: 'Descubrimiento', color: 'blue' },
+  horarios_dados:  { label: 'Horarios',       color: 'cyan' },
+  oferta_cita:     { label: 'Oferta Cita',    color: 'violet' },
+  confirmacion:    { label: 'Confirmación',    color: 'emerald' },
+  precio_dado:     { label: 'Precio',          color: 'amber' },
+  ubicacion_dada:  { label: 'Ubicación',       color: 'teal' },
+  escalamiento:    { label: 'Escalamiento',    color: 'red' },
+  seguimiento:     { label: 'Seguimiento',     color: 'indigo' },
+  conversacion:    { label: 'Conversación',    color: 'gray' },
+};
 
 export interface ConversacionUI {
   telefono: string;

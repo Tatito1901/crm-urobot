@@ -58,6 +58,14 @@ const HorizontalBarChart = dynamic(
   }
 );
 
+const ConversationFunnelChart = dynamic(
+  () => import('./components/charts/ConversationFunnelChart'),
+  {
+    loading: () => <ChartSkeleton height={320} />,
+    ssr: false,
+  }
+);
+
 // ============================================================
 // PÁGINA PRINCIPAL
 // ============================================================
@@ -189,6 +197,21 @@ export default function UrobotPage() {
               neutral={crmResumen.sentimentNeutral}
             />
             <ActividadHeatmap datos={crmData.porHora} />
+          </div>
+
+          {/* Funnel de fases de conversación */}
+          <div className={spacing.sectionGap}>
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-violet-500" />
+                  Funnel de Conversación (30d)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ConversationFunnelChart />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Gráfico de evolución */}

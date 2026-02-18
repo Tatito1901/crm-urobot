@@ -150,7 +150,7 @@ export const MetricCard = React.memo(({
   if (variant === 'compact') {
     return (
       <div
-        className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card/80 border border-border/40 transition-all duration-200 hover:border-border/60 hover:bg-card hover:shadow-sm min-h-[72px] cursor-pointer"
+        className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-border/80 hover:bg-card hover:shadow-sm min-h-[72px] cursor-pointer"
         title={tooltip}
       >
         {(icon || IconComponent) && (

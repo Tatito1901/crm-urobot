@@ -166,17 +166,17 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
         <div 
-          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-lg lg:max-w-xl
-                     animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+          className="bg-card rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-lg lg:max-w-xl
+                     animate-in fade-in zoom-in-95 duration-200 overflow-hidden border border-border"
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="relative px-5 pt-5 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="relative px-5 pt-5 pb-4 border-b border-border">
             <button 
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="absolute top-4 right-4 p-2 hover:bg-secondary rounded-xl transition-colors"
             >
-              <X className="w-5 h-5 text-slate-400" />
+              <X className="w-5 h-5 text-muted-foreground" />
             </button>
             
             <div className="flex items-center gap-3">
@@ -190,7 +190,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
               </div>
               
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+                <h3 className="font-semibold text-foreground truncate">
                   {lead.nombre || 'Sin nombre'}
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
@@ -201,7 +201,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                   >
                     {etapaConfig?.icon} {etapaConfig?.nombre || lead.estado}
                   </span>
-                  <span className="text-xs text-slate-400">{lead.telefono}</span>
+                  <span className="text-xs text-muted-foreground">{lead.telefono}</span>
                 </div>
               </div>
             </div>
@@ -209,9 +209,9 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
             {/* Recomendación IA */}
             {recomendacion && recomendacion.prioridad !== 'no_contactar' && (
               <div className={`mt-3 p-2.5 rounded-lg text-xs flex items-start gap-2 ${
-                recomendacion.prioridad === 'alta' ? 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300' :
-                recomendacion.prioridad === 'media' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300' :
-                'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300'
+                recomendacion.prioridad === 'alta' ? 'bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20' :
+                recomendacion.prioridad === 'media' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20' :
+                'bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20'
               }`}>
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{recomendacion.razon}</span>
@@ -220,35 +220,35 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-slate-200 dark:border-slate-700">
+          <div className="flex border-b border-border">
             <button
               onClick={() => setActiveTab('mensaje')}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative
                 ${activeTab === 'mensaje' 
-                  ? 'text-blue-600 dark:text-blue-400' 
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'}`}
             >
               <div className="flex items-center justify-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Enviar mensaje
               </div>
               {activeTab === 'mensaje' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
             </button>
             <button
               onClick={() => setActiveTab('estado')}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative
                 ${activeTab === 'estado' 
-                  ? 'text-blue-600 dark:text-blue-400' 
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'}`}
             >
               <div className="flex items-center justify-center gap-2">
                 <Zap className="w-4 h-4" />
                 Cambiar estado
               </div>
               {activeTab === 'estado' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
               )}
             </button>
           </div>
@@ -259,7 +259,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
               <div className="space-y-4">
                 {/* Plantillas */}
                 <div>
-                  <label className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 block">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">
                     Plantillas rápidas
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -269,13 +269,13 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                         onClick={() => handleSelectPlantilla(plantilla)}
                         className={`p-3 sm:p-4 text-left rounded-xl border transition-all active:scale-[0.98]
                           ${selectedPlantilla?.id === plantilla.id 
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-sm' 
-                            : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                            ? 'border-primary bg-primary/5 shadow-sm' 
+                            : 'border-border hover:border-primary/40 hover:bg-secondary/50'}`}
                       >
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                        <p className="text-sm font-medium text-foreground">
                           {plantilla.nombre}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                        <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
                           {plantilla.descripcion}
                         </p>
                       </button>
@@ -286,17 +286,17 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                 {/* Editor de mensaje */}
                 {selectedPlantilla && (
                   <div className="space-y-3 animate-in fade-in duration-200">
-                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Mensaje personalizado
                     </label>
                     <textarea
                       value={mensaje}
                       onChange={(e) => setMensaje(e.target.value)}
                       rows={6}
-                      className="w-full px-4 py-3 text-sm leading-relaxed bg-slate-50 dark:bg-slate-800 
-                               border border-slate-200 dark:border-slate-700 rounded-xl 
-                               focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 
-                               resize-y min-h-[120px] sm:min-h-[150px] max-h-[300px]"
+                      className="w-full px-4 py-3 text-sm leading-relaxed bg-muted/50 text-foreground
+                               border border-border rounded-xl 
+                               focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary 
+                               resize-y min-h-[120px] sm:min-h-[150px] max-h-[300px] placeholder:text-muted-foreground"
                       placeholder="Escribe tu mensaje..."
                     />
                     
@@ -315,12 +315,12 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                       <button
                         onClick={handleCopiar}
                         disabled={!mensaje.trim()}
-                        className="px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 
-                                 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-2"
+                        className="px-4 py-3 bg-secondary hover:bg-secondary/80 
+                                 rounded-xl transition-colors flex items-center gap-2"
                         title="Copiar mensaje"
                       >
-                        {copiado ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-500" />}
-                        <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-300">Copiar</span>
+                        {copiado ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+                        <span className="hidden sm:inline text-sm text-foreground">Copiar</span>
                       </button>
                     </div>
                   </div>
@@ -329,7 +329,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                 {/* Acción directa si no hay plantilla seleccionada */}
                 {!selectedPlantilla && (
                   <div className="pt-2">
-                    <p className="text-xs text-slate-400 text-center mb-3">
+                    <p className="text-xs text-muted-foreground text-center mb-3">
                       Selecciona una plantilla arriba o abre WhatsApp directamente
                     </p>
                     <a
@@ -349,7 +349,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-slate-500 mb-4">
+                <p className="text-xs text-muted-foreground mb-4">
                   Selecciona el nuevo estado del lead
                 </p>
                 
@@ -360,17 +360,17 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                     disabled={cambioExitoso !== null}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all
                       ${cambioExitoso === estado 
-                        ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-500/20 dark:border-emerald-500/50' 
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}
+                        ? 'bg-emerald-500/10 border-emerald-500/30' 
+                        : 'border-border hover:border-border/80 hover:bg-secondary/50'}
                       disabled:opacity-50`}
                   >
                     <div className={`w-8 h-8 rounded-full ${color} text-white flex items-center justify-center`}>
                       {icon}
                     </div>
-                    <span className="flex-1 text-left text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <span className="flex-1 text-left text-sm font-medium text-foreground">
                       {cambioExitoso === estado ? '✓ Actualizado' : label}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </button>
                 ))}
               </div>
@@ -379,8 +379,8 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
 
           {/* Footer con info */}
           {historial && (
-            <div className="px-5 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-              <div className="flex items-center justify-between text-xs text-slate-500">
+            <div className="px-5 py-3 border-t border-border bg-secondary/30">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" />
                   <span>

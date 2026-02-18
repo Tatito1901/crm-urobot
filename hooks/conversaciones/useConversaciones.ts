@@ -122,6 +122,9 @@ const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> =>
       tipoMensaje: inferirTipoMensaje(row.tipo as string | null, row.tipo_contenido as string | null, row.media_url as string | null),
       mediaUrl: row.media_url as string | null,
       tipoContenido: row.tipo_contenido as string | null,
+      faseConversacion: (row.fase_conversacion as string) || null,
+      accionBot: (row.accion_bot as string) || null,
+      esperaRespuesta: row.espera_respuesta as boolean | null,
     }))
 }
 

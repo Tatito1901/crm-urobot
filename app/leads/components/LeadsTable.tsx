@@ -43,7 +43,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
         </div>
       ),
       fuente: (
-        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium border ${CANAL_COLORS[lead.fuente]?.bg || 'bg-slate-50 dark:bg-slate-500/10'} ${CANAL_COLORS[lead.fuente]?.text || 'text-slate-600'} ${CANAL_COLORS[lead.fuente]?.border || 'border-slate-200'}`}>
+        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium border ${CANAL_COLORS[lead.fuente]?.bg || 'bg-secondary'} ${CANAL_COLORS[lead.fuente]?.text || 'text-foreground'} ${CANAL_COLORS[lead.fuente]?.border || 'border-border'}`}>
           <span>{CANAL_COLORS[lead.fuente]?.icon || '📌'}</span>
           <span className="hidden sm:inline">{lead.fuente}</span>
         </div>

@@ -105,12 +105,18 @@ export type RecordatorioDetalle = Recordatorio & {
 export const STATE_COLORS: Record<string, string> = {
   // Estados de Leads
   nuevo: "border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/60 dark:bg-blue-500/15 dark:text-blue-100",
+  interactuando: "border border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/60 dark:bg-sky-500/15 dark:text-sky-100",
   contactado: "border border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-400/60 dark:bg-cyan-500/15 dark:text-cyan-100",
   interesado: "border border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-400/60 dark:bg-purple-500/15 dark:text-purple-100",
   calificado: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/60 dark:bg-emerald-500/15 dark:text-emerald-100",
   escalado: "border border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-400/60 dark:bg-orange-500/15 dark:text-orange-100",
+  cita_propuesta: "border border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-400/60 dark:bg-purple-500/15 dark:text-purple-100",
+  en_seguimiento: "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/60 dark:bg-amber-500/15 dark:text-amber-100",
   cita_agendada: "border border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-400/60 dark:bg-teal-500/15 dark:text-teal-100",
+  show: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/60 dark:bg-emerald-500/15 dark:text-emerald-100",
   convertido: "border border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-400/60 dark:bg-teal-500/15 dark:text-teal-100",
+  no_show: "border border-red-200 bg-red-50 text-red-700 dark:border-red-400/60 dark:bg-red-500/15 dark:text-red-100",
+  perdido: "border border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-400/60 dark:bg-slate-500/15 dark:text-slate-100",
   no_interesado: "border border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-400/60 dark:bg-slate-500/15 dark:text-slate-100",
   descartado: "border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/60 dark:bg-rose-500/15 dark:text-rose-100",
   // Estados de Pacientes

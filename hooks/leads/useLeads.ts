@@ -10,7 +10,7 @@
 
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
-import { type Lead, type LeadSubestado, LEAD_ESTADO_DISPLAY, LEAD_ESTADOS_ACTIVOS, LEAD_SUBESTADOS } from '@/types/leads'
+import { type Lead, type LeadSignals, type LeadScores, type LeadSubestado, LEAD_ESTADO_DISPLAY, LEAD_ESTADOS_ACTIVOS, LEAD_SUBESTADOS } from '@/types/leads'
 import { SWR_CONFIG_STANDARD } from '@/lib/swr-config'
 
 const supabase = createClient()
@@ -38,6 +38,33 @@ interface UseLeadsReturn {
 const DEFAULT_STATS: LeadStats = {
   total: 0, nuevos: 0, enSeguimiento: 0, convertidos: 0,
   descartados: 0, clientes: 0, calientes: 0, inactivos: 0,
+}
+
+function parseLeadSignals(raw: unknown): LeadSignals | null {
+  if (!raw || typeof raw !== 'object') return null
+  const s = raw as Record<string, unknown>
+  if (!s.perfil_paciente && !s.prediccion_conversion && !s.nivel_compromiso) return null
+  return {
+    perfil_paciente: (s.perfil_paciente as string) || null,
+    emociones: Array.isArray(s.emociones) ? s.emociones : [],
+    nivel_compromiso: typeof s.nivel_compromiso === 'number' ? s.nivel_compromiso : null,
+    prediccion_conversion: (s.prediccion_conversion as string) || null,
+    incentivo_sugerido: (s.incentivo_sugerido as string) || null,
+    barrera_principal: (s.barrera_principal as string) || null,
+    pregunto_precio: s.pregunto_precio === true,
+  }
+}
+
+function parseLeadScores(raw: unknown): LeadScores | null {
+  if (!raw || typeof raw !== 'object') return null
+  const s = raw as Record<string, unknown>
+  if (s.clinical === undefined && s.intent === undefined) return null
+  return {
+    clinical: Number(s.clinical) || 0,
+    intent: Number(s.intent) || 0,
+    bant: Number(s.bant) || 0,
+    engagement: Number(s.engagement) || 0,
+  }
 }
 
 /**
@@ -97,6 +124,15 @@ const fetchLeads = async (): Promise<{ leads: Lead[], stats: LeadStats, count: n
       fechaSiguienteAccion,
       createdAt: (l.created_at as string) || '',
       updatedAt: (l.updated_at as string) || '',
+      // Behavioral signals
+      signals: parseLeadSignals(l.signals),
+      scores: parseLeadScores(l.scores),
+      // Meta Ads attribution
+      campanaId: (l.campana_id as string) || null,
+      campanaHeadline: (l.campana_headline as string) || null,
+      campanaUrl: (l.campana_url as string) || null,
+      ctwaClid: (l.ctwa_clid as string) || null,
+      esMetaAds: !!(l.campana_id || l.ctwa_clid),
       // Calculados
       nombreDisplay: nombre,
       estadoDisplay: LEAD_ESTADO_DISPLAY[estado] || estado,

@@ -84,6 +84,27 @@ export const LEAD_ESTADO_DISPLAY: Record<LeadEstado, string> = {
 
 
 // ============================================================
+// INTERFACES DE DATOS ENRIQUECIDOS
+// ============================================================
+
+export interface LeadSignals {
+  perfil_paciente: string | null;       // decidido, interesado_dudoso, solo_curiosidad, precio_primero, urgente
+  emociones: string[];                   // miedo, ansiedad, frustración, esperanza, etc.
+  nivel_compromiso: number | null;       // 1-10
+  prediccion_conversion: string | null;  // alta, media, baja, muy_baja
+  incentivo_sugerido: string | null;     // urgencia_temporal, prueba_social, reciprocidad, etc.
+  barrera_principal?: string | null;     // precio, miedo, tiempo, desconfianza, distancia
+  pregunto_precio?: boolean;
+}
+
+export interface LeadScores {
+  clinical: number;
+  intent: number;
+  bant: number;
+  engagement: number;
+}
+
+// ============================================================
 // INTERFACE FRONTEND (camelCase)
 // ============================================================
 
@@ -109,7 +130,18 @@ export interface Lead {
   fechaSiguienteAccion: string | null; // BD: fecha_siguiente_accion
   createdAt: string;
   updatedAt: string;
-  
+
+  // === Datos behavioral (BD: leads.signals jsonb) ===
+  signals: LeadSignals | null;
+  scores: LeadScores | null;            // BD: leads.scores jsonb
+
+  // === Meta Ads Attribution (BD: leads.campana_*) ===
+  campanaId: string | null;             // BD: campana_id
+  campanaHeadline: string | null;       // BD: campana_headline
+  campanaUrl: string | null;            // BD: campana_url
+  ctwaClid: string | null;              // BD: ctwa_clid
+  esMetaAds: boolean;                   // Derivado: true si campana_id o ctwa_clid existen
+
   // === Campos calculados/UI ===
   nombreDisplay: string;               // Display name
   estadoDisplay: string;               // LEAD_ESTADO_DISPLAY[estado]
@@ -126,6 +158,38 @@ export interface Lead {
 // DEFAULTS
 // ============================================================
 export const DEFAULT_LEAD_ESTADO: LeadEstado = 'nuevo';
+
+// ============================================================
+// PARSERS JSONB → TYPED
+// ============================================================
+
+function parseSignals(raw: unknown): LeadSignals | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const s = raw as Record<string, unknown>;
+  // Only return if there's at least one meaningful field
+  if (!s.perfil_paciente && !s.prediccion_conversion && !s.nivel_compromiso) return null;
+  return {
+    perfil_paciente: (s.perfil_paciente as string) || null,
+    emociones: Array.isArray(s.emociones) ? s.emociones : [],
+    nivel_compromiso: typeof s.nivel_compromiso === 'number' ? s.nivel_compromiso : null,
+    prediccion_conversion: (s.prediccion_conversion as string) || null,
+    incentivo_sugerido: (s.incentivo_sugerido as string) || null,
+    barrera_principal: (s.barrera_principal as string) || null,
+    pregunto_precio: s.pregunto_precio === true,
+  };
+}
+
+function parseScores(raw: unknown): LeadScores | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const s = raw as Record<string, unknown>;
+  if (s.clinical === undefined && s.intent === undefined) return null;
+  return {
+    clinical: Number(s.clinical) || 0,
+    intent: Number(s.intent) || 0,
+    bant: Number(s.bant) || 0,
+    engagement: Number(s.engagement) || 0,
+  };
+}
 
 // ============================================================
 // MAPPER BD → FRONTEND
@@ -167,7 +231,18 @@ export function mapLeadFromDB(row: LeadRow): Lead {
     fechaSiguienteAccion: row.fecha_siguiente_accion,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    
+
+    // Behavioral signals
+    signals: parseSignals(row.signals),
+    scores: parseScores(row.scores),
+
+    // Meta Ads attribution
+    campanaId: (row as Record<string, unknown>).campana_id as string | null ?? null,
+    campanaHeadline: (row as Record<string, unknown>).campana_headline as string | null ?? null,
+    campanaUrl: (row as Record<string, unknown>).campana_url as string | null ?? null,
+    ctwaClid: (row as Record<string, unknown>).ctwa_clid as string | null ?? null,
+    esMetaAds: !!((row as Record<string, unknown>).campana_id || (row as Record<string, unknown>).ctwa_clid),
+
     // Calculados
     nombreDisplay: row.nombre || row.telefono,
     estadoDisplay: LEAD_ESTADO_DISPLAY[estado] || estado,

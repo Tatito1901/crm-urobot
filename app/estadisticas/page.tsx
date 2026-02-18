@@ -17,7 +17,8 @@ import {
   Share2,
   BarChart3,
   Flame,
-  Clock
+  Clock,
+  Megaphone
 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
@@ -66,6 +67,11 @@ const DashboardPredictive = dynamic(() => import('./components/dashboard/Dashboa
 
 const DashboardHourlyPatterns = dynamic(() => import('./components/dashboard/DashboardHourlyPatterns').then(mod => mod.DashboardHourlyPatterns), {
   loading: () => <Skeleton className="h-[280px] w-full" />,
+  ssr: false
+});
+
+const CampaignLeadsChart = dynamic(() => import('./components/CampaignLeadsChart'), {
+  loading: () => <Skeleton className="h-[300px] w-full" />,
   ssr: false
 });
 
@@ -270,6 +276,22 @@ export default function EstadisticasPage() {
           </CardContent>
         </Card>
 
+      </div>
+
+      {/* Leads por Campaña Meta Ads */}
+      <div className={`mt-3 sm:mt-6`}>
+        <Card className={`${cards.base} min-w-0`}>
+          <CardHeader className={spacing.cardHeader}>
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+              <Megaphone className="w-4 h-4 text-blue-500" />
+              Leads por Campaña
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Distribución de leads por campaña Meta Ads (30d)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CampaignLeadsChart />
+          </CardContent>
+        </Card>
       </div>
 
       {/* Patrones y Métricas */}

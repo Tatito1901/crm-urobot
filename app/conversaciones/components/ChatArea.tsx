@@ -26,6 +26,8 @@ interface Mensaje {
   mediaFilename?: string | null
   mediaCaption?: string | null
   mediaDurationSeconds?: number | null
+  faseConversacion?: string | null
+  accionBot?: string | null
 }
 
 interface ChatAreaProps {
@@ -209,6 +211,8 @@ export function ChatArea({
                             mediaFilename={msg.mediaFilename}
                             mediaCaption={msg.mediaCaption}
                             mediaDurationSeconds={msg.mediaDurationSeconds}
+                            faseConversacion={msg.faseConversacion}
+                            accionBot={msg.accionBot}
                           />
                         )
                       })}
