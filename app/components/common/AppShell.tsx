@@ -30,8 +30,8 @@ export function AppShell({ children }: PropsWithChildren) {
       return
     }
     const supabase = createClient()
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
         router.replace('/auth')
       } else {
         setAuthChecked(true)

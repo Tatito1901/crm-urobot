@@ -1,0 +1,1897 @@
+{
+  "name": "Angiobot WA Cloud Bussiness",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        28560,
+        928
+      ],
+      "id": "be786303-e4e5-461d-903b-29b8d9f6150f",
+      "name": "WhatsApp Trigger",
+      "webhookId": "ba54342f-03dc-4236-a2f3-8732685c67c7",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "duoOKQAmajLJcVEj",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 🚫 FILTRO DE STATUS UPDATES - CRÍTICO ANTI-LOOP\n// ============================================================================\n// WhatsApp envía 2 tipos de webhooks:\n// 1. MENSAJES: tienen array 'messages' con datos del usuario\n// 2. STATUS: tienen array 'statuses' (sent, delivered, read) - IGNORAR\n// ============================================================================\n\nconst data = $input.first()?.json || {};\n\n// 1. Si tiene 'statuses' es una notificación de estado - DETENER\nif (data.statuses && data.statuses.length > 0) {\n  return []; // Retornar vacío DETIENE el flujo\n}\n\n// 2. Si NO tiene 'messages' o está vacío - DETENER\nif (!data.messages || data.messages.length === 0) {\n  return []; // Retornar vacío DETIENE el flujo\n}\n\n// 3. Si el mensaje no tiene 'from' (remitente) - DETENER\nconst msg = data.messages[0];\nif (!msg.from) {\n  return [];\n}\n\n// 4. Filtrar tipos de mensaje que NO requieren respuesta\nconst ignoredTypes = ['reaction', 'sticker', 'contacts', 'location', 'unsupported'];\nif (ignoredTypes.includes(msg.type)) {\n  return [];\n}\n\n// 5. TODO OK - Es un mensaje real de usuario\nreturn [{ json: data }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        28784,
+        1024
+      ],
+      "id": "e33d03d2-ca62-446f-8f6c-fe5677ac33e5",
+      "name": "🚫 Filtrar Status Updates"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// ⚡ RATE LIMIT CHECK - Validación Anti-Loop\n// ============================================================================\n\nconst triggerData = $input.first()?.json || {};\nconst messages = triggerData.messages || [];\nconst message = messages[0] || {};\n\n// 1. Si no hay mensajes, es un status update - SKIP\nif (!messages.length || !message.from) {\n  return [{ json: { ...triggerData, _rate_limit_ok: false, _rate_limit_reason: 'no_message' } }];\n}\n\n// 2. Verificar rate limit en memoria local (simple)\nconst telefono = message.from;\nconst messageId = message.id;\nconst timestamp = parseInt(message.timestamp || '0');\nconst now = Math.floor(Date.now() / 1000);\nconst messageAge = now - timestamp;\n\n// 3. Rechazar mensajes muy antiguos (> 5 minutos)\nif (messageAge > 300) {\n  return [{ json: { ...triggerData, _rate_limit_ok: false, _rate_limit_reason: 'mensaje_antiguo', _age: messageAge } }];\n}\n\n// 4. Pasar datos originales con flag de OK\nreturn [{ \n  json: { \n    ...triggerData, \n    _rate_limit_ok: true,\n    _telefono_validado: telefono,\n    _mensaje_id: messageId\n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        29008,
+        1024
+      ],
+      "id": "ad6194fe-2010-4986-9a24-c96234a71623",
+      "name": "⚡ Rate Limit Check",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-valid",
+              "leftValue": "={{ $json._rate_limit_ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        29232,
+        1024
+      ],
+      "id": "981095d6-113a-4040-9b4a-b1e7f7b8be6a",
+      "name": "🚦 Rate Limit OK?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 🔄 NODO 1: VALIDAR Y NORMALIZAR (HÍBRIDO)\n// ============================================================================\n// MODIFICADO: Toma metadata del Trigger y Texto del Input actual (IA)\n// ============================================================================\n\n// 1. OBTENER DATOS (HÍBRIDO)\n// A) Input actual (El texto que viene de la IA/Vision/Audio)\nconst inputData = $input.first()?.json || {};\nconst textoYaProcesado = inputData.mensajeUsuario || '';\n\n// B) Datos Originales (Para sacar el teléfono y IDs)\n// Buscamos directamente en el nodo Trigger para no perder la metadata\nconst triggerData = $('WhatsApp Trigger').first()?.json || {};\nconst messages = triggerData.messages || [];\nconst message = messages[0] || {};\nconst contacts = triggerData.contacts || [];\nconst contact = contacts[0] || {};\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 1. VALIDACIÓN RÁPIDA\n// ═══════════════════════════════════════════════════════════════════════════\n\nif (!message.id || !message.from) {\n  // Si falla aquí es porque no encuentra el Trigger.\n  return [{ json: { skip: true, reason: 'invalid_message_metadata' } }];\n}\n\n// Ignorar status updates\nif (triggerData.statuses && triggerData.statuses.length > 0 && !messages.length) {\n  return [{ json: { skip: true, reason: 'status_update' } }];\n}\n\nconst timestamp = Number(message.timestamp) || Math.floor(Date.now() / 1000);\nconst now = Math.floor(Date.now() / 1000);\nconst messageAge = now - timestamp;\n\nif (messageAge > 300) {\n  return [{ json: { skip: true, reason: 'message_too_old', age: messageAge } }];\n}\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 2. DETERMINAR EL TEXTO FINAL\n// ═══════════════════════════════════════════════════════════════════════════\n\nlet textoUsuario = '';\nlet tipoMedia = 'texto';\nlet mediaId = null;\n\n// Si ya traemos texto procesado (de Vision, Whisper, etc), USARLO.\nif (textoYaProcesado) {\n  textoUsuario = textoYaProcesado;\n  // Intentamos deducir el tipo de media original\n  if (message.type === 'image') tipoMedia = 'imagen';\n  else if (message.type === 'audio') tipoMedia = 'audio';\n  else if (message.type === 'document') tipoMedia = 'documento';\n  else tipoMedia = 'texto_procesado';\n  \n  if (message[message.type]?.id) mediaId = message[message.type].id;\n  \n} else {\n  // FALLBACK: Si no hay texto procesado, extraemos el crudo (lógica original)\n  switch (message.type) {\n    case 'text':\n      textoUsuario = message.text?.body || '';\n      break;\n    case 'button':\n      textoUsuario = message.button?.text || '';\n      break;\n    case 'interactive':\n      textoUsuario = message.interactive?.button_reply?.title || \n                     message.interactive?.list_reply?.title || \n                     message.interactive?.nfm_reply?.response_json || '';\n      break;\n    case 'image':\n      tipoMedia = 'imagen';\n      mediaId = message.image?.id;\n      textoUsuario = message.image?.caption || '[Imagen sin descripción]';\n      break;\n    case 'audio':\n      tipoMedia = 'audio';\n      mediaId = message.audio?.id;\n      textoUsuario = '[Audio sin transcripción]';\n      break;\n    default:\n      textoUsuario = `[Mensaje tipo ${message.type}]`;\n  }\n}\n\n// Si sigue vacío, skip\nif (!textoUsuario.trim()) {\n  return [{ json: { skip: true, reason: 'empty_message' } }];\n}\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 3. NORMALIZAR TELÉFONO\n// ═══════════════════════════════════════════════════════════════════════════\n\nfunction normalizePhone(input) {\n  if (!input) return null;\n  let digits = String(input).replace(/\\D/g, '');\n  \n  if (digits.startsWith('521') && digits.length === 13) {\n    digits = '52' + digits.substring(3);\n  }\n  if (digits.startsWith('52') && digits.length === 12) {\n    return digits;\n  }\n  if (digits.length === 10) {\n    return '52' + digits;\n  }\n  if (digits.length >= 10 && digits.length <= 15) {\n    return digits;\n  }\n  return null;\n}\n\nconst telefono = normalizePhone(message.from);\nif (!telefono) {\n  return [{ json: { skip: true, reason: 'invalid_phone' } }];\n}\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 4. EXTRAER NOMBRE\n// ═══════════════════════════════════════════════════════════════════════════\n\nconst nombreWhatsApp = contact.profile?.name || '';\nlet nombreEnMensaje = null;\nlet nombreConfirmado = null;\n\nconst patronesNombre = [\n  /(?:soy|me llamo|mi nombre es)\\s+([A-ZÁÉÍÓÚÑa-záéíóúñ]{2,}(?:\\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]{2,})?)/i,\n  /^([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)$/\n];\n\nconst palabrasExcluidas = [\n  'hola', 'buenos', 'buenas', 'que', 'como', 'si', 'sí', 'no', 'ok', 'va',\n  'dale', 'gracias', 'claro', 'perfecto', 'oye', 'mira', 'disculpa',\n  'quiero', 'necesito', 'tengo', 'puedo', 'usuario', 'desconocido'\n];\n\nfor (const patron of patronesNombre) {\n  const match = textoUsuario.match(patron);\n  if (match && match[1]) {\n    const candidato = match[1].trim();\n    if (candidato.length >= 2 && \n        candidato.length <= 50 &&\n        !palabrasExcluidas.includes(candidato.toLowerCase()) &&\n        !/^\\d+$/.test(candidato)) {\n      nombreEnMensaje = candidato.split(' ')\n        .map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())\n        .join(' ');\n      break;\n    }\n  }\n}\n\nif (nombreWhatsApp && \n    nombreWhatsApp.length >= 2 &&\n    !palabrasExcluidas.includes(nombreWhatsApp.toLowerCase()) &&\n    !/^\\d+$/.test(nombreWhatsApp) &&\n    !/^\\+?\\d{10,}$/.test(nombreWhatsApp)) {\n  nombreConfirmado = nombreWhatsApp;\n}\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 5. DATOS DE CAMPAÑA\n// ═══════════════════════════════════════════════════════════════════════════\n\nconst referral = message.referral || null;\nlet fuente = 'Orgánico';\nlet canal = 'organico';\nlet campana_id = null;\nlet campana_headline = null;\nlet ctwa_clid = null;\n\nif (referral) {\n  const sourceType = (referral.source_type || '').toLowerCase();\n  if (sourceType === 'ad') {\n    fuente = 'Facebook Ads';\n    canal = 'meta';\n    campana_id = referral.source_id || null;\n    campana_headline = referral.headline || null;\n    ctwa_clid = referral.ctwa_clid || null;\n  } else if (sourceType === 'post') {\n    fuente = 'Facebook Post';\n    canal = 'meta';\n  }\n}\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 6. RETORNO FINAL\n// ═══════════════════════════════════════════════════════════════════════════\n\nconst sessionId = `wa_${telefono}_${Date.now()}`;\nconst externalChatId = `${message.from}@s.whatsapp.net`;\n\nreturn [{\n  json: {\n    skip: false,\n    \n    // Texto analizado por IA o normal\n    mensajeUsuario: textoUsuario.trim(),\n    \n    // Metadata recuperada del Trigger\n    tipoMedia,\n    mediaId,\n    mensaje_id_externo: message.id,\n    timestamp,\n    \n    telefono,\n    numeroRemitente: telefono,\n    telefono_normalizado: telefono,\n    external_chat_id: externalChatId,\n    \n    nombreWhatsApp,\n    nombre_en_mensaje: nombreEnMensaje,\n    nombre_confirmado: nombreConfirmado || nombreEnMensaje,\n    nombreUsuario: nombreEnMensaje || nombreConfirmado || 'Usuario',\n    \n    fuente,\n    canal,\n    campana_id,\n    \n    sessionId,\n    _normalized: true,\n    _version: 'normalizar_hibrido_v3'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        30800,
+        1024
+      ],
+      "id": "d3d61a5e-1f2d-4c74-92d4-268fa9c30709",
+      "name": "1️⃣ Validar y Normalizar",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM procesar_mensaje_entrante_n8n($1, $2, $3, $4, $5, $6, $7::timestamptz, $8, $9::jsonb)",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.telefono,\n  ($json.mensajeUsuario || '').substring(0, 10000),\n  $json.nombre_confirmado || $json.nombreUsuario || 'Usuario',\n  $json.mensaje_id_externo || null,\n  $json.tipoMedia || 'text',\n  $json.media_url || null,\n  null,\n  $execution.id,\n  JSON.stringify({\n    tipo_media: $json.tipoMedia || 'text',\n    origen: $json._origen_media || 'texto',\n    fuente: $json.fuente || 'whatsapp'\n  })\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        31024,
+        1024
+      ],
+      "id": "86af914f-60f8-4507-a467-fa2a462b6103",
+      "name": "2️⃣ Procesar Mensaje (Auditoría)",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "no-es-duplicado",
+              "leftValue": "={{ $json.es_duplicado }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        31248,
+        1024
+      ],
+      "id": "9be2645c-6fd6-4e55-8889-7395293300ab",
+      "name": "🚫 ¿Es Duplicado?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT obtener_contexto_completo_v3($1::text) as contexto",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        32368,
+        1024
+      ],
+      "id": "4c020199-d943-46ad-a9c9-3c6a0b3ae69f",
+      "name": "4️⃣ Cargar Contexto",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 📦 NODO 5: PROCESAR CONTEXTO v2 (FIX: DETECCIÓN DE PRIMERA INTERACCIÓN)\n// ============================================================================\n// CAMBIO: La detección de primera interacción buscaba emojis 👤🤖 que NO\n// existen en el historial de la DB (usa \"BOT:\"/\"PACIENTE:\").\n// Ahora usa total_mensajes de la DB directamente.\n// ============================================================================\n\n// 1. Helpers para entrada segura\nconst getInput = (nodeName) => $(nodeName).first()?.json || {};\nconst normalizado = getInput('1️⃣ Validar y Normalizar');\nconst convResult = getInput('2️⃣ Procesar Mensaje (Auditoría)');\nconst ctxRawInput = $input.first()?.json?.contexto;\n\n// 2. Parseo Seguro del Contexto de BD\nlet ctx = {};\ntry {\n  ctx = typeof ctxRawInput === 'string' ? JSON.parse(ctxRawInput) : (ctxRawInput || {});\n} catch (e) {\n  ctx = {};\n}\n\n// 3. Extracción de variables con valores por defecto\nconst {\n  historial_mensajes: historial = '',\n  ultimo_mensaje_bot: ultimoBot = '',\n  sintomas_acumulados: sintomas = [],\n  banderas_rojas: banderasPrev = [],\n  lead_id: leadId = null,\n  es_paciente: esPaciente = false,\n  pregunto_precio: preguntoPrecio = false,\n  funnel_stage: funnelPrevio = 'awareness',\n  total_mensajes: totalMensajes = 0,\n  nombre: nombreContexto\n} = ctx;\n\n// 4. Determinar Nombre Final\nconst nombreFinal = normalizado.nombre_en_mensaje || \n                    normalizado.nombre_confirmado || \n                    nombreContexto || \n                    'Usuario';\n\n// 5. Construcción del Contexto para Gemini\nconst partesContexto = [];\n\nif (historial.length > 50) {\n  partesContexto.push(`CONVERSACIÓN PREVIA:\\n${historial}`);\n}\n\nif (ultimoBot) {\n  partesContexto.push(`MI ÚLTIMO MENSAJE:\\n${ultimoBot}`);\n}\n\nif (sintomas.length > 0) {\n  partesContexto.push(`SÍNTOMAS MENCIONADOS ANTES: ${sintomas.join(', ')}`);\n}\n\nif (preguntoPrecio) {\n  partesContexto.push(`NOTA: Ya preguntó por precios anteriormente`);\n}\n\nif (esPaciente) {\n  partesContexto.push(`⭐ ES PACIENTE EXISTENTE DE LA CLÍNICA`);\n}\n\nconst contextoParaAnalisis = partesContexto.join('\\n\\n') || 'Primera interacción - sin historial';\n\n// ═══════════════════════════════════════════════════════════════════════════\n// FIX: Usar total_mensajes de la DB en lugar de buscar emojis 👤🤖\n// ANTES (ROTO): const mensajesEnHistorial = (historial.match(/👤|🤖/g) || []).length;\n// ANTES (ROTO): const esPrimeraInteraccionReal = mensajesEnHistorial < 2;\n// ═══════════════════════════════════════════════════════════════════════════\nconst esPrimeraInteraccionReal = totalMensajes <= 1;\n\n// 7. Retorno\nreturn [{\n  json: {\n    // Heredar datos normalizados\n    ...normalizado,\n    \n    // IDs y Estado\n    conversacion_id: convResult.conversacion_id,\n    lead_id: leadId,\n    es_conv_nueva: convResult.es_nueva_conversacion,\n    \n    // Identidad\n    nombre_contacto: nombreFinal,\n    nombreUsuario: nombreFinal,\n    \n    // Contexto Generado\n    contexto_para_analisis: contextoParaAnalisis,\n    historial_mensajes: historial,\n    ultimo_mensaje_bot: ultimoBot,\n    \n    // Datos Clínicos y Banderas\n    sintomas_acumulados: sintomas,\n    banderas_rojas_previas: banderasPrev,\n    \n    // Estados de Negocio\n    es_paciente: esPaciente,\n    pregunto_precio_previo: preguntoPrecio,\n    funnel_stage_previo: funnelPrevio,\n    total_mensajes_bd: totalMensajes,\n    \n    // Métricas de Interacción\n    es_primera_interaccion: esPrimeraInteraccionReal,\n    tiene_historial_real: !esPrimeraInteraccionReal,\n    \n    // Flag de control\n    _contexto_procesado: true\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32592,
+        1024
+      ],
+      "id": "38ed2c97-162d-4bd0-b8e6-a6b8c2f898cf",
+      "name": "5️⃣ Procesar Contexto",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# ANGIOBOT — Extractor Clínico v2 (Síntomas + Intención)\nEres el **Director Médico IA** de Angiobot. Tu única tarea es convertir texto en **DATOS CLÍNICOS ESTRUCTURADOS**.\n**NO** redactas mensajes para WhatsApp. **NO** das recomendaciones. **SOLO** devuelves el JSON final.\n\n---\n\n## ENTRADA\nMENSAJE: \"{{ $json.mensajeUsuario }}\"\nHISTORIAL: \"{{ $json.historial_mensajes }}\"\n\n---\n\n## OBJETIVO\n1) Extraer **síntomas y signos** en formato estructurado.  \n2) Determinar **urgencia**, **emoción** e **intención** del usuario.\n\n---\n\n## REGLAS CRÍTICAS (NO NEGOCIABLES)\n\n### 0) CERO INVENTOS\n- Extrae únicamente lo que esté explícito en MENSAJE o HISTORIAL.\n- Si un dato no aparece, **no lo infieras**.\n- Si algo aplica por contexto pero no se dice, omítelo.\n\n### 1) PRIORIDAD DE FUENTE\n- El **MENSAJE actual** tiene prioridad sobre HISTORIAL.\n- Si hay contradicción (ej. antes “no duele”, ahora “sí duele”), conserva ambos como entidades separadas con su evidencia, pero:\n  - marca el del MENSAJE con mayor `confianza`\n  - y/o usa `estado_clinico` acorde a la frase.\n\n### 2) DETECCIÓN DE FACTICIDAD (POR ENTIDAD)\nClasifica `estado_clinico` así:\n\n- **CONFIRMADO**: afirmación directa (ej. “tengo…”, “me duele…”, “se me hincha…”).\n- **NEGADO**: negación explícita (ej. “no tengo…”, “sin…”, “nunca…”, “para nada…”).\n- **SOSPECHA**: duda o posibilidad (ej. “creo…”, “tal vez…”, “podría…”, “parece…”).\n\n**Guía de pistas lingüísticas (ES):**\n- Negación: “no”, “sin”, “nunca”, “jamás”, “para nada”.\n- Sospecha: “creo”, “tal vez”, “quizá”, “podría”, “me parece”, “posible”.\n\n### 3) EVIDENCIA (OBLIGATORIA Y LITERAL)\n- `evidencia` debe ser una **cita textual exacta** tomada de MENSAJE o HISTORIAL.\n- Debe contener claramente el síntoma y la facticidad (confirmación/negación/sospecha).\n- Si hay varias frases, elige el fragmento **más directo**.\n\n### 4) NORMALIZACIÓN MÉDICA (ESTILO SNOMED / TÉRMINO ESTÁNDAR)\n- `termino_medico` en **MAYÚSCULAS**, corto y estable.\n- Si no hay un término claro, usa una versión limpia del texto del usuario (sin emojis, sin muletillas).\n\n**Mapa preferente (várices / insuficiencia venosa):**\n- “arañitas”, “venitas” → TELANGIECTASIAS\n- “várices”, “venas saltadas”, “venas gruesas” → VARICOSIDADES / VÁRICES\n- “pesadez”, “cansancio en piernas” → PESADEZ EN PIERNAS\n- “hinchazón”, “pies hinchados”, “tobillos hinchados” → EDEMA EN EXTREMIDAD INFERIOR\n- “dolor”, “me duele la pierna” → DOLOR EN EXTREMIDAD INFERIOR\n- “ardor”, “quemazón” → ARDOR EN EXTREMIDAD INFERIOR\n- “calambres” → CALAMBRES EN EXTREMIDAD INFERIOR\n- “comezón” → PRURITO EN EXTREMIDAD INFERIOR\n- “manchas cafés”, “piel oscura”, “tobillo oscuro” → HIPERPIGMENTACIÓN POR ESTASIS\n- “piel dura”, “se puso dura la pierna” → LIPODERMATOESCLEROSIS\n- “eczema”, “ronchas”, “dermatitis” (en piernas) → DERMATITIS POR ESTASIS\n- “herida”, “úlcera”, “llaga” → ÚLCERA VENOSA / HERIDA ABIERTA\n- “sangrado de vena” → SANGRADO / HEMORRAGIA\n\n**Alarmas trombosis/embolia (para urgencia):**\n- “pierna roja y caliente”, “muy caliente”, “roja” → ERITEMA Y CALOR LOCAL\n- “dolor súbito intenso” → DOLOR AGUDO INTENSO\n- “falta de aire” → DISNEA\n- “dolor en el pecho” → DOLOR TORÁCICO\n- “desmayo” → SÍNCOPE\n- “sangrado que no cede” → HEMORRAGIA PERSISTENTE\n\n### 5) DEDUPLICACIÓN\n- Si el mismo síntoma aparece repetido con el mismo `estado_clinico`, devuelve **una sola entidad**\n  - usa la evidencia **más reciente** (prioriza MENSAJE).\n- Si cambia el `estado_clinico`, conserva ambas entidades.\n\n### 6) CONFIANZA (OBLIGATORIO)\n`confianza` ∈ { \"alta\", \"media\", \"baja\" }:\n- **alta**: frase directa + específica (“me duele la pierna derecha”, “se me hincha el tobillo”).\n- **media**: síntoma claro pero vago (“me molesta”, “a veces me duele”).\n- **baja**: muy ambiguo o solo insinuado (“creo que”, “quizá”, “no sé si”).\n\n---\n\n## ANÁLISIS GLOBAL (3 CAMPOS, SIN CAMPOS EXTRA)\n\n### urgencia ∈ { \"alta\", \"media\", \"baja\" }\n- **alta** si aparece cualquiera: DISNEA, DOLOR TORÁCICO, SÍNCOPE, HEMORRAGIA PERSISTENTE, DOLOR SÚBITO INTENSO, ERITEMA Y CALOR LOCAL marcado, ÚLCERA ABIERTA con datos de infección (si lo dicen).\n- **media** si hay dolor relevante, edema marcado, úlcera/herida sin alarmas, empeoramiento progresivo.\n- **baja** si es principalmente estético o molestias leves sin alarmas.\n\n### emocion ∈ { \"ansiedad\", \"miedo\", \"neutro\", \"confianza\" }\n- ansiedad: “me preocupa”, “urgente”, “ayuda”, muchas dudas, insistencia.\n- miedo: “me asusta”, “trombosis”, “peligroso”, “grave”.\n- confianza: “ok”, “perfecto”, “gracias”, cooperación.\n- neutro: informativo o mínimo.\n\n### intencion ∈ { \"agendar\", \"info\", \"precio\", \"sintomas\" }\n**Prioridad (si coexisten):** agendar > precio > info > sintomas.\n- agendar: “cita”, “agendar”, “cuando”, “horarios”, “disponibilidad”, “quiero ir”.\n- precio: “precio”, “costo”, “cuánto cobran”, “cuánto cuesta”, “$”, “operación/cirugía/láser”.\n- info: “ubicación”, “dirección”, “dónde están”, “mapa”, “cómo llegar”, “información”.\n- sintomas: describe molestias sin pedir otra cosa.\n- Si es solo saludo (“hola”, “buenas”): intencion = \"info\", urgencia = \"baja\", emoción = \"neutro\".\n\n---\n\n## FORMATO JSON DE SALIDA (ESTRICTO)\n- Devuelve **SOLO** este JSON (sin texto extra, sin markdown fuera del JSON).\n- Si no hay síntomas detectables: `\"entidades\": []`.\n- Usa comillas dobles, sin trailing commas.\n\n{\n  \"entidades\": [\n    {\n      \"tipo\": \"SINTOMA\",\n      \"termino_usuario\": \"texto tal cual o limpio\",\n      \"termino_medico\": \"TERMINO_ESTANDAR\",\n      \"estado_clinico\": \"CONFIRMADO\",\n      \"evidencia\": \"cita textual exacta\",\n      \"confianza\": \"alta\"\n    }\n  ],\n  \"analisis_global\": {\n    \"urgencia\": \"alta|media|baja\",\n    \"emocion\": \"ansiedad|miedo|neutro|confianza\",\n    \"intencion\": \"agendar|info|precio|sintomas\"\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        32816,
+        1024
+      ],
+      "id": "819badc9-1aea-41b0-bdfc-cbf574b94262",
+      "name": "6️⃣ Analizar con Gemini",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 7️⃣ PROCESAR ANÁLISIS - VERSIÓN CORREGIDA (FIX: sintomas_merged)\n// ============================================================================\n\n// 1. Parseo seguro de la respuesta de la IA\nlet analisis = { entidades: [], analisis_global: {} };\ntry {\n  const raw = $input.first().json.text.replace(/```json|```/g, '').trim();\n  analisis = JSON.parse(raw);\n  console.log('✅ Análisis parseado:', JSON.stringify(analisis.analisis_global));\n} catch (e) {\n  console.log('⚠️ Error parseando respuesta Gemini:', e.message);\n  // Fallback silencioso\n}\n\nconst entidades = analisis.entidades || [];\nconst sintomasNuevos = []; // Síntomas del mensaje actual\nconst metadataUpdate = {};\n\n// 2. Lógica de Filtrado Clínico\nentidades.forEach(entidad => {\n  if (entidad.tipo === 'SINTOMA') {\n    const key = (entidad.termino_medico || entidad.termino_usuario || '').toUpperCase().trim();\n    \n    if (!key) return; // Skip si no hay término\n    \n    metadataUpdate[key] = {\n      original: entidad.termino_usuario,\n      evidencia: entidad.evidencia,\n      estado: entidad.estado_clinico,\n      fecha: new Date().toISOString(),\n      confianza: entidad.confianza\n    };\n\n    // Solo agregar síntomas CONFIRMADOS o SOSPECHA\n    if (entidad.estado_clinico === 'CONFIRMADO' || entidad.estado_clinico === 'SOSPECHA') {\n      sintomasNuevos.push(key); \n    }\n  }\n});\n\n// 3. Recuperar contexto previo (síntomas de BD)\nconst ctx = $('5️⃣ Procesar Contexto').first()?.json || {};\nconst sintomasPrevios = ctx.sintomas_acumulados || [];\nconst banderasPrevias = ctx.banderas_rojas_previas || [];\n\n// 4. ⭐ MERGE: Combinar síntomas previos + nuevos (sin duplicados)\nconst sintomasMerged = [...new Set([...sintomasPrevios, ...sintomasNuevos])];\n\n// 5. Detectar banderas rojas del análisis\nconst banderasNuevas = [];\nif (analisis.analisis_global?.urgencia === 'alta') {\n  banderasNuevas.push('URGENCIA_DETECTADA_IA');\n}\nconst banderasMerged = [...new Set([...banderasPrevias, ...banderasNuevas])];\n\n// 6. Mapeo de intención a valores esperados por upsert_lead_v6\nconst mapeoIntencion = {\n  'info': 'info_general',\n  'agendar': 'agendar',\n  'precio': 'precio',\n  'sintomas': 'sintomas',\n  'cita': 'cita'\n};\nconst intencionRaw = analisis.analisis_global?.intencion || 'otro';\nconst intencionNormalizada = mapeoIntencion[intencionRaw] || intencionRaw;\n\n// 7. Log para debugging\nconsole.log('📊 Análisis Síntomas:', JSON.stringify({\n  nuevos: sintomasNuevos.length,\n  previos: sintomasPrevios.length,\n  merged: sintomasMerged.length,\n  intencion: intencionNormalizada\n}));\n\nreturn [{\n  json: {\n    ...ctx,\n    ...analisis.analisis_global,\n    \n    // ⭐ OUTPUTS CORREGIDOS PARA BASE DE DATOS\n    sintomas_nuevos: sintomasNuevos,        // Solo los del mensaje actual\n    sintomas_merged: sintomasMerged,        // ⭐ COMBINADOS (previos + nuevos)\n    banderas_rojas: banderasMerged,         // ⭐ Banderas combinadas\n    \n    _sintomas_metadata_new: metadataUpdate,\n    _entidades_audit: entidades,\n    \n    // Mapeos para el flujo\n    intencion: intencionNormalizada,\n    urgencia_percibida: analisis.analisis_global?.urgencia || 'normal',\n    sentimiento: analisis.analisis_global?.emocion || 'neutral',\n    pregunto_precio: intencionNormalizada === 'precio' || ctx.pregunto_precio_previo || false\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        33168,
+        1024
+      ],
+      "id": "76743594-83f3-42ab-ac64-1231704ce11e",
+      "name": "7️⃣ Procesar Análisis",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM upsert_lead_v7(\n  $1::text,\n  $2::text,\n  $3::text,\n  $4::text,\n  $5::text,\n  $6::text,\n  $7::text[],\n  $8::text[],\n  NULL,\n  $9::text,\n  $10::boolean,\n  $11::text,\n  $12::text,\n  $13::text[],\n  $14::text,\n  $15::text,\n  $16::text,\n  NULL,\n  NULL,\n  NULL,\n  NULL,\n  NULL,\n  $17::text,\n  $18::boolean,\n  $19::boolean,\n  $20::boolean,\n  $21::jsonb\n)",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.telefono,\n  $json.nombre_detectado || $json.nombre_confirmado || $json.nombreUsuario || 'Usuario',\n  $json.fuente,\n  ($json.mensajeUsuario || '').substring(0, 5000),\n  $json.intencion,\n  $json.sentimiento,\n  '{' + ($json.sintomas_merged || []).join(',') + '}',\n  '{' + ($json.banderas_rojas || []).join(',') + '}',\n  $json.urgencia_percibida,\n  $json.pregunto_precio,\n  $json.tiempo_evolucion,\n  $json.fit_servicio,\n  '{' + ($json.objeciones || []).join(',') + '}',\n  $json.para_quien,\n  $json.canal,\n  $json.campana_id,\n  $json.zona_afectada || null,\n  $json._origen_media === 'imagen_analizada',\n  $json._origen_media === 'audio_transcrito',\n  $json._origen_media === 'documento_descargado',\n  $json.sintomas_metadata ? JSON.stringify($json.sintomas_metadata) : null\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        33392,
+        1024
+      ],
+      "id": "1d274379-4a86-4cb8-8a95-39005f5b36c6",
+      "name": "8️⃣ Guardar Lead",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 📝 NODO 9: FORMATEAR CONTEXTO v2 (FIX: INYECCIÓN DE HISTORIAL DB)\n// ============================================================================\n// CAMBIO PRINCIPAL: Leer historial DIRECTO de 5️⃣ Procesar Contexto,\n// NO de 7️⃣ Procesar Análisis (donde se perdía porque Gemini no lo pasa).\n// ============================================================================\n\n// 1. Entradas\nconst analisis = $('7️⃣ Procesar Análisis').first()?.json || {};\nconst leadDb = $input.first()?.json || {};\n\n// ═══════════════════════════════════════════════════════════════════════════\n// FIX: Leer historial y datos de conversación DIRECTO de 5️⃣ (viene de la DB)\n// Antes: se leía de analisis (7️⃣) donde el historial se perdía\n// ═══════════════════════════════════════════════════════════════════════════\nconst contextoDb = $('5️⃣ Procesar Contexto').first()?.json || {};\nconst historialDb = contextoDb.historial_mensajes || '';\nconst ultimoBotDb = contextoDb.ultimo_mensaje_bot || '';\nconst totalMensajesDb = contextoDb.total_mensajes_bd || 0;\n// FIX: No usar contextoDb.es_primera_interaccion porque 5️⃣ lo detecta mal\n// (busca emojis 👤🤖 pero la DB usa \"BOT:\"/\"PACIENTE:\" → siempre da true)\n// En su lugar, derivar de total_mensajes_bd directamente\nconst esPrimeraInteraccionDb = totalMensajesDb <= 1;\n\n// 2. Desestructuración del análisis (datos clínicos de Gemini)\nconst {\n  sintomas_merged: sintomas = [],\n  zona_afectada,\n  tiempo_evolucion,\n  es_paciente,\n  pregunto_precio,\n  es_urgencia_medica,\n  tiene_historial_real,\n  estrategia = 'B',\n  es_aceptacion,\n  nombre_detectado,\n  nombre_confirmado,\n  nombreUsuario\n} = analisis;\n\n// 3. Determinar Nombre\nconst nombreRaw = nombre_detectado || nombre_confirmado || nombreUsuario;\nconst nombreFinal = (nombreRaw && nombreRaw !== 'Usuario') ? nombreRaw : 'Usuario';\nconst tenemosNombre = nombreFinal !== 'Usuario';\n\n// 4. Construcción del Contexto por Bloques\nconst secciones = [];\n\n// ═══════════════════════════════════════════════════════════════════════════\n// FIX: SECCIÓN 0 — CONVERSACIÓN EN CURSO (desde DB, no desde buffer efímero)\n// Esta sección es la que evita que el bot se re-presente\n// ═══════════════════════════════════════════════════════════════════════════\nif (!esPrimeraInteraccionDb && historialDb.length > 30) {\n  secciones.push(\n    `⚠️ CONVERSACIÓN EN CURSO — ${totalMensajesDb} mensajes previos.\\n` +\n    `ÚLTIMOS MENSAJES (de la base de datos):\\n${historialDb}`\n  );\n  \n  // Agregar último mensaje del bot si no está en el historial\n  if (ultimoBotDb && !historialDb.includes(ultimoBotDb.substring(0, 50))) {\n    secciones.push(`MI ÚLTIMO MENSAJE:\\n${ultimoBotDb}`);\n  }\n} else if (historialDb.length > 50) {\n  // Hay algo de historial pero es primera interacción real\n  secciones.push(`CONVERSACIÓN PREVIA:\\n${historialDb}`);\n  if (ultimoBotDb) {\n    secciones.push(`MI ÚLTIMO MENSAJE:\\n${ultimoBotDb}`);\n  }\n}\n\n// --- Bloque C: Datos del Paciente ---\nconst datosPaciente = [];\nif (tenemosNombre) datosPaciente.push(`Nombre: ${nombreFinal}`);\nif (sintomas.length > 0) datosPaciente.push(`Síntomas: ${sintomas.join(', ')}`);\nif (zona_afectada) datosPaciente.push(`Zona: ${zona_afectada}`);\nif (tiempo_evolucion) datosPaciente.push(`Tiempo: ${tiempo_evolucion}`);\nif (es_paciente) datosPaciente.push('Es paciente existente');\nif (pregunto_precio) datosPaciente.push('Ya preguntó precios');\n\nif (datosPaciente.length > 0) {\n  secciones.push(`DATOS DEL PACIENTE:\\n${datosPaciente.join('\\n')}`);\n}\n\n// --- Bloque D: Alertas y Contexto Social ---\nif (es_urgencia_medica) {\n  secciones.push('⚠️ URGENCIA MÉDICA - Priorizar seguridad del paciente');\n}\n\nif (tenemosNombre) {\n  if (tiene_historial_real || !esPrimeraInteraccionDb) {\n    secciones.push(`✅ Ya conoces a ${nombreFinal} de antes.`);\n  } else {\n    secciones.push(`✅ Sabes su nombre (${nombreFinal}) pero es PRIMERA INTERACCIÓN REAL.\\n⚠️ NO digas \"de nuevo\".`);\n  }\n} else if (esPrimeraInteraccionDb) {\n  secciones.push('❓ NO CONOCES SU NOMBRE - Si es natural, pregúntalo.');\n}\n\n// --- Bloque E: Estrategia ---\nconst mapaEstrategias = {\n  'A': '(FACILITADOR - Listo para agendar, ofrece contacto con Liz)',\n  'B': '(CONSULTOR - Exploración, haz 1 pregunta para entender mejor)',\n  'C': '(INFORMADOR - Solo quiere un dato, dáselo y ofrece más ayuda)',\n  'D': '(PROTECTOR - Urgencia médica, envía a urgencias)'\n};\nconst descEstrategia = mapaEstrategias[estrategia] || mapaEstrategias['B'];\nsecciones.push(`🎯 ESTRATEGIA: ${estrategia} ${descEstrategia}`);\n\nif (es_aceptacion) {\n  secciones.push('✅ ACEPTACIÓN DETECTADA - El paciente dijo SÍ a tu oferta anterior.');\n}\n\n// 5. Resultado Final\nreturn [{\n  json: {\n    // Heredar análisis\n    ...analisis,\n    \n    // IDs y Datos de BD\n    lead_id: leadDb.lead_id || analisis.lead_id,\n    score_total: leadDb.score_total || 0,\n    temperatura: leadDb.temperatura || 'frio',\n    funnel_stage: leadDb.funnel_stage || 'awareness',\n    \n    // Contexto Formateado\n    contextoContacto: secciones.join('\\n\\n'),\n    \n    // Datos Normalizados\n    nombre: nombreFinal,\n    nombre_paciente: nombreFinal,\n    es_urgencia: es_urgencia_medica || false,\n    conoce_precios: pregunto_precio || false,\n    \n    // Flags de Control\n    _formateo_completo: true,\n    _historial_inyectado: historialDb.length > 30,\n    _total_mensajes_db: totalMensajesDb\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        33616,
+        1024
+      ],
+      "id": "a1c07203-e8bd-4cdd-ae81-d6b89e847403",
+      "name": "9️⃣ Formatear Contexto",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 📊 NODO 10: PREPARAR ESCALAMIENTO (V5 - FINAL: CONTEXTO HUMANO)\n// ============================================================================\n\nconst ctx = $input.first()?.json || {};\n\n// 1. Datos de Contacto\nconst nombre = ctx.nombre || 'Paciente';\nconst telefono = ctx.telefono || '';\nconst whatsappLink = telefono ? `https://wa.me/${telefono}` : 'Sin link';\nconst crmLink = `https://crm-angiobot.vercel.app/conversaciones?tel=${telefono}`;\n\n// 2. Definir Interés Principal (Display)\nconst intereses = [];\nif (ctx.es_aceptacion || ctx.estrategia === 'A') intereses.push('Agendar Valoración');\nif (ctx.intencion === 'info') intereses.push('Información General');\nif (ctx.pregunto_precio) intereses.push('Precios');\nif (intereses.length === 0) intereses.push('Consulta General');\nconst interesPrincipal = intereses[0];\n\n// 3. Iconos de Temperatura/Estatus\nlet iconoStatus = '🌡️';\nlet textoStatus = 'TIBIO (Explorando)';\n\nif (ctx.es_urgencia_medica) {\n  iconoStatus = '🚨';\n  textoStatus = 'URGENCIA MÉDICA';\n} else if (ctx.estrategia === 'A' || ctx.es_aceptacion) {\n  iconoStatus = '🔥';\n  textoStatus = 'CALIENTE (Listo para Agendar)';\n} else if (ctx.estrategia === 'B') {\n  iconoStatus = '🤔';\n  textoStatus = 'CONSULTA (Tiene dudas/síntomas)';\n}\n\n// 4. Identidad del Paciente (¿Es él mismo o un familiar?)\nlet cabeceraPaciente = `👤 *${nombre}*`;\nif (ctx.paciente_real === 'familiar') {\n  // Ej: 👪 Juan (Solicita para: ESPOSA)\n  const relacion = ctx.relacion_paciente ? ctx.relacion_paciente.toUpperCase() : 'FAMILIAR';\n  cabeceraPaciente = `👪 *${nombre}* (Solicita para: *${relacion}*)`;\n}\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 5. CONSTRUCCIÓN DEL MENSAJE PARA LIZ\n// ═══════════════════════════════════════════════════════════════════════════\n\nlet msg = `Hola Liz, soy Angiobot 🤖\\n`;\nmsg += `Te paso un contacto interesado en: *${interesPrincipal}* ${ctx.es_aceptacion ? '✅' : ''}\\n\\n`;\n\n// --- BLOQUE 1: PERFIL ---\nmsg += `${cabeceraPaciente}\\n`;\nmsg += `📱 ${telefono}\\n`;\nmsg += `🔗 ${whatsappLink}\\n`;\nmsg += `💻 CRM: ${crmLink}\\n\\n`;\n\n// --- BLOQUE 2: LA CAJA INTELIGENTE (Nuevo) ---\n// Solo aparece si hay info relevante de logística o insights\nif (ctx.preferencia_agenda || ctx.insights_ia) {\n  msg += `🧠 *ANÁLISIS INTELIGENTE:*\\n`;\n  if (ctx.preferencia_agenda) {\n    msg += `📅 *Busca fecha:* \"${ctx.preferencia_agenda}\"\\n`;\n  }\n  if (ctx.insights_ia) {\n    msg += `💡 *Nota IA:* _${ctx.insights_ia}_\\n`;\n  }\n  msg += `\\n`;\n}\n\n// --- BLOQUE 3: RESUMEN CLÍNICO ---\nmsg += `🏥 *RESUMEN CLÍNICO:*\\n`;\nif (ctx.sintomas_merged?.length > 0) {\n  // Capitalizar primera letra de síntomas\n  const sintomasClean = ctx.sintomas_merged.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');\n  msg += `• Síntomas: ${sintomasClean}\\n`;\n} else {\n  msg += `• Síntomas: No especificados aún\\n`;\n}\n\nif (ctx.zona_afectada) msg += `• Zona: ${ctx.zona_afectada}\\n`;\nif (ctx.tiempo_evolucion) msg += `• Tiempo: ${ctx.tiempo_evolucion}\\n`;\n\nif (ctx.es_urgencia_medica) {\n  msg += `⚠️ *ALERTA:* Detecté posibles banderas rojas.\\n`;\n}\n\n// --- BLOQUE 4: ESTRATEGIA Y CIERRE ---\nmsg += `\\n💰 *ESTATUS COMERCIAL:*\\n`;\nmsg += `• Estado: ${iconoStatus} ${textoStatus}\\n`;\nmsg += `• Precios: ${ctx.pregunto_precio ? '✅ Ya conoce costos' : '❌ No sabe costos'}\\n`;\n\n// ═══════════════════════════════════════════════════════════════════════════\n// 6. RETORNO DE DATOS (Para la Tool y el Siguiente Nodo)\n// ═══════════════════════════════════════════════════════════════════════════\n\nreturn [{\n  json: {\n    // Heredar todo el contexto anterior\n    ...ctx,\n    \n    // CAMPOS PARA LA TOOL (Notificar Asistente)\n    nombre_para_liz: nombre,\n    telefono_para_liz: telefono,\n    whatsapp_link: whatsappLink,\n    mensaje_para_liz: msg, // <--- El mensaje formateado va aquí\n    \n    // Datos estructurados para la Tool (si los usa por separado)\n    es_urgencia: ctx.es_urgencia_medica || false,\n    sintomas: ctx.sintomas_merged?.join(', ') || 'Ninguno',\n    lead_id: ctx.lead_id,\n    intereses: intereses.join(', '),\n    conoce_precios: ctx.pregunto_precio || false,\n    \n    // Flag de control\n    _escalamiento_listo: true\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        33840,
+        1024
+      ],
+      "id": "b0c4f8f1-773f-42e0-b0f8-edac4a8c71bf",
+      "name": "🔟 Preparar Escalamiento",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('🔟 Preparar Escalamiento').first().json.telefono }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        34192,
+        1248
+      ],
+      "id": "d2b6b270-fb6b-4cf1-bd7b-6f2ea01acfb9",
+      "name": "Memoria Conversación"
+    },
+    {
+      "parameters": {
+        "name": "NOTIFICAR_ASISTENTE",
+        "description": "=Usa esta herramienta SOLO cuando el paciente autorice pasar su número a Liz (dice 'sí', 'ok', 'dale', 'va', 'claro', 'pásale mi número'). Esto enviará una notificación a Liz con los datos del paciente.",
+        "workflowId": {
+          "__rl": true,
+          "value": "JJt7zi1bQOJndBdu",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/JJt7zi1bQOJndBdu",
+          "cachedResultName": "NOTIFICAR_ASISTENTE"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nombre": "={{ $json.nombre_para_liz }}",
+            "telefono": "={{ $json.telefono_para_liz }}",
+            "whatsapp_link": "={{ $json.whatsapp_link }}",
+            "mensaje_para_liz": "={{ $json.mensaje_para_liz }}",
+            "es_urgencia": "={{ $json.es_urgencia }}",
+            "sintomas": "={{ $json.sintomas }}",
+            "lead_id": "={{ $('8️⃣ Guardar Lead').first()?.json?.lead_id || $('9️⃣ Formatear Contexto').first()?.json?.lead_id || null }}",
+            "intereses": "={{ $json.intereses }}",
+            "conoce_precios": "={{ $json.conoce_precios }}",
+            "insights_ia": "={{ $json.insights_ia }}",
+            "preferencia_agenda": "={{ $json.preferencia_agenda }}",
+            "objeciones": "={{ $fromAI('objeciones', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "whatsapp_link",
+              "displayName": "whatsapp_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "mensaje_para_liz",
+              "displayName": "mensaje_para_liz",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "es_urgencia",
+              "displayName": "es_urgencia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "sintomas",
+              "displayName": "sintomas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "intereses",
+              "displayName": "intereses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "conoce_precios",
+              "displayName": "conoce_precios",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "insights_ia",
+              "displayName": "insights_ia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "preferencia_agenda",
+              "displayName": "preferencia_agenda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "objeciones",
+              "displayName": "objeciones",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        34320,
+        1248
+      ],
+      "id": "271924e2-89a4-4ef0-b651-cd0e30661fa2",
+      "name": "NOTIFICAR_ASISTENTE"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// 🧹 NODO 12: LIMPIAR RESPUESTA (OPTIMIZADO V2)\n// ============================================================================\n\nfunction limpiarMensaje(original) {\n  if (!original || typeof original !== 'string') return '';\n\n  let text = original;\n\n  // 1. Eliminar artefactos de \"Pensamiento\" o Bloques de Código\n  text = text.replace(/```[\\s\\S]*?```/g, ''); // Quitar bloques de código\n  text = text.replace(/【.*?】/g, '');         // Quitar citas estilo ChatGPT 4o (ej: 【4:0†source】)\n  \n  // 2. Arreglar Enlaces Markdown [Texto](URL) -> Texto: URL\n  text = text.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '$1: $2');\n\n  // 3. Convertir Negritas (Markdown estándar ** a WhatsApp *)\n  // Nota: La regex maneja espacios accidentales \"** Hola **\" -> \"*Hola*\"\n  text = text.replace(/\\*\\*\\s?(.*?)\\s?\\*\\*/g, '*$1*'); \n  \n  // 4. Convertir Cursivas (__texto__ a _texto_)\n  text = text.replace(/__\\s?(.*?)\\s?__/g, '_$1_');\n\n  // 5. Limpieza de Headers (### Titulo -> *Titulo*)\n  text = text.replace(/^#{1,6}\\s+(.*)$/gm, '*$1*');\n\n  // 6. Limpieza de Listas (Asegurar espacio después del guión)\n  text = text.replace(/^-\\s*/gm, '• '); \n\n  // 7. Espaciado y Saltos de Línea\n  text = text.replace(/\\n{3,}/g, '\\n\\n'); // Máximo 2 saltos seguidos\n  text = text.trim();\n\n  // 8. Capitalización (Estética)\n  if (text.length > 0) {\n    text = text.charAt(0).toUpperCase() + text.slice(1);\n  }\n\n  return text;\n}\n\n// Obtener datos de entrada con seguridad\nconst ctx = $('🔟 Preparar Escalamiento').first()?.json || {};\n// A veces el output viene en 'output', 'text', o 'response' dependiendo del nodo anterior\nconst rawOutput = $input.first()?.json?.output || $input.first()?.json?.text || '';\n\n// Fallback si la respuesta está vacía (Error del LLM)\n// 9. Filtrar palabras/frases PROHIBIDAS del prompt\n  let cleaned = limpiarMensaje(rawOutput);\n  \n  // Reemplazos de palabras prohibidas\n  cleaned = cleaned.replace(/inversión/gi, 'costo');\n  cleaned = cleaned.replace(/Valoración Integral/gi, 'valoración con Doppler');\n  cleaned = cleaned.replace(/asistente virtual/gi, 'equipo de la clínica');\n  cleaned = cleaned.replace(/\\bbot\\b/gi, 'equipo');\n  cleaned = cleaned.replace(/problema técnico/gi, '');\n  cleaned = cleaned.replace(/\\bsistema\\b/gi, '');\n  cleaned = cleaned.replace(/\\bfolio\\b/gi, '');\n  cleaned = cleaned.replace(/¿Le hace sentido\\??/gi, '');\n  cleaned = cleaned.replace(/¿Le da más confianza\\??/gi, '');\n  \n  // Limpiar espacios dobles que quedaron\n  cleaned = cleaned.replace(/  +/g, ' ').trim();\n  \n  const respuestaFinal = cleaned || 'Disculpe, ¿me puede repetir su consulta por favor?';\n\nreturn [{\n  json: {\n    text: respuestaFinal,\n    // Metadatos para el envío y registro\n    telefono: ctx.telefono,\n    lead_id: ctx.lead_id,\n    nombre: ctx.nombre,\n    funnel_stage: ctx.funnel_stage,\n    conversacion_id: ctx.conversacion_id,\n    _response_cleaned: true\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        34816,
+        1024
+      ],
+      "id": "5559cb16-ffaa-4a6f-a786-a4f0c7bdc49a",
+      "name": "1️⃣2️⃣ Limpiar Respuesta",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT puede_enviar_mensaje_whatsapp($1::text, 2, 10, 30) as resultado",
+        "options": {
+          "queryReplacement": "={{ [$('🔟 Preparar Escalamiento').first().json.telefono] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        35040,
+        1024
+      ],
+      "id": "9fc87dbd-acf7-41f6-9ce8-1066b7a74ade",
+      "name": "🛡️ Anti-Baneo Check",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "puede-enviar",
+              "leftValue": "={{ $json.resultado?.puede_enviar }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        35264,
+        1024
+      ],
+      "id": "6ca2df57-e4b2-41df-b48c-dc34a01b2c66",
+      "name": "🚦 ¿Puede Enviar?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "914456005084786",
+        "recipientPhoneNumber": "={{ $('🔟 Preparar Escalamiento').first().json.telefono }}",
+        "textBody": "={{ $('1️⃣2️⃣ Limpiar Respuesta').first().json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        35488,
+        1024
+      ],
+      "id": "d81608fa-ff5e-45e5-95f4-ba8a0bc6a93c",
+      "name": "1️⃣3️⃣ Enviar WhatsApp",
+      "webhookId": "474603ff-eb27-498f-ab87-afeb31fea58c",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hPtMRS81oGxgfK2h",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM guardar_respuesta_bot_n8n($1, $2, $3, $4, $5, $6, $7::jsonb)",
+        "options": {
+          "queryReplacement": "={{ [\n  $('2️⃣ Procesar Mensaje (Auditoría)').first().json.execution_id,\n  $('1️⃣2️⃣ Limpiar Respuesta').first().json.text.substring(0, 10000),\n  $json.messages?.[0]?.id || null,\n  'gemini-3-pro-preview',\n  $('🔟 Preparar Escalamiento').first().json.estrategia || null,\n  $('🔟 Preparar Escalamiento').first().json.funnel_stage || null,\n  JSON.stringify({\n    lead_id: $('🔟 Preparar Escalamiento').first().json.lead_id || null,\n    version: 'angiobot-auditado-v2',\n    n8n_execution: $execution.id\n  })\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        35712,
+        1024
+      ],
+      "id": "1fd17580-da1b-4c02-951f-776a53a3ff60",
+      "name": "1️⃣4️⃣ Guardar Respuesta Bot (Auditoría)",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT registrar_respuesta_bot($1::text)",
+        "options": {
+          "queryReplacement": "={{ [$('🔟 Preparar Escalamiento').first().json.telefono] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        35936,
+        1024
+      ],
+      "id": "2ac36e79-a921-481a-86e5-6beefa694d45",
+      "name": "📊 Registrar Rate Limit",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Utiliza la herramienta cuando el usuario solicite informacion de procedimientos que no esten en tu conocimiento general",
+        "tableName": {
+          "__rl": true,
+          "value": "knowledge_base_documents",
+          "mode": "list",
+          "cachedResultName": "knowledge_base_documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        34448,
+        1248
+      ],
+      "id": "2ff57c47-127e-45bd-a04c-2e18308b86ed",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "wR47BgS9b114poDW",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        34528,
+        1456
+      ],
+      "id": "0ebc27bb-98ac-47c2-86ba-365539757fca",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hWKc8Gsh0YUk8tDr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=[DATOS DE ENTRADA EN TIEMPO REAL]\nFecha y Hora (CDMX): {{ $now.setZone('America/Mexico_City').setLocale('es-MX').toFormat(\"cccc dd 'de' LLLL yyyy, HH:mm\") }}\n\nCONTEXTO PREVIO (Historial y Análisis):\n{{ $json.contextoContacto }}\n\nTELÉFONO DEL PACIENTE:\n{{ $json.telefono }}\n\nEXTRACCION (JSON del Extractor Clínico):\n{{ $json.extraccion_clinica }}\n\nMENSAJE DEL PACIENTE (A responder):\n\"{{ $json.mensajeUsuario }}\"\n\n",
+        "options": {
+          "systemMessage": "=# ANGIOBOT v4 — Clínica de Várices del Dr. Misael Silva (WhatsApp)\n\n## OBJETIVO ÚNICO\nOrientar en 1–2 preguntas y llevar al siguiente paso: **consulta con Doppler** para diagnóstico y plan.  \nFrase guía: **“Sin el Doppler estaríamos adivinando.”**\n\n---\n\n## REGLAS NO NEGOCIABLES (EN ORDEN DE PRIORIDAD)\n1) **1 solo mensaje por turno.** Integre todo y DETÉNGASE.  \n2) **2–4 líneas** por mensaje. (Sin “muros”).  \n3) **1 sola pregunta** y va **al final**.  \n4) **Siempre “usted”** (cero tuteo).  \n5) **No se presente** como bot/asistente/ANGIOBOT. Solo salude y oriente.  \n6) **Precio cirugía ($58,900) SOLO si preguntan explícitamente** “¿cuánto cuesta la cirugía/operación/láser?”.  \n7) Si el paciente dice **“sí/ok/claro/va/quiero/¿cuándo?/¿qué días?” → ESCALAR a Lizeth de inmediato** (sin preguntas clínicas extra).  \n8) Si el contexto dice **CONVERSACIÓN EN CURSO**, no salude como primera vez.  \n9) Máximo **1 emoji** (opcional).  \n10) Prohibido: “inversión”, “Valoración Integral”, “¿Le hace sentido?”, listas con ✅, “Safenoablación Láser” en primer mensaje, prometer resultados, diagnosticar/recetar.\n\n---\n\n## VOZ (CÓMO SUENA)\nProfesional, cálido, directo. Aperturas variadas: “Mire…”, “Claro…”, “Le comento…”, “Así es…”.  \nHable simple: “láser”, “ultrasonido Doppler”, “mapa venoso”.\n\n---\n\n## DATOS OPERATIVOS (ÚNICOS)\n- **Consulta con Doppler:** $1,500 MXN (incluye ultrasonido Doppler + diagnóstico + plan).  \n- **Cirugía láser (paquete):** $58,900 MXN ambas piernas, todo incluido (**solo si la piden explícitamente**).  \n- **Dirección:** Álvaro Obregón 151, Piso 3, Roma Norte, CDMX  \n- **Mapa:** https://maps.app.goo.gl/knPGvg21Ek79qT4t6  \n- **Horario:** Lunes a Sábado (no dé horas; agenda la maneja Lizeth).  \n- **Agenda:** Lizeth Franco (coordinadora).\n\n---\n\n## FLUJO SIMPLE (4 PASOS)\n### 1) Conexión (primer toque)\n- Responda corto + 1 pregunta clasificatoria:\n  - Estética vs molestias (dolor/pesadez/hinchazón).\n\n### 2) Mini-diagnóstico (máx. 2 turnos)\n- Validar 1 línea + educar 1 línea + preguntar 1 cosa.\n- Preguntas útiles (use máximo 2 en total):\n  - “¿La pesadez es más por las tardes o todo el día?”\n  - “¿Nota hinchazón en pies o tobillos al final del día?”\n  - “¿Ya le habían hecho Doppler antes?”\n  - “¿Desde cuándo lo nota?”\n\n### 3) Vacío de conocimiento (cierre clínico)\nModelo:\n“Por lo que me comenta, [resumen con sus palabras].  \nPara saber qué vena está fallando, necesitamos verlo con el Doppler; sin ese mapa estaríamos adivinando.  \n¿Le busco un espacio con el Doctor?”\n\n### 4) Cita y escalamiento (cuando hay disposición)\nSi hay “sí/ok/quiero/cuándo/qué días”:\n- Confirme escalamiento + (si falta) **una** preferencia: “¿entre semana o sábado?”\n- Dé ubicación si aún no se ha dado\n- Safety net: “si no le contactan…”\n\n---\n\n## HERRAMIENTA DE ESCALAMIENTO (OBLIGATORIA)\nUsted tiene la herramienta **“notificar asistente”** para avisar a **Lizeth Franco** cuando alguien quiere agendar.\n\n**Cuándo usarla (sin excepción):**\n- El paciente muestra disposición: “sí/ok/claro/va/quiero”, pregunta por fechas/horarios, o deja datos.\n- También si: “Lizeth no me llamó” / “me quedé esperando”.\n\n**Qué enviar a Lizeth dentro de la notificación (resumen en 1–2 renglones):**\n- Nombre (si lo dio) + teléfono (si aparece)  \n- Motivo: “agendar consulta con Doppler”  \n- Preferencia: “entre semana / sábado / mañana / tarde” (si la dio)  \n- Nota clínica breve (1 dato): “pesadez vespertina / venas abultadas / arañitas / hinchazón”  \n- Origen si se sabe: “anuncio FB / orgánico”\n\nLuego de notificar, **su WhatsApp al paciente** debe ser corto y cerrar.\n\n---\n\n## RESPUESTAS RÁPIDAS (TEMPLATES)\n**“Quiero información sobre cirugía/láser” (sin pedir precio):**  \n“Hola [Nombre] 👋 Con gusto le oriento. El láser se define según el Doppler, porque ahí vemos qué vena está fallando.  \n¿Su caso es más por venas visibles o ya siente dolor/pesadez?”\n\n**“¿Dónde están ubicados?”**  \n“Estamos en Álvaro Obregón 151, Piso 3, Roma Norte, CDMX.  \n📍 https://maps.app.goo.gl/knPGvg21Ek79qT4t6  \n¿Busca la consulta por venas visibles o por molestias?”\n\n**“¿Cuánto cuesta?” (general)**  \n“La consulta con el Doctor cuesta $1,500 e incluye el ultrasonido Doppler, que nos dice exactamente qué está pasando.  \n¿Su caso es más por estética o ya tiene molestias?”\n\n**“¿Cuánto cuesta la cirugía/láser?” (explícito)**  \n“El paquete de cirugía láser es $58,900 ambas piernas, todo incluido.  \nAun así, primero el Doctor necesita ver el Doppler para confirmar si realmente requiere cirugía.  \n¿Le busco un espacio para la consulta con Doppler?”\n\n---\n\n## OBJECIONES (CORTO)\n**“Está caro / no tengo dinero”**  \n“Le entiendo. Cuando pueda, escríbame y le buscamos espacio. Lo importante es no dejar avanzar la molestia con el tiempo.”  \n(Punto. Sin insistir.)\n\n**“Después / lo pienso”**  \n“Claro. Cuando decida, escríbame y lo coordinamos; solo considere que las várices suelen avanzar con el tiempo.”  \n¿Prefiere entre semana o sábado cuando lo retome?\n\n**“No gracias”**  \n“Entendido. Que tenga excelente día 👋”\n\n---\n\n## URGENCIAS (SOLO SI ES AHORA MISMO)\nBanderas rojas actuales: pierna muy roja/caliente con dolor súbito, sangrado que no cede, falta de aire, dolor torácico, desmayo.  \nMensaje:\n“⚠️ Eso requiere atención de urgencia. Por favor acuda al hospital más cercano. Cuando esté estable, escríbanos y le damos seguimiento con el Dr. Silva.”  \n(Si es sangrado: presión constante + urgencias.)\n\n---\n\n## MENSAJE DE ESCALAMIENTO (AL PACIENTE)\n“Perfecto, [Nombre]. Le paso su contacto a *Lizeth Franco* para que le agende la consulta con Doppler [preferencia].  \n📍 Álvaro Obregón 151, Piso 3, Roma Norte.  \nSi no le contactan en las próximas horas, escríbame y lo resolvemos.”\n\n---\n\n## CHECKLIST ANTES DE ENVIAR\n- ¿2–4 líneas y 1 pregunta al final?  \n- ¿No me presenté como bot? ¿Usé “usted”?  \n- ¿Evité $58,900 salvo pregunta explícita?  \n- Si dijo “sí/ok/cuándo”: ¿ya usé **notificar asistente** a Lizeth y cerré?\n\n### SALIDA\nSu salida debe ser **ÚNICAMENTE el texto para WhatsApp** (sin análisis, sin listas largas, sin JSON, sin marcadores).\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        34192,
+        1024
+      ],
+      "id": "c44fdc3a-036d-462a-a377-1a7942754984",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        32896,
+        1248
+      ],
+      "id": "c5886428-5c9e-4170-9058-20e33f135f3b",
+      "name": "Analizador Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hWKc8Gsh0YUk8tDr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.mensajeUsuario }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d29f6d82-75e5-4258-b272-71716668dccc",
+      "name": "✅ Salida Normalizada",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        30576,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        29904,
+        736
+      ],
+      "id": "4f7b18b5-825a-4f4e-ae55-2b9037d60189",
+      "name": "HTTP • Descargar Imagen (File)",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hPtMRS81oGxgfK2h",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "text": "=ACTÚA COMO: El módulo de \"Ojos Clínicos\" de Angiobot.\nCONTEXTO: El usuario envió una imagen. La IA CONVERSACIONAL (que es la que hablará con el paciente) NO PUEDE VER la imagen. Ella depende 100% de tu descripción textual para saber qué contestar.\n\nOBJETIVO: Generar un reporte detallado y técnico dirigido a la IA Conversacional para que ella pueda formular la respuesta perfecta.\n\nINSTRUCCIONES DE REPORTE (Sigue este formato estrictamente):\n\n>>> SI ES FOTO CLÍNICA (Piernas, varices, heridas):\nEmpieza con: \"REPORTE VISUAL PARA IA DE RESPUESTA: Se recibió una imagen clínica donde observo...\"\nDescribe a detalle para que la otra IA entienda la gravedad:\n1. Zona exacta (ej: tobillo interno izquierdo).\n2. Tipo de vena: ¿Son \"arañitas\" (estético) o \"venas abultadas/tortuosas\" (médico)?\n3. Color de piel: ¿Hay manchas oscuras (signo de gravedad) o rojez?\n4. Integridad: ¿Hay heridas abiertas o úlceras?\n5. Conclusión de Triaje: Termina diciendo \"Esto sugiere un caso [Estético / Médico / Urgente] para que ajustes tu respuesta.\"\n\n>>> SI ES DOCUMENTO (Receta, Estudio):\nEmpieza con: \"REPORTE VISUAL PARA IA DE RESPUESTA: El usuario envió una foto de un documento que dice...\"\nTranscribe los datos clave (Nombre, Diagnóstico, Conclusiones del Doppler) para que la otra IA pueda mencionar esos datos en su respuesta.\n\n>>> SI ES IRRELEVANTE (Meme, Mascota, Paisaje):\nEmpieza con: \"AVISO A IA DE RESPUESTA: La imagen recibida NO es clínica (parece ser [describe brevemente]). Ignora el contexto médico y pide amablemente una foto de las piernas si es necesario.\"\n\nNOTA FINAL:\nNo hables con el paciente. Tú hablas con la otra IA. Sé sus ojos.",
+        "inputType": "base64",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        30128,
+        736
+      ],
+      "id": "e874dda6-69d5-4a43-8ea1-785734689213",
+      "name": "OpenAI • Analizar Imagen (Vision)",
+      "credentials": {
+        "openAiApi": {
+          "id": "5jdEqJ7BQqSHnM8Z",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        29904,
+        928
+      ],
+      "id": "443f5f47-730c-496a-b548-81c86ed26fab",
+      "name": "HTTP • Descargar Audio (File)",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hPtMRS81oGxgfK2h",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        30128,
+        1120
+      ],
+      "id": "0ca1080f-be87-470b-99c2-8b4e25fffb85",
+      "name": "HTTP • Descargar Documento (File)",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hPtMRS81oGxgfK2h",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "is-imagen",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "imagen"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "is-audio",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "is-documento",
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "documento"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        29456,
+        992
+      ],
+      "id": "932ab0ca-f128-46f3-88c4-0e54a227c31a",
+      "name": "¿Tipo de Media? (Switch)1"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].image.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        29680,
+        736
+      ],
+      "id": "0d8be483-b104-4723-a1a1-27b91f3edddf",
+      "name": "WA • Get Media URL (Imagen)1",
+      "webhookId": "d83a3425-4e13-4f95-9924-d96b8a69eb34",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hPtMRS81oGxgfK2h",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "img-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.content || $json.text || $json.choices?.[0]?.message?.content || '[Imagen recibida - análisis no disponible]' }}"
+            },
+            {
+              "id": "img-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "imagen_analizada"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        30352,
+        736
+      ],
+      "id": "00da6170-159d-4c42-80ab-6972383fc8fa",
+      "name": "Set Texto (Imagen)1"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        29680,
+        928
+      ],
+      "id": "9e026dbf-9888-4bdf-b64a-8e7279ca7e3f",
+      "name": "WA • Get Media URL (Audio)1",
+      "webhookId": "ecffdc84-d502-4f52-b7cd-192fdd999550",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hPtMRS81oGxgfK2h",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "es",
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        30128,
+        928
+      ],
+      "id": "1f44e856-4e54-4e03-a457-e04f39e2953f",
+      "name": "OpenAI • Transcribir Audio1",
+      "credentials": {
+        "openAiApi": {
+          "id": "5jdEqJ7BQqSHnM8Z",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aud-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.text || $json.content || '[Audio recibido - transcripción no disponible]' }}"
+            },
+            {
+              "id": "aud-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "audio_transcrito"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        30352,
+        928
+      ],
+      "id": "a9e2c173-ae91-49e4-9a50-0f7db42b1fad",
+      "name": "Set Texto (Audio)1"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages?.[0]?.document?.id || $json.mediaId }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        29904,
+        1120
+      ],
+      "id": "b019cbce-3561-4ba9-bc34-eec5e372a78e",
+      "name": "WA • Get Media URL (Documento)1",
+      "webhookId": "343e7266-3969-402d-b152-e450f88765d2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "hPtMRS81oGxgfK2h",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "doc-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.mensajeUsuario || '[Documento recibido: pendiente de extracción/OCR]' }}"
+            },
+            {
+              "id": "doc-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "documento_descargado"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        30352,
+        1120
+      ],
+      "id": "99133df3-5724-424b-be74-2d027bdfa8de",
+      "name": "Set Texto (Documento)1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "extra-msg",
+              "name": "mensajeUsuario",
+              "type": "string",
+              "value": "={{ $json.mensajeUsuario || $json.messages?.[0]?.text?.body || $json.text?.body || $json.text || '' }}"
+            },
+            {
+              "id": "extra-origin",
+              "name": "_origen_media",
+              "type": "string",
+              "value": "texto"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        30352,
+        1312
+      ],
+      "id": "36db6691-135f-4a95-8636-2e8a5f657a25",
+      "name": "Set Texto (Extra/Texto)1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-pro-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        34064,
+        1248
+      ],
+      "id": "d8bcb598-34a8-499c-9e4d-4f7e45554c98",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hWKc8Gsh0YUk8tDr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Actúa como un Auditor de Calidad.\nAnaliza la respuesta: \"{{ $('1️⃣2️⃣ Limpiar Respuesta').first().json.text }}\"\nContexto del paciente: \"{{ $('7️⃣ Procesar Análisis').first().json.contexto_para_analisis }}\"\n\nClasifica la ESTRATEGIA usada en UNA de estas categorías:\n- EMPATIA_CONTENCION\n- EDUCACION_CLINICA\n- CIERRE_VENTA\n- AUTORIDAD_MEDICA\n- TRIAGE_URGENCIA\n- ACLARACION\n\nResponde SOLO con la categoría."
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        36160,
+        1024
+      ],
+      "id": "2ec5bf98-bbf4-432c-9133-b518097e7e5b",
+      "name": "Clasificar Estrategia"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.analisis_mensajes_v2 (\n  mensaje_id,\n  lead_id,\n  role,\n  estrategia_bot,\n  created_at\n) VALUES (\n  $1::uuid,\n  $2::uuid,\n  'bot',\n  $3::text,\n  NOW()\n);",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣4️⃣ Guardar Respuesta Bot (Auditoría)').first().json.mensaje_id, $('8️⃣ Guardar Lead').first()?.json?.lead_id || $('🔟 Preparar Escalamiento').first()?.json?.lead_id || null, $input.first().json.text] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        36512,
+        1024
+      ],
+      "id": "71b535f3-8463-43c9-8603-87e50b52a3bf",
+      "name": "Guardar BI Bo",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        36240,
+        1248
+      ],
+      "id": "43801dbe-6b02-4975-a29f-d0a0c660c296",
+      "name": "Clasificador de Estrategia",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hWKc8Gsh0YUk8tDr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT register_debounce($1::text, $2::text)",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono, $('1️⃣ Validar y Normalizar').first().json.mensaje_id_externo] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        31472,
+        1024
+      ],
+      "id": "eeebeea1-efaa-4503-8ba9-6ca30fe9b92b",
+      "name": "📝 Registrar Debounce",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        31696,
+        1024
+      ],
+      "id": "329d7dfd-e30a-4729-8f0c-863b45d6451c",
+      "name": "⏳ Debounce 5s",
+      "webhookId": "13eb8d82-200e-4870-b873-6f6a5a15b005"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM check_debounce($1::text, $2::text)",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono, $('1️⃣ Validar y Normalizar').first().json.mensaje_id_externo] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        31920,
+        1024
+      ],
+      "id": "f290d1e1-ab46-40fe-8c6d-fa11c85afd7f",
+      "name": "🔍 Check Debounce",
+      "credentials": {
+        "postgres": {
+          "id": "TxO0GdswfdupOX9A",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-latest",
+              "leftValue": "={{ $json.es_ultimo }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        32144,
+        1024
+      ],
+      "id": "7174bff7-3716-4da8-8fb6-d86ff1d4c6db",
+      "name": "¿Soy Último?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        28560,
+        1120
+      ],
+      "id": "c969b621-cae8-4be2-aa11-6b823a4f1c54",
+      "name": "When chat message received",
+      "webhookId": "eadfb420-3a13-48e7-9737-0d3c0f864a1f"
+    }
+  ],
+  "pinData": {
+    "WhatsApp Trigger": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "5215510704645",
+            "phone_number_id": "914456005084786"
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "Skibidi Sigma Pomni"
+              },
+              "wa_id": "5215534435219"
+            }
+          ],
+          "messages": [
+            {
+              "from": "5215534435219",
+              "id": "wamid.HBgNNTIxNTUzNDQzNTIxORUCABIYFDNBRjU2QzUxOTA1NkI5NTMxRjc5AA==",
+              "timestamp": "1770655231",
+              "text": {
+                "body": "En sábado pero para el mes de marzo si tiene de favor"
+              },
+              "type": "text"
+            }
+          ],
+          "field": "messages"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "🚫 Filtrar Status Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚫 Filtrar Status Updates": {
+      "main": [
+        [
+          {
+            "node": "⚡ Rate Limit Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚡ Rate Limit Check": {
+      "main": [
+        [
+          {
+            "node": "🚦 Rate Limit OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚦 Rate Limit OK?": {
+      "main": [
+        [
+          {
+            "node": "¿Tipo de Media? (Switch)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "1️⃣ Validar y Normalizar": {
+      "main": [
+        [
+          {
+            "node": "2️⃣ Procesar Mensaje (Auditoría)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2️⃣ Procesar Mensaje (Auditoría)": {
+      "main": [
+        [
+          {
+            "node": "🚫 ¿Es Duplicado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚫 ¿Es Duplicado?": {
+      "main": [
+        [
+          {
+            "node": "📝 Registrar Debounce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4️⃣ Cargar Contexto": {
+      "main": [
+        [
+          {
+            "node": "5️⃣ Procesar Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5️⃣ Procesar Contexto": {
+      "main": [
+        [
+          {
+            "node": "6️⃣ Analizar con Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6️⃣ Analizar con Gemini": {
+      "main": [
+        [
+          {
+            "node": "7️⃣ Procesar Análisis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7️⃣ Procesar Análisis": {
+      "main": [
+        [
+          {
+            "node": "8️⃣ Guardar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8️⃣ Guardar Lead": {
+      "main": [
+        [
+          {
+            "node": "9️⃣ Formatear Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9️⃣ Formatear Contexto": {
+      "main": [
+        [
+          {
+            "node": "🔟 Preparar Escalamiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔟 Preparar Escalamiento": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Conversación": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NOTIFICAR_ASISTENTE": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1️⃣2️⃣ Limpiar Respuesta": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Anti-Baneo Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Anti-Baneo Check": {
+      "main": [
+        [
+          {
+            "node": "🚦 ¿Puede Enviar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚦 ¿Puede Enviar?": {
+      "main": [
+        [
+          {
+            "node": "1️⃣3️⃣ Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1️⃣3️⃣ Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "1️⃣4️⃣ Guardar Respuesta Bot (Auditoría)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1️⃣4️⃣ Guardar Respuesta Bot (Auditoría)": {
+      "main": [
+        [
+          {
+            "node": "📊 Registrar Rate Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "1️⃣2️⃣ Limpiar Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizador Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "6️⃣ Analizar con Gemini",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Salida Normalizada": {
+      "main": [
+        [
+          {
+            "node": "1️⃣ Validar y Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP • Descargar Imagen (File)": {
+      "main": [
+        [
+          {
+            "node": "OpenAI • Analizar Imagen (Vision)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI • Analizar Imagen (Vision)": {
+      "main": [
+        [
+          {
+            "node": "Set Texto (Imagen)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP • Descargar Audio (File)": {
+      "main": [
+        [
+          {
+            "node": "OpenAI • Transcribir Audio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP • Descargar Documento (File)": {
+      "main": [
+        [
+          {
+            "node": "Set Texto (Documento)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Tipo de Media? (Switch)1": {
+      "main": [
+        [
+          {
+            "node": "WA • Get Media URL (Imagen)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA • Get Media URL (Audio)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA • Get Media URL (Documento)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Texto (Extra/Texto)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA • Get Media URL (Imagen)1": {
+      "main": [
+        [
+          {
+            "node": "HTTP • Descargar Imagen (File)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto (Imagen)1": {
+      "main": [
+        [
+          {
+            "node": "✅ Salida Normalizada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA • Get Media URL (Audio)1": {
+      "main": [
+        [
+          {
+            "node": "HTTP • Descargar Audio (File)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI • Transcribir Audio1": {
+      "main": [
+        [
+          {
+            "node": "Set Texto (Audio)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto (Audio)1": {
+      "main": [
+        [
+          {
+            "node": "✅ Salida Normalizada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA • Get Media URL (Documento)1": {
+      "main": [
+        [
+          {
+            "node": "HTTP • Descargar Documento (File)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto (Documento)1": {
+      "main": [
+        [
+          {
+            "node": "✅ Salida Normalizada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto (Extra/Texto)1": {
+      "main": [
+        [
+          {
+            "node": "✅ Salida Normalizada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar Estrategia": {
+      "main": [
+        [
+          {
+            "node": "Guardar BI Bo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Registrar Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "Clasificar Estrategia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificador de Estrategia": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clasificar Estrategia",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Registrar Debounce": {
+      "main": [
+        [
+          {
+            "node": "⏳ Debounce 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏳ Debounce 5s": {
+      "main": [
+        [
+          {
+            "node": "🔍 Check Debounce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Check Debounce": {
+      "main": [
+        [
+          {
+            "node": "¿Soy Último?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Soy Último?": {
+      "main": [
+        [
+          {
+            "node": "4️⃣ Cargar Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "🚫 Filtrar Status Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "1uv8O4OmOJontsxz",
+    "timeSavedMode": "fixed",
+    "binaryMode": "separate"
+  },
+  "versionId": "9d46f233-2b22-4443-8cbe-ecf58df82325",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa325fb5647da2276b2d0a6782139e0680d73151ad2afa12166d826642c25456"
+  },
+  "id": "1uv8O4OmOJontsxz",
+  "tags": []
+}
