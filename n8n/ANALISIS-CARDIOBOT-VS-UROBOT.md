@@ -284,14 +284,55 @@ El CRM ya tiene hooks robustos:
 
 ---
 
-## 7. RESUMEN DE CAMBIOS NECESARIOS
+## 7. RESUMEN DE CAMBIOS NECESARIOS — ESTADO POST-INTEGRACIÓN
 
-| Cambio | Dónde | Esfuerzo | Impacto |
-|--------|-------|----------|---------|
-| Pre-análisis Gemini | n8n workflow | Alto | 🔴 Crítico |
-| Enriquecer leads | DB + n8n | Medio | 🔴 Crítico |
-| Clasificación post-respuesta | DB + n8n | Medio | 🟡 Alto |
-| LLM fallback | n8n workflow | Bajo | 🟡 Alto |
-| Mejorar prompt | n8n workflow | Bajo | 🟢 Medio |
-| Ajustar debounce 30s→5s | n8n workflow | Bajo | 🟢 Medio |
-| Nuevos hooks CRM | Código React | Medio | 🟢 Medio |
+| Cambio | Dónde | Esfuerzo | Impacto | Estado |
+|--------|-------|----------|---------|--------|
+| Pre-análisis Gemini | n8n workflow | Alto | 🔴 Crítico | ✅ Ya existía en Urobot V2 (nodo 6️⃣ Analizar Gemini) |
+| Enriquecer leads | DB + n8n | Medio | 🔴 Crítico | ✅ `signals` jsonb + `scores` jsonb + Meta Ads campos en `leads` |
+| Clasificación post-respuesta | DB + n8n + Frontend | Medio | 🟡 Alto | ✅ Columnas en `mensajes`, nodo n8n corregido, badges en chat UI |
+| LLM fallback | n8n workflow | Bajo | 🟡 Alto | ⏳ Pendiente (P2-3) |
+| Mejorar prompt | n8n workflow | Bajo | 🟢 Medio | ⏳ Pendiente — se puede aplicar directamente en n8n |
+| Ajustar debounce 30s→5s | n8n workflow | Bajo | 🟢 Medio | ✅ Reducido a 5s en UROBOT V2.json |
+| Nuevos hooks CRM | Código React | Medio | 🟢 Medio | ✅ 4 hooks nuevos + 3 charts + 2 secciones UI |
+
+---
+
+## 8. DETALLE DE INTEGRACIÓN COMPLETADA (2026-02-19)
+
+### FASE 1 — Base de Datos ✅
+- Columnas `fase_conversacion`, `accion_bot`, `espera_respuesta` en `mensajes`
+- `guardar_mensaje_urobot()` actualizada con 3 params nuevos
+- `obtener_contexto_urobot_v2()` enriquecida: signals, Meta Ads, última fase bot
+- `get_conversation_funnel_stats()` nueva RPC para analytics de fases
+- `get_leads_by_campaign_stats()` nueva RPC para atribución Meta Ads
+- `get_behavioral_distribution_stats()` nueva RPC para perfiles behavioral
+- `get_mensajes_por_telefono()` retorna clasificación de mensajes
+
+### FASE 2 — n8n Workflow ✅ (parcial)
+- Nodo `💾 Guardar Respuesta Bot` corregido: pasa `fase_conversacion`, `accion_bot`, `espera_respuesta`
+- Debounce reducido de 30s a 5s
+- ⏳ LLM fallback pendiente (requiere configuración manual en n8n)
+
+### FASE 3 — Frontend Types ✅
+- `Lead` interface: `signals: LeadSignals`, `scores: LeadScores`, Meta Ads fields
+- `Mensaje` interface: `faseConversacion`, `accionBot`, `esperaRespuesta`
+- `FASE_DISPLAY` constant con labels y colores para badges
+- `parseSignals()`, `parseScores()` parsers en 3 hooks
+
+### FASE 4 — Frontend UI ✅
+- `LeadClinicSidebar`: sección behavioral (perfil, predicción, compromiso, emociones, barreras, scores)
+- `LeadClinicSidebar`: sección Meta Ads attribution (campaña, headline, URL, CTWA)
+- `MessageBubble`: badge de `fase_conversacion` en mensajes del bot
+- `ConversationActionsPanel`: perfil behavioral compacto + badge Meta Ads
+
+### FASE 5 — Frontend Analytics ✅
+- `ConversationFunnelChart` en /urobot → CRM tab (horizontal bar chart con KPIs)
+- `CampaignLeadsChart` en /estadisticas (leads por campaña Meta Ads)
+- `BehavioralDistributionChart` en /urobot → CRM tab (3 mini donuts: perfiles, predicción, barreras)
+- Hooks: `useConversationFunnel`, `useLeadsByCampaign`, `useBehavioralDistribution`
+
+### FASE 6 — Verificación ✅
+- Build limpio (exit 0) en todas las páginas
+- TypeScript sin errores
+- Todas las rutas compiladas correctamente

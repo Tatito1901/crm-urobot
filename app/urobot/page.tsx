@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUrobotStats, marcarAlertaRevisada } from '@/hooks/urobot/useUrobotStats';
 import { useConversacionesStats } from '@/hooks/conversaciones/useConversacionesStats';
 import { useUrobotMetricasCRM } from '@/hooks/urobot/useUrobotMetricasCRM';
-import { Bot, RefreshCw, XCircle, AlertTriangle, MessageCircle, Activity, Target } from 'lucide-react';
+import { Bot, RefreshCw, XCircle, AlertTriangle, MessageCircle, Activity, Target, Brain } from 'lucide-react';
 import { RefreshButton } from '@/app/components/common/RefreshButton';
 import { TabBar } from '@/app/components/common/TabBar';
 import { buttons, spacing, layouts } from '@/app/lib/design-system';
@@ -62,6 +62,14 @@ const ConversationFunnelChart = dynamic(
   () => import('./components/charts/ConversationFunnelChart'),
   {
     loading: () => <ChartSkeleton height={320} />,
+    ssr: false,
+  }
+);
+
+const BehavioralDistributionChart = dynamic(
+  () => import('./components/charts/BehavioralDistributionChart'),
+  {
+    loading: () => <ChartSkeleton height={280} />,
     ssr: false,
   }
 );
@@ -210,6 +218,21 @@ export default function UrobotPage() {
               </CardHeader>
               <CardContent>
                 <ConversationFunnelChart />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Distribución Behavioral */}
+          <div className={spacing.sectionGap}>
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-violet-500" />
+                  Perfiles Behavioral (30d)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BehavioralDistributionChart />
               </CardContent>
             </Card>
           </div>
