@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 // SVG del checkmark memoizado
 const CheckmarkIcon = memo(() => (
   <svg 
-    className="w-12 h-12 sm:w-14 sm:h-14 text-white scale-0 animate-in zoom-in-50 duration-700 delay-300" 
+    className="w-10 h-10 sm:w-12 sm:h-12 text-white scale-0 animate-in zoom-in-50 duration-700 delay-300" 
     fill="none" 
     stroke="currentColor" 
     viewBox="0 0 24 24"
@@ -15,7 +15,7 @@ const CheckmarkIcon = memo(() => (
     <path 
       strokeLinecap="round" 
       strokeLinejoin="round" 
-      strokeWidth={3} 
+      strokeWidth={2.5} 
       d="M5 13l4 4L19 7"
     />
   </svg>
@@ -24,10 +24,10 @@ CheckmarkIcon.displayName = 'CheckmarkIcon'
 
 // Dots animados memoizados
 const AnimatedDots = memo(() => (
-  <div className="flex space-x-2">
-    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+  <div className="flex space-x-1.5">
+    <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+    <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+    <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
   </div>
 ))
 AnimatedDots.displayName = 'AnimatedDots'
@@ -46,23 +46,23 @@ export const SuccessOverlay = memo(() => {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 backdrop-blur-sm animate-in fade-in duration-300"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#04070e]/95 backdrop-blur-md animate-in fade-in duration-300"
       role="dialog"
       aria-live="polite"
       aria-label="Inicio de sesión exitoso"
     >
       <div className="relative space-y-6 text-center animate-in zoom-in-95 duration-500">
         {/* Checkmark animado */}
-        <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-2xl shadow-emerald-500/50 ">
+        <div className="mx-auto w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-2xl shadow-teal-500/40">
           <CheckmarkIcon />
         </div>
         
         {/* Mensaje de éxito */}
-        <div className="space-y-3 animate-in slide-in-from-bottom-4 duration-700 delay-300">
-          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
-            ¡Bienvenido de vuelta!
+        <div className="space-y-2.5 animate-in slide-in-from-bottom-4 duration-700 delay-300">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white font-jakarta tracking-tight">
+            ¡Bienvenido!
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base max-w-md mx-auto px-4">
+          <p className="text-white/40 text-sm max-w-xs mx-auto px-4">
             Acceso concedido. Redirigiendo al sistema...
           </p>
         </div>

@@ -1,21 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import dynamicImport from 'next/dynamic';
-import { Users, Activity, UserCheck, Calendar, Clock } from 'lucide-react';
+import { Users, Activity, UserCheck, Calendar, Clock, Zap } from 'lucide-react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
 import { Badge } from '@/app/components/crm/ui';
-import { PageShell } from '@/app/components/crm/page-shell';
 import { ThemeToggle } from '@/app/components/common/ThemeToggle';
 import { RefreshButton } from '@/app/components/common/RefreshButton';
-import { TabBar } from '@/app/components/common/TabBar';
 import { useStats } from '@/hooks/dashboard/useStats';
 import type { KPIData, ChartData } from '@/hooks/dashboard/useStats';
 import { useDashboardActivity } from '@/hooks/dashboard/useDashboardActivity';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { EmptyState } from '@/app/components/common/SkeletonLoader';
-import { cards, listItems, layouts, chartColors, accentColors } from '@/app/lib/design-system';
+import { cards, listItems, chartColors } from '@/app/lib/design-system';
 
 // Lazy load de gráficos pesados para mejorar rendimiento mobile y reducir TBT (Total Blocking Time)
 const DonutChart = dynamicImport(() => import('@/app/components/analytics/DonutChart').then(mod => ({ default: mod.DonutChart })), {
@@ -29,9 +27,21 @@ const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart
 });
 
 /**
- * ✅ BEST PRACTICE: RSC boundary — Props serializados desde Server Component
- * initialStats y initialActivity se pre-cargan en el servidor y se pasan como fallbackData a SWR.
- * Esto elimina el flash de loading en el primer render y reduce el JS bundle.
+ * Greeting basado en hora del día
+ */
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Buenos días';
+  if (hour < 19) return 'Buenas tardes';
+  return 'Buenas noches';
+}
+
+/**
+ * ============================================================
+ * DASHBOARD CLIENT - Centro de comando médico
+ * ============================================================
+ * Layout sin tabs: todo visible de un vistazo.
+ * Hero KPIs + Actividad + Gráficos en scroll vertical.
  */
 interface DashboardClientProps {
   initialStats?: {
@@ -59,8 +69,6 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ initialStats, initialActivity }: DashboardClientProps) {
-  // ✅ Datos reales centralizados desde useStats (RPC ~2KB)
-  // fallbackData del servidor = render instantáneo sin loading flash
   const { kpi, consultasPorSede, funnelLeads, loading: loadingStats, refresh: refreshStats } = useStats(
     initialStats ? {
       kpi: initialStats.kpi,
@@ -74,17 +82,16 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
     } : undefined
   );
   
-  // ✅ OPTIMIZADO: Solo 5 leads recientes + 5 consultas próximas (~2KB en vez de ~200KB+)
   const { recentLeads, upcomingConsultas, loading: loadingActivity, refresh: refreshActivity } = useDashboardActivity(initialActivity);
-
-  const [activeTab, setActiveTab] = useState<'actividad' | 'graficas'>('actividad');
 
   const handleRefresh = async () => {
     await Promise.all([refreshStats(), refreshActivity()]);
   };
 
-  // Métricas adaptadas desde useStats (KPI) - Memoizado para evitar recreación en re-renders
-  const metrics = useMemo(() => [
+  const isLoadingAny = loadingStats || loadingActivity;
+
+  // ── Hero KPIs (2 principales) ──
+  const heroMetrics = useMemo(() => [
     {
       title: 'Leads totales',
       value: kpi.totalLeads.toLocaleString('es-MX'),
@@ -93,9 +100,20 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
       icon: <Users className="h-4 w-4" />,
     },
     {
+      title: 'Consultas del mes',
+      value: kpi.consultasMes.toLocaleString('es-MX'),
+      subtitle: `${kpi.consultasConfirmadasMes} confirmadas`,
+      color: 'amber' as const,
+      icon: <Calendar className="h-4 w-4" />,
+    },
+  ], [kpi]);
+
+  // ── Secondary KPIs (3 compactos) ──
+  const secondaryMetrics = useMemo(() => [
+    {
       title: 'Tasa de conversión',
       value: `${kpi.tasaConversion}%`,
-      subtitle: 'Leads a Pacientes',
+      subtitle: 'Leads → Pacientes',
       color: 'emerald' as const,
       icon: <Activity className="h-4 w-4" />,
     },
@@ -107,13 +125,6 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
       icon: <UserCheck className="h-4 w-4" />,
     },
     {
-      title: 'Consultas del mes',
-      value: kpi.consultasMes.toLocaleString('es-MX'),
-      subtitle: `${kpi.consultasConfirmadasMes} confirmadas`,
-      color: 'amber' as const,
-      icon: <Calendar className="h-4 w-4" />,
-    },
-    {
       title: 'Tasa de asistencia',
       value: `${kpi.tasaAsistencia}%`,
       subtitle: 'Citas completadas',
@@ -122,14 +133,13 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
     },
   ], [kpi]);
 
-  // Adaptador para gráfico de dona (consultas por sede)
+  // ── Chart data ──
   const sedesChartData = useMemo(() => consultasPorSede.map(sede => ({
     label: sede.name,
     value: sede.value,
     color: sede.fill || chartColors.blue
   })), [consultasPorSede]);
 
-  // ✅ OPTIMIZADO: Datos de gráfico de barras vienen del RPC (funnelLeads), no de iterar ALL leads
   const leadsChartData = useMemo(() => {
     if (funnelLeads.length === 0) {
       return [
@@ -146,7 +156,6 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
     }));
   }, [funnelLeads]);
 
-  // Métricas de leads calculadas desde KPIs (ya vienen del servidor)
   const leadsStats = useMemo(() => {
     const total = kpi.totalLeads;
     const convertidos = leadsChartData.find(d => d.label === 'convertido')?.value ?? 0;
@@ -155,62 +164,104 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
     return { total, convertidos, enProceso, tasaConversion: kpi.tasaConversion };
   }, [kpi, leadsChartData]);
 
-  const isLoadingAny = loadingStats || loadingActivity;
-
   return (
     <ErrorBoundary>
-      <PageShell
-        accent
-        eyebrow="Portal Médico"
-        title={
-          <div className="flex flex-col gap-0.5 sm:gap-1">
-            <span className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-foreground font-jakarta">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400 dark:from-teal-300 dark:to-cyan-300">Dashboard</span>
-            </span>
-          </div>
-        }
-        description="Panel de control inteligente para la gestión de pacientes."
-        compact
-        headerSlot={
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <RefreshButton onClick={handleRefresh} loading={isLoadingAny} />
-          </div>
-        }
-      >
-        <div className="flex flex-col gap-3 sm:gap-4">
-          {/* Métricas principales */}
-          <section className={layouts.kpiGrid5}>
-            {metrics.map((metric) => (
-              <MetricCard
-                key={metric.title}
-                title={metric.title}
-                value={metric.value}
-                subtitle={metric.subtitle}
-                color={metric.color}
-                loading={loadingStats}
-              />
-            ))}
+      <div className="relative min-h-screen bg-background text-foreground">
+        {/* ── Atmospheric background ── */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[700px] opacity-25 overflow-hidden" aria-hidden style={{ contain: 'strict' }}>
+          <div className="absolute left-1/4 top-[-10%] h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-teal-500/20 blur-[180px] dark:bg-teal-500/25" />
+          <div className="absolute right-[5%] top-[8%] h-[350px] w-[350px] rounded-full bg-cyan-500/12 blur-[140px] dark:bg-cyan-500/18" />
+          <div className="absolute left-[60%] top-[20%] h-[200px] w-[200px] rounded-full bg-indigo-500/8 blur-[100px] dark:bg-indigo-500/12" />
+        </div>
+
+        <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-4 px-3 py-3 sm:gap-5 sm:px-6 sm:py-5 lg:px-8 lg:py-6 xl:px-10">
+
+          {/* ════════════════════════════════════════════
+              HEADER - Greeting + Status + Actions
+              ════════════════════════════════════════════ */}
+          <header className="animate-fade-up">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-[3px] w-8 rounded-full bg-gradient-to-r from-teal-400 to-cyan-400" />
+                  <p className="text-[10px] uppercase tracking-[0.3em] font-semibold text-muted-foreground">
+                    Portal Médico
+                  </p>
+                </div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight font-jakarta">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-400 to-teal-300 dark:from-teal-300 dark:via-cyan-300 dark:to-teal-200">
+                    {getGreeting()}
+                  </span>
+                </h1>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    Centro de comando — todo en un vistazo
+                  </p>
+                  <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-500 dark:text-emerald-400">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    </span>
+                    En vivo
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <ThemeToggle />
+                <RefreshButton onClick={handleRefresh} loading={isLoadingAny} />
+              </div>
+            </div>
+          </header>
+
+          {/* ════════════════════════════════════════════
+              KPIs - Hero pair + Secondary trio
+              ════════════════════════════════════════════ */}
+          <section className="animate-fade-up stagger-2">
+            {/* Hero KPIs - 2 tarjetas principales más grandes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              {heroMetrics.map((metric) => (
+                <div key={metric.title} className="relative">
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-teal-500/[0.06] to-cyan-500/[0.03] dark:from-teal-500/[0.08] dark:to-cyan-500/[0.04] pointer-events-none" />
+                  <MetricCard
+                    title={metric.title}
+                    value={metric.value}
+                    subtitle={metric.subtitle}
+                    color={metric.color}
+                    icon={metric.icon}
+                    loading={loadingStats}
+                  />
+                </div>
+              ))}
+            </div>
+            {/* Secondary KPIs - 3 tarjetas compactas */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {secondaryMetrics.map((metric) => (
+                <MetricCard
+                  key={metric.title}
+                  title={metric.title}
+                  value={metric.value}
+                  subtitle={metric.subtitle}
+                  color={metric.color}
+                  icon={metric.icon}
+                  loading={loadingStats}
+                />
+              ))}
+            </div>
           </section>
 
-          {/* Tabs sección secundaria - Responsivo */}
-          <TabBar
-            tabs={[
-              { key: 'actividad', label: 'Actividad reciente' },
-              { key: 'graficas', label: 'Gráficas' },
-            ]}
-            active={activeTab}
-            onChange={(key) => setActiveTab(key as 'actividad' | 'graficas')}
-          />
-
-          {activeTab === 'actividad' ? (
-            <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+          {/* ════════════════════════════════════════════
+              ACTIVIDAD - Leads + Consultas (siempre visible)
+              ════════════════════════════════════════════ */}
+          <section className="animate-fade-up stagger-3">
+            <SectionHeader icon={<Zap className="h-3.5 w-3.5" />} label="Actividad reciente" />
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
               {/* Leads recientes */}
               <div className={cards.glassWithHeader}>
                 <div className={cards.glassHeader}>
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate font-jakarta">
-                      Leads Recientes {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
+                      Leads Recientes
+                      {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Últimos 5 contactos registrados</p>
                   </div>
@@ -246,7 +297,8 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                 <div className={cards.glassHeader}>
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate font-jakarta">
-                      Consultas Próximas {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
+                      Consultas Próximas
+                      {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Agenda para los próximos días</p>
                   </div>
@@ -276,9 +328,15 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                   </div>
                 </div>
               </div>
-            </section>
-          ) : (
-            <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+            </div>
+          </section>
+
+          {/* ════════════════════════════════════════════
+              GRÁFICOS - Funnel + Sedes (siempre visible)
+              ════════════════════════════════════════════ */}
+          <section className="animate-fade-up stagger-4 pb-8 sm:pb-4">
+            <SectionHeader icon={<Activity className="h-3.5 w-3.5" />} label="Análisis" />
+            <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
               {/* Gráfico de leads por estado */}
               <div className={`${cards.glassWithHeader} min-h-[380px] sm:min-h-[420px]`}>
                 <div className={cards.glassHeader}>
@@ -286,7 +344,6 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground font-jakarta">Leads por Estado</h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Distribución del funnel</p>
                   </div>
-                  {/* Métricas rápidas */}
                   {leadsStats.total > 0 && (
                     <div className="text-right shrink-0">
                       <div className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Conversión</div>
@@ -313,21 +370,10 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                       <div className="mb-4 sm:mb-6 flex-1 min-h-[160px] sm:min-h-[200px]">
                         <BarChart data={leadsChartData} height={180} />
                       </div>
-                      
-                      {/* Resumen de métricas - responsivo */}
-                      <div className="mt-auto grid grid-cols-3 gap-2 sm:gap-4 border-t border-border pt-4 sm:pt-6">
-                        <div className="rounded-lg bg-muted/50 p-2 sm:p-3 text-center">
-                          <div className="text-[9px] sm:text-[10px] font-medium uppercase text-muted-foreground">Total</div>
-                          <div className="text-lg sm:text-xl font-bold text-foreground tabular-nums">{leadsStats.total}</div>
-                        </div>
-                        <div className="rounded-lg bg-emerald-500/10 p-2 sm:p-3 text-center">
-                          <div className="text-[9px] sm:text-[10px] font-medium uppercase text-emerald-600 dark:text-emerald-400">Convertidos</div>
-                          <div className="text-lg sm:text-xl font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">{leadsStats.convertidos}</div>
-                        </div>
-                        <div className="rounded-lg bg-blue-500/10 p-2 sm:p-3 text-center">
-                          <div className="text-[9px] sm:text-[10px] font-medium uppercase text-muted-foreground">En Proceso</div>
-                          <div className="text-lg sm:text-xl font-bold text-foreground tabular-nums">{leadsStats.enProceso}</div>
-                        </div>
+                      <div className="mt-auto grid grid-cols-3 gap-2 sm:gap-3 border-t border-border pt-4 sm:pt-5">
+                        <StatPill label="Total" value={leadsStats.total} />
+                        <StatPill label="Convertidos" value={leadsStats.convertidos} variant="emerald" />
+                        <StatPill label="En Proceso" value={leadsStats.enProceso} variant="blue" />
                       </div>
                     </>
                   )}
@@ -357,10 +403,42 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                   )}
                 </div>
               </div>
-            </section>
-          )}
+            </div>
+          </section>
         </div>
-      </PageShell>
+      </div>
     </ErrorBoundary>
+  );
+}
+
+// ── Sub-components ──────────────────────────────────────────
+
+function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-2.5 mb-3">
+      <span className="flex items-center justify-center h-5 w-5 rounded-md bg-teal-500/10 text-teal-500 dark:text-teal-400">
+        {icon}
+      </span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+    </div>
+  );
+}
+
+function StatPill({ label, value, variant }: { label: string; value: number; variant?: 'emerald' | 'blue' }) {
+  const colors = {
+    emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    blue: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+  };
+  const valueColor = variant ? colors[variant].split(' ').slice(1).join(' ') : 'text-foreground';
+  const bgColor = variant ? colors[variant].split(' ')[0] : 'bg-muted/50';
+  
+  return (
+    <div className={`rounded-lg ${bgColor} p-2 sm:p-3 text-center`}>
+      <div className={`text-[9px] sm:text-[10px] font-medium uppercase ${variant ? valueColor : 'text-muted-foreground'}`}>{label}</div>
+      <div className={`text-lg sm:text-xl font-bold tabular-nums ${valueColor}`}>{value}</div>
+    </div>
   );
 }
