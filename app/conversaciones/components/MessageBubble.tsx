@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye } from 'lucide-react';
+import { FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye, Bot, Check, CheckCheck } from 'lucide-react';
 import type { TipoMensaje } from '@/types/chat';
 import { FASE_DISPLAY } from '@/types/chat';
 
@@ -360,16 +360,16 @@ const RichText = memo(function RichText({ content, className, isBot }: { content
 
 // Color map for fase badges
 const FASE_BADGE_COLORS: Record<string, string> = {
-  slate: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
-  blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  cyan: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
-  violet: 'bg-violet-500/10 text-violet-500 border-violet-500/20',
-  emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-  amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-  teal: 'bg-teal-500/10 text-teal-500 border-teal-500/20',
-  red: 'bg-red-500/10 text-red-500 border-red-500/20',
-  indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-  gray: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+  slate: 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-300',
+  blue: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
+  cyan: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400',
+  violet: 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
+  emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+  amber: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+  teal: 'bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400',
+  red: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400',
+  indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400',
+  gray: 'bg-gray-100 text-gray-600 dark:bg-gray-700/50 dark:text-gray-300',
 };
 
 export const MessageBubble = memo(function MessageBubble({
@@ -386,7 +386,7 @@ export const MessageBubble = memo(function MessageBubble({
   faseConversacion,
   accionBot,
 }: MessageBubbleProps) {
-  const isAsistente = rol !== 'usuario';
+  const isBot = rol !== 'usuario';
 
   // Renderizar contenido según tipo
   const renderContent = () => {
@@ -417,7 +417,7 @@ export const MessageBubble = memo(function MessageBubble({
         <div className="space-y-2">
           {mediaComponent}
           {textoAdicional && (
-            <RichText content={contenido} className="text-[15px]" isBot={isAsistente} />
+            <RichText content={contenido} className="text-[14px] sm:text-[15px]" isBot={isBot} />
           )}
         </div>
       );
@@ -427,38 +427,56 @@ export const MessageBubble = memo(function MessageBubble({
       return <LocationContent contenido={contenido} />;
     }
     
-    return <RichText content={contenido} className="text-sm sm:text-[15px]" isBot={isAsistente} />;
+    return <RichText content={contenido} className="text-[14px] sm:text-[15px]" isBot={isBot} />;
   };
 
+  // Bubble radius: adjust corners for consecutive messages
+  const botRadius = isConsecutive
+    ? 'rounded-2xl rounded-tl-md'
+    : 'rounded-2xl rounded-tl-sm';
+  const userRadius = isConsecutive
+    ? 'rounded-2xl rounded-tr-md'
+    : 'rounded-2xl rounded-tr-sm';
+
   return (
-    <div className={`cv-auto-message flex w-full ${isAsistente ? 'justify-start' : 'justify-end'} ${isConsecutive ? '-mt-1.5 sm:-mt-2' : ''}`}>
-      <div className={`flex flex-col max-w-[88%] sm:max-w-[75%] lg:max-w-[65%] ${isAsistente ? 'items-start' : 'items-end'}`}>
-        
-        {/* Bubble - estilo minimalista y elegante */}
+    <div className={`cv-auto-message flex w-full ${isBot ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-0.5' : 'mt-3 first:mt-0'}`}>
+      {/* Bot avatar — only on first message of a group */}
+      {isBot && (
+        <div className={`shrink-0 mr-2 self-end ${isConsecutive ? 'w-7' : ''}`}>
+          {!isConsecutive && (
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-sm">
+              <Bot className="w-3.5 h-3.5 text-white" />
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className={`flex flex-col max-w-[82%] sm:max-w-[70%] lg:max-w-[60%] ${isBot ? 'items-start' : 'items-end'}`}>
         <div className={`
-          relative transition-all duration-200
-          ${isAsistente 
-            ? `bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200
-               rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 dark:border-slate-700/50` 
-            : `bg-gradient-to-br from-blue-500 to-blue-600 text-white
-               rounded-2xl rounded-tr-sm shadow-md shadow-blue-500/20`}
+          relative group
+          ${isBot 
+            ? `bg-white dark:bg-slate-800/90 text-slate-800 dark:text-slate-100
+               ${botRadius} shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-none
+               border border-slate-200/80 dark:border-slate-700/60` 
+            : `bg-gradient-to-br from-teal-500 to-teal-600 text-white
+               ${userRadius} shadow-sm shadow-teal-500/15`}
         `}>
           {/* Contenido principal */}
-          <div className="px-3 sm:px-4 pt-2.5 sm:pt-3 pb-1">
+          <div className="px-3.5 sm:px-4 pt-2.5 pb-1.5">
             {renderContent()}
           </div>
           
           {/* Fase badge for bot messages */}
-          {isAsistente && faseConversacion && FASE_DISPLAY[faseConversacion] && (
-            <div className="px-3 sm:px-4 pb-1">
-              <span className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border ${FASE_BADGE_COLORS[FASE_DISPLAY[faseConversacion].color] || FASE_BADGE_COLORS.gray}`}>
+          {isBot && faseConversacion && FASE_DISPLAY[faseConversacion] && (
+            <div className="px-3.5 sm:px-4 pb-1">
+              <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${FASE_BADGE_COLORS[FASE_DISPLAY[faseConversacion].color] || FASE_BADGE_COLORS.gray}`}>
                 {FASE_DISPLAY[faseConversacion].label}
               </span>
             </div>
           )}
 
-          {/* Footer con hora - más elegante */}
-          <div className={`flex items-center justify-end gap-1 sm:gap-1.5 px-3 sm:px-3.5 pb-2 sm:pb-2.5 ${isAsistente ? 'text-slate-400' : 'text-white/60'}`}>
+          {/* Footer: hora + indicadores */}
+          <div className={`flex items-center justify-end gap-1.5 px-3.5 pb-2 select-none ${isBot ? 'text-slate-400 dark:text-slate-500' : 'text-white/55'}`}>
             {tipoMensaje !== 'text' && (
               <>
                 {tipoMensaje === 'image' && <ImageIcon className="w-3 h-3" />}
@@ -468,9 +486,10 @@ export const MessageBubble = memo(function MessageBubble({
                 {tipoMensaje === 'location' && <MapPin className="w-3 h-3" />}
               </>
             )}
-            <span className="text-[10px] font-medium tracking-wide">
+            <span className="text-[10px] tabular-nums">
               {format(createdAt, 'HH:mm')}
             </span>
+            {!isBot && <CheckCheck className="w-3.5 h-3.5 text-white/40" />}
           </div>
         </div>
       </div>

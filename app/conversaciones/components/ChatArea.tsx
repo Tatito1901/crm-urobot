@@ -193,7 +193,7 @@ export function ChatArea({
                     </div>
                     
                     {/* Mensajes del día */}
-                    <div className="space-y-3">
+                    <div className="space-y-0">
                       {grupo.mensajes.map((msg, idx) => {
                         const prevMsg = grupo.mensajes[idx - 1];
                         const isConsecutive = prevMsg && prevMsg.remitente === msg.remitente;
