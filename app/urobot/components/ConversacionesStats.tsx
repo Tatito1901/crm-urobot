@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { KPICard } from './KPICard';
+import { MetricCard } from '@/app/components/metrics/MetricCard';
 import type { ConversacionesKPI, TipoInteraccion, TopPregunta, MensajesPorHora } from '@/hooks/conversaciones/useConversacionesStats';
 import { 
   MessageCircle,
@@ -31,60 +31,68 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
     <div className="space-y-2 sm:space-y-4">
       {/* Fila principal: Mensajes */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Mensajes Recibidos"
           value={kpi.totalMensajesRecibidos.toLocaleString()}
           subtitle={`${kpi.mensajesRecibidosHoy} hoy`}
-          icon={ArrowDownLeft}
-          color="text-blue-600 dark:text-blue-400"
+          iconComponent={ArrowDownLeft}
+          iconColor="text-blue-600 dark:text-blue-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Mensajes Enviados"
           value={kpi.totalMensajesEnviados.toLocaleString()}
           subtitle={`${kpi.mensajesEnviadosHoy} hoy`}
-          icon={ArrowUpRight}
-          color="text-emerald-600 dark:text-emerald-400"
+          iconComponent={ArrowUpRight}
+          iconColor="text-emerald-600 dark:text-emerald-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Conversaciones"
           value={kpi.totalConversaciones.toLocaleString()}
           subtitle={`${kpi.conversacionesHoy} hoy`}
-          icon={MessageCircle}
-          color="text-purple-600 dark:text-purple-400"
+          iconComponent={MessageCircle}
+          iconColor="text-purple-600 dark:text-purple-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Tasa Respuesta"
           value={`${kpi.tasaRespuesta}%`}
-          icon={TrendingUp}
-          color={kpi.tasaRespuesta >= 90 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconComponent={TrendingUp}
+          iconColor={kpi.tasaRespuesta >= 90 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
         />
       </div>
 
       {/* Fila secundaria: UroBot */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Preguntas Respondidas"
           value={kpi.preguntasRespondidas.toLocaleString()}
-          icon={HelpCircle}
-          color="text-cyan-600 dark:text-cyan-400"
+          iconComponent={HelpCircle}
+          iconColor="text-cyan-600 dark:text-cyan-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Citas por Bot"
           value={kpi.citasAgendadasPorBot}
-          icon={Calendar}
-          color="text-violet-600 dark:text-violet-400"
+          iconComponent={Calendar}
+          iconColor="text-violet-600 dark:text-violet-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Usuarios Recurrentes"
           value={kpi.usuariosRecurrentes}
-          icon={UserCheck}
-          color="text-indigo-600 dark:text-indigo-400"
+          iconComponent={UserCheck}
+          iconColor="text-indigo-600 dark:text-indigo-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Tiempo Respuesta"
           value={`${(kpi.tiempoRespuestaPromedio / 1000).toFixed(1)}s`}
-          icon={Clock}
-          color={kpi.tiempoRespuestaPromedio < 3000 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconComponent={Clock}
+          iconColor={kpi.tiempoRespuestaPromedio < 3000 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
         />
       </div>
     </div>

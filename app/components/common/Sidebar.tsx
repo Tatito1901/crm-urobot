@@ -67,25 +67,17 @@ export function Sidebar() {
     <>
       {/* Main Sidebar — Glass Morphism Premium */}
       <aside
-        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-white/[0.06] lg:bg-sidebar lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 transition-all duration-300 relative overflow-hidden"
+        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-border lg:bg-sidebar lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 transition-all duration-300 relative overflow-hidden"
       >
-        {/* Atmospheric glow */}
-        <div className="pointer-events-none absolute -top-20 -left-20 h-60 w-60 rounded-full bg-teal-500/[0.04] blur-[80px]" aria-hidden />
-        <div className="pointer-events-none absolute -bottom-16 -right-16 h-40 w-40 rounded-full bg-cyan-500/[0.03] blur-[60px]" aria-hidden />
-
         <div className="relative flex flex-1 flex-col gap-6 overflow-hidden">
           {/* Brand Header */}
-          <header className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 shine-top">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 ring-1 ring-white/10">
+          <header className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/15">
               <Bot className="h-5 w-5 text-teal-400" aria-hidden />
             </div>
             <div className="space-y-0.5">
-              <p className="text-[9px] uppercase tracking-[0.35em] text-sidebar-foreground/40 font-semibold">CRM Clínico</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">CRM Clínico</p>
               <p className="text-sm font-bold text-sidebar-foreground font-jakarta tracking-tight">Urobot</p>
-            </div>
-            <div className="ml-auto flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 pulse-live" />
-              <span className="text-[9px] text-emerald-400/80 font-medium">Live</span>
             </div>
           </header>
 
@@ -93,7 +85,7 @@ export function Sidebar() {
           <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1 scrollbar-hide space-y-5">
             {NAV_SECTIONS.map((section) => (
               <div key={section.title}>
-                <p className="mb-2 px-3 text-[9px] uppercase tracking-[0.3em] text-sidebar-foreground/30 font-semibold">{section.title}</p>
+                <p className="mb-2 px-3 text-xs uppercase tracking-widest text-muted-foreground font-semibold">{section.title}</p>
                 <ul className="flex flex-col gap-0.5 text-[13px]">
                   {section.items.map((item) => {
                     const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
@@ -108,14 +100,14 @@ export function Sidebar() {
                             "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-150",
                             "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
                             isActive 
-                              ? "bg-white/[0.07] text-white border border-white/[0.08] shadow-sm shadow-teal-500/[0.05]"
-                              : "text-sidebar-foreground/50 hover:bg-white/[0.04] hover:text-sidebar-foreground/90 border border-transparent"
+                              ? "bg-muted text-foreground border border-border shadow-sm"
+                              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent"
                           )}
                         >
                           <Icon
                             className={cn(
                               "h-4 w-4 shrink-0 transition-colors duration-200",
-                              isActive ? "text-teal-400" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70"
+                              isActive ? "text-teal-400" : "text-muted-foreground group-hover:text-foreground"
                             )}
                             aria-hidden
                           />
@@ -135,24 +127,24 @@ export function Sidebar() {
 
         <footer className="relative space-y-3">
           <div className="flex items-center justify-between px-1">
-             <span className="text-[9px] uppercase tracking-[0.2em] text-sidebar-foreground/30 font-semibold">Tema</span>
+             <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Tema</span>
              <ThemeToggle />
           </div>
 
-          <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] px-3.5 py-3 text-xs">
+          <div className="rounded-xl border border-border bg-muted/30 px-3.5 py-3">
             <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400/60" />
-              <p className="font-semibold text-sidebar-foreground/80 text-[11px]">Agenda al día</p>
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+              <p className="font-semibold text-sidebar-foreground text-xs">Agenda al día</p>
             </div>
-            <span className="mt-1.5 block text-[10px] text-sidebar-foreground/40" suppressHydrationWarning>{today}</span>
+            <span className="mt-1.5 block text-xs text-muted-foreground" suppressHydrationWarning>{today}</span>
           </div>
 
           <form action={signOutAction} className="w-full">
             <button
               type="submit"
               className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-xs font-medium text-sidebar-foreground/50 transition-all duration-150",
-                "hover:border-rose-500/20 hover:bg-rose-500/[0.06] hover:text-rose-300",
+                "w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-all duration-150",
+                "hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-300",
                 "active:bg-rose-500/10 active:scale-[0.98]",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
               )}
@@ -174,7 +166,7 @@ export function Sidebar() {
             </button>
           </form>
 
-          <p className="text-center text-[9px] uppercase tracking-[0.25em] text-sidebar-foreground/20 font-medium">
+          <p className="text-center text-xs uppercase tracking-widest text-muted-foreground/50 font-medium">
             UROBOT · CRM
           </p>
         </footer>
@@ -291,7 +283,7 @@ export function BottomNav() {
       {/* Bottom Navigation — Glass Premium */}
       <nav
         aria-label="Navegación inferior"
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.06] bg-background/90 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.15)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.4)] lg:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg lg:hidden"
       >
         <div className="flex items-center justify-around px-1 py-1.5">
           {BOTTOM_NAV_ITEMS.map((item) => {
@@ -316,7 +308,7 @@ export function BottomNav() {
                   aria-label="Más opciones"
                 >
                   {showMore ? <X className="w-5 h-5" aria-hidden /> : item.icon}
-                  <span className="text-[10px] font-medium">{showMore ? "Cerrar" : item.label}</span>
+                  <span className="text-xs font-medium">{showMore ? "Cerrar" : item.label}</span>
                 </button>
               );
             }
@@ -339,7 +331,7 @@ export function BottomNav() {
                   <span className="absolute top-1 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-teal-400" aria-hidden />
                 )}
                 {item.icon}
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="text-xs font-medium">{item.label}</span>
               </Link>
             );
           })}

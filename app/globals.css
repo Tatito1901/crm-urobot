@@ -281,63 +281,31 @@
    GLASS MORPHISM UTILITIES
    ============================================ */
 .glass {
-  background: oklch(1 0 0 / 4%);
-  backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  border: 1px solid oklch(1 0 0 / 6%);
+  background: oklch(1 0 0 / 7%);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid oklch(1 0 0 / 12%);
 }
 
 .glass-strong {
-  background: oklch(1 0 0 / 7%);
-  backdrop-filter: blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
-  border: 1px solid oklch(1 0 0 / 10%);
+  background: oklch(1 0 0 / 10%);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid oklch(1 0 0 / 14%);
 }
 
 .glass-card {
-  background: oklch(1 0 0 / 3%);
+  background: oklch(1 0 0 / 6%);
   backdrop-filter: blur(8px) saturate(1.3);
   -webkit-backdrop-filter: blur(8px) saturate(1.3);
-  border: 1px solid oklch(1 0 0 / 5%);
-  box-shadow: 
-    0 0 0 1px oklch(1 0 0 / 2%),
-    0 4px 24px -4px oklch(0 0 0 / 20%),
-    inset 0 1px 0 oklch(1 0 0 / 4%);
+  border: 1px solid oklch(1 0 0 / 10%);
+  box-shadow: 0 2px 12px -2px oklch(0 0 0 / 15%);
 }
 
-/* Subtle glow effects for accent elements */
-.glow-teal {
-  box-shadow: 0 0 20px -4px oklch(0.7 0.15 175 / 25%);
-}
-
-.glow-emerald {
-  box-shadow: 0 0 20px -4px oklch(0.7 0.17 160 / 25%);
-}
-
-/* Premium noise texture overlay */
-.noise-overlay::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Top shine effect for cards */
-.shine-top {
-  position: relative;
-}
-.shine-top::before {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 12%), transparent);
-  pointer-events: none;
-}
+/* Kept for backwards compat — no visual effect */
+.glow-teal, .glow-emerald { /* removed distracting glows */ }
+.noise-overlay::before { display: none; }
+.shine-top::before { display: none; }
 
 /* ============================================
    STAGGER ANIMATION SYSTEM
@@ -425,12 +393,12 @@ html {
   --secondary: oklch(0.22 0.02 260);
   --secondary-foreground: oklch(0.95 0.005 250);
   --muted: oklch(0.22 0.02 260);
-  --muted-foreground: oklch(0.65 0.02 255);
+  --muted-foreground: oklch(0.75 0.015 255);
   --accent: oklch(0.22 0.025 260);
   --accent-foreground: oklch(0.95 0.005 250);
   --destructive: oklch(0.65 0.2 25);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.7 0.12 175);
   --chart-1: oklch(0.7 0.15 175);
   --chart-2: oklch(0.65 0.17 160);
@@ -443,7 +411,7 @@ html {
   --sidebar-primary-foreground: oklch(0.95 0.005 250);
   --sidebar-accent: oklch(0.2 0.02 260);
   --sidebar-accent-foreground: oklch(0.95 0.005 250);
-  --sidebar-border: oklch(1 0 0 / 7%);
+  --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.6 0.1 175);
 }
 

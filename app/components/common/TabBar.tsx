@@ -77,7 +77,7 @@ export function TabBar(props: TabBarProps) {
                 {tab.badge !== undefined && tab.badge !== 0 && (
                   <span className={
                     tab.badgeColor
-                      ? `ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-${tab.badgeColor}-500/20 text-${tab.badgeColor}-600 dark:text-${tab.badgeColor}-400`
+                      ? `ml-1 px-1.5 py-0.5 text-xs rounded-full bg-${tab.badgeColor}-500/20 text-${tab.badgeColor}-600 dark:text-${tab.badgeColor}-400`
                       : tabTokens.tabBadge
                   }>
                     {tab.badge}

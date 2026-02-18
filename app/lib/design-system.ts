@@ -15,26 +15,26 @@ import { cn } from "@/lib/utils";
 // ==================== TYPOGRAPHY ====================
 export const typography = {
   // Títulos de página
-  pageTitle: 'text-lg sm:text-xl font-bold text-foreground font-jakarta tracking-tight',
+  pageTitle: 'text-xl sm:text-2xl font-bold text-foreground font-jakarta tracking-tight',
   pageSubtitle: 'text-sm text-muted-foreground',
   
   // Títulos de sección/card
   sectionTitle: 'text-base font-semibold text-foreground',
   cardTitle: 'text-sm font-semibold text-foreground',
   cardTitleWithIcon: 'text-sm font-semibold text-foreground flex items-center gap-2',
-  cardDescription: 'text-xs text-muted-foreground',
-  cardDescriptionSmall: 'text-[11px] text-muted-foreground',
+  cardDescription: 'text-xs sm:text-sm text-muted-foreground',
+  cardDescriptionSmall: 'text-xs text-muted-foreground',
   
   // Body text
   body: 'text-sm text-foreground',
   bodySmall: 'text-xs text-foreground',
   
   // Labels y metadata
-  label: 'text-[11px] text-muted-foreground uppercase tracking-wider font-medium',
-  labelSmall: 'text-[10px] text-muted-foreground uppercase tracking-wider font-medium',
-  labelBold: 'text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground',
+  label: 'text-xs text-muted-foreground uppercase tracking-wider font-medium',
+  labelSmall: 'text-xs text-muted-foreground uppercase tracking-wider font-medium',
+  labelBold: 'text-xs font-bold uppercase tracking-wider text-muted-foreground',
   metadata: 'text-xs text-muted-foreground',
-  metadataSmall: 'text-[11px] text-muted-foreground',
+  metadataSmall: 'text-xs text-muted-foreground',
   
   // Métricas y números
   metric: 'text-xl sm:text-2xl font-extrabold text-foreground tabular-nums font-jakarta tracking-tight',
@@ -44,7 +44,7 @@ export const typography = {
   number: 'tabular-nums font-medium',
   
   // Tablas
-  tableHeader: 'text-[11px] uppercase tracking-wider font-medium text-muted-foreground',
+  tableHeader: 'text-xs uppercase tracking-wider font-medium text-muted-foreground',
   tableCell: 'text-sm text-foreground',
   tableCellSmall: 'text-xs text-muted-foreground',
 } as const;
@@ -150,10 +150,10 @@ export const accentColors = {
 
 // ==================== BADGES / CHIPS ====================
 export const badges = {
-  base: 'inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-md border',
-  sm: 'px-1.5 py-0.5 text-[10px]',
-  md: 'px-2 py-0.5 text-[11px]',
-  lg: 'px-2.5 py-1 text-xs',
+  base: 'inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md border',
+  sm: 'px-1.5 py-0.5 text-xs',
+  md: 'px-2 py-0.5 text-xs',
+  lg: 'px-2.5 py-1 text-sm',
 } as const;
 
 // ==================== SPACING ====================
@@ -187,11 +187,11 @@ export const cards = {
   // Base para todas las cards
   base: 'overflow-hidden',
   // Card tipo glass (para Dashboard, cards principales)
-  glass: 'overflow-hidden rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm shine-top',
+  glass: 'overflow-hidden rounded-xl border border-border bg-card shadow-sm',
   // Card con header separado (glass + header border)
-  glassWithHeader: 'flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-card dark:bg-white/[0.02] shadow-sm shine-top',
+  glassWithHeader: 'flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm',
   // Header dentro de card glass
-  glassHeader: 'flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 sm:px-6 py-3 sm:py-4',
+  glassHeader: 'flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4',
   // Card interactiva
   interactive: 'cursor-pointer hover:border-ring/50 hover:bg-accent/30 active:scale-[0.98] transition-all overflow-hidden',
   mobileCard: 'min-h-[80px] flex flex-col justify-center overflow-hidden',
@@ -231,8 +231,8 @@ export const tabs = {
   tabIconActive: (color: string) => `border-${color}-500 text-${color}-600 dark:text-${color}-400`,
   tabIconInactive: 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
   // Badge counter dentro de tab
-  tabBadge: 'ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-muted',
-  tabBadgeAccent: (color: string) => `ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-${color}-500/20 text-${color}-600 dark:text-${color}-400`,
+  tabBadge: 'ml-1 px-1.5 py-0.5 text-xs rounded-full bg-muted',
+  tabBadgeAccent: (color: string) => `ml-1 px-1.5 py-0.5 text-xs rounded-full bg-${color}-500/20 text-${color}-600 dark:text-${color}-400`,
 } as const;
 
 // ==================== LIST ITEMS ====================
@@ -242,7 +242,7 @@ export const listItems = {
   // Título del item
   rowTitle: 'truncate text-xs sm:text-sm font-medium text-foreground group-hover:text-primary',
   // Metadata del item
-  rowMeta: 'mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground',
+  rowMeta: 'mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground',
   // Divisor
   divider: 'divide-y divide-border',
   // Empty state dentro de lista
@@ -254,16 +254,16 @@ export const listItems = {
 // ==================== METRIC CARD COLORS ====================
 // Paleta unificada para MetricCard / KpiCard
 export const metricColors = {
-  emerald: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
-  green: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400' },
-  blue: { label: 'text-sky-400 dark:text-sky-300', border: 'border-sky-500/10 dark:border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400' },
-  purple: { label: 'text-violet-400 dark:text-violet-300', border: 'border-violet-500/10 dark:border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400' },
-  amber: { label: 'text-amber-400 dark:text-amber-300', border: 'border-amber-500/10 dark:border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400' },
-  orange: { label: 'text-orange-400 dark:text-orange-300', border: 'border-orange-500/10 dark:border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400' },
-  red: { label: 'text-rose-400 dark:text-rose-300', border: 'border-rose-500/10 dark:border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400' },
-  cyan: { label: 'text-cyan-400 dark:text-cyan-300', border: 'border-cyan-500/10 dark:border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400' },
-  teal: { label: 'text-teal-400 dark:text-teal-300', border: 'border-teal-500/10 dark:border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400' },
-  fuchsia: { label: 'text-fuchsia-400 dark:text-fuchsia-300', border: 'border-fuchsia-500/10 dark:border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400' },
+  emerald: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
+  green: { label: 'text-emerald-400 dark:text-emerald-300', border: 'border-emerald-500/10 dark:border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
+  blue: { label: 'text-sky-400 dark:text-sky-300', border: 'border-sky-500/10 dark:border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400', bg: 'bg-sky-500/10' },
+  purple: { label: 'text-violet-400 dark:text-violet-300', border: 'border-violet-500/10 dark:border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400', bg: 'bg-violet-500/10' },
+  amber: { label: 'text-amber-400 dark:text-amber-300', border: 'border-amber-500/10 dark:border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400', bg: 'bg-amber-500/10' },
+  orange: { label: 'text-orange-400 dark:text-orange-300', border: 'border-orange-500/10 dark:border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400', bg: 'bg-orange-500/10' },
+  red: { label: 'text-rose-400 dark:text-rose-300', border: 'border-rose-500/10 dark:border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400', bg: 'bg-rose-500/10' },
+  cyan: { label: 'text-cyan-400 dark:text-cyan-300', border: 'border-cyan-500/10 dark:border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400', bg: 'bg-cyan-500/10' },
+  teal: { label: 'text-teal-400 dark:text-teal-300', border: 'border-teal-500/10 dark:border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400', bg: 'bg-teal-500/10' },
+  fuchsia: { label: 'text-fuchsia-400 dark:text-fuchsia-300', border: 'border-fuchsia-500/10 dark:border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400', bg: 'bg-fuchsia-500/10' },
 } as const;
 
 export type MetricColor = keyof typeof metricColors;

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { KPICard } from './KPICard';
+import { MetricCard } from '@/app/components/metrics/MetricCard';
 import type { 
   MetricasCRMResumen, 
   IntentDistribucion, 
@@ -38,60 +38,68 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
     <div className="space-y-2 sm:space-y-4">
       {/* Fila 1: Conversiones */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Citas Agendadas"
           value={resumen.citasAgendadas}
           subtitle={`${resumen.citasAgendadasHoy} hoy`}
-          icon={Calendar}
-          color="text-emerald-600 dark:text-emerald-400"
+          iconComponent={Calendar}
+          iconColor="text-emerald-600 dark:text-emerald-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Confirmaciones"
           value={resumen.confirmaciones}
-          icon={CheckCircle}
-          color="text-violet-600 dark:text-violet-400"
+          iconComponent={CheckCircle}
+          iconColor="text-violet-600 dark:text-violet-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Tasa Conversión"
           value={`${resumen.tasaConversion}%`}
           subtitle="intención → cita"
-          icon={Target}
-          color={resumen.tasaConversion >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconComponent={Target}
+          iconColor={resumen.tasaConversion >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Escalaciones"
           value={resumen.escalaciones}
-          icon={PhoneForwarded}
-          color={resumen.escalaciones > 5 ? 'text-amber-600 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'}
+          iconComponent={PhoneForwarded}
+          iconColor={resumen.escalaciones > 5 ? 'text-amber-600 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'}
         />
       </div>
 
       {/* Fila 2: Volumen y Performance */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Total Mensajes"
           value={resumen.totalMensajes.toLocaleString()}
           subtitle={`${resumen.mensajesHoy} hoy`}
-          icon={MessageCircle}
-          color="text-blue-600 dark:text-blue-400"
+          iconComponent={MessageCircle}
+          iconColor="text-blue-600 dark:text-blue-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Tiempo Respuesta"
           value={`${(resumen.avgTiempoMs / 1000).toFixed(1)}s`}
-          icon={Clock}
-          color={resumen.avgTiempoMs < 3000 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconComponent={Clock}
+          iconColor={resumen.avgTiempoMs < 3000 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Cancelaciones"
           value={resumen.citasCanceladas}
-          icon={XCircle}
-          color="text-red-600 dark:text-red-400"
+          iconComponent={XCircle}
+          iconColor="text-red-600 dark:text-red-400"
         />
-        <KPICard
+        <MetricCard
+          variant="kpi"
           title="Reagendamientos"
           value={resumen.citasReagendadas}
-          icon={RefreshCw}
-          color="text-cyan-600 dark:text-cyan-400"
+          iconComponent={RefreshCw}
+          iconColor="text-cyan-600 dark:text-cyan-400"
         />
       </div>
     </div>

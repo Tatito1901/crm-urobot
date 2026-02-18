@@ -20,7 +20,7 @@ import {
   Clock
 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
-import { KpiCard } from './components/KpiCard';
+import { MetricCard } from '@/app/components/metrics/MetricCard';
 
 // Lazy Loading de Gráficos para reducir bundle size inicial
 const EvolutionChart = dynamic(() => import('./components/dashboard/DashboardEvolutionChart').then(mod => mod.DashboardEvolutionChart), {
@@ -111,34 +111,38 @@ export default function EstadisticasPage() {
     >
       {/* KPIs Principales */}
       <section className={`${layouts.kpiGrid} ${spacing.sectionGap}`}>
-        <KpiCard
+        <MetricCard
+          variant="kpi"
           title="Pacientes"
           value={kpi.totalPacientes}
-          subtext={`+${kpi.pacientesNuevosMes} este mes`}
-          icon={Users}
+          subtitle={`+${kpi.pacientesNuevosMes} este mes`}
+          iconComponent={Users}
           trend={kpi.pacientesNuevosMes > 0 ? "Creciendo" : undefined}
           tooltip="Total de pacientes registrados en el sistema"
         />
-        <KpiCard
+        <MetricCard
+          variant="kpi"
           title="Consultas"
           value={kpi.consultasMes}
-          subtext={`${kpi.consultasConfirmadasMes} confirmadas`}
-          icon={Calendar}
+          subtitle={`${kpi.consultasConfirmadasMes} confirmadas`}
+          iconComponent={Calendar}
           tooltip="Consultas programadas este mes"
         />
-        <KpiCard
+        <MetricCard
+          variant="kpi"
           title="Conversión"
           value={`${kpi.tasaConversion}%`}
-          subtext="Leads → Pacientes"
-          icon={Target}
+          subtitle="Leads → Pacientes"
+          iconComponent={Target}
           trend={kpi.tasaConversion > 5 ? `${kpi.tasaConversion}%` : undefined}
           tooltip="Porcentaje de leads que se convierten en pacientes"
         />
-        <KpiCard
+        <MetricCard
+          variant="kpi"
           title="Leads"
           value={kpi.totalLeads}
-          subtext={`${kpi.leadsNuevosMes} nuevos`}
-          icon={MessageSquare}
+          subtitle={`${kpi.leadsNuevosMes} nuevos`}
+          iconComponent={MessageSquare}
           tooltip="Total de leads en el sistema"
         />
       </section>

@@ -1,10 +1,3 @@
-/**
- * ============================================================
- * HOOK: useConsultas
- * ============================================================
- * Hook optimizado con SWR para consultas
- * ✅ SWR: Caché, deduplicación y revalidación automática
- */
 
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'

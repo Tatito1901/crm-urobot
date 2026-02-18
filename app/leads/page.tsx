@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useCallback, memo } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { useLeadsPaginated } from '@/hooks/leads/useLeadsPaginated';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
@@ -10,43 +10,9 @@ import { RefreshButton } from '@/app/components/common/RefreshButton';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { LeadsFilters } from './components/LeadsFilters';
 import { LeadsTable } from './components/LeadsTable';
-import { Users, UserPlus, Clock, Calendar, UserCheck, Loader2 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-
-// ── Compact stat card (matches Cardiobot pattern) ──
-interface StatMiniCardProps {
-  icon: React.ReactNode;
-  iconBg: string;
-  label: string;
-  value: number;
-  valueClass?: string;
-  loading?: boolean;
-}
-
-const StatMiniCard = memo(function StatMiniCard({
-  icon, iconBg, label, value, valueClass, loading,
-}: StatMiniCardProps) {
-  return (
-    <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card/80 border border-border/40 transition-all duration-200 hover:border-border/60 hover:bg-card hover:shadow-sm min-h-[72px] cursor-pointer">
-      <div className={cn('p-2 sm:p-2.5 rounded-xl shrink-0', iconBg)}>
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs text-muted-foreground font-medium truncate leading-tight uppercase tracking-wide">
-          {label}
-        </p>
-        {loading ? (
-          <Skeleton className="h-6 w-10 mt-1" />
-        ) : (
-          <p className={cn('text-lg sm:text-xl font-bold tabular-nums leading-tight mt-0.5', valueClass || 'text-foreground')}>
-            {value}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-});
+import { LeadClinicSidebar } from './components/LeadClinicSidebar';
+import { MetricCard } from '@/app/components/metrics/MetricCard';
+import { Users, UserPlus, Clock, Calendar, UserCheck, Loader2, Stethoscope } from 'lucide-react';
 
 export default function LeadsPage() {
   const {
@@ -66,6 +32,21 @@ export default function LeadsPage() {
     error,
     refresh,
   } = useLeadsPaginated({ pageSize: 8 });
+
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+
+  const selectedLead = useMemo(
+    () => leads.find(l => l.id === selectedLeadId) ?? null,
+    [leads, selectedLeadId]
+  );
+
+  const handleRowClick = useCallback((leadId: string) => {
+    setSelectedLeadId(prev => prev === leadId ? null : leadId);
+  }, []);
+
+  const handleCloseSidebar = useCallback(() => {
+    setSelectedLeadId(null);
+  }, []);
 
   const computedStats = useMemo(() => {
     const activos = stats.nuevos + stats.interactuando + stats.contactados + stats.citaPropuesta + stats.enSeguimiento + stats.citaAgendada;
@@ -94,48 +75,69 @@ export default function LeadsPage() {
         title="Leads"
         description="Gestiona y da seguimiento a tus prospectos"
         headerSlot={
-          <RefreshButton onClick={handleRefresh} loading={isLoading} />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedLeadId(prev => prev ? null : leads[0]?.id ?? null)}
+              className={`p-2 rounded-lg transition-colors ${
+                selectedLeadId
+                  ? 'bg-teal-100 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400'
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
+              }`}
+              title="Panel clínico"
+            >
+              <Stethoscope className="w-4 h-4" />
+            </button>
+            <RefreshButton onClick={handleRefresh} loading={isLoading} />
+          </div>
         }
       >
 
+      {/* ── Main layout: table + sidebar ── */}
+      <div className="flex gap-4">
+        <div className={`flex-1 min-w-0 space-y-4 transition-all duration-200 ${
+          selectedLead ? 'lg:max-w-[calc(100%-340px)]' : ''
+        }`}>
+
         {/* ── Stats grid ── */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <StatMiniCard
+          <MetricCard
+            variant="compact"
             icon={<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />}
-            iconBg="bg-primary/10"
-            label="Activos"
+            iconColor="bg-primary/10"
+            title="Activos"
             value={computedStats.activos}
             loading={statsLoading}
           />
-          <StatMiniCard
+          <MetricCard
+            variant="compact"
             icon={<UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />}
-            iconBg="bg-blue-500/10"
-            label="Nuevos"
+            color="blue"
+            title="Nuevos"
             value={stats.nuevos}
-            valueClass={stats.nuevos > 0 ? 'text-blue-500' : undefined}
             loading={statsLoading}
           />
-          <StatMiniCard
+          <MetricCard
+            variant="compact"
             icon={<Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500" />}
-            iconBg="bg-amber-500/10"
-            label="En proceso"
+            color="amber"
+            title="En proceso"
             value={computedStats.enProceso}
             loading={statsLoading}
           />
-          <StatMiniCard
+          <MetricCard
+            variant="compact"
             icon={<Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500" />}
-            iconBg="bg-purple-500/10"
-            label="Citas"
+            color="purple"
+            title="Citas"
             value={stats.citaAgendada}
-            valueClass="text-purple-500"
             loading={statsLoading}
           />
-          <StatMiniCard
+          <MetricCard
+            variant="compact"
             icon={<UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />}
-            iconBg="bg-emerald-500/10"
-            label="Convertidos"
+            color="emerald"
+            title="Convertidos"
             value={stats.convertidos}
-            valueClass="text-emerald-500"
             loading={statsLoading}
           />
         </div>
@@ -143,7 +145,7 @@ export default function LeadsPage() {
         {/* ── Table ── */}
         <div className="space-y-4">
           {/* Search + filters bar */}
-          <div className="flex items-center gap-4 bg-card/80 p-4 rounded-xl border border-border/50 shadow-sm">
+          <div className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
             <LeadsFilters
               currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'nuevo' | 'interactuando' | 'contactado' | 'cita_propuesta' | 'cita_agendada' | 'perdido'}
               onFilterChange={handleFilterChange}
@@ -158,7 +160,7 @@ export default function LeadsPage() {
           </div>
 
           {/* Table card */}
-          <div className="rounded-xl bg-card border border-border/50 overflow-hidden shadow-sm">
+          <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
             <ContentLoader
               loading={statsLoading}
               error={error}
@@ -184,11 +186,12 @@ export default function LeadsPage() {
                 leads={leads}
                 loading={isLoading}
                 onRefresh={handleRefresh}
+                onRowClick={handleRowClick}
                 emptyMessage="No hay datos para mostrar"
               />
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-2 border-t border-border/40 px-4 sm:px-6 py-3 sm:py-4 bg-secondary/20">
+                <div className="flex items-center justify-between gap-2 border-t border-border px-4 sm:px-6 py-3 sm:py-4 bg-secondary/20">
                   <PaginationControls
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -202,6 +205,40 @@ export default function LeadsPage() {
             </ContentLoader>
           </div>
         </div>
+
+        </div>{/* end flex-1 */}
+
+        {/* ── Sidebar clínico ── */}
+        {selectedLead && (
+          <aside className="hidden lg:flex w-[320px] shrink-0 rounded-xl border border-border bg-card overflow-hidden shadow-sm animate-in slide-in-from-right duration-200">
+            <LeadClinicSidebar
+              lead={selectedLead}
+              onClose={handleCloseSidebar}
+            />
+          </aside>
+        )}
+
+      </div>{/* end flex layout */}
+
+      {/* ── Sidebar clínico (Mobile Bottom Sheet) ── */}
+      {selectedLead && (
+        <>
+          <div
+            className="lg:hidden fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
+            onClick={handleCloseSidebar}
+          />
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 animate-in slide-in-from-bottom duration-300">
+            <div className="bg-white dark:bg-slate-900 rounded-t-2xl max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mt-2 mb-1" />
+              <LeadClinicSidebar
+                lead={selectedLead}
+                onClose={handleCloseSidebar}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
       </PageShell>
     </ErrorBoundary>
   );

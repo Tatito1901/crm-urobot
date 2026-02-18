@@ -6,7 +6,7 @@ import type { TipoMensaje } from '@/types/chat';
 
 interface MessageBubbleProps {
   contenido: string;
-  rol: 'usuario' | 'asistente';
+  rol: 'usuario' | 'asistente' | 'bot' | 'assistant' | 'urobot' | 'outbound' | 'sistema';
   createdAt: Date;
   isConsecutive?: boolean;
   // Campos multimedia
@@ -366,7 +366,7 @@ export const MessageBubble = memo(function MessageBubble({
   mediaCaption,
   mediaDurationSeconds,
 }: MessageBubbleProps) {
-  const isAsistente = rol === 'asistente';
+  const isAsistente = rol !== 'usuario';
 
   // Renderizar contenido según tipo
   const renderContent = () => {

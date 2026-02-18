@@ -56,19 +56,13 @@ export function PageShell({
         className
       )}
     >
-      {accent && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-30 overflow-hidden" aria-hidden style={{ contain: 'strict', willChange: 'opacity' }}>
-          <div className="absolute left-1/3 top-[-15%] h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-teal-500/15 blur-[160px] dark:bg-teal-500/20" />
-          <div className="absolute right-[10%] top-[5%] h-[300px] w-[300px] rounded-full bg-cyan-500/10 blur-[120px] dark:bg-cyan-500/15" />
-        </div>
-      )}
       <div className={layoutClasses}>
         <header className={headerClasses}>
           <div className={titleBlockClasses}>
             <p className={cn(
-              "uppercase tracking-[0.3em] font-semibold",
+              "uppercase tracking-widest font-semibold",
               "text-muted-foreground",
-              compact ? "text-[10px]" : "text-xs"
+              "text-xs"
             )}>{eyebrow}</p>
             <h1 className={cn(
               "font-bold tracking-tight",

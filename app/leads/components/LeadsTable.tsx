@@ -15,9 +15,10 @@ interface LeadsTableProps {
   emptyMessage: string;
   loading?: boolean;
   onRefresh?: () => void;
+  onRowClick?: (leadId: string) => void;
 }
 
-export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, onRefresh }: LeadsTableProps) {
+export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, onRefresh, onRowClick }: LeadsTableProps) {
   // Configuración de columnas
   const headers = [
     { key: 'nombre', label: <TableHeaders.Persona /> },
@@ -58,7 +59,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
           }`}>
             {lead.totalMensajes}
           </span>
-          <span className="text-[11px] text-muted-foreground ml-1">msgs</span>
+          <span className="text-xs text-muted-foreground ml-1">msgs</span>
         </div>
       ),
       ultimoMensaje: (
@@ -107,6 +108,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
       headers={headers}
       rows={rows}
       empty={emptyMessage}
+      onRowClick={onRowClick}
       mobileConfig={{
         primary: 'nombre',
         secondary: 'fuente',

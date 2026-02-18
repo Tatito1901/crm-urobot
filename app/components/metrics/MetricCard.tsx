@@ -1,25 +1,43 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, type ElementType } from 'react';
 import { metricColors, type MetricColor } from '@/app/lib/design-system';
+import { ArrowUpRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
+/**
+ * ============================================================
+ * METRIC CARD — Componente unificado de KPI / Stat
+ * ============================================================
+ * Variantes:
+ *  - "default"  → Dashboard: dot+label, big value, ghost icon bg
+ *  - "compact"  → Leads: horizontal, icon left, label+value right
+ *  - "kpi"      → Urobot/Estadísticas: icon-box header, value, subtext
+ */
 interface MetricCardProps {
   title: string;
   value: number | string;
   percentage?: number;
   color?: MetricColor;
   icon?: React.ReactNode;
+  /** ElementType icon (for kpi variant — renders as component) */
+  iconComponent?: ElementType;
+  /** Direct Tailwind color classes for kpi icon (e.g. 'text-blue-600 dark:text-blue-400') */
+  iconColor?: string;
   description?: string;
   subtitle?: string;
   trend?: {
     value: number;
     isPositive: boolean;
-  };
+  } | string;
   showProgress?: boolean;
   maxValue?: number;
   loading?: boolean;
   /** Animar el valor numérico (solo si es número) */
   animate?: boolean;
+  tooltip?: string;
+  /** Layout variant */
+  variant?: 'default' | 'compact' | 'kpi';
 }
 
 /**
@@ -77,12 +95,16 @@ export const MetricCard = React.memo(({
   percentage,
   color = 'blue',
   icon,
+  iconComponent: IconComponent,
+  iconColor,
   description,
   subtitle,
   trend,
   loading = false,
   maxValue = 100,
   animate = true,
+  tooltip,
+  variant = 'default',
 }: MetricCardProps) => {
   // Evitar hydration mismatch: siempre renderizar skeleton en SSR y primer render del cliente
   const [mounted, setMounted] = useState(false);
@@ -98,49 +120,122 @@ export const MetricCard = React.memo(({
     (typeof value === 'string' ? parseInt(value.replace(/[^0-9]/g, ''), 10) || 0 : 0);
   
   // Animar el número cuando no está cargando
-  const animatedValue = useAnimatedNumber(numericValue, 400, animate && !loading && mounted);
+  const shouldAnimate = variant === 'default' && animate;
+  const animatedValue = useAnimatedNumber(numericValue, 400, shouldAnimate && !loading && mounted);
   
   // Mostrar skeleton hasta que esté montado en cliente
-  const isLoading = !mounted || loading;
+  const isLoading = variant === 'default' ? (!mounted || loading) : loading;
   
   // Mostrar valor formateado
   const displayValue = isLoading ? '—' : 
-    (animate && typeof value === 'number') ? animatedValue.toLocaleString('es-MX') : value;
+    (shouldAnimate && typeof value === 'number') ? animatedValue.toLocaleString('es-MX') : value;
   
-  return (
-    <div className={`relative overflow-hidden rounded-xl border ${colors.border} bg-card dark:bg-white/[0.03] p-3 sm:p-4 flex flex-col justify-between group min-h-[90px] sm:min-h-[108px] transition-all duration-200 hover:bg-white/[0.05] dark:shadow-lg ${colors.glow} shine-top`}>
-      {/* Subtle background icon */}
-      {icon && (
-        <div className="absolute -top-1 -right-1 p-2 transition-opacity duration-200 opacity-100 group-hover:opacity-100">
-          <span className={`${colors.icon} [&>svg]:w-12 [&>svg]:h-12`}>{icon}</span>
+  // Trend rendering (supports both object and string formats)
+  const trendElement = trend ? (
+    typeof trend === 'string' ? (
+      <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+        <ArrowUpRight className="w-3 h-3" />
+        <span className="hidden sm:inline">{trend}</span>
+      </div>
+    ) : (
+      <span className={`ml-1.5 font-semibold ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+        {trend.isPositive ? '↑' : '↓'}{Math.abs(trend.value)}%
+      </span>
+    )
+  ) : null;
+
+  // ═══════════════════════════════════════════════
+  // VARIANT: compact (horizontal — Leads page)
+  // ═══════════════════════════════════════════════
+  if (variant === 'compact') {
+    return (
+      <div
+        className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card/80 border border-border/40 transition-all duration-200 hover:border-border/60 hover:bg-card hover:shadow-sm min-h-[72px] cursor-pointer"
+        title={tooltip}
+      >
+        {(icon || IconComponent) && (
+          <div className={cn('p-2 sm:p-2.5 rounded-xl shrink-0', iconColor || `${colors.bg}`)}>
+            {IconComponent ? <IconComponent className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : icon}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground font-semibold truncate leading-tight uppercase tracking-wide">
+            {title}
+          </p>
+          {loading ? (
+            <div className="h-6 w-10 mt-1 bg-muted rounded animate-pulse" />
+          ) : (
+            <p className={cn('text-lg sm:text-xl font-bold tabular-nums leading-tight mt-0.5', iconColor ? iconColor.split(' ')[0] : 'text-foreground')}>
+              {percentage !== undefined ? `${percentage}%` : displayValue}
+            </p>
+          )}
         </div>
-      )}
-      
-      <div className="relative">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <span className={`h-1.5 w-1.5 rounded-full ${colors.dot} opacity-70`} />
-          <span className={`text-[10px] ${colors.label} font-semibold uppercase tracking-wider`}>{title}</span>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  // VARIANT: kpi (icon-box header — Urobot/Estadísticas)
+  // ═══════════════════════════════════════════════
+  if (variant === 'kpi') {
+    const kpiColor = iconColor || `${colors.label}`;
+    return (
+      <div
+        className="bg-card dark:bg-white/[0.03] border border-border dark:border-white/[0.06] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top"
+        title={tooltip}
+      >
+        <div className="flex justify-between items-start mb-3">
+          <div className={cn('p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl shrink-0 border', iconColor ? `bg-muted/50 ${kpiColor} border-transparent` : `${colors.bg} ${colors.label} ${colors.border}`)}>
+            {IconComponent ? <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" /> : icon}
+          </div>
+          {typeof trend === 'string' && trendElement}
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-1 truncate">{title}</h3>
+          {loading ? (
+            <div className="h-8 w-20 bg-muted rounded-md animate-pulse mb-1" />
+          ) : (
+            <div className="text-2xl sm:text-3xl font-extrabold text-foreground mb-1 tracking-tight truncate font-jakarta">
+              {percentage !== undefined ? `${percentage}%` : displayValue}
+            </div>
+          )}
+          {finalDescription && (
+            <p className="text-xs font-medium text-muted-foreground truncate">{finalDescription}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  // VARIANT: default (Dashboard — dot+label, ghost icon)
+  // ═══════════════════════════════════════════════
+  return (
+    <div
+      className={`relative overflow-hidden rounded-xl border ${colors.border} bg-card p-3 sm:p-4 flex flex-col justify-between min-h-[90px] sm:min-h-[108px] transition-colors hover:bg-muted/30`}
+      title={tooltip}
+    >
+      <div>
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className={`h-1.5 w-1.5 rounded-full ${colors.dot}`} />
+          <span className={`text-xs ${colors.label} font-semibold uppercase tracking-wider`}>{title}</span>
         </div>
         {isLoading ? (
           <div className="h-8 w-20 bg-white/[0.05] rounded-md animate-pulse" />
         ) : (
-          <div className={`text-2xl font-extrabold text-foreground tabular-nums tracking-tight font-jakarta`}>
+          <div className="text-2xl font-extrabold text-foreground tabular-nums tracking-tight font-jakarta">
             {percentage !== undefined ? `${percentage}%` : displayValue}
           </div>
         )}
       </div>
       
-      <div className="text-[10px] text-muted-foreground mt-2">
+      <div className="text-xs text-muted-foreground mt-2">
         {isLoading ? (
           <div className="h-3 w-24 bg-white/[0.05] rounded animate-pulse" />
         ) : (
           <>
             {finalDescription}
-            {trend && (
-              <span className={`ml-1.5 font-semibold ${trend.isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {trend.isPositive ? '↑' : '↓'}{Math.abs(trend.value)}%
-              </span>
-            )}
+            {typeof trend === 'object' && trendElement}
           </>
         )}
       </div>

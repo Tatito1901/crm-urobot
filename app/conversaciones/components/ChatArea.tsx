@@ -200,7 +200,7 @@ export function ChatArea({
                           <MessageBubble
                             key={msg.id}
                             contenido={msg.contenido}
-                            rol={msg.remitente as 'usuario' | 'asistente'}
+                            rol={msg.remitente as 'usuario' | 'bot' | 'asistente' | 'sistema'}
                             createdAt={msg.createdAt}
                             isConsecutive={!!isConsecutive}
                             tipoMensaje={msg.tipoMensaje}

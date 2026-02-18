@@ -28,9 +28,9 @@ export const Badge = memo(function Badge({
   size?: "sm" | "md" | "lg";
 } & React.ComponentProps<typeof ShadcnBadge>) {
   const sizeClasses = {
-    sm: "px-1.5 py-0.5 text-[10px]",
-    md: "px-2 py-0.5 text-[11px]",
-    lg: "px-2.5 py-1 text-xs",
+    sm: "px-1.5 py-0.5 text-xs",
+    md: "px-2 py-0.5 text-xs",
+    lg: "px-2.5 py-1 text-sm",
   };
 
   return (
@@ -57,7 +57,7 @@ export const StatCard = memo(function StatCard({ title, value, hint }: { title: 
   return (
     <Card className="bg-card border-border/50">
       <CardHeader className="space-y-1.5 pb-2">
-        <CardDescription className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+        <CardDescription className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
           {title}
         </CardDescription>
         <CardTitle className="text-xl font-semibold text-foreground tabular-nums">{value}</CardTitle>
@@ -122,9 +122,9 @@ export function DataTable({
 
   return (
     <div className="space-y-4">
-      <div className="hidden w-full overflow-x-auto rounded-xl border border-border/50 bg-card md:block">
-        <table className="min-w-full divide-y divide-border/50 text-left text-sm text-foreground">
-          <thead className="bg-muted/40 text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+      <div className="hidden w-full overflow-x-auto rounded-xl border border-border bg-card md:block">
+        <table className="min-w-full divide-y divide-border text-left text-sm text-foreground">
+          <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground font-medium">
             <tr>
               {headers.map((header) => (
                 <th key={header.key} scope="col" className={cn("px-4 py-3 font-medium", getAlignmentClasses(header.align))}>
@@ -133,7 +133,7 @@ export function DataTable({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/30">
+          <tbody className="divide-y divide-border">
             {rows.map((row) => (
               <tr
                 key={row.id}
@@ -168,7 +168,7 @@ export function DataTable({
               onClick={onRowClick ? () => onRowClick(row.id) : undefined}
               onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
               className={cn(
-                "rounded-xl border border-border/50 bg-card p-3 sm:p-4 min-h-[72px] flex flex-col justify-center shadow-sm",
+                "rounded-xl border border-border bg-card p-3 sm:p-4 min-h-[72px] flex flex-col justify-center shadow-sm",
                 onRowClick && "cursor-pointer active:scale-[0.99] transition-transform"
               )}
             >
