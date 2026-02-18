@@ -67,9 +67,9 @@ export function Sidebar() {
     <>
       {/* Main Sidebar — Glass Morphism Premium */}
       <aside
-        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-border lg:bg-sidebar lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 transition-all duration-300 relative overflow-hidden"
+        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-border lg:bg-sidebar lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 shrink-0 sticky top-0 transition-all duration-300"
       >
-        <div className="relative flex flex-1 flex-col gap-6 overflow-hidden">
+        <div className="relative flex flex-1 flex-col gap-6 min-h-0">
           {/* Brand Header */}
           <header className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/15">

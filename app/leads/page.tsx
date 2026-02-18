@@ -92,11 +92,8 @@ export default function LeadsPage() {
         }
       >
 
-      {/* ── Main layout: table + sidebar ── */}
-      <div className="flex gap-4">
-        <div className={`flex-1 min-w-0 space-y-4 transition-all duration-200 ${
-          selectedLead ? 'lg:max-w-[calc(100%-340px)]' : ''
-        }`}>
+      {/* ── Main content ── */}
+      <div className="space-y-4">
 
         {/* ── Stats grid ── */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -206,36 +203,21 @@ export default function LeadsPage() {
           </div>
         </div>
 
-        </div>{/* end flex-1 */}
+      </div>{/* end main content */}
 
-        {/* ── Sidebar clínico ── */}
-        {selectedLead && (
-          <aside className="hidden lg:flex w-[320px] shrink-0 rounded-xl border border-border bg-card overflow-hidden shadow-sm animate-in slide-in-from-right duration-200">
+      {/* ── Drawer clínico (right panel) ── */}
+      {selectedLead && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40 animate-in fade-in duration-200"
+            onClick={handleCloseSidebar}
+          />
+          <aside className="fixed top-0 right-0 z-50 h-full w-[340px] max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
             <LeadClinicSidebar
               lead={selectedLead}
               onClose={handleCloseSidebar}
             />
           </aside>
-        )}
-
-      </div>{/* end flex layout */}
-
-      {/* ── Sidebar clínico (Mobile Bottom Sheet) ── */}
-      {selectedLead && (
-        <>
-          <div
-            className="lg:hidden fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
-            onClick={handleCloseSidebar}
-          />
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 animate-in slide-in-from-bottom duration-300">
-            <div className="bg-card rounded-t-2xl max-h-[80vh] overflow-hidden flex flex-col">
-              <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2 mb-1" />
-              <LeadClinicSidebar
-                lead={selectedLead}
-                onClose={handleCloseSidebar}
-              />
-            </div>
-          </div>
         </>
       )}
 
