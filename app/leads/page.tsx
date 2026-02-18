@@ -7,6 +7,7 @@ import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { PaginationControls } from '@/app/components/common/PaginationControls';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { RefreshButton } from '@/app/components/common/RefreshButton';
+import { PageShell } from '@/app/components/crm/page-shell';
 import { LeadsFilters } from './components/LeadsFilters';
 import { LeadsTable } from './components/LeadsTable';
 import { Users, UserPlus, Clock, Calendar, UserCheck, Loader2 } from 'lucide-react';
@@ -27,7 +28,7 @@ const StatMiniCard = memo(function StatMiniCard({
   icon, iconBg, label, value, valueClass, loading,
 }: StatMiniCardProps) {
   return (
-    <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card/80 border border-border/40 transition-all duration-200 hover:border-border/60 hover:bg-card hover:shadow-sm min-h-[72px]">
+    <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card/80 border border-border/40 transition-all duration-200 hover:border-border/60 hover:bg-card hover:shadow-sm min-h-[72px] cursor-pointer">
       <div className={cn('p-2 sm:p-2.5 rounded-xl shrink-0', iconBg)}>
         {icon}
       </div>
@@ -85,21 +86,17 @@ export default function LeadsPage() {
 
   return (
     <ErrorBoundary>
-      <div className="flex flex-col gap-6">
-        {/* ── Header ── */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-display font-semibold tracking-tight text-foreground">
-              Leads
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Gestiona y da seguimiento a tus prospectos
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <RefreshButton onClick={handleRefresh} loading={isLoading} />
-          </div>
-        </div>
+      <PageShell
+        accent
+        fullWidth
+        compact
+        eyebrow="Gestión Comercial"
+        title="Leads"
+        description="Gestiona y da seguimiento a tus prospectos"
+        headerSlot={
+          <RefreshButton onClick={handleRefresh} loading={isLoading} />
+        }
+      >
 
         {/* ── Stats grid ── */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -205,7 +202,7 @@ export default function LeadsPage() {
             </ContentLoader>
           </div>
         </div>
-      </div>
+      </PageShell>
     </ErrorBoundary>
   );
 }

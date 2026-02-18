@@ -12,6 +12,7 @@ import {
   BarChart3,
   Bot,
   Stethoscope,
+  X,
   type LucideProps,
 } from "lucide-react";
 
@@ -75,8 +76,8 @@ export function Sidebar() {
         <div className="relative flex flex-1 flex-col gap-6 overflow-hidden">
           {/* Brand Header */}
           <header className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 shine-top">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 ring-1 ring-white/10 text-lg">
-              🤖
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 ring-1 ring-white/10">
+              <Bot className="h-5 w-5 text-teal-400" aria-hidden />
             </div>
             <div className="space-y-0.5">
               <p className="text-[9px] uppercase tracking-[0.35em] text-sidebar-foreground/40 font-semibold">CRM Clínico</p>
@@ -314,7 +315,7 @@ export function BottomNav() {
                   aria-expanded={showMore}
                   aria-label="Más opciones"
                 >
-                  {showMore ? <span className="text-lg leading-none">✕</span> : item.icon}
+                  {showMore ? <X className="w-5 h-5" aria-hidden /> : item.icon}
                   <span className="text-[10px] font-medium">{showMore ? "Cerrar" : item.label}</span>
                 </button>
               );

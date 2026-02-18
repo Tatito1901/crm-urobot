@@ -100,6 +100,7 @@ export default function ConversacionesPage() {
           </div>
           <button 
             onClick={() => refetch()} 
+            aria-label="Actualizar conversaciones"
             className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />

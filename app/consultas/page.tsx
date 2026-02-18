@@ -81,8 +81,10 @@ export default function ConsultasPage() {
           <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3 sm:items-center sm:justify-between">
             {/* Búsqueda */}
             <div className="relative flex-1 max-w-md">
+              <label htmlFor="consultas-search" className="sr-only">Buscar consultas</label>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <input
+                id="consultas-search"
                 value={inputValue}
                 onChange={(event) => {
                   setInputValue(event.target.value);
@@ -143,7 +145,9 @@ export default function ConsultasPage() {
             skeleton={<TableContentSkeleton rows={7} />}
             emptyState={
               <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                <p className="text-4xl sm:text-5xl">📅</p>
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/10">
+                  <Building2 className="h-7 w-7 sm:h-9 sm:w-9 text-primary/60" />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {search ? 'No se encontraron consultas' : 'No hay consultas registradas'}
                 </p>

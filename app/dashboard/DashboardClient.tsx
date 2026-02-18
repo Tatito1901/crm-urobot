@@ -2,10 +2,9 @@
 
 import { useMemo } from 'react';
 import dynamicImport from 'next/dynamic';
-import { Users, Activity, UserCheck, Calendar, Clock, Zap } from 'lucide-react';
+import { Users, Activity, UserCheck, Calendar, Clock, Zap, Loader2 } from 'lucide-react';
 import { formatDate, STATE_COLORS } from '@/app/lib/crm-data';
 import { Badge } from '@/app/components/crm/ui';
-import { ThemeToggle } from '@/app/components/common/ThemeToggle';
 import { RefreshButton } from '@/app/components/common/RefreshButton';
 import { useStats } from '@/hooks/dashboard/useStats';
 import type { KPIData, ChartData } from '@/hooks/dashboard/useStats';
@@ -207,7 +206,6 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                 </div>
               </div>
               <div className="flex items-center gap-2.5">
-                <ThemeToggle />
                 <RefreshButton onClick={handleRefresh} loading={isLoadingAny} />
               </div>
             </div>
@@ -261,7 +259,7 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate font-jakarta">
                       Leads Recientes
-                      {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
+                      {loadingActivity && <Loader2 className="ml-1.5 h-3.5 w-3.5 animate-spin text-teal-400 inline" />}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Últimos 5 contactos registrados</p>
                   </div>
@@ -298,7 +296,7 @@ export default function DashboardClient({ initialStats, initialActivity }: Dashb
                   <div className="space-y-0.5 sm:space-y-1 min-w-0">
                     <h3 className="font-semibold text-sm sm:text-base text-card-foreground truncate font-jakarta">
                       Consultas Próximas
-                      {loadingActivity && <span className="ml-1.5 animate-spin text-teal-400 text-xs">↻</span>}
+                      {loadingActivity && <Loader2 className="ml-1.5 h-3.5 w-3.5 animate-spin text-teal-400 inline" />}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">Agenda para los próximos días</p>
                   </div>
