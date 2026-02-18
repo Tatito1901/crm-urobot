@@ -119,7 +119,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
             ) : (
               <>
                 {/* ── Urgencia alert ── */}
-                {clinico!.es_urgencia_medica && (
+                {clinico?.es_urgencia_medica && (
                   <div className="flex items-center gap-2.5 px-3 py-2.5 bg-red-500/10 border border-red-500/20 rounded-lg animate-in fade-in duration-300">
                     <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />
                     <span className="text-xs font-semibold text-red-400">
@@ -135,7 +135,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                   className="space-y-1.5"
                 >
                   {/* Síntomas reportados */}
-                  {clinico!.sintomas_reportados && clinico!.sintomas_reportados.length > 0 && (
+                  {clinico?.sintomas_reportados && clinico?.sintomas_reportados.length > 0 && (
                     <AccordionItem value="sintomas" className="border-none rounded-lg bg-secondary/50 px-3">
                       <AccordionTrigger className="py-2.5 hover:no-underline gap-2">
                         <div className="flex items-center gap-2">
@@ -144,13 +144,13 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                             Síntomas reportados
                           </span>
                           <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 rounded-md">
-                            {clinico!.sintomas_reportados.length}
+                            {clinico?.sintomas_reportados.length}
                           </Badge>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pb-3 pt-0">
                         <div className="flex flex-wrap gap-1.5">
-                          {clinico!.sintomas_reportados.map((s, i) => (
+                          {clinico?.sintomas_reportados.map((s, i) => (
                             <Badge
                               key={i}
                               variant="default"
@@ -165,7 +165,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                   )}
 
                   {/* Banderas rojas */}
-                  {clinico!.banderas_rojas && clinico!.banderas_rojas.length > 0 && (
+                  {clinico?.banderas_rojas && clinico?.banderas_rojas.length > 0 && (
                     <AccordionItem value="banderas" className="border-none rounded-lg bg-red-500/5 px-3">
                       <AccordionTrigger className="py-2.5 hover:no-underline gap-2">
                         <div className="flex items-center gap-2">
@@ -174,13 +174,13 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                             Banderas rojas
                           </span>
                           <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4 rounded-md">
-                            {clinico!.banderas_rojas.length}
+                            {clinico?.banderas_rojas.length}
                           </Badge>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pb-3 pt-0">
                         <div className="flex flex-wrap gap-1.5">
-                          {clinico!.banderas_rojas.map((b, i) => (
+                          {clinico?.banderas_rojas.map((b, i) => (
                             <Badge
                               key={i}
                               variant="destructive"
@@ -196,7 +196,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                   )}
 
                   {/* Zona afectada */}
-                  {clinico!.zona_afectada && (
+                  {clinico?.zona_afectada && (
                     <AccordionItem value="zona" className="border-none rounded-lg bg-secondary/50 px-3">
                       <AccordionTrigger className="py-2.5 hover:no-underline gap-2">
                         <div className="flex items-center gap-2">
@@ -208,14 +208,14 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                       </AccordionTrigger>
                       <AccordionContent className="pb-3 pt-0">
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          {clinico!.zona_afectada}
+                          {clinico?.zona_afectada}
                         </p>
                       </AccordionContent>
                     </AccordionItem>
                   )}
 
                   {/* Tiempo de evolución */}
-                  {clinico!.tiempo_evolucion && (
+                  {clinico?.tiempo_evolucion && (
                     <AccordionItem value="tiempo" className="border-none rounded-lg bg-secondary/50 px-3">
                       <AccordionTrigger className="py-2.5 hover:no-underline gap-2">
                         <div className="flex items-center gap-2">
@@ -227,14 +227,14 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                       </AccordionTrigger>
                       <AccordionContent className="pb-3 pt-0">
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                          {clinico!.tiempo_evolucion}
+                          {clinico?.tiempo_evolucion}
                         </p>
                       </AccordionContent>
                     </AccordionItem>
                   )}
 
                   {/* Resumen del caso */}
-                  {clinico!.resumen_caso && (
+                  {clinico?.resumen_caso && (
                     <AccordionItem value="resumen" className="border-none rounded-lg bg-secondary/50 px-3">
                       <AccordionTrigger className="py-2.5 hover:no-underline gap-2">
                         <div className="flex items-center gap-2">
@@ -246,7 +246,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                       </AccordionTrigger>
                       <AccordionContent className="pb-3 pt-0">
                         <p className="text-[13px] text-muted-foreground leading-relaxed">
-                          {clinico!.resumen_caso}
+                          {clinico?.resumen_caso}
                         </p>
                       </AccordionContent>
                     </AccordionItem>
