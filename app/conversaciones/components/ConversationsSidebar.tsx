@@ -59,14 +59,14 @@ export function ConversationsSidebar({
 }: ConversationsSidebarProps) {
   return (
     <aside className={`
-      w-full sm:w-[280px] md:w-[320px] lg:w-[380px] border-r border-slate-200/80 dark:border-white/[0.06] flex flex-col 
-      bg-white/70 dark:bg-white/[0.02] backdrop-blur-xl shrink-0 z-10
+      w-full sm:w-[280px] md:w-[320px] lg:w-[380px] border-r border-slate-200/80 dark:border-white/[0.10] flex flex-col 
+      bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl shrink-0 z-10
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
       ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
     `}>
       {/* Header Desktop del Sidebar */}
-      <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-slate-200/50 dark:border-white/[0.06]">
+      <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-slate-200/50 dark:border-white/[0.10]">
         <div>
           <h2 className="font-semibold text-foreground text-lg font-jakarta">Mensajes</h2>
           <p className="text-xs text-muted-foreground">{mounted ? conteosPorTipo.todos : 0} conversaciones</p>
@@ -106,7 +106,7 @@ export function ConversationsSidebar({
                 className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
                   ${filtroActivo === id 
                     ? 'bg-teal-500 text-white shadow-sm shadow-teal-500/20' 
-                    : 'bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.08]'}`}
+                    : 'bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.12]'}`}
               >
                 <Icon className="w-3 h-3" />
                 <span>{label}</span>

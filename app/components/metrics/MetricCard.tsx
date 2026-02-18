@@ -133,7 +133,7 @@ export const MetricCard = React.memo(({
   // Trend rendering (supports both object and string formats)
   const trendElement = trend ? (
     typeof trend === 'string' ? (
-      <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+      <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/25 shrink-0">
         <ArrowUpRight className="w-3 h-3" />
         <span className="hidden sm:inline">{trend}</span>
       </div>
@@ -181,7 +181,7 @@ export const MetricCard = React.memo(({
     const kpiColor = iconColor || `${colors.label}`;
     return (
       <div
-        className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top"
+        className="bg-white/[0.05] border border-white/[0.10] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top"
         title={tooltip}
       >
         <div className="flex justify-between items-start mb-3">
@@ -221,7 +221,7 @@ export const MetricCard = React.memo(({
           <span className={`text-xs ${colors.label} font-semibold uppercase tracking-wider`}>{title}</span>
         </div>
         {isLoading ? (
-          <div className="h-8 w-20 bg-white/[0.05] rounded-md animate-pulse" />
+          <div className="h-8 w-20 bg-white/[0.08] rounded-md animate-pulse" />
         ) : (
           <div className="text-2xl font-extrabold text-foreground tabular-nums tracking-tight font-jakarta">
             {percentage !== undefined ? `${percentage}%` : displayValue}
@@ -231,7 +231,7 @@ export const MetricCard = React.memo(({
       
       <div className="text-xs text-muted-foreground mt-2">
         {isLoading ? (
-          <div className="h-3 w-24 bg-white/[0.05] rounded animate-pulse" />
+          <div className="h-3 w-24 bg-white/[0.08] rounded animate-pulse" />
         ) : (
           <>
             {finalDescription}

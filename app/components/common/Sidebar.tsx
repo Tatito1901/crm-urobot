@@ -112,7 +112,7 @@ export function Sidebar() {
                           />
                           <span className="flex-1">{item.label}</span>
                           {isActive && (
-                            <span className="h-4 w-0.5 rounded-full bg-teal-400/60" aria-hidden />
+                            <span className="h-4 w-0.5 rounded-full bg-teal-400/80" aria-hidden />
                           )}
                         </Link>
                       </li>
@@ -138,7 +138,7 @@ export function Sidebar() {
               type="submit"
               className={cn(
                 "w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-all duration-150",
-                "hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-300",
+                "hover:border-rose-500/25 hover:bg-rose-500/15 hover:text-rose-400",
                 "active:bg-rose-500/10 active:scale-[0.98]",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
               )}
@@ -160,7 +160,7 @@ export function Sidebar() {
             </button>
           </form>
 
-          <p className="text-center text-xs uppercase tracking-widest text-muted-foreground/50 font-medium">
+          <p className="text-center text-xs uppercase tracking-widest text-muted-foreground/70 font-medium">
             UROBOT · CRM
           </p>
         </footer>
@@ -259,7 +259,7 @@ export function BottomNav() {
                       "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
                       "active:scale-95 active:bg-muted/50 min-h-[48px]",
                       isActive
-                        ? "bg-teal-500/10 text-teal-300"
+                        ? "bg-teal-500/15 text-teal-400"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
@@ -295,7 +295,7 @@ export function BottomNav() {
                     "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
                     "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
                     isActive
-                      ? "text-teal-300"
+                      ? "text-teal-400"
                       : "text-muted-foreground"
                   )}
                   aria-expanded={showMore}
@@ -317,7 +317,7 @@ export function BottomNav() {
                   "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
                   "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
                   isActive 
-                    ? "text-teal-300 font-semibold" 
+                    ? "text-teal-400 font-semibold" 
                     : "text-muted-foreground"
                 )}
               >

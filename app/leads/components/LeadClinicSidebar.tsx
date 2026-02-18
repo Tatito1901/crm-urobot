@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   AlertTriangle,
@@ -21,6 +21,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Lightbulb,
+  MessageCircle,
 } from 'lucide-react';
 import { useLeadClinico } from '@/hooks/leads/useLeadClinico';
 import type { Lead } from '@/types/leads';
@@ -41,13 +42,17 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { SidebarChatViewer } from './SidebarChatViewer';
 
 interface LeadClinicSidebarProps {
   lead: Lead;
   onClose: () => void;
 }
 
+type SidebarTab = 'clinico' | 'conversacion';
+
 export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
+  const [activeTab, setActiveTab] = useState<SidebarTab>('clinico');
   const { clinico, isLoading } = useLeadClinico(lead.id);
 
   const hasClinico = clinico && (
@@ -86,10 +91,10 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
             </div>
             <div className="min-w-0">
               <h3 className="font-semibold text-sm text-foreground truncate">
-                Perfil Clínico
-              </h3>
-              <p className="text-[11px] text-muted-foreground truncate">
                 {lead.nombreDisplay}
+              </h3>
+              <p className="text-[11px] text-muted-foreground truncate font-mono">
+                {lead.telefono}
               </p>
             </div>
           </div>
@@ -106,7 +111,34 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
           </Tooltip>
         </div>
 
-        {/* ── Content ── */}
+        {/* ── Tab bar ── */}
+        <div className="shrink-0 px-3 pt-2 pb-0 border-b border-border bg-secondary/20">
+          <div className="flex gap-1">
+            <TabButton
+              active={activeTab === 'clinico'}
+              onClick={() => setActiveTab('clinico')}
+              icon={<Stethoscope className="w-3.5 h-3.5" />}
+              label="Clínico"
+            />
+            <TabButton
+              active={activeTab === 'conversacion'}
+              onClick={() => setActiveTab('conversacion')}
+              icon={<MessageCircle className="w-3.5 h-3.5" />}
+              label="Conversación"
+              badge={lead.totalMensajes > 0 ? lead.totalMensajes : undefined}
+            />
+          </div>
+        </div>
+
+        {/* ── Tab content ── */}
+        {activeTab === 'conversacion' ? (
+          <div className="flex-1 overflow-hidden">
+            <SidebarChatViewer
+              telefono={lead.telefono}
+              nombreDisplay={lead.nombreDisplay}
+            />
+          </div>
+        ) : (
         <ScrollArea className="flex-1">
           <div className="p-4 space-y-3">
             {isLoading ? (
@@ -483,13 +515,14 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
             )}
           </div>
         </ScrollArea>
+        )}
 
         {/* ── Footer ── */}
         <Separator />
         <div className="shrink-0 px-4 py-2.5 bg-secondary/30">
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <Stethoscope className="w-3 h-3" />
-            <span>Datos recopilados por el bot</span>
+            <span>{activeTab === 'clinico' ? 'Datos recopilados por el bot' : 'Solo lectura — mensajes de WhatsApp'}</span>
           </div>
         </div>
       </div>
@@ -498,6 +531,43 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
 }
 
 // ── Sub-components ──
+
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+  badge,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  badge?: number;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg transition-colors relative',
+        active
+          ? 'bg-card text-foreground border border-border border-b-0 -mb-px z-10'
+          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+      )}
+    >
+      {icon}
+      {label}
+      {badge !== undefined && (
+        <span className={cn(
+          'text-[9px] font-bold tabular-nums px-1.5 py-0 rounded-full min-w-[18px] text-center',
+          active ? 'bg-primary/10 text-primary' : 'bg-secondary text-muted-foreground'
+        )}>
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
+    </button>
+  );
+}
 
 function EmptyState() {
   return (

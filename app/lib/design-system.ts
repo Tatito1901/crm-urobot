@@ -106,37 +106,37 @@ export const chartColors = {
 export const accentColors = {
   primary: {
     text: 'text-teal-400',
-    bg: 'bg-teal-500/10',
-    border: 'border-teal-400/15',
-    hover: 'hover:bg-teal-500/20',
+    bg: 'bg-teal-500/15',
+    border: 'border-teal-400/25',
+    hover: 'hover:bg-teal-500/25',
     dot: 'bg-teal-500',
   },
   success: {
     text: 'text-emerald-400',
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/20',
-    hover: 'hover:bg-emerald-500/15',
+    bg: 'bg-emerald-500/15',
+    border: 'border-emerald-500/25',
+    hover: 'hover:bg-emerald-500/25',
     dot: 'bg-emerald-500',
   },
   warning: {
     text: 'text-amber-400',
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
-    hover: 'hover:bg-amber-500/15',
+    bg: 'bg-amber-500/15',
+    border: 'border-amber-500/25',
+    hover: 'hover:bg-amber-500/25',
     dot: 'bg-amber-500',
   },
   danger: {
     text: 'text-rose-400',
-    bg: 'bg-rose-500/10',
-    border: 'border-rose-500/20',
-    hover: 'hover:bg-rose-500/15',
+    bg: 'bg-rose-500/15',
+    border: 'border-rose-500/25',
+    hover: 'hover:bg-rose-500/25',
     dot: 'bg-rose-500',
   },
   info: {
     text: 'text-cyan-400',
-    bg: 'bg-cyan-500/10',
-    border: 'border-cyan-500/20',
-    hover: 'hover:bg-cyan-500/15',
+    bg: 'bg-cyan-500/15',
+    border: 'border-cyan-500/25',
+    hover: 'hover:bg-cyan-500/25',
     dot: 'bg-cyan-500',
   },
   neutral: {
@@ -208,7 +208,7 @@ export const buttons = {
     'disabled:opacity-50 disabled:cursor-not-allowed',
   ),
   // Variantes de color para refresh
-  refreshTeal: 'bg-teal-500/10 text-teal-300 border border-teal-400/15 hover:bg-teal-500/20',
+  refreshTeal: 'bg-teal-500/15 text-teal-400 border border-teal-400/25 hover:bg-teal-500/25',
   refreshCyan: 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30',
   // Select / dropdown pequeño
   select: 'px-2 sm:px-3 py-1.5 rounded-lg bg-muted border border-border text-sm',
@@ -254,16 +254,16 @@ export const listItems = {
 // ==================== METRIC CARD COLORS ====================
 // Paleta unificada para MetricCard / KpiCard
 export const metricColors = {
-  emerald: { label: 'text-emerald-300', border: 'border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
-  green: { label: 'text-emerald-300', border: 'border-emerald-400/10', icon: 'text-emerald-400/30', glow: 'shadow-emerald-500/[0.06]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
-  blue: { label: 'text-sky-300', border: 'border-sky-400/10', icon: 'text-sky-400/30', glow: 'shadow-sky-500/[0.06]', dot: 'bg-sky-400', bg: 'bg-sky-500/10' },
-  purple: { label: 'text-violet-300', border: 'border-violet-400/10', icon: 'text-violet-400/30', glow: 'shadow-violet-500/[0.06]', dot: 'bg-violet-400', bg: 'bg-violet-500/10' },
-  amber: { label: 'text-amber-300', border: 'border-amber-400/10', icon: 'text-amber-400/30', glow: 'shadow-amber-500/[0.06]', dot: 'bg-amber-400', bg: 'bg-amber-500/10' },
-  orange: { label: 'text-orange-300', border: 'border-orange-400/10', icon: 'text-orange-400/30', glow: 'shadow-orange-500/[0.06]', dot: 'bg-orange-400', bg: 'bg-orange-500/10' },
-  red: { label: 'text-rose-300', border: 'border-rose-400/10', icon: 'text-rose-400/30', glow: 'shadow-rose-500/[0.06]', dot: 'bg-rose-400', bg: 'bg-rose-500/10' },
-  cyan: { label: 'text-cyan-300', border: 'border-cyan-400/10', icon: 'text-cyan-400/30', glow: 'shadow-cyan-500/[0.06]', dot: 'bg-cyan-400', bg: 'bg-cyan-500/10' },
-  teal: { label: 'text-teal-300', border: 'border-teal-400/10', icon: 'text-teal-400/30', glow: 'shadow-teal-500/[0.06]', dot: 'bg-teal-400', bg: 'bg-teal-500/10' },
-  fuchsia: { label: 'text-fuchsia-300', border: 'border-fuchsia-400/10', icon: 'text-fuchsia-400/30', glow: 'shadow-fuchsia-500/[0.06]', dot: 'bg-fuchsia-400', bg: 'bg-fuchsia-500/10' },
+  emerald: { label: 'text-emerald-400', border: 'border-emerald-400/20', icon: 'text-emerald-400/40', glow: 'shadow-emerald-500/[0.08]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/15' },
+  green: { label: 'text-emerald-400', border: 'border-emerald-400/20', icon: 'text-emerald-400/40', glow: 'shadow-emerald-500/[0.08]', dot: 'bg-emerald-400', bg: 'bg-emerald-500/15' },
+  blue: { label: 'text-sky-400', border: 'border-sky-400/20', icon: 'text-sky-400/40', glow: 'shadow-sky-500/[0.08]', dot: 'bg-sky-400', bg: 'bg-sky-500/15' },
+  purple: { label: 'text-violet-400', border: 'border-violet-400/20', icon: 'text-violet-400/40', glow: 'shadow-violet-500/[0.08]', dot: 'bg-violet-400', bg: 'bg-violet-500/15' },
+  amber: { label: 'text-amber-400', border: 'border-amber-400/20', icon: 'text-amber-400/40', glow: 'shadow-amber-500/[0.08]', dot: 'bg-amber-400', bg: 'bg-amber-500/15' },
+  orange: { label: 'text-orange-400', border: 'border-orange-400/20', icon: 'text-orange-400/40', glow: 'shadow-orange-500/[0.08]', dot: 'bg-orange-400', bg: 'bg-orange-500/15' },
+  red: { label: 'text-rose-400', border: 'border-rose-400/20', icon: 'text-rose-400/40', glow: 'shadow-rose-500/[0.08]', dot: 'bg-rose-400', bg: 'bg-rose-500/15' },
+  cyan: { label: 'text-cyan-400', border: 'border-cyan-400/20', icon: 'text-cyan-400/40', glow: 'shadow-cyan-500/[0.08]', dot: 'bg-cyan-400', bg: 'bg-cyan-500/15' },
+  teal: { label: 'text-teal-400', border: 'border-teal-400/20', icon: 'text-teal-400/40', glow: 'shadow-teal-500/[0.08]', dot: 'bg-teal-400', bg: 'bg-teal-500/15' },
+  fuchsia: { label: 'text-fuchsia-400', border: 'border-fuchsia-400/20', icon: 'text-fuchsia-400/40', glow: 'shadow-fuchsia-500/[0.08]', dot: 'bg-fuchsia-400', bg: 'bg-fuchsia-500/15' },
 } as const;
 
 export type MetricColor = keyof typeof metricColors;
@@ -277,7 +277,7 @@ export const inputs = {
 // ==================== TABLES ====================
 export const tables = {
   wrapper: 'w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm',
-  thead: 'bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground',
+  thead: 'bg-muted/60 text-xs uppercase tracking-wider text-muted-foreground',
   th: 'px-4 py-3 font-medium',
   td: 'px-4 py-3',
   tr: 'border-b border-border hover:bg-muted/30 transition-colors',

@@ -154,12 +154,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               ACTION CENTER - Acciones pendientes
               ════════════════════════════════════════════ */}
           {totalAcciones > 0 && (
-            <section className="rounded-xl border border-amber-400/15 bg-amber-500/[0.03] p-3 sm:p-4">
+            <section className="rounded-xl border border-amber-400/25 bg-amber-500/[0.06] p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2.5">
                 <div className="p-1.5 rounded-lg bg-amber-500/15">
                   <Zap className="h-3.5 w-3.5 text-amber-400" />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
                   Requieren atención ({totalAcciones})
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                   <a
                     key={item.label}
                     href={item.href}
-                    className="flex items-center gap-3 rounded-lg bg-card/80 border border-border/50 px-3 py-2.5 hover:bg-card hover:border-border transition-all group"
+                    className="flex items-center gap-3 rounded-lg bg-card/90 border border-border px-3 py-2.5 hover:bg-card hover:border-border transition-all group"
                   >
                     <span className={item.color}>{item.icon}</span>
                     <div className="flex-1 min-w-0">
@@ -404,7 +404,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                                 <div className="flex items-center gap-1.5">
                                   <p className={listItems.rowTitle}>{e.nombre}</p>
                                   {e.esUrgente && (
-                                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/20">
+                                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/25">
                                       Urgente
                                     </span>
                                   )}
@@ -568,8 +568,8 @@ function SectionHeader({ label }: { icon?: React.ReactNode; label: string }) {
 
 function StatPill({ label, value, variant }: { label: string; value: number; variant?: 'emerald' | 'blue' }) {
   const colors = {
-    emerald: 'bg-emerald-500/10 text-emerald-400',
-    blue: 'bg-sky-500/10 text-sky-400',
+    emerald: 'bg-emerald-500/15 text-emerald-400',
+    blue: 'bg-sky-500/15 text-sky-400',
   };
   const valueColor = variant ? colors[variant].split(' ').slice(1).join(' ') : 'text-foreground';
   const bgColor = variant ? colors[variant].split(' ')[0] : 'bg-muted/50';

@@ -68,13 +68,13 @@ function ComparativaCard({
   return (
     <div className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-primary/30 transition-all">
       <div className="flex items-start justify-between mb-2 sm:mb-3">
-        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+        <div className="p-1.5 sm:p-2 bg-primary/15 rounded-lg">
           <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
         </div>
         <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
           isPositive 
-            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-            : 'bg-red-500/10 text-red-600 dark:text-red-400'
+            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' 
+            : 'bg-red-500/15 text-red-600 dark:text-red-400'
         }`}>
           {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           {formatVariacion(variacion)}
@@ -216,7 +216,7 @@ export default function ImpactoPage() {
       headerSlot={
         <button
           onClick={() => refresh()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 text-primary text-sm font-medium hover:bg-primary/25 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Actualizar
