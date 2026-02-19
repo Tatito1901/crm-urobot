@@ -87,11 +87,11 @@ export default function NotFound() {
         </div>
 
         {/* Tips */}
-        <div className="text-left bg-teal-50 dark:bg-teal-500/[0.06] border border-teal-200 dark:border-teal-500/20 rounded-xl p-4">
-          <p className="text-xs font-semibold text-teal-700 dark:text-teal-400 mb-2">
+        <div className="text-left bg-teal-500/[0.06] border border-teal-500/20 rounded-xl p-4">
+          <p className="text-xs font-semibold text-teal-400 mb-2">
             💡 Sugerencias:
           </p>
-          <ul className="text-sm text-teal-600 dark:text-teal-300 space-y-1">
+          <ul className="text-sm text-teal-300 space-y-1">
             {TIPS.map((tip, i) => (
               <li key={i}>• {tip}</li>
             ))}

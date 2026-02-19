@@ -50,7 +50,7 @@ export default function LeadsAnalysisPage() {
         <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
               Nuevos (Mes)
             </CardTitle>
           </CardHeader>
@@ -62,7 +62,7 @@ export default function LeadsAnalysisPage() {
       </div>
       
       {/* Aquí se podría agregar una tabla detallada de leads con filtros avanzados */}
-      <div className="p-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-muted-foreground text-sm bg-slate-50 dark:bg-slate-900/20">
+      <div className="p-12 border border-dashed border-slate-800 rounded-xl flex items-center justify-center text-muted-foreground text-sm bg-slate-900/20">
         Análisis profundo de cohortes próximamente
       </div>
     </PageShell>

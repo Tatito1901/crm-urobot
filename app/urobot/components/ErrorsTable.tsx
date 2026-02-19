@@ -9,10 +9,10 @@ interface ErrorsTableProps {
 }
 
 const ERROR_COLORS: Record<string, string> = {
-  'HALLUCINATION_DETECTED': 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
-  'EMPTY_RESPONSE': 'bg-red-500/20 text-red-600 dark:text-red-400',
-  'TOOL_FAILURE': 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
-  'default': 'bg-slate-500/20 text-slate-600 dark:text-slate-400',
+  'HALLUCINATION_DETECTED': 'bg-orange-500/20 text-orange-400',
+  'EMPTY_RESPONSE': 'bg-red-500/20 text-red-400',
+  'TOOL_FAILURE': 'bg-yellow-500/20 text-yellow-400',
+  'default': 'bg-slate-500/20 text-slate-400',
 };
 
 function ErrorBadge({ type }: { type: string | null }) {

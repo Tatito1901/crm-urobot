@@ -40,7 +40,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
   if (validData.length === 0) {
     return (
       <div
-        className="flex items-center justify-center bg-slate-100 dark:bg-slate-800/20 rounded-full border border-slate-200 dark:border-slate-800/50 border-dashed"
+        className="flex items-center justify-center bg-slate-800/20 rounded-full border border-slate-800/50 border-dashed"
         style={{ width: size, height: size }}
       >
         <p className="text-xs text-slate-500 font-medium">Sin datos</p>
@@ -87,7 +87,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
         {(centerText || centerSubtext) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
             {centerText && (
-              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white tabular-nums">{centerText}</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tabular-nums">{centerText}</div>
             )}
             {centerSubtext && (
               <div className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium">{centerSubtext}</div>
@@ -104,7 +104,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
           return (
             <div
               key={item.label}
-              className="flex items-center justify-between text-[11px] sm:text-xs group hover:bg-slate-100 dark:hover:bg-slate-800/30 rounded px-2 py-1 sm:py-1.5 transition-colors cursor-default"
+              className="flex items-center justify-between text-[11px] sm:text-xs group hover:bg-slate-800/30 rounded px-2 py-1 sm:py-1.5 transition-colors cursor-default"
             >
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <div
@@ -114,7 +114,7 @@ export const DonutChart: React.FC<DonutChartProps> = React.memo(({
                 <span className="text-foreground font-medium truncate">{item.label}</span>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2">
-                <span className="text-slate-900 dark:text-white font-semibold tabular-nums">{item.value}</span>
+                <span className="text-white font-semibold tabular-nums">{item.value}</span>
                 <span className="text-slate-500 text-[9px] sm:text-[10px]">({percentage}%)</span>
               </div>
             </div>

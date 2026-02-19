@@ -37,7 +37,7 @@ export default function UrobotLoading() {
       eyebrow="Monitoreo"
       title={
         <div className="flex items-center gap-3">
-          <Bot className="w-7 h-7 text-cyan-600 dark:text-cyan-400 animate-pulse" />
+          <Bot className="w-7 h-7 text-cyan-400 animate-pulse" />
           <span className="text-xl">Estado de UroBot</span>
         </div>
       }

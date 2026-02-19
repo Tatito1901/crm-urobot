@@ -59,14 +59,14 @@ export function ConversationsSidebar({
 }: ConversationsSidebarProps) {
   return (
     <aside className={`
-      w-full sm:w-[280px] md:w-[320px] lg:w-[380px] border-r border-slate-200/80 dark:border-white/[0.10] flex flex-col 
-      bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl shrink-0 z-10
+      w-full sm:w-[280px] md:w-[320px] lg:w-[380px] border-r border-white/[0.10] flex flex-col 
+      bg-white/[0.04] backdrop-blur-xl shrink-0 z-10
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
       ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
     `}>
       {/* Header Desktop del Sidebar */}
-      <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-slate-200/50 dark:border-white/[0.10]">
+      <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-white/[0.10]">
         <div>
           <h2 className="font-semibold text-foreground text-lg font-jakarta">Mensajes</h2>
           <p className="text-xs text-muted-foreground">{mounted ? conteosPorTipo.todos : 0} conversaciones</p>
@@ -74,7 +74,7 @@ export function ConversationsSidebar({
         <button 
           onClick={onRefetch} 
           title="Actualizar" 
-          className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
         >
           <RefreshCw className={`w-4 h-4 text-slate-400 ${mounted && isLoading ? 'animate-spin' : ''}`} />
         </button>
@@ -89,7 +89,7 @@ export function ConversationsSidebar({
             placeholder="Buscar contacto..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-slate-100 dark:bg-slate-800/60 rounded-lg
+            className="w-full pl-9 pr-3 py-2 text-sm bg-slate-800/60 rounded-lg
                      focus:outline-none focus:ring-2 focus:ring-teal-500/20
                      placeholder:text-slate-400 transition-all"
           />
@@ -106,7 +106,7 @@ export function ConversationsSidebar({
                 className={`flex items-center justify-center gap-1.5 px-3 py-2 min-h-[36px] rounded-lg text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500
                   ${filtroActivo === id 
                     ? 'bg-teal-500 text-white shadow-sm shadow-teal-500/20' 
-                    : 'bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.12]'}`}
+                    : 'bg-white/[0.08] text-slate-400 hover:bg-white/[0.12]'}`}
               >
                 <Icon className="w-3 h-3" />
                 <span>{label}</span>
@@ -122,13 +122,13 @@ export function ConversationsSidebar({
       </div>
 
       {/* Lista de conversaciones */}
-      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 hover:scrollbar-thumb-slate-400 dark:hover:scrollbar-thumb-slate-600">
+      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-700 hover:scrollbar-thumb-slate-600">
         {error ? (
           <div className="p-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-red-900/30 flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="w-7 h-7 text-red-500" />
             </div>
-            <p className="text-sm font-semibold text-red-600 dark:text-red-400">Error al cargar</p>
+            <p className="text-sm font-semibold text-red-400">Error al cargar</p>
             <p className="text-xs mt-1 text-red-500/70">{error.message}</p>
             <button 
               onClick={onRefetch}
@@ -141,17 +141,17 @@ export function ConversationsSidebar({
           <div className="p-4 space-y-3">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="flex items-center gap-3 p-3 animate-pulse">
-                <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+                <div className="w-12 h-12 rounded-2xl bg-slate-800 shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-lg w-3/4" />
-                  <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-lg w-1/2" />
+                  <div className="h-4 bg-slate-800 rounded-lg w-3/4" />
+                  <div className="h-3 bg-slate-800 rounded-lg w-1/2" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredConversaciones.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-muted-foreground px-6">
-            <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mb-4">
               {filtroActivo === 'leads' ? <Users className="w-8 h-8 text-slate-400" /> :
                filtroActivo === 'pacientes' ? <UserCheck className="w-8 h-8 text-slate-400" /> :
                <MessageCircle className="w-8 h-8 text-slate-400" />}

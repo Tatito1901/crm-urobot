@@ -8,9 +8,9 @@ import { CheckCircle2 } from 'lucide-react';
 
 // Incluye TRINIDAD como sede histórica (ya no activa pero con datos existentes)
 const SEDE_COLORS: Record<'POLANCO' | 'SATELITE' | 'TRINIDAD', string> = {
-  POLANCO: 'border border-fuchsia-200 dark:border-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-500/10',
-  SATELITE: 'border border-cyan-200 dark:border-cyan-500/20 text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10',
-  TRINIDAD: 'border border-slate-200 dark:border-slate-500/20 text-slate-700 dark:text-slate-400 bg-slate-50 dark:bg-slate-500/10',
+  POLANCO: 'border border-fuchsia-500/20 text-fuchsia-400 bg-fuchsia-500/10',
+  SATELITE: 'border border-cyan-500/20 text-cyan-400 bg-cyan-500/10',
+  TRINIDAD: 'border border-slate-500/20 text-slate-400 bg-slate-500/10',
 };
 
 interface ConsultasTableProps {
@@ -63,7 +63,7 @@ export const ConsultasTable = React.memo(function ConsultasTable({
     confirmada: (
       <div className="flex items-center justify-center">
         {consulta.confirmadoPaciente ? (
-          <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-emerald-500/10 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
+          <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-emerald-500/10 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-emerald-400 border border-emerald-500/20 shadow-sm">
             <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <span className="hidden sm:inline">Sí</span>
           </span>

@@ -36,18 +36,18 @@ export default function Error({ error, reset }: ErrorPageProps) {
     <div className="min-h-[80vh] flex items-center justify-center p-4 bg-background relative overflow-hidden">
       {/* Atmospheric glow */}
       <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 h-[300px] w-[300px] rounded-full bg-teal-500/[0.04] blur-[100px]" aria-hidden />
-      <div className="relative max-w-md w-full bg-white dark:bg-white/[0.03] rounded-xl shadow-sm border border-slate-200 dark:border-white/[0.06] p-8 text-center shine-top">
+      <div className="relative max-w-md w-full bg-white/[0.03] rounded-xl shadow-sm border border-white/[0.06] p-8 text-center shine-top">
         
         {/* Icono Corporativo */}
-        <div className="w-16 h-16 bg-teal-50 dark:bg-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-6 ring-1 ring-teal-500/20">
-          <Activity className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+        <div className="w-16 h-16 bg-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-6 ring-1 ring-teal-500/20">
+          <Activity className="w-8 h-8 text-teal-400" />
         </div>
 
         {/* Textos Principales */}
         <h1 className="text-xl font-bold text-foreground mb-3 font-jakarta">
           {info.titulo}
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8">
+        <p className="text-slate-400 text-sm leading-relaxed mb-8">
           {info.desc}
         </p>
 
@@ -66,9 +66,9 @@ export default function Error({ error, reset }: ErrorPageProps) {
           <Link
             href="/dashboard"
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 
-                       bg-white dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 
-                       border border-slate-200 dark:border-white/[0.08] rounded-lg font-medium 
-                       hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors"
+                       bg-white/[0.04] text-slate-300 
+                       border border-white/[0.08] rounded-lg font-medium 
+                       hover:bg-white/[0.06] transition-colors"
           >
             <Home className="w-4 h-4" />
             Regresar al Dashboard
@@ -76,16 +76,16 @@ export default function Error({ error, reset }: ErrorPageProps) {
         </div>
 
         {/* Separador */}
-        <div className="h-px bg-slate-100 dark:bg-slate-800 my-8 w-full" />
+        <div className="h-px bg-slate-800 my-8 w-full" />
 
         {/* Mensaje de Seguridad */}
         <div className="flex items-start gap-3 text-left mb-6">
           <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            <p className="text-xs font-medium text-slate-300">
               Datos protegidos
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               La integridad de su información no se ha visto comprometida por este evento.
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function Error({ error, reset }: ErrorPageProps) {
           </button>
           
           {showDetails && (
-            <div className="mt-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded p-3 overflow-x-auto">
+            <div className="mt-3 bg-slate-950 border border-slate-800 rounded p-3 overflow-x-auto">
               <p className="font-mono text-[10px] text-red-500/80">
                 {error.message || 'Excepción no identificada'}
               </p>

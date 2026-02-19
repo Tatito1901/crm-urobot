@@ -111,9 +111,9 @@ export default function UrobotPage() {
 
   // Calcular estado general
   const estadoGeneral = useMemo(() => {
-    if (kpi.tasaExito >= 95) return { status: 'Óptimo', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500' };
-    if (kpi.tasaExito >= 85) return { status: 'Estable', color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500' };
-    return { status: 'Atención', color: 'text-red-600 dark:text-red-400', bg: 'bg-red-500' };
+    if (kpi.tasaExito >= 95) return { status: 'Óptimo', color: 'text-emerald-400', bg: 'bg-emerald-500' };
+    if (kpi.tasaExito >= 85) return { status: 'Estable', color: 'text-yellow-400', bg: 'bg-yellow-500' };
+    return { status: 'Atención', color: 'text-red-400', bg: 'bg-red-500' };
   }, [kpi.tasaExito]);
 
   // Estado de carga seguro para hidratación
@@ -124,7 +124,7 @@ export default function UrobotPage() {
       eyebrow="Analíticas"
       title={
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-600 dark:text-cyan-400" />
+          <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400" />
           <span className="text-lg sm:text-xl">UroBot Analytics</span>
           <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${estadoGeneral.bg}/20 ${estadoGeneral.color}`}>
             <span className={`w-2 h-2 rounded-full ${estadoGeneral.bg} animate-pulse`} />
@@ -317,7 +317,7 @@ export default function UrobotPage() {
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <XCircle className="w-4 h-4 text-red-400" />
                   Últimos Errores
                 </CardTitle>
               </CardHeader>
@@ -329,7 +329,7 @@ export default function UrobotPage() {
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <AlertTriangle className="w-4 h-4 text-orange-400" />
                   Alertas Pendientes ({stats.alertasPendientes.length})
                 </CardTitle>
               </CardHeader>

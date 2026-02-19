@@ -92,18 +92,18 @@ export function ChatArea({
       flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
-      bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900
+      bg-gradient-to-b from-slate-950 to-slate-900
       ${isMobileViewingChat ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}
     `}>
       {telefonoActivo && contactoActivo ? (
         <>
           {/* Header del chat */}
-          <header className="shrink-0 min-h-[60px] sm:min-h-[64px] px-2 sm:px-4 flex items-center gap-2 sm:gap-3 border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl z-10 safe-area-top">
+          <header className="shrink-0 min-h-[60px] sm:min-h-[64px] px-2 sm:px-4 flex items-center gap-2 sm:gap-3 border-b border-slate-800/60 bg-slate-900/80 backdrop-blur-xl z-10 safe-area-top">
             <button
               onClick={onBackToList}
-              className="sm:hidden p-2 -ml-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="sm:hidden p-2 -ml-1 hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-slate-400" />
             </button>
             
             {/* Avatar circular */}
@@ -123,7 +123,7 @@ export function ChatArea({
               <h3 className="font-semibold text-foreground text-sm sm:text-[15px] truncate leading-tight">
                 {contactoActivo.nombreContacto || 'Sin nombre'}
               </h3>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-slate-400">
                 <span className="font-mono truncate">{contactoActivo.telefono}</span>
                 <span className="hidden xs:inline">•</span>
                 <span className="hidden xs:inline truncate">{contactoActivo.tipoContacto === 'paciente' ? '✓ Paciente' : contactoActivo.estadoLead || 'Contacto'}</span>
@@ -134,14 +134,14 @@ export function ChatArea({
             <div className="flex items-center gap-0.5 sm:gap-1">
               <button
                 onClick={() => openWhatsApp(contactoActivo.telefono)}
-                className="p-2 sm:p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
+                className="p-2 sm:p-2.5 hover:bg-slate-800 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
                 title="Abrir en WhatsApp"
               >
-                <MessageCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+                <MessageCircle className="w-5 h-5 text-emerald-500" />
               </button>
               <button
                 onClick={() => viewProfile(contactoActivo)}
-                className="hidden sm:flex p-2.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] items-center justify-center"
+                className="hidden sm:flex p-2.5 hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] items-center justify-center"
                 title="Ver perfil"
               >
                 <ExternalLink className="w-5 h-5 text-slate-500" />
@@ -150,8 +150,8 @@ export function ChatArea({
                 onClick={onToggleActionsPanel}
                 className={`p-2 sm:p-2.5 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center
                   ${showActionsPanel 
-                    ? 'bg-teal-100 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400' 
-                    : 'hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500'}`}
+                    ? 'bg-teal-500/20 text-teal-400' 
+                    : 'hover:bg-slate-800 text-slate-500'}`}
                 title={showActionsPanel ? 'Cerrar acciones' : 'Acciones de lead'}
               >
                 <Sparkles className="w-5 h-5" />
@@ -162,24 +162,24 @@ export function ChatArea({
           {/* Lista de Mensajes */}
           <div 
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-6 py-2.5 sm:py-4 scroll-smooth bg-slate-50/50 dark:bg-slate-950/50 overscroll-contain"
+            className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-6 py-2.5 sm:py-4 scroll-smooth bg-slate-900 overscroll-contain"
           >
             {isLoadingMensajes ? (
               <div className="flex items-center justify-center h-full">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-900/30 flex items-center justify-center">
                     <RefreshCw className="w-6 h-6 animate-spin text-teal-500" />
                   </div>
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Cargando mensajes...</span>
+                  <span className="text-sm font-medium text-slate-400">Cargando mensajes...</span>
                 </div>
               </div>
             ) : mensajesAgrupados.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
-                <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                  <MessageCircle className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+                <div className="w-20 h-20 rounded-3xl bg-slate-800 flex items-center justify-center mb-4">
+                  <MessageCircle className="w-10 h-10 text-slate-600" />
                 </div>
-                <p className="text-base font-semibold text-slate-600 dark:text-slate-400">Sin mensajes</p>
-                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Esta conversación está vacía</p>
+                <p className="text-base font-semibold text-slate-400">Sin mensajes</p>
+                <p className="text-sm text-slate-500 mt-1">Esta conversación está vacía</p>
               </div>
             ) : (
               <div className="space-y-6 pb-4 max-w-4xl mx-auto">
@@ -187,7 +187,7 @@ export function ChatArea({
                   <div key={grupo.fecha}>
                     {/* Separador de fecha */}
                     <div className="sticky top-0 flex items-center justify-center py-3 z-10 pointer-events-none">
-                      <div className="px-3 py-1 bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-full text-[11px] font-medium text-slate-500 dark:text-slate-400 shadow-sm">
+                      <div className="px-3 py-1 bg-slate-900/80 backdrop-blur rounded-full text-[11px] font-medium text-slate-400 shadow-sm">
                         {format(new Date(grupo.fecha), "d MMM yyyy", { locale: es })}
                       </div>
                     </div>
@@ -224,7 +224,7 @@ export function ChatArea({
           </div>
 
           {/* Footer con acciones rápidas */}
-          <footer className="shrink-0 py-2 px-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-t border-slate-200/50 dark:border-slate-800/50">
+          <footer className="shrink-0 py-2 px-3 bg-slate-900/80 backdrop-blur border-t border-slate-800/50">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -257,11 +257,11 @@ export function ChatArea({
       ) : (
         /* Estado vacío (Desktop) */
         <div className="hidden sm:flex flex-1 flex-col items-center justify-center p-8">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mb-4">
             <MessageSquare className="w-8 h-8 text-slate-400" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-1">Selecciona una conversación</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <h3 className="text-lg font-semibold text-slate-200 mb-1">Selecciona una conversación</h3>
+          <p className="text-sm text-slate-400">
             Elige un contacto para ver sus mensajes
           </p>
         </div>

@@ -73,8 +73,8 @@ function ComparativaCard({
         </div>
         <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
           isPositive 
-            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' 
-            : 'bg-red-500/15 text-red-600 dark:text-red-400'
+            ? 'bg-emerald-500/15 text-emerald-400' 
+            : 'bg-red-500/15 text-red-400'
         }`}>
           {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           {formatVariacion(variacion)}
@@ -105,16 +105,16 @@ function ImpactoUrobotCard({
   return (
     <div className={`rounded-xl p-3 sm:p-4 border transition-all ${
       highlight 
-        ? 'bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border-cyan-200/50 dark:border-cyan-500/20' 
+        ? 'bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border-cyan-500/20' 
         : 'bg-card border-border hover:border-primary/30'
     }`}>
       <div className="flex items-center gap-2 mb-2">
-        <Icon className={`w-4 h-4 ${highlight ? 'text-cyan-600 dark:text-cyan-400' : 'text-muted-foreground'}`} />
+        <Icon className={`w-4 h-4 ${highlight ? 'text-cyan-400' : 'text-muted-foreground'}`} />
         <span className={`text-[11px] font-medium uppercase tracking-wide ${
-          highlight ? 'text-cyan-600 dark:text-cyan-300' : 'text-muted-foreground'
+          highlight ? 'text-cyan-300' : 'text-muted-foreground'
         }`}>{titulo}</span>
       </div>
-      <div className={`text-xl sm:text-2xl font-bold ${highlight ? 'text-cyan-700 dark:text-cyan-300' : 'text-foreground'}`}>
+      <div className={`text-xl sm:text-2xl font-bold ${highlight ? 'text-cyan-300' : 'text-foreground'}`}>
         {valor}
       </div>
       <div className="text-[11px] text-muted-foreground mt-1">{subtitulo}</div>
@@ -158,7 +158,7 @@ function CanalRow({ canal }: { canal: CanalRendimiento }) {
       </div>
       <div className="flex items-center gap-4 shrink-0">
         <div className="text-right">
-          <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="text-sm font-bold text-emerald-400">
             {canal.tasa_conversion}%
           </div>
           <div className="text-[10px] text-muted-foreground">conversión</div>
@@ -431,14 +431,14 @@ export default function ImpactoPage() {
       {/* ============================================================ */}
       {/* SECCIÓN 5: RESUMEN DE VALOR */}
       {/* ============================================================ */}
-      <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border border-cyan-200/50 dark:border-cyan-500/20 rounded-2xl">
+      <div className="mt-4 sm:mt-8 p-4 sm:p-6 bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border border-cyan-500/20 rounded-2xl">
         <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
-          <Bot className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+          <Bot className="w-5 h-5 text-cyan-400" />
           Resumen de Valor - Urobot
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           <div>
-            <div className="text-2xl sm:text-3xl font-bold text-cyan-700 dark:text-cyan-300">
+            <div className="text-2xl sm:text-3xl font-bold text-cyan-300">
               {impactoUrobot.mensajesFueraHorario}
             </div>
             <div className="text-sm text-muted-foreground">
@@ -446,7 +446,7 @@ export default function ImpactoPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-bold text-cyan-700 dark:text-cyan-300">
+            <div className="text-2xl sm:text-3xl font-bold text-cyan-300">
               {formatTiempoRespuesta(impactoUrobot.tiempoPromedioRespuestaMs)}
             </div>
             <div className="text-sm text-muted-foreground">
@@ -454,7 +454,7 @@ export default function ImpactoPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-bold text-cyan-700 dark:text-cyan-300">
+            <div className="text-2xl sm:text-3xl font-bold text-cyan-300">
               24/7
             </div>
             <div className="text-sm text-muted-foreground">

@@ -311,7 +311,7 @@ export default function EstadisticasPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-muted-foreground">Tasa de Asistencia</span>
-                  <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{kpi.tasaAsistencia}%</span>
+                  <span className="text-xl font-bold text-emerald-400">{kpi.tasaAsistencia}%</span>
                 </div>
                 <div className={progress.track}>
                   <div 
@@ -325,7 +325,7 @@ export default function EstadisticasPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-muted-foreground">Tasa de Conversión</span>
-                  <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{kpi.tasaConversion}%</span>
+                  <span className="text-xl font-bold text-teal-400">{kpi.tasaConversion}%</span>
                 </div>
                 <div className={progress.track}>
                   <div 

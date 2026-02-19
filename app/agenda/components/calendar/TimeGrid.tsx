@@ -201,11 +201,11 @@ export const TimeGrid = React.memo(function TimeGrid({
                   }}
                 >
                   {/* Círculo indicador con pulso */}
-                  <div className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-red-500 dark:bg-red-400 shadow-sm z-40 ring-2 ring-background">
-                    <div className="absolute inset-0 rounded-full bg-red-500/50 dark:bg-red-400/50 animate-ping" />
+                  <div className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-red-400 shadow-sm z-40 ring-2 ring-background">
+                    <div className="absolute inset-0 rounded-full bg-red-400/50 animate-ping" />
                   </div>
                   {/* Línea */}
-                  <div className="h-[2px] bg-red-500 dark:bg-red-400 w-full shadow-sm opacity-80" />
+                  <div className="h-[2px] bg-red-400 w-full shadow-sm opacity-80" />
                 </div>
               )}
               

@@ -150,29 +150,29 @@ export function ConversationActionsPanel({
 
   // Clases base según si es móvil o desktop
   const containerClass = isMobile 
-    ? "flex flex-col bg-white dark:bg-card rounded-t-2xl max-h-[85vh]"
-    : "flex flex-col h-full bg-white dark:bg-card border-l border-slate-200 dark:border-border w-full";
+    ? "flex flex-col bg-card rounded-t-2xl max-h-[85vh]"
+    : "flex flex-col h-full bg-card border-l border-border w-full";
 
   return (
     <div className={containerClass}>
       {/* Header */}
-      <div className={`shrink-0 px-4 py-3 border-b border-slate-200 dark:border-border flex items-center justify-between ${isMobile ? 'pt-2' : ''}`}>
+      <div className={`shrink-0 px-4 py-3 border-b border-border flex items-center justify-between ${isMobile ? 'pt-2' : ''}`}>
         {isMobile && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full" />
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-slate-600 rounded-full" />
         )}
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-blue-100 dark:bg-blue-500/25 rounded-lg">
-            <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <div className="p-1.5 bg-blue-500/25 rounded-lg">
+            <Sparkles className="w-4 h-4 text-blue-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">Acciones</h3>
+            <h3 className="font-semibold text-sm text-slate-100">Acciones</h3>
             <p className="text-[10px] text-slate-500">{nombreContacto || 'Contacto'}</p>
           </div>
         </div>
         {onClose && (
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            className="p-2 hover:bg-slate-800 rounded-xl transition-colors"
           >
             <X className="w-4 h-4 text-slate-400" />
           </button>
@@ -204,13 +204,13 @@ export function ConversationActionsPanel({
 
             {/* ===== ESTADO DEL LEAD ===== */}
             {lead && (
-              <div className="bg-slate-50 dark:bg-muted/50 rounded-xl p-3">
+              <div className="bg-muted/50 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Estado actual</span>
                   <div className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1
-                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-400' : 
-                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/25 dark:text-amber-400' : 
-                      'bg-blue-100 text-blue-700 dark:bg-blue-500/25 dark:text-blue-400'}`}
+                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-500/25 text-emerald-400' : 
+                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-500/25 text-amber-400' : 
+                      'bg-blue-500/25 text-blue-400'}`}
                   >
                     {etapaConfig?.icon} {etapaConfig?.nombre || lead.estado}
                   </div>
@@ -224,10 +224,10 @@ export function ConversationActionsPanel({
                       onClick={() => handleCambiarEstado(estado)}
                       disabled={cambioExitoso !== null}
                       className={`flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium rounded-lg
-                               bg-white dark:bg-muted border border-slate-200 dark:border-border
-                               hover:border-slate-300 dark:hover:border-border hover:shadow-sm
+                               bg-muted border border-border
+                               hover:border-border hover:shadow-sm
                                active:scale-[0.98] transition-all disabled:opacity-50
-                               ${cambioExitoso === estado ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-500/20' : ''}`}
+                               ${cambioExitoso === estado ? 'bg-emerald-500/20 border-emerald-500/30' : ''}`}
                     >
                       <span className={color}>{icon}</span>
                       <span>{cambioExitoso === estado ? '¡Listo!' : label}</span>
@@ -238,9 +238,9 @@ export function ConversationActionsPanel({
                 {/* Recomendación */}
                 {recomendacion && recomendacion.prioridad !== 'no_contactar' && (
                   <div className={`mt-3 p-2.5 rounded-lg text-xs ${
-                    recomendacion.prioridad === 'alta' ? 'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-400' :
-                    recomendacion.prioridad === 'media' ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400' :
-                    'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400'
+                    recomendacion.prioridad === 'alta' ? 'bg-red-500/15 text-red-400' :
+                    recomendacion.prioridad === 'media' ? 'bg-amber-500/15 text-amber-400' :
+                    'bg-blue-500/15 text-blue-400'
                   }`}>
                     💡 {recomendacion.razon}
                   </div>
@@ -250,10 +250,10 @@ export function ConversationActionsPanel({
 
             {/* ===== PERFIL BEHAVIORAL COMPACTO ===== */}
             {lead && (lead.signals || lead.esMetaAds) && (
-              <div className="bg-violet-50 dark:bg-violet-500/15 rounded-xl p-3 space-y-2">
+              <div className="bg-violet-500/15 rounded-xl p-3 space-y-2">
                 <div className="flex items-center gap-1.5">
                   <Brain className="w-3.5 h-3.5 text-violet-500" />
-                  <span className="text-[11px] font-medium text-violet-600 dark:text-violet-400 uppercase tracking-wider">Perfil</span>
+                  <span className="text-[11px] font-medium text-violet-400 uppercase tracking-wider">Perfil</span>
                   {lead.esMetaAds && (
                     <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-blue-500 bg-blue-500/15 px-1.5 py-0.5 rounded">
                       <Megaphone className="w-3 h-3" /> Ads
@@ -262,37 +262,37 @@ export function ConversationActionsPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {lead.signals?.perfil_paciente && (
-                    <div className="px-2 py-1.5 bg-white dark:bg-muted rounded-lg">
+                    <div className="px-2 py-1.5 bg-muted rounded-lg">
                       <p className="text-[9px] text-slate-400 uppercase">Perfil</p>
-                      <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 capitalize">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</p>
+                      <p className="text-[11px] font-semibold text-slate-200 capitalize">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {lead.signals?.prediccion_conversion && (
-                    <div className="px-2 py-1.5 bg-white dark:bg-muted rounded-lg">
+                    <div className="px-2 py-1.5 bg-muted rounded-lg">
                       <p className="text-[9px] text-slate-400 uppercase">Conversión</p>
                       <p className={`text-[11px] font-semibold capitalize ${
-                        lead.signals.prediccion_conversion === 'alta' ? 'text-emerald-600' :
-                        lead.signals.prediccion_conversion === 'media' ? 'text-amber-600' : 'text-slate-500'
+                        lead.signals.prediccion_conversion === 'alta' ? 'text-emerald-400' :
+                        lead.signals.prediccion_conversion === 'media' ? 'text-amber-400' : 'text-slate-500'
                       }`}>{lead.signals.prediccion_conversion}</p>
                     </div>
                   )}
                   {lead.signals?.barrera_principal && (
-                    <div className="px-2 py-1.5 bg-white dark:bg-muted rounded-lg">
+                    <div className="px-2 py-1.5 bg-muted rounded-lg">
                       <p className="text-[9px] text-slate-400 uppercase">Barrera</p>
-                      <p className="text-[11px] font-semibold text-amber-600 capitalize">{lead.signals.barrera_principal.replace(/_/g, ' ')}</p>
+                      <p className="text-[11px] font-semibold text-amber-400 capitalize">{lead.signals.barrera_principal.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {lead.signals?.nivel_compromiso != null && (
-                    <div className="px-2 py-1.5 bg-white dark:bg-muted rounded-lg">
+                    <div className="px-2 py-1.5 bg-muted rounded-lg">
                       <p className="text-[9px] text-slate-400 uppercase">Compromiso</p>
-                      <p className="text-[11px] font-semibold text-violet-600">{lead.signals.nivel_compromiso}/10</p>
+                      <p className="text-[11px] font-semibold text-violet-400">{lead.signals.nivel_compromiso}/10</p>
                     </div>
                   )}
                 </div>
                 {lead.signals?.incentivo_sugerido && (
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-emerald-50 dark:bg-emerald-500/15 rounded-lg">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-emerald-500/15 rounded-lg">
                     <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400">Incentivo: <strong className="capitalize">{lead.signals.incentivo_sugerido.replace(/_/g, ' ')}</strong></span>
+                    <span className="text-[10px] text-emerald-400">Incentivo: <strong className="capitalize">{lead.signals.incentivo_sugerido.replace(/_/g, ' ')}</strong></span>
                   </div>
                 )}
               </div>
@@ -302,13 +302,13 @@ export function ConversationActionsPanel({
             <div className="space-y-2">
               <button
                 onClick={() => setShowPlantillas(!showPlantillas)}
-                className="flex items-center justify-between w-full px-4 py-3 bg-white dark:bg-muted 
-                         border border-slate-200 dark:border-border rounded-xl hover:border-slate-300 
-                         dark:hover:border-border transition-all"
+                className="flex items-center justify-between w-full px-4 py-3 bg-muted 
+                         border border-border rounded-xl hover:border-border 
+                         transition-all"
               >
                 <div className="flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <span className="text-sm font-medium text-slate-200">
                     {selectedPlantilla ? selectedPlantilla.nombre : 'Mensaje rápido'}
                   </span>
                 </div>
@@ -317,16 +317,16 @@ export function ConversationActionsPanel({
 
               {/* Lista de plantillas */}
               {showPlantillas && (
-                <div className="bg-white dark:bg-muted border border-slate-200 dark:border-border rounded-xl 
+                <div className="bg-muted border border-border rounded-xl 
                               overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   {plantillas.slice(0, 5).map((plantilla, idx) => (
                     <button
                       key={plantilla.id}
                       onClick={() => handleSelectPlantilla(plantilla)}
-                      className={`w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 
-                                transition-colors ${idx !== 0 ? 'border-t border-slate-100 dark:border-border' : ''}`}
+                      className={`w-full text-left px-4 py-3 hover:bg-slate-700/50 
+                                transition-colors ${idx !== 0 ? 'border-t border-border' : ''}`}
                     >
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{plantilla.nombre}</p>
+                      <p className="text-sm font-medium text-slate-200">{plantilla.nombre}</p>
                       <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">{plantilla.descripcion}</p>
                     </button>
                   ))}
@@ -340,8 +340,8 @@ export function ConversationActionsPanel({
                     value={mensajePersonalizado}
                     onChange={(e) => setMensajePersonalizado(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-3 text-sm bg-white dark:bg-muted border border-slate-200 
-                             dark:border-border rounded-xl focus:outline-none focus:ring-2 
+                    className="w-full px-3 py-3 text-sm bg-muted border border-border 
+                             rounded-xl focus:outline-none focus:ring-2 
                              focus:ring-blue-500/30 focus:border-blue-500 resize-none"
                     placeholder="Escribe tu mensaje..."
                   />
@@ -361,8 +361,7 @@ export function ConversationActionsPanel({
                     <button
                       onClick={handleCopiar}
                       disabled={!mensajePersonalizado.trim()}
-                      className="px-3 py-2.5 bg-slate-100 dark:bg-muted hover:bg-slate-200 
-                               dark:hover:bg-muted/80 rounded-xl transition-colors
+                      className="px-3 py-2.5 bg-muted hover:bg-muted/80 rounded-xl transition-colors
                                disabled:opacity-50"
                       title="Copiar"
                     >
@@ -370,8 +369,7 @@ export function ConversationActionsPanel({
                     </button>
                     <button
                       onClick={() => { setSelectedPlantilla(null); setMensajePersonalizado(''); }}
-                      className="px-3 py-2.5 bg-slate-100 dark:bg-muted hover:bg-slate-200 
-                               dark:hover:bg-muted/80 rounded-xl transition-colors"
+                      className="px-3 py-2.5 bg-muted hover:bg-muted/80 rounded-xl transition-colors"
                       title="Cancelar"
                     >
                       <X className="w-4 h-4 text-slate-500" />
@@ -386,18 +384,18 @@ export function ConversationActionsPanel({
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <a
                   href={`/leads?search=${telefono}`}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-muted 
-                           hover:bg-slate-200 dark:hover:bg-muted/80 rounded-xl transition-colors text-xs font-medium
-                           text-slate-600 dark:text-slate-400"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-muted 
+                           hover:bg-muted/80 rounded-xl transition-colors text-xs font-medium
+                           text-slate-400"
                 >
                   <User className="w-4 h-4" />
                   Ver perfil
                 </a>
                 <a
                   href={`/citas/nueva?telefono=${telefono}`}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-100 dark:bg-muted 
-                           hover:bg-slate-200 dark:hover:bg-muted/80 rounded-xl transition-colors text-xs font-medium
-                           text-slate-600 dark:text-slate-400"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-muted 
+                           hover:bg-muted/80 rounded-xl transition-colors text-xs font-medium
+                           text-slate-400"
                 >
                   <Calendar className="w-4 h-4" />
                   Agendar cita
@@ -408,7 +406,7 @@ export function ConversationActionsPanel({
             {/* Info si no hay lead */}
             {!lead && (
               <div className="text-center py-4">
-                <User className="w-8 h-8 text-slate-300 dark:text-muted-foreground/50 mx-auto mb-2" />
+                <User className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
                 <p className="text-xs text-slate-400">Contacto no registrado como lead</p>
               </div>
             )}
@@ -418,7 +416,7 @@ export function ConversationActionsPanel({
 
       {/* Footer con último contacto */}
       {lead && lead.ultimaInteraccion && (
-        <div className="shrink-0 px-4 py-2 border-t border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/50">
+        <div className="shrink-0 px-4 py-2 border-t border-border bg-muted/50">
           <div className="flex items-center gap-2 text-[11px] text-slate-500">
             <Clock className="w-3 h-3" />
             <span>Último contacto: {new Date(lead.ultimaInteraccion).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>

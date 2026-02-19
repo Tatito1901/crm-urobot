@@ -107,7 +107,7 @@ export const QuickGuide = memo(function QuickGuide() {
     <HelpIcon 
       content={
         <div className="space-y-2 max-w-sm">
-          <p className="font-semibold text-emerald-600 dark:text-emerald-400">💡 Guía rápida</p>
+          <p className="font-semibold text-emerald-400">💡 Guía rápida</p>
           <ul className="space-y-1 text-[11px]">
             <li>• Pasa el cursor sobre cualquier elemento con ? para ver más información</li>
             <li>• Los badges de colores indican el origen del contacto</li>

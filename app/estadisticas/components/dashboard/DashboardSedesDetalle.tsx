@@ -55,14 +55,14 @@ export function DashboardSedesDetalle({ data }: Props) {
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{sede.completadas.toLocaleString()}</span>
+                <span className="text-xl font-bold text-emerald-400">{sede.completadas.toLocaleString()}</span>
               </div>
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Completadas</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1">
                 <XCircle className="w-3.5 h-3.5 text-red-500" />
-                <span className="text-xl font-bold text-red-600 dark:text-red-400">{sede.canceladas}</span>
+                <span className="text-xl font-bold text-red-400">{sede.canceladas}</span>
               </div>
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Canceladas</div>
             </div>

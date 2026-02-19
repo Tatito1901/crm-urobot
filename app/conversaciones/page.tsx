@@ -91,17 +91,17 @@ export default function ConversacionesPage() {
     <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex flex-col bg-background overflow-hidden">
       {/* Header Mobile */}
       {!isMobileViewingChat && (
-        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-white/[0.06] bg-white/80 dark:bg-white/[0.03] backdrop-blur-xl flex items-center justify-between safe-area-top">
+        <header className="sm:hidden shrink-0 px-4 py-3 border-b border-white/[0.06] bg-white/[0.03] backdrop-blur-xl flex items-center justify-between safe-area-top">
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold text-foreground">Mensajes</h1>
-            <span className="text-xs text-muted-foreground bg-muted dark:bg-white/[0.06] px-2 py-0.5 rounded-full">
+            <span className="text-xs text-muted-foreground bg-white/[0.06] px-2 py-0.5 rounded-full">
               {mounted ? conversaciones.length : 0}
             </span>
           </div>
           <button 
             onClick={() => refetch()} 
             aria-label="Actualizar conversaciones"
-            className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="p-2.5 rounded-xl hover:bg-slate-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
           </button>

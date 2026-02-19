@@ -91,7 +91,7 @@ export default function LeadsPage() {
               onClick={() => setSelectedLeadId(prev => prev ? null : leads[0]?.id ?? null)}
               className={`p-2 rounded-lg transition-colors ${
                 selectedLeadId
-                  ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400'
+                  ? 'bg-teal-500/10 text-teal-400'
                   : 'hover:bg-secondary text-muted-foreground'
               }`}
               aria-label="Panel clínico"

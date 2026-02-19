@@ -37,7 +37,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           value={kpi.totalMensajesRecibidos.toLocaleString()}
           subtitle={`${kpi.mensajesRecibidosHoy} hoy`}
           iconComponent={ArrowDownLeft}
-          iconColor="text-blue-600 dark:text-blue-400"
+          iconColor="text-blue-400"
         />
         <MetricCard
           variant="kpi"
@@ -45,7 +45,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           value={kpi.totalMensajesEnviados.toLocaleString()}
           subtitle={`${kpi.mensajesEnviadosHoy} hoy`}
           iconComponent={ArrowUpRight}
-          iconColor="text-emerald-600 dark:text-emerald-400"
+          iconColor="text-emerald-400"
         />
         <MetricCard
           variant="kpi"
@@ -53,14 +53,14 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           value={kpi.totalConversaciones.toLocaleString()}
           subtitle={`${kpi.conversacionesHoy} hoy`}
           iconComponent={MessageCircle}
-          iconColor="text-purple-600 dark:text-purple-400"
+          iconColor="text-purple-400"
         />
         <MetricCard
           variant="kpi"
           title="Tasa Respuesta"
           value={`${kpi.tasaRespuesta}%`}
           iconComponent={TrendingUp}
-          iconColor={kpi.tasaRespuesta >= 90 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconColor={kpi.tasaRespuesta >= 90 ? 'text-emerald-400' : 'text-amber-400'}
         />
       </div>
 
@@ -71,28 +71,28 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           title="Preguntas Respondidas"
           value={kpi.preguntasRespondidas.toLocaleString()}
           iconComponent={HelpCircle}
-          iconColor="text-cyan-600 dark:text-cyan-400"
+          iconColor="text-cyan-400"
         />
         <MetricCard
           variant="kpi"
           title="Citas por Bot"
           value={kpi.citasAgendadasPorBot}
           iconComponent={Calendar}
-          iconColor="text-violet-600 dark:text-violet-400"
+          iconColor="text-violet-400"
         />
         <MetricCard
           variant="kpi"
           title="Usuarios Recurrentes"
           value={kpi.usuariosRecurrentes}
           iconComponent={UserCheck}
-          iconColor="text-indigo-600 dark:text-indigo-400"
+          iconColor="text-indigo-400"
         />
         <MetricCard
           variant="kpi"
           title="Tiempo Respuesta"
           value={`${(kpi.tiempoRespuestaPromedio / 1000).toFixed(1)}s`}
           iconComponent={Clock}
-          iconColor={kpi.tiempoRespuestaPromedio < 3000 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconColor={kpi.tiempoRespuestaPromedio < 3000 ? 'text-emerald-400' : 'text-amber-400'}
         />
       </div>
     </div>
@@ -117,7 +117,7 @@ export const MensajesResumen = React.memo(function MensajesResumen({ recibidos, 
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Bot className="w-4 h-4 flex-shrink-0 text-cyan-600 dark:text-cyan-400" />
+          <Bot className="w-4 h-4 flex-shrink-0 text-cyan-400" />
           <span className="truncate">Resumen de Actividad</span>
         </CardTitle>
       </CardHeader>
@@ -130,11 +130,11 @@ export const MensajesResumen = React.memo(function MensajesResumen({ recibidos, 
           </div>
           <div className="h-4 rounded-full bg-muted overflow-hidden flex">
             <div 
-              className="bg-blue-500 dark:bg-blue-400 transition-all duration-500"
+              className="bg-blue-400 transition-all duration-500"
               style={{ width: `${porcentajeRecibidos}%` }}
             />
             <div 
-              className="bg-emerald-500 dark:bg-emerald-400 transition-all duration-500"
+              className="bg-emerald-400 transition-all duration-500"
               style={{ width: `${100 - porcentajeRecibidos}%` }}
             />
           </div>
@@ -202,7 +202,7 @@ export const TiposInteraccionCard = React.memo(function TiposInteraccionCard({ t
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 flex-shrink-0 text-purple-600 dark:text-purple-400" />
+          <HelpCircle className="w-4 h-4 flex-shrink-0 text-purple-400" />
           <span className="truncate">Tipos de Interacción</span>
         </CardTitle>
       </CardHeader>
@@ -215,7 +215,7 @@ export const TiposInteraccionCard = React.memo(function TiposInteraccionCard({ t
             </div>
             <div className="h-2 rounded-full bg-muted overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-purple-500 to-violet-500 dark:from-purple-400 dark:to-violet-400 rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-purple-400 to-violet-400 rounded-full transition-all duration-500"
                 style={{ width: `${(tipo.cantidad / maxCantidad) * 100}%` }}
               />
             </div>
@@ -265,7 +265,7 @@ export const TopPreguntasCard = React.memo(function TopPreguntasCard({ preguntas
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <TrendingUp className="w-4 h-4 flex-shrink-0 text-emerald-400" />
           <span className="truncate">Temas Más Consultados</span>
         </CardTitle>
       </CardHeader>
@@ -315,7 +315,7 @@ export const ActividadPorHora = React.memo(function ActividadPorHora({ datos }: 
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Clock className="w-4 h-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+          <Clock className="w-4 h-4 flex-shrink-0 text-amber-400" />
           <span className="truncate">Actividad por Hora</span>
         </CardTitle>
       </CardHeader>

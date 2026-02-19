@@ -38,10 +38,10 @@ export function DashboardPredictive() {
       {/* Métricas principales */}
       <div className="grid grid-cols-2 gap-3">
         {/* Día Pico */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200/50 dark:border-indigo-500/20 rounded-lg p-3">
+        <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border border-indigo-500/20 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="w-4 h-4 text-indigo-500" />
-            <span className="text-[11px] font-medium text-indigo-600 dark:text-indigo-300 uppercase tracking-wide">Día Pico</span>
+            <span className="text-[11px] font-medium text-indigo-300 uppercase tracking-wide">Día Pico</span>
           </div>
           <div className="text-xl font-bold text-foreground capitalize">
             {predictions.busiestDay.label}
@@ -52,18 +52,18 @@ export function DashboardPredictive() {
         </div>
 
         {/* Tendencia */}
-        <div className={`bg-gradient-to-br ${isGrowing ? 'from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200/50 dark:border-emerald-500/20' : 'from-rose-50 to-red-50 dark:from-rose-900/20 dark:to-red-900/20 border-rose-200/50 dark:border-rose-500/20'} border rounded-lg p-3`}>
+        <div className={`bg-gradient-to-br ${isGrowing ? 'from-emerald-900/20 to-green-900/20 border-emerald-500/20' : 'from-rose-900/20 to-red-900/20 border-rose-500/20'} border rounded-lg p-3`}>
           <div className="flex items-center gap-2 mb-2">
             {isGrowing ? (
               <TrendingUp className="w-4 h-4 text-emerald-500" />
             ) : (
               <TrendingDown className="w-4 h-4 text-rose-500" />
             )}
-            <span className={`text-[11px] font-medium uppercase tracking-wide ${isGrowing ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
+            <span className={`text-[11px] font-medium uppercase tracking-wide ${isGrowing ? 'text-emerald-300' : 'text-rose-300'}`}>
               Tendencia
             </span>
           </div>
-          <div className={`text-xl font-bold ${isGrowing ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+          <div className={`text-xl font-bold ${isGrowing ? 'text-emerald-400' : 'text-rose-400'}`}>
             {predictions.monthlyGrowth > 0 ? '+' : ''}{predictions.monthlyGrowth.toFixed(1)}%
           </div>
           <div className="text-[11px] text-muted-foreground">
@@ -78,7 +78,7 @@ export function DashboardPredictive() {
         <div className="bg-muted/30 border border-border rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-amber-500" />
-            <span className="text-[11px] font-medium text-amber-600 dark:text-amber-300 uppercase tracking-wide">Hora Pico</span>
+            <span className="text-[11px] font-medium text-amber-300 uppercase tracking-wide">Hora Pico</span>
           </div>
           <div className="text-xl font-bold text-foreground">
             {peakHour ? `${peakHour.hour}:00` : '--:--'}
@@ -92,7 +92,7 @@ export function DashboardPredictive() {
         <div className="bg-muted/30 border border-border rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="w-4 h-4 text-blue-500" />
-            <span className="text-[11px] font-medium text-blue-600 dark:text-blue-300 uppercase tracking-wide">Próx. Semana</span>
+            <span className="text-[11px] font-medium text-blue-300 uppercase tracking-wide">Próx. Semana</span>
           </div>
           <div className="text-xl font-bold text-foreground">
             ~{predictions.predictedNextWeekCount}

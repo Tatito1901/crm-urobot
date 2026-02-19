@@ -278,7 +278,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
             <div className="bg-card border border-border rounded-lg p-5 shadow-sm">
               <div className="text-sm text-muted-foreground mb-2">Racha más larga</div>
-              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
+              <div className="text-3xl font-bold text-emerald-400 mb-1">
                 {streaks.longest} <span className="text-lg text-muted-foreground">días</span>
               </div>
               <div className="text-xs text-muted-foreground">
@@ -288,7 +288,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
             <div className="bg-card border border-border rounded-lg p-5 shadow-sm">
               <div className="text-sm text-muted-foreground mb-2">Racha actual</div>
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+              <div className="text-3xl font-bold text-blue-400 mb-1">
                 {streaks.current} <span className="text-lg text-muted-foreground">días</span>
               </div>
               <div className="text-xs text-muted-foreground">
@@ -503,7 +503,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             <div className="bg-muted/30 border border-blue-500/20 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 rounded-full bg-blue-500" />
-                <h4 className="text-sm font-semibold text-blue-600 dark:text-blue-400">🏢 Consultorio Polanco</h4>
+                <h4 className="text-sm font-semibold text-blue-400">🏢 Consultorio Polanco</h4>
               </div>
               <div className="space-y-3">
                 <div>
@@ -517,7 +517,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-muted-foreground">Duración promedio</span>
-                    <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                    <span className="text-lg font-semibold text-blue-400">
                       {Math.round(sedeComparison.polanco.promedio)} min
                     </span>
                   </div>
@@ -537,7 +537,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
             <div className="bg-muted/30 border border-emerald-500/20 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <h4 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">🏥 Consultorio Satélite</h4>
+                <h4 className="text-sm font-semibold text-emerald-400">🏥 Consultorio Satélite</h4>
               </div>
               <div className="space-y-3">
                 <div>
@@ -551,7 +551,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-muted-foreground">Duración promedio</span>
-                    <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-lg font-semibold text-emerald-400">
                       {Math.round(sedeComparison.satelite.promedio)} min
                     </span>
                   </div>
@@ -595,7 +595,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
 
       {/* Sección de Análisis Predictivo (IA) */}
       {sedeFilter === 'ALL' && predictions && (
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-500/20 rounded-xl p-6 mb-6 shadow-sm">
+        <div className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border border-indigo-500/20 rounded-xl p-6 mb-6 shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-indigo-500" />
             Análisis Predictivo de Demanda (IA)
@@ -607,12 +607,12 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Calendar className="w-12 h-12 text-indigo-500" />
               </div>
-              <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-2 font-medium">Día Pico Histórico</div>
+              <div className="text-sm text-indigo-300 mb-2 font-medium">Día Pico Histórico</div>
               <div className="text-3xl font-bold text-foreground mb-1 capitalize">
                 {predictions.busiestDay.label}
               </div>
               <div className="text-xs text-muted-foreground">
-                Promedio de <span className="text-indigo-600 dark:text-indigo-300 font-semibold">{predictions.busiestDay.avgCount.toFixed(1)}</span> citas
+                Promedio de <span className="text-indigo-300 font-semibold">{predictions.busiestDay.avgCount.toFixed(1)}</span> citas
               </div>
             </div>
 
@@ -621,8 +621,8 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <BarChart3 className="w-12 h-12 text-indigo-500" />
               </div>
-              <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-2 font-medium">Tendencia Mensual</div>
-              <div className={`text-3xl font-bold mb-1 flex items-center gap-2 ${predictions.monthlyGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+              <div className="text-sm text-indigo-300 mb-2 font-medium">Tendencia Mensual</div>
+              <div className={`text-3xl font-bold mb-1 flex items-center gap-2 ${predictions.monthlyGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {predictions.monthlyGrowth > 0 ? '+' : ''}{predictions.monthlyGrowth.toFixed(1)}%
                 <span className="text-lg text-muted-foreground">vs mes anterior</span>
               </div>
@@ -636,7 +636,7 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({ monthsToShow = 12 }) =
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Clock className="w-12 h-12 text-indigo-500" />
               </div>
-              <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-2 font-medium">Proyección Semanal</div>
+              <div className="text-sm text-indigo-300 mb-2 font-medium">Proyección Semanal</div>
               <div className="text-3xl font-bold text-foreground mb-1">
                 ~{predictions.predictedNextWeekCount} <span className="text-lg text-muted-foreground">citas</span>
               </div>

@@ -58,7 +58,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
           <Calendar className="w-10 h-10 text-blue-400" />
         </div>
         <div>
-          <div className={`${labelClass} text-blue-600 dark:text-blue-400`}>Programadas</div>
+          <div className={`${labelClass} text-blue-400`}>Programadas</div>
           <div className={`${metricClass} text-foreground`}>{stats.programadas}</div>
         </div>
         <div className={hintClass}>Por confirmar</div>
@@ -70,8 +70,8 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
           <CheckCircle2 className="w-10 h-10 text-emerald-400" />
         </div>
         <div>
-          <div className={`${labelClass} text-emerald-600 dark:text-emerald-400`}>Confirmadas</div>
-          <div className={`${metricClass} text-emerald-600 dark:text-emerald-400`}>{stats.confirmadas}</div>
+          <div className={`${labelClass} text-emerald-400`}>Confirmadas</div>
+          <div className={`${metricClass} text-emerald-400`}>{stats.confirmadas}</div>
         </div>
         <div className={hintClass}>Listas para atender</div>
       </div>
@@ -82,7 +82,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
           <Clock className="w-10 h-10 text-purple-400" />
         </div>
         <div>
-          <div className={`${labelClass} text-purple-600 dark:text-purple-400 flex items-center gap-1`}>
+          <div className={`${labelClass} text-purple-400 flex items-center gap-1`}>
             <span className="animate-pulse">●</span> Hoy
           </div>
           <div className={`${metricClass} text-foreground`}>{stats.hoy}</div>
@@ -96,7 +96,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
           <CalendarDays className="w-10 h-10 text-amber-400" />
         </div>
         <div>
-          <div className={`${labelClass} text-amber-600 dark:text-amber-400`}>Semana</div>
+          <div className={`${labelClass} text-amber-400`}>Semana</div>
           <div className={`${metricClass} text-foreground`}>{stats.semana}</div>
         </div>
         <div className={hintClass}>Próximos 7 días</div>

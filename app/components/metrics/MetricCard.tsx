@@ -22,7 +22,7 @@ interface MetricCardProps {
   icon?: React.ReactNode;
   /** ElementType icon (for kpi variant — renders as component) */
   iconComponent?: ElementType;
-  /** Direct Tailwind color classes for kpi icon (e.g. 'text-blue-600 dark:text-blue-400') */
+  /** Direct Tailwind color classes for kpi icon (e.g. 'text-blue-400') */
   iconColor?: string;
   description?: string;
   subtitle?: string;

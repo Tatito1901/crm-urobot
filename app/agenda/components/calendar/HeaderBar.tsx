@@ -236,7 +236,7 @@ export const HeaderBar = React.memo(function HeaderBar({
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-md transition-colors relative ${
               showFilters || activeFiltersCount > 0
-                ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                ? 'bg-blue-500/10 text-blue-400'
                 : 'bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground'
             }`}
             title="Filtros"

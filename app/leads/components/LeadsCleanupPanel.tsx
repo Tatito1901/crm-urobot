@@ -59,21 +59,21 @@ export function LeadsCleanupPanel({ onComplete }: LeadsCleanupPanelProps) {
     switch (razon) {
       case 'tiene_citas':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">
             <Calendar className="w-3 h-3" />
             Tiene citas
           </span>
         );
       case 'paciente_existente':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
             <User className="w-3 h-3" />
             Es paciente
           </span>
         );
       case 'tiene_nombre':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400">
             <Sparkles className="w-3 h-3" />
             Con nombre
           </span>
@@ -84,12 +84,12 @@ export function LeadsCleanupPanel({ onComplete }: LeadsCleanupPanelProps) {
   // Si hay resultado, mostrar resumen
   if (lastResult) {
     return (
-      <div className="rounded-lg border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-4">
+      <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h4 className="font-medium text-emerald-900 dark:text-emerald-100">Limpieza completada</h4>
-            <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
+            <h4 className="font-medium text-emerald-100">Limpieza completada</h4>
+            <p className="text-sm text-emerald-300 mt-1">
               {lastResult.leadsActualizados > 0 && (
                 <span>{lastResult.leadsActualizados} leads actualizados a Convertido. </span>
               )}
@@ -101,7 +101,7 @@ export function LeadsCleanupPanel({ onComplete }: LeadsCleanupPanelProps) {
               )}
             </p>
             {lastResult.errores.length > 0 && (
-              <ul className="mt-2 text-xs text-red-600 dark:text-red-400 space-y-1">
+              <ul className="mt-2 text-xs text-red-400 space-y-1">
                 {lastResult.errores.map((err, i) => (
                   <li key={i}>• {err}</li>
                 ))}
@@ -109,7 +109,7 @@ export function LeadsCleanupPanel({ onComplete }: LeadsCleanupPanelProps) {
             )}
             <button
               onClick={reset}
-              className="mt-3 text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
+              className="mt-3 text-sm text-emerald-400 hover:underline"
             >
               ← Volver a escanear
             </button>
@@ -130,7 +130,7 @@ export function LeadsCleanupPanel({ onComplete }: LeadsCleanupPanelProps) {
           <RefreshCw className={`w-4 h-4 text-muted-foreground ${isScanning ? 'animate-spin' : ''}`} />
           <span className="text-sm font-medium">Limpieza de Leads</span>
           {leadsPendientes.length > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400">
               {leadsPendientes.length} pendientes
             </span>
           )}
@@ -165,8 +165,8 @@ export function LeadsCleanupPanel({ onComplete }: LeadsCleanupPanelProps) {
 
           {/* Error */}
           {error && (
-            <div className="px-4 py-3 bg-red-50 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/30">
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+            <div className="px-4 py-3 bg-red-500/10 border-b border-red-500/30">
+              <div className="flex items-center gap-2 text-red-400">
                 <AlertTriangle className="w-4 h-4" />
                 <span className="text-sm">{error}</span>
               </div>
@@ -286,8 +286,8 @@ export function LeadsCleanupPanel({ onComplete }: LeadsCleanupPanelProps) {
                           disabled={isCleaning}
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded transition-colors disabled:opacity-50 ${
                             selectedMode === 'eliminar'
-                              ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/30'
-                              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/30'
+                              ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                              : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
                           }`}
                         >
                           {selectedMode === 'eliminar' ? (

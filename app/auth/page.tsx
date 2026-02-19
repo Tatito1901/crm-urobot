@@ -4,7 +4,7 @@ import { AuthClient } from './AuthClient'
 
 // Componente decorativo para el lado izquierdo con estética médica premium
 const BrandingSection = memo(() => (
-  <div className="relative hidden h-full flex-col bg-[#050a12] p-10 xl:p-14 text-white dark:border-r border-white/[0.04] lg:flex overflow-hidden">
+  <div className="relative hidden h-full flex-col bg-[#050a12] p-10 xl:p-14 text-white border-r border-white/[0.04] lg:flex overflow-hidden">
     {/* Subtle dot pattern */}
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,_rgba(255,255,255,0.03)_1px,_transparent_0)] bg-[size:24px_24px]" />
     
@@ -83,7 +83,7 @@ export default function AuthPage() {
       <BrandingSection />
 
       {/* Lado Derecho: Formulario */}
-      <div className="relative w-full min-h-[100dvh] lg:min-h-0 h-full flex items-center justify-center bg-slate-50 dark:bg-[#04070e] p-5 sm:p-8 overflow-hidden">
+      <div className="relative w-full min-h-[100dvh] lg:min-h-0 h-full flex items-center justify-center bg-[#04070e] p-5 sm:p-8 overflow-hidden">
         
         {/* Atmospheric glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-teal-500/[0.03] blur-[120px] pointer-events-none" />
@@ -93,27 +93,27 @@ export default function AuthPage() {
           
           {/* Mobile-only header */}
           <div className="flex flex-col items-center mb-8 lg:hidden">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500/10 to-cyan-500/10 text-teal-500 dark:text-teal-400 ring-1 ring-teal-500/15 mb-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500/10 to-cyan-500/10 text-teal-400 ring-1 ring-teal-500/15 mb-5">
               <MedicalCrossIcon />
             </div>
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white font-jakarta">
+            <h1 className="text-xl font-extrabold tracking-tight text-white font-jakarta">
               Dr. Mario Martínez Thomas
             </h1>
             <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-medium">Urología</p>
           </div>
 
           {/* Glass card */}
-          <div className="relative p-6 sm:p-8 rounded-2xl border border-slate-200/60 dark:border-white/[0.06] bg-white dark:bg-white/[0.025] shadow-xl shadow-slate-200/50 dark:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          <div className="relative p-6 sm:p-8 rounded-2xl border border-white/[0.06] bg-white/[0.025] shadow-xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl">
             
             {/* Teal shine top */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/5 h-[1px] bg-gradient-to-r from-transparent via-teal-400/30 to-transparent" />
             
             {/* Header */}
             <div className="flex flex-col space-y-2 mb-7">
-              <h2 className="text-xl sm:text-[22px] font-bold tracking-tight text-slate-900 dark:text-white font-jakarta">
+              <h2 className="text-xl sm:text-[22px] font-bold tracking-tight text-white font-jakarta">
                 Iniciar sesión
               </h2>
-              <p className="text-[13px] text-slate-500 dark:text-white/40">
+              <p className="text-[13px] text-white/40">
                 Ingresa tus credenciales para acceder al sistema
               </p>
             </div>
@@ -123,7 +123,7 @@ export default function AuthPage() {
           </div>
 
           {/* Footer security note */}
-          <div className="flex items-center justify-center gap-2 mt-6 text-slate-400 dark:text-white/20">
+          <div className="flex items-center justify-center gap-2 mt-6 text-white/20">
             <LockIcon className="w-3.5 h-3.5" />
             <span className="text-[10px] font-medium tracking-wider uppercase">Conexión segura</span>
           </div>

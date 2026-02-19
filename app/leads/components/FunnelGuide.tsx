@@ -73,10 +73,10 @@ export function FunnelGuide() {
               <React.Fragment key={etapa.estado}>
                 <div 
                   className={`px-3 py-1.5 rounded-md text-xs font-medium border whitespace-nowrap shrink-0
-                             ${etapa.color === 'blue' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30' : ''}
-                             ${etapa.color === 'amber' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30' : ''}
-                             ${etapa.color === 'purple' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/30' : ''}
-                             ${etapa.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' : ''}`}
+                             ${etapa.color === 'blue' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' : ''}
+                             ${etapa.color === 'amber' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : ''}
+                             ${etapa.color === 'purple' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' : ''}
+                             ${etapa.color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : ''}`}
                 >
                   <span className="mr-1">{etapa.icon}</span>
                   {etapa.nombre}
@@ -207,11 +207,11 @@ export function FunnelGuide() {
           </div>
 
           {/* Tips */}
-          <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-md p-3">
-            <h4 className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-1">
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-md p-3">
+            <h4 className="text-xs font-semibold text-blue-400 mb-1">
               💡 Tips para Maximizar Conversiones
             </h4>
-            <ul className="text-xs text-blue-600 dark:text-blue-300 space-y-1">
+            <ul className="text-xs text-blue-300 space-y-1">
               <li>• <strong>Tiempo de respuesta:</strong> Responder en menos de 1 hora aumenta 7x la conversión</li>
               <li>• <strong>Seguimiento:</strong> El 80% de ventas requiere 5+ contactos de seguimiento</li>
               <li>• <strong>Personalización:</strong> Usa el nombre del paciente en cada mensaje</li>

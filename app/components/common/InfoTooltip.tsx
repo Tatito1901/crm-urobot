@@ -72,7 +72,7 @@ export const HelpIcon = memo(function HelpIcon({
 }) {
   return (
     <InfoTooltip content={content} side={side} delayDuration={150}>
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300 text-[10px] font-bold cursor-help hover:bg-teal-200 dark:hover:bg-teal-500/30 transition-colors select-none">
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-bold cursor-help hover:bg-teal-500/30 transition-colors select-none">
         ?
       </span>
     </InfoTooltip>

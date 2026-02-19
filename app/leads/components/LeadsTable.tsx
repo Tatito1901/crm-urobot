@@ -52,9 +52,9 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
         <div className="text-center">
           <span className={`text-lg font-semibold ${
             lead.totalMensajes >= 10 
-              ? 'text-emerald-600 dark:text-emerald-400' 
+              ? 'text-emerald-400' 
               : lead.totalMensajes >= 5 
-                ? 'text-blue-600 dark:text-blue-400'
+                ? 'text-blue-400'
                 : 'text-muted-foreground'
           }`}>
             {lead.totalMensajes}

@@ -13,22 +13,22 @@ const SEVERIDAD_COLORS: Record<string, { border: string; bg: string; text: strin
   critica: {
     border: 'border-red-500/50',
     bg: 'bg-red-500/10',
-    text: 'text-red-600 dark:text-red-400',
+    text: 'text-red-400',
   },
   alta: {
     border: 'border-orange-500/50',
     bg: 'bg-orange-500/10',
-    text: 'text-orange-600 dark:text-orange-400',
+    text: 'text-orange-400',
   },
   media: {
     border: 'border-yellow-500/50',
     bg: 'bg-yellow-500/10',
-    text: 'text-yellow-600 dark:text-yellow-400',
+    text: 'text-yellow-400',
   },
   baja: {
     border: 'border-slate-500/50',
     bg: 'bg-slate-500/10',
-    text: 'text-slate-600 dark:text-slate-400',
+    text: 'text-slate-400',
   },
 };
 

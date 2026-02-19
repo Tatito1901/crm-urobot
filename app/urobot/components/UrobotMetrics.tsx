@@ -29,14 +29,14 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           value={kpi.totalMensajes.toLocaleString()}
           subtitle={`${kpi.mensajesHoy} hoy`}
           iconComponent={MessageSquare}
-          iconColor="text-blue-600 dark:text-blue-400"
+          iconColor="text-blue-400"
         />
         <MetricCard
           variant="kpi"
           title="Tasa de Éxito"
           value={`${kpi.tasaExito}%`}
           iconComponent={TrendingUp}
-          iconColor={kpi.tasaExito >= 90 ? 'text-emerald-600 dark:text-emerald-400' : 'text-yellow-600 dark:text-yellow-400'}
+          iconColor={kpi.tasaExito >= 90 ? 'text-emerald-400' : 'text-yellow-400'}
         />
         <MetricCard
           variant="kpi"
@@ -44,14 +44,14 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           value={kpi.totalErrores}
           subtitle={`${kpi.erroresHoy} hoy`}
           iconComponent={XCircle}
-          iconColor={kpi.totalErrores > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}
+          iconColor={kpi.totalErrores > 0 ? 'text-red-400' : 'text-emerald-400'}
         />
         <MetricCard
           variant="kpi"
           title="Tiempo Respuesta"
           value={`${(kpi.tiempoPromedioMs / 1000).toFixed(1)}s`}
           iconComponent={Clock}
-          iconColor={kpi.tiempoPromedioMs < 3000 ? 'text-emerald-600 dark:text-emerald-400' : 'text-yellow-600 dark:text-yellow-400'}
+          iconColor={kpi.tiempoPromedioMs < 3000 ? 'text-emerald-400' : 'text-yellow-400'}
         />
       </div>
       
@@ -62,28 +62,28 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           title="Usuarios Únicos"
           value={kpi.usuariosUnicos}
           iconComponent={Users}
-          iconColor="text-purple-600 dark:text-purple-400"
+          iconColor="text-purple-400"
         />
         <MetricCard
           variant="kpi"
           title="Alertas Pendientes"
           value={kpi.alertasPendientes}
           iconComponent={AlertTriangle}
-          iconColor={kpi.alertasPendientes > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-emerald-600 dark:text-emerald-400'}
+          iconColor={kpi.alertasPendientes > 0 ? 'text-orange-400' : 'text-emerald-400'}
         />
         <MetricCard
           variant="kpi"
           title="Mensajes Hoy"
           value={kpi.mensajesHoy}
           iconComponent={Activity}
-          iconColor="text-cyan-600 dark:text-cyan-400"
+          iconColor="text-cyan-400"
         />
         <MetricCard
           variant="kpi"
           title="Errores Hoy"
           value={kpi.erroresHoy}
           iconComponent={Zap}
-          iconColor={kpi.erroresHoy > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}
+          iconColor={kpi.erroresHoy > 0 ? 'text-red-400' : 'text-emerald-400'}
         />
       </div>
     </div>

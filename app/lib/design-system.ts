@@ -232,7 +232,7 @@ export const tabs = {
   tabIconInactive: 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
   // Badge counter dentro de tab
   tabBadge: 'ml-1 px-1.5 py-0.5 text-xs rounded-full bg-muted',
-  tabBadgeAccent: (color: string) => `ml-1 px-1.5 py-0.5 text-xs rounded-full bg-${color}-500/20 text-${color}-600 dark:text-${color}-400`,
+  tabBadgeAccent: (color: string) => `ml-1 px-1.5 py-0.5 text-xs rounded-full bg-${color}-500/20 text-${color}-400`,
 } as const;
 
 // ==================== LIST ITEMS ====================

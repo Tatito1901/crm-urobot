@@ -195,9 +195,9 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
-                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 
-                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : 
-                      'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'}`}
+                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-500/20 text-emerald-300' : 
+                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-500/20 text-amber-300' : 
+                      'bg-blue-500/20 text-blue-300'}`}
                   >
                     {etapaConfig?.icon} {etapaConfig?.nombre || lead.estado}
                   </span>
@@ -209,9 +209,9 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
             {/* Recomendación IA */}
             {recomendacion && recomendacion.prioridad !== 'no_contactar' && (
               <div className={`mt-3 p-2.5 rounded-lg text-xs flex items-start gap-2 ${
-                recomendacion.prioridad === 'alta' ? 'bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20' :
-                recomendacion.prioridad === 'media' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20' :
-                'bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20'
+                recomendacion.prioridad === 'alta' ? 'bg-red-500/10 text-red-300 border border-red-500/20' :
+                recomendacion.prioridad === 'media' ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' :
+                'bg-blue-500/10 text-blue-300 border border-blue-500/20'
               }`}>
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{recomendacion.razon}</span>

@@ -44,14 +44,14 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={resumen.citasAgendadas}
           subtitle={`${resumen.citasAgendadasHoy} hoy`}
           iconComponent={Calendar}
-          iconColor="text-emerald-600 dark:text-emerald-400"
+          iconColor="text-emerald-400"
         />
         <MetricCard
           variant="kpi"
           title="Confirmaciones"
           value={resumen.confirmaciones}
           iconComponent={CheckCircle}
-          iconColor="text-violet-600 dark:text-violet-400"
+          iconColor="text-violet-400"
         />
         <MetricCard
           variant="kpi"
@@ -59,14 +59,14 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={`${resumen.tasaConversion}%`}
           subtitle="intención → cita"
           iconComponent={Target}
-          iconColor={resumen.tasaConversion >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconColor={resumen.tasaConversion >= 50 ? 'text-emerald-400' : 'text-amber-400'}
         />
         <MetricCard
           variant="kpi"
           title="Escalaciones"
           value={resumen.escalaciones}
           iconComponent={PhoneForwarded}
-          iconColor={resumen.escalaciones > 5 ? 'text-amber-600 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'}
+          iconColor={resumen.escalaciones > 5 ? 'text-amber-400' : 'text-blue-400'}
         />
       </div>
 
@@ -78,28 +78,28 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={resumen.totalMensajes.toLocaleString()}
           subtitle={`${resumen.mensajesHoy} hoy`}
           iconComponent={MessageCircle}
-          iconColor="text-blue-600 dark:text-blue-400"
+          iconColor="text-blue-400"
         />
         <MetricCard
           variant="kpi"
           title="Tiempo Respuesta"
           value={`${(resumen.avgTiempoMs / 1000).toFixed(1)}s`}
           iconComponent={Clock}
-          iconColor={resumen.avgTiempoMs < 3000 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}
+          iconColor={resumen.avgTiempoMs < 3000 ? 'text-emerald-400' : 'text-amber-400'}
         />
         <MetricCard
           variant="kpi"
           title="Cancelaciones"
           value={resumen.citasCanceladas}
           iconComponent={XCircle}
-          iconColor="text-red-600 dark:text-red-400"
+          iconColor="text-red-400"
         />
         <MetricCard
           variant="kpi"
           title="Reagendamientos"
           value={resumen.citasReagendadas}
           iconComponent={RefreshCw}
-          iconColor="text-cyan-600 dark:text-cyan-400"
+          iconColor="text-cyan-400"
         />
       </div>
     </div>
@@ -123,7 +123,7 @@ export const FunnelConversion = React.memo(function FunnelConversion({ funnel }:
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Target className="w-4 h-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <Target className="w-4 h-4 flex-shrink-0 text-emerald-400" />
           <span className="truncate">Funnel de Conversión</span>
         </CardTitle>
       </CardHeader>
@@ -159,7 +159,7 @@ export const FunnelConversion = React.memo(function FunnelConversion({ funnel }:
           <div className="pt-3 border-t border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Conversión total:</span>
-              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="text-lg font-bold text-emerald-400">
                 {Math.round((funnel[1].cantidad / funnel[0].cantidad) * 100)}%
               </span>
             </div>
@@ -204,7 +204,7 @@ export const IntentsDistribucion = React.memo(function IntentsDistribucion({ int
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+          <TrendingUp className="w-4 h-4 flex-shrink-0 text-blue-400" />
           <span className="truncate">¿Qué Buscan los Usuarios?</span>
         </CardTitle>
       </CardHeader>
@@ -275,7 +275,7 @@ export const SentimentPanel = React.memo(function SentimentPanel({ positivo, neg
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Smile className="w-4 h-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <Smile className="w-4 h-4 flex-shrink-0 text-emerald-400" />
           <span className="truncate">Sentiment de Usuarios</span>
         </CardTitle>
       </CardHeader>
@@ -339,7 +339,7 @@ export const ActividadHeatmap = React.memo(function ActividadHeatmap({ datos }: 
     <Card className="bg-card border-border overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Clock className="w-4 h-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+          <Clock className="w-4 h-4 flex-shrink-0 text-amber-400" />
           <span className="truncate">Actividad por Hora</span>
         </CardTitle>
       </CardHeader>
