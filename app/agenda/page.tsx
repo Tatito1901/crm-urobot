@@ -399,7 +399,7 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background">
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar unificado - Desktop */}
         <div className="hidden lg:flex lg:flex-shrink-0 z-30 relative">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { useLeadsPaginated } from '@/hooks/leads/useLeadsPaginated';
 import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
@@ -49,6 +49,16 @@ export default function LeadsPage() {
     setSelectedLeadId(null);
   }, []);
 
+  // Cerrar drawer con Escape
+  useEffect(() => {
+    if (!selectedLeadId) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedLeadId(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedLeadId]);
+
   const computedStats = useMemo(() => {
     const activos = stats.nuevos + stats.interactuando + stats.contactados + stats.citaPropuesta + stats.enSeguimiento + stats.citaAgendada;
     const enProceso = stats.interactuando + stats.contactados + stats.citaPropuesta;
@@ -84,9 +94,10 @@ export default function LeadsPage() {
                   ? 'bg-teal-500/10 text-teal-600 dark:text-teal-400'
                   : 'hover:bg-secondary text-muted-foreground'
               }`}
-              title="Panel clínico"
+              aria-label="Panel clínico"
+              aria-pressed={!!selectedLeadId}
             >
-              <Stethoscope className="w-4 h-4" />
+              <Stethoscope className="w-4 h-4" aria-hidden />
             </button>
             <RefreshButton onClick={handleRefresh} loading={isLoading} />
           </div>
@@ -207,8 +218,14 @@ export default function LeadsPage() {
           <div
             className="fixed inset-0 bg-black/40 z-40 animate-in fade-in duration-200"
             onClick={handleCloseSidebar}
+            aria-hidden
           />
-          <aside className="fixed top-0 right-0 z-50 h-full w-[340px] max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+          <aside
+            role="dialog"
+            aria-label="Panel clínico del lead"
+            aria-modal="true"
+            className="fixed top-0 right-0 z-50 h-full w-[340px] max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+          >
             <LeadClinicSidebar
               lead={selectedLead}
               onClose={handleCloseSidebar}

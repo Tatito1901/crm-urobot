@@ -4,7 +4,7 @@
  */
 export default function AgendaLoading() {
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-full bg-background">
       {/* Sidebar skeleton */}
       <div className="hidden lg:block w-72 border-r border-border bg-card animate-pulse">
         <div className="p-4 space-y-4">

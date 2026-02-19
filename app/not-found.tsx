@@ -45,7 +45,7 @@ export default function NotFound() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-full bg-background flex items-center justify-center p-4 relative overflow-hidden">
       {/* Atmospheric glow */}
       <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 h-[300px] w-[300px] rounded-full bg-teal-500/[0.04] blur-[100px]" aria-hidden />
       <div className="relative max-w-md w-full text-center space-y-8">

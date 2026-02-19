@@ -123,7 +123,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
   return (
     <ErrorBoundary>
-      <div className="relative min-h-screen bg-background text-foreground">
+      <div className="relative min-h-full bg-background text-foreground">
         {/* Ambient background gradient */}
         <div
           className="pointer-events-none fixed inset-0 opacity-40"

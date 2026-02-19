@@ -96,14 +96,14 @@ export function ConversationsSidebar({
         </div>
         
         {/* Filtros rápidos */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none mobile-scroll pr-4 -mr-4">
           {FILTER_OPTIONS.map(({ id, label, icon }) => {
             const Icon = FILTER_ICON_MAP[icon]
             return (
               <button
                 key={id}
                 onClick={() => onFiltroChange(id)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all
+                className={`flex items-center justify-center gap-1.5 px-3 py-2 min-h-[36px] rounded-lg text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500
                   ${filtroActivo === id 
                     ? 'bg-teal-500 text-white shadow-sm shadow-teal-500/20' 
                     : 'bg-slate-100 dark:bg-white/[0.08] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.12]'}`}

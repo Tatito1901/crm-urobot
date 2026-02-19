@@ -5,7 +5,7 @@
 
 export default function ConversacionesLoading() {
   return (
-    <div className="h-[calc(100dvh-4rem)] lg:h-screen flex bg-background overflow-hidden">
+    <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex bg-background overflow-hidden">
       {/* Sidebar skeleton */}
       <aside className="w-full sm:w-[320px] lg:w-[380px] border-r border-border flex flex-col shrink-0">
         <div className="px-4 py-3 border-b border-border">

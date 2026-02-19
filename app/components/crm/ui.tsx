@@ -139,10 +139,13 @@ export function DataTable({
                 key={row.id}
                 className={cn(
                   "hover:bg-muted/30 transition-colors",
-                  onRowClick && "cursor-pointer"
+                  onRowClick && "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-teal-500"
                 )}
                 onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+                onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row.id); } } : undefined}
                 onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? "button" : undefined}
               >
                 {headers.map((header) => (
                   <td key={header.key} className={cn("px-4 py-3 align-middle", getAlignmentClasses(header.align))}>
@@ -166,10 +169,13 @@ export function DataTable({
             <div
               key={row.id}
               onClick={onRowClick ? () => onRowClick(row.id) : undefined}
+              onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row.id); } } : undefined}
               onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? "button" : undefined}
               className={cn(
                 "rounded-xl border border-border bg-card p-3 sm:p-4 min-h-[72px] flex flex-col justify-center shadow-sm",
-                onRowClick && "cursor-pointer active:scale-[0.99] transition-transform"
+                onRowClick && "cursor-pointer active:scale-[0.99] transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
               )}
             >
               <div className="flex justify-between items-start gap-2 sm:gap-3 mb-1.5 sm:mb-2">

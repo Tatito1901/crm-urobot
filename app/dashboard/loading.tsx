@@ -9,7 +9,7 @@ import { MetricCardSkeleton, CardSkeleton, ListItemSkeleton } from '@/app/compon
 
 export default function DashboardLoading() {
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="relative min-h-full bg-background text-foreground">
       <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-3 sm:gap-5 sm:px-6 sm:py-5 lg:px-8 lg:py-6 xl:px-10">
         {/* Header skeleton */}
         <header>

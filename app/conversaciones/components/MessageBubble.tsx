@@ -34,7 +34,19 @@ const ImageContent = memo(function ImageContent({
   
   return (
     <>
-      <div className="relative cursor-pointer group" onClick={() => setShowLightbox(true)}>
+      <div 
+        className="relative cursor-pointer group" 
+        onClick={() => setShowLightbox(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowLightbox(true);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`Ver imagen: ${caption || 'Imagen adjunta'}`}
+      >
         <Image 
           src={url} 
           alt={caption || 'Imagen'} 

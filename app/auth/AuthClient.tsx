@@ -12,8 +12,8 @@ import { Loader2 } from 'lucide-react'
 const SuccessOverlay = lazy(() => import('./SuccessOverlay').then(mod => ({ default: mod.SuccessOverlay })))
 
 // Componente de alerta de error
-const ErrorAlert = memo(({ message }: { message: string }) => (
-  <div className="flex items-center gap-2.5 rounded-xl bg-red-500/[0.06] dark:bg-red-500/[0.08] px-3.5 py-3 text-[13px] text-red-600 dark:text-red-400 border border-red-500/10 dark:border-red-500/15" role="alert">
+const ErrorAlert = memo(({ message, id }: { message: string, id?: string }) => (
+  <div id={id} className="flex items-center gap-2.5 rounded-xl bg-red-500/[0.06] dark:bg-red-500/[0.08] px-3.5 py-3 text-[13px] text-red-600 dark:text-red-400 border border-red-500/10 dark:border-red-500/15" role="alert">
     <AlertIcon />
     <p className="font-medium">{message}</p>
   </div>
@@ -55,7 +55,7 @@ export function AuthClient() {
         <div className="grid gap-2">
           <label 
             htmlFor="email" 
-            className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white/40 ml-0.5"
+            className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white/60 ml-0.5"
           >
             Correo electrónico
           </label>
@@ -68,6 +68,7 @@ export function AuthClient() {
             className={inputStyles}
             required
             aria-invalid={!!state.error}
+            aria-describedby={state.error ? "auth-error" : undefined}
           />
         </div>
 
@@ -75,7 +76,7 @@ export function AuthClient() {
         <div className="grid gap-2">
           <label 
             htmlFor="password" 
-            className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white/40 ml-0.5"
+            className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white/60 ml-0.5"
           >
             Contraseña
           </label>
@@ -89,6 +90,7 @@ export function AuthClient() {
               className={`${inputStyles} pr-11`}
               required
               aria-invalid={!!state.error}
+              aria-describedby={state.error ? "auth-error" : undefined}
             />
             <button
               type="button"
@@ -102,7 +104,7 @@ export function AuthClient() {
           </div>
         </div>
 
-        {state.error && <ErrorAlert message={state.error} />}
+        {state.error && <ErrorAlert id="auth-error" message={state.error} />}
 
         <Button 
           type="submit" 

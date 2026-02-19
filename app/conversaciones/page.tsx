@@ -88,7 +88,7 @@ export default function ConversacionesPage() {
   )
 
   return (
-    <div className="h-[calc(100dvh-4rem)] lg:h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex flex-col bg-background overflow-hidden">
       {/* Header Mobile */}
       {!isMobileViewingChat && (
         <header className="sm:hidden shrink-0 px-4 py-3 border-b border-white/[0.06] bg-white/80 dark:bg-white/[0.03] backdrop-blur-xl flex items-center justify-between safe-area-top">

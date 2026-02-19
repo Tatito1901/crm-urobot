@@ -6,7 +6,7 @@
 
 export default function RootLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-urobot relative overflow-hidden">
+    <div className="min-h-full flex items-center justify-center bg-urobot relative overflow-hidden">
       {/* Atmospheric glow */}
       <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-teal-500/[0.06] blur-[120px]" aria-hidden />
       

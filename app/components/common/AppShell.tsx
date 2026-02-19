@@ -49,16 +49,16 @@ export function AppShell({ children }: PropsWithChildren) {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-background relative">
+    <div className="flex h-screen w-full bg-background relative overflow-hidden">
       <RouteProgress />
       {/* Subtle noise texture for depth */}
       <div className="pointer-events-none fixed inset-0 noise-overlay z-0" aria-hidden />
-      <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80 shrink-0" />}>
+      <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80 shrink-0 h-full" />}>
         <Sidebar />
       </Suspense>
-      <div className="relative z-[1] flex min-h-screen flex-1 flex-col min-w-0">
+      <div className="relative z-[1] flex h-full flex-1 flex-col min-w-0">
         <main className="flex-1 overflow-x-hidden overflow-y-auto pb-16 lg:pb-0">{children}</main>
-        <Suspense fallback={<div className="h-16 lg:hidden" />}>
+        <Suspense fallback={<div className="h-16 lg:hidden shrink-0" />}>
           <BottomNav />
         </Suspense>
       </div>
