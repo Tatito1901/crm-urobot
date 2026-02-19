@@ -568,3 +568,81 @@ a:focus-visible {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* ============================================
+   DASHBOARD KPI CARD EFFECTS
+   ============================================ */
+
+/* Ambient glow behind KPI cards on hover */
+.kpi-card {
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+}
+
+.kpi-card:hover::before {
+  opacity: 1;
+}
+
+.kpi-card--sky::before {
+  box-shadow: 0 8px 40px -8px rgba(56, 189, 248, 0.2);
+}
+
+.kpi-card--emerald::before {
+  box-shadow: 0 8px 40px -8px rgba(16, 185, 129, 0.2);
+}
+
+.kpi-card--amber::before {
+  box-shadow: 0 8px 40px -8px rgba(245, 158, 11, 0.2);
+}
+
+/* Count-up number animation */
+@keyframes count-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-count-in {
+  animation: count-fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Live pulse dot */
+@keyframes live-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px transparent; }
+}
+
+.live-dot {
+  animation: live-dot 2s ease-in-out infinite;
+}
+
+/* Subtle grain texture overlay for depth */
+.grain-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.015;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  border-radius: inherit;
+}
