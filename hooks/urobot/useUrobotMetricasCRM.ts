@@ -2,8 +2,8 @@
  * ============================================================
  * HOOK: useUrobotMetricasCRM
  * ============================================================
- * Consume las métricas agregadas de urobot_metricas_crm
- * Usa las vistas v_urobot_dashboard_diario y v_urobot_actividad_hora
+ * Consume la RPC get_urobot_metricas_crm() que calcula métricas
+ * en tiempo real desde mensajes + escalamientos
  */
 
 import useSWR from 'swr';
@@ -160,266 +160,110 @@ const FUNNEL_COLORS = {
 };
 
 // ============================================================
-// FETCHER
+// FETCHER — calls get_urobot_metricas_crm RPC
 // ============================================================
 
-interface MetricasRow {
-  fecha: string;
-  hora_bucket: number;
-  total_mensajes: number;
-  mensajes_entrantes: number;
-  mensajes_salientes: number;
-  citas_agendadas: number;
-  citas_canceladas: number;
-  citas_reagendadas: number;
-  confirmaciones: number;
-  escalaciones: number;
-  intent_agendar: number;
-  intent_reagendar: number;
-  intent_cancelar: number;
-  intent_confirmar: number;
-  intent_informacion: number;
-  intent_urgencia: number;
-  intent_seguimiento: number;
-  intent_saludo: number;
-  intent_otro: number;
-  sentiment_positivo: number;
-  sentiment_negativo: number;
-  sentiment_urgente: number;
-  sentiment_neutral: number;
-  avg_tiempo_respuesta_ms: number;
-  max_tiempo_respuesta_ms: number;
-  errores: number;
-}
-
 async function fetchMetricasCRM(dias: number): Promise<UrobotMetricasCRMData> {
-  const fechaInicio = new Date();
-  fechaInicio.setDate(fechaInicio.getDate() - dias);
-  const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
-  
-  const hoy = new Date().toISOString().split('T')[0];
-
-  // Query a la tabla de métricas agregadas
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: metricas, error } = await (supabase as any)
-    .from('urobot_metricas_crm')
-    .select('*')
-    .gte('fecha', fechaInicioStr)
-    .order('fecha', { ascending: true })
-    .order('hora_bucket', { ascending: true });
+  const { data, error } = await (supabase as any).rpc('get_urobot_metricas_crm', {
+    p_dias: dias,
+  });
 
   if (error) {
     console.error('Error fetching metricas CRM:', error);
     return defaultData;
   }
 
-  const rows = (metricas || []) as MetricasRow[];
-  
-  if (rows.length === 0) {
-    return defaultData;
-  }
+  const d = data as Record<string, unknown> | null;
+  if (!d) return defaultData;
 
   // ============================================================
-  // CALCULAR RESUMEN
+  // PARSE RESUMEN from RPC
   // ============================================================
-  
-  const totales = rows.reduce((acc, row) => {
-    acc.totalMensajes += row.total_mensajes || 0;
-    acc.citasAgendadas += row.citas_agendadas || 0;
-    acc.citasCanceladas += row.citas_canceladas || 0;
-    acc.citasReagendadas += row.citas_reagendadas || 0;
-    acc.confirmaciones += row.confirmaciones || 0;
-    acc.escalaciones += row.escalaciones || 0;
-    acc.errores += row.errores || 0;
-    
-    // Intenciones
-    acc.intentAgendar += row.intent_agendar || 0;
-    acc.intentReagendar += row.intent_reagendar || 0;
-    acc.intentCancelar += row.intent_cancelar || 0;
-    acc.intentConfirmar += row.intent_confirmar || 0;
-    acc.intentInformacion += row.intent_informacion || 0;
-    acc.intentUrgencia += row.intent_urgencia || 0;
-    acc.intentSeguimiento += row.intent_seguimiento || 0;
-    acc.intentSaludo += row.intent_saludo || 0;
-    acc.intentOtro += row.intent_otro || 0;
-    
-    // Sentiment
-    acc.sentimentPositivo += row.sentiment_positivo || 0;
-    acc.sentimentNegativo += row.sentiment_negativo || 0;
-    acc.sentimentUrgente += row.sentiment_urgente || 0;
-    acc.sentimentNeutral += row.sentiment_neutral || 0;
-    
-    // Tiempo (promedio ponderado)
-    if (row.avg_tiempo_respuesta_ms) {
-      acc.tiempoSum += row.avg_tiempo_respuesta_ms * row.total_mensajes;
-      acc.tiempoCount += row.total_mensajes;
-    }
-    
-    return acc;
-  }, {
-    totalMensajes: 0,
-    citasAgendadas: 0,
-    citasCanceladas: 0,
-    citasReagendadas: 0,
-    confirmaciones: 0,
-    escalaciones: 0,
-    errores: 0,
-    intentAgendar: 0,
-    intentReagendar: 0,
-    intentCancelar: 0,
-    intentConfirmar: 0,
-    intentInformacion: 0,
-    intentUrgencia: 0,
-    intentSeguimiento: 0,
-    intentSaludo: 0,
-    intentOtro: 0,
-    sentimentPositivo: 0,
-    sentimentNegativo: 0,
-    sentimentUrgente: 0,
-    sentimentNeutral: 0,
-    tiempoSum: 0,
-    tiempoCount: 0,
-  });
-
-  // Métricas de hoy
-  const rowsHoy = rows.filter(r => r.fecha === hoy);
-  const mensajesHoy = rowsHoy.reduce((sum, r) => sum + (r.total_mensajes || 0), 0);
-  const citasHoy = rowsHoy.reduce((sum, r) => sum + (r.citas_agendadas || 0), 0);
+  const r = (d.resumen || {}) as Record<string, number>;
 
   const resumen: MetricasCRMResumen = {
-    totalMensajes: totales.totalMensajes,
-    mensajesHoy,
-    citasAgendadas: totales.citasAgendadas,
-    citasAgendadasHoy: citasHoy,
-    citasCanceladas: totales.citasCanceladas,
-    citasReagendadas: totales.citasReagendadas,
-    confirmaciones: totales.confirmaciones,
-    escalaciones: totales.escalaciones,
-    tasaConversion: totales.intentAgendar > 0 
-      ? Math.round((totales.citasAgendadas / totales.intentAgendar) * 100) 
+    totalMensajes: Number(r.totalMensajes) || 0,
+    mensajesHoy: Number(r.mensajesHoy) || 0,
+    citasAgendadas: Number(r.citasAgendadas) || 0,
+    citasAgendadasHoy: Number(r.citasAgendadasHoy) || 0,
+    citasCanceladas: Number(r.citasCanceladas) || 0,
+    citasReagendadas: Number(r.citasReagendadas) || 0,
+    confirmaciones: Number(r.confirmaciones) || 0,
+    escalaciones: Number(r.escalaciones) || 0,
+    tasaConversion: Number(r.intentAgendar) > 0
+      ? Math.round((Number(r.citasAgendadas) / Number(r.intentAgendar)) * 100)
       : 0,
-    avgTiempoMs: totales.tiempoCount > 0 
-      ? Math.round(totales.tiempoSum / totales.tiempoCount) 
-      : 0,
-    tasaError: totales.totalMensajes > 0 
-      ? Math.round((totales.errores / totales.totalMensajes) * 100 * 10) / 10 
-      : 0,
-    sentimentPositivo: totales.sentimentPositivo,
-    sentimentNegativo: totales.sentimentNegativo,
-    sentimentUrgente: totales.sentimentUrgente,
-    sentimentNeutral: totales.sentimentNeutral,
-    intentAgendar: totales.intentAgendar,
-    intentReagendar: totales.intentReagendar,
-    intentCancelar: totales.intentCancelar,
-    intentConfirmar: totales.intentConfirmar,
-    intentInformacion: totales.intentInformacion,
-    intentUrgencia: totales.intentUrgencia,
-    intentSeguimiento: totales.intentSeguimiento,
-    intentSaludo: totales.intentSaludo,
-    intentOtro: totales.intentOtro,
+    avgTiempoMs: Number(r.avgTiempoMs) || 0,
+    tasaError: Number(r.tasaError) || 0,
+    sentimentPositivo: Number(r.sentimentPositivo) || 0,
+    sentimentNegativo: Number(r.sentimentNegativo) || 0,
+    sentimentUrgente: Number(r.sentimentUrgente) || 0,
+    sentimentNeutral: Number(r.sentimentNeutral) || 0,
+    intentAgendar: Number(r.intentAgendar) || 0,
+    intentReagendar: Number(r.intentReagendar) || 0,
+    intentCancelar: Number(r.intentCancelar) || 0,
+    intentConfirmar: Number(r.intentConfirmar) || 0,
+    intentInformacion: Number(r.intentInformacion) || 0,
+    intentUrgencia: Number(r.intentUrgencia) || 0,
+    intentSeguimiento: Number(r.intentSeguimiento) || 0,
+    intentSaludo: Number(r.intentSaludo) || 0,
+    intentOtro: Number(r.intentOtro) || 0,
   };
 
   // ============================================================
-  // DATOS DIARIOS
+  // PARSE DIARIO from RPC
   // ============================================================
-  
-  const porFecha = new Map<string, MetricasCRMDiarias>();
-  rows.forEach(row => {
-    const existing = porFecha.get(row.fecha) || {
-      fecha: row.fecha,
-      totalMensajes: 0,
-      citasAgendadas: 0,
-      citasCanceladas: 0,
-      citasReagendadas: 0,
-      confirmaciones: 0,
-      escalaciones: 0,
-      tasaConversionAgendar: 0,
-      avgTiempoMs: 0,
-      maxTiempoMs: 0,
-      errores: 0,
-      tasaError: 0,
-      pctPositivo: 0,
-      pctNegativo: 0,
-      pctUrgente: 0,
-      _intentAgendar: 0,
-      _tiempoSum: 0,
-      _tiempoCount: 0,
-      _sentPos: 0,
-      _sentNeg: 0,
-      _sentUrg: 0,
-    };
-    
-    existing.totalMensajes += row.total_mensajes || 0;
-    existing.citasAgendadas += row.citas_agendadas || 0;
-    existing.citasCanceladas += row.citas_canceladas || 0;
-    existing.citasReagendadas += row.citas_reagendadas || 0;
-    existing.confirmaciones += row.confirmaciones || 0;
-    existing.escalaciones += row.escalaciones || 0;
-    existing.errores += row.errores || 0;
-    (existing as any)._intentAgendar += row.intent_agendar || 0;
-    (existing as any)._sentPos += row.sentiment_positivo || 0;
-    (existing as any)._sentNeg += row.sentiment_negativo || 0;
-    (existing as any)._sentUrg += row.sentiment_urgente || 0;
-    
-    if (row.avg_tiempo_respuesta_ms) {
-      (existing as any)._tiempoSum += row.avg_tiempo_respuesta_ms * row.total_mensajes;
-      (existing as any)._tiempoCount += row.total_mensajes;
-    }
-    existing.maxTiempoMs = Math.max(existing.maxTiempoMs, row.max_tiempo_respuesta_ms || 0);
-    
-    porFecha.set(row.fecha, existing);
-  });
-
-  const diario: MetricasCRMDiarias[] = Array.from(porFecha.values()).map(d => {
-    const e = d as any;
-    return {
-      ...d,
-      tasaConversionAgendar: e._intentAgendar > 0 
-        ? Math.round((d.citasAgendadas / e._intentAgendar) * 100) 
-        : 0,
-      avgTiempoMs: e._tiempoCount > 0 ? Math.round(e._tiempoSum / e._tiempoCount) : 0,
-      tasaError: d.totalMensajes > 0 ? Math.round((d.errores / d.totalMensajes) * 100 * 10) / 10 : 0,
-      pctPositivo: d.totalMensajes > 0 ? Math.round((e._sentPos / d.totalMensajes) * 100) : 0,
-      pctNegativo: d.totalMensajes > 0 ? Math.round((e._sentNeg / d.totalMensajes) * 100) : 0,
-      pctUrgente: d.totalMensajes > 0 ? Math.round((e._sentUrg / d.totalMensajes) * 100) : 0,
-    };
-  });
+  const diarioRaw = (d.diario || []) as Array<Record<string, unknown>>;
+  const diario: MetricasCRMDiarias[] = diarioRaw.map(row => ({
+    fecha: String(row.fecha || ''),
+    totalMensajes: Number(row.totalMensajes) || 0,
+    citasAgendadas: Number(row.citasAgendadas) || 0,
+    citasCanceladas: 0,
+    citasReagendadas: 0,
+    confirmaciones: 0,
+    escalaciones: Number(row.escalaciones) || 0,
+    tasaConversionAgendar: 0,
+    avgTiempoMs: 0,
+    maxTiempoMs: 0,
+    errores: Number(row.errores) || 0,
+    tasaError: Number(row.totalMensajes) > 0
+      ? Math.round((Number(row.errores) / Number(row.totalMensajes)) * 100 * 10) / 10
+      : 0,
+    pctPositivo: 0,
+    pctNegativo: 0,
+    pctUrgente: 0,
+  }));
 
   // ============================================================
-  // ACTIVIDAD POR HORA
+  // PARSE POR HORA from RPC
   // ============================================================
-  
-  const porHoraMap = new Map<number, ActividadPorHora>();
-  for (let h = 0; h < 24; h++) {
-    porHoraMap.set(h, { hora: h, mensajes: 0, agendadas: 0, avgTiempoMs: 0 });
-  }
-  
-  rows.forEach(row => {
-    const h = row.hora_bucket;
-    const existing = porHoraMap.get(h)!;
-    existing.mensajes += row.total_mensajes || 0;
-    existing.agendadas += row.citas_agendadas || 0;
-  });
-  
-  const porHora = Array.from(porHoraMap.values());
+  const porHoraRaw = (d.porHora || []) as Array<Record<string, number>>;
+  const porHora: ActividadPorHora[] = porHoraRaw.length > 0
+    ? porHoraRaw.map(h => ({
+        hora: Number(h.hora),
+        mensajes: Number(h.mensajes) || 0,
+        agendadas: Number(h.agendadas) || 0,
+        avgTiempoMs: 0,
+      }))
+    : Array.from({ length: 24 }, (_, i) => ({ hora: i, mensajes: 0, agendadas: 0, avgTiempoMs: 0 }));
 
   // ============================================================
-  // DISTRIBUCIÓN DE INTENCIONES
+  // DISTRIBUCIÓN DE INTENCIONES (client-side from resumen)
   // ============================================================
-  
-  const totalIntents = totales.intentAgendar + totales.intentReagendar + 
-    totales.intentCancelar + totales.intentConfirmar + totales.intentInformacion +
-    totales.intentUrgencia + totales.intentSeguimiento + totales.intentSaludo + totales.intentOtro;
+  const totalIntents = resumen.intentAgendar + resumen.intentReagendar +
+    resumen.intentCancelar + resumen.intentConfirmar + resumen.intentInformacion +
+    resumen.intentUrgencia + resumen.intentSeguimiento + resumen.intentSaludo + resumen.intentOtro;
 
   const intents: IntentDistribucion[] = [
-    { intent: 'agendar', cantidad: totales.intentAgendar, porcentaje: 0, icono: INTENT_CONFIG.agendar.icono },
-    { intent: 'informacion', cantidad: totales.intentInformacion, porcentaje: 0, icono: INTENT_CONFIG.informacion.icono },
-    { intent: 'confirmar', cantidad: totales.intentConfirmar, porcentaje: 0, icono: INTENT_CONFIG.confirmar.icono },
-    { intent: 'reagendar', cantidad: totales.intentReagendar, porcentaje: 0, icono: INTENT_CONFIG.reagendar.icono },
-    { intent: 'cancelar', cantidad: totales.intentCancelar, porcentaje: 0, icono: INTENT_CONFIG.cancelar.icono },
-    { intent: 'urgencia', cantidad: totales.intentUrgencia, porcentaje: 0, icono: INTENT_CONFIG.urgencia.icono },
-    { intent: 'seguimiento', cantidad: totales.intentSeguimiento, porcentaje: 0, icono: INTENT_CONFIG.seguimiento.icono },
-    { intent: 'saludo', cantidad: totales.intentSaludo, porcentaje: 0, icono: INTENT_CONFIG.saludo.icono },
+    { intent: 'agendar', cantidad: resumen.intentAgendar, porcentaje: 0, icono: INTENT_CONFIG.agendar.icono },
+    { intent: 'informacion', cantidad: resumen.intentInformacion, porcentaje: 0, icono: INTENT_CONFIG.informacion.icono },
+    { intent: 'confirmar', cantidad: resumen.intentConfirmar, porcentaje: 0, icono: INTENT_CONFIG.confirmar.icono },
+    { intent: 'reagendar', cantidad: resumen.intentReagendar, porcentaje: 0, icono: INTENT_CONFIG.reagendar.icono },
+    { intent: 'cancelar', cantidad: resumen.intentCancelar, porcentaje: 0, icono: INTENT_CONFIG.cancelar.icono },
+    { intent: 'urgencia', cantidad: resumen.intentUrgencia, porcentaje: 0, icono: INTENT_CONFIG.urgencia.icono },
+    { intent: 'seguimiento', cantidad: resumen.intentSeguimiento, porcentaje: 0, icono: INTENT_CONFIG.seguimiento.icono },
+    { intent: 'saludo', cantidad: resumen.intentSaludo, porcentaje: 0, icono: INTENT_CONFIG.saludo.icono },
   ]
     .map(i => ({ ...i, porcentaje: totalIntents > 0 ? Math.round((i.cantidad / totalIntents) * 100) : 0 }))
     .filter(i => i.cantidad > 0)
@@ -428,35 +272,28 @@ async function fetchMetricasCRM(dias: number): Promise<UrobotMetricasCRMData> {
   // ============================================================
   // FUNNEL DE CONVERSIÓN
   // ============================================================
-  
   const funnel: ConversionFunnel[] = [
-    { 
-      etapa: 'Intención de agendar', 
-      cantidad: totales.intentAgendar, 
+    {
+      etapa: 'Intención de agendar',
+      cantidad: resumen.intentAgendar,
       porcentaje: 100,
-      color: FUNNEL_COLORS.intentos 
+      color: FUNNEL_COLORS.intentos,
     },
-    { 
-      etapa: 'Citas agendadas', 
-      cantidad: totales.citasAgendadas, 
-      porcentaje: totales.intentAgendar > 0 ? Math.round((totales.citasAgendadas / totales.intentAgendar) * 100) : 0,
-      color: FUNNEL_COLORS.agendadas 
+    {
+      etapa: 'Citas agendadas',
+      cantidad: resumen.citasAgendadas,
+      porcentaje: resumen.intentAgendar > 0 ? Math.round((resumen.citasAgendadas / resumen.intentAgendar) * 100) : 0,
+      color: FUNNEL_COLORS.agendadas,
     },
-    { 
-      etapa: 'Confirmaciones', 
-      cantidad: totales.confirmaciones, 
-      porcentaje: totales.citasAgendadas > 0 ? Math.round((totales.confirmaciones / totales.citasAgendadas) * 100) : 0,
-      color: FUNNEL_COLORS.confirmadas 
+    {
+      etapa: 'Confirmaciones',
+      cantidad: resumen.confirmaciones,
+      porcentaje: resumen.citasAgendadas > 0 ? Math.round((resumen.confirmaciones / resumen.citasAgendadas) * 100) : 0,
+      color: FUNNEL_COLORS.confirmadas,
     },
   ];
 
-  return {
-    resumen,
-    diario,
-    porHora,
-    intents,
-    funnel,
-  };
+  return { resumen, diario, porHora, intents, funnel };
 }
 
 // ============================================================

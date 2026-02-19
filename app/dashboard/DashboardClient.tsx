@@ -4,11 +4,15 @@ import { useMemo } from 'react';
 import dynamicImport from 'next/dynamic';
 import {
   MessageSquare, UserCheck, Calendar, RefreshCw,
+  AlertTriangle, TrendingUp, DollarSign, Percent,
+  Clock, Phone, Flame, Stethoscope, ArrowUpRight,
+  ChevronRight, Zap, ShieldAlert,
 } from 'lucide-react';
 import { useDashboardV2 } from '@/hooks/dashboard/useDashboardV2';
 import type { DashboardV2Data } from '@/hooks/dashboard/useDashboardV2';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { chartColors } from '@/app/lib/design-system';
+import { TemperatureDot } from './components/DashboardSubComponents';
 
 const SparklineChart = dynamicImport(() => import('@/app/components/analytics/SparklineChart').then(mod => ({ default: mod.SparklineChart })), {
   loading: () => <div className="h-[56px] w-full bg-muted/10 rounded" />,
@@ -35,9 +39,53 @@ function getFormattedDate(): string {
   });
 }
 
+function timeAgo(dateStr: string): string {
+  if (!dateStr) return '';
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'ahora';
+  if (diffMin < 60) return `hace ${diffMin}m`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `hace ${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  return `hace ${diffD}d`;
+}
+
+function formatTime(dateStr: string): string {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatCurrency(amount: number): string {
+  if (amount >= 1000) return `$${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)}k`;
+  return `$${amount.toLocaleString('es-MX')}`;
+}
+
+const ESTADO_CITA_COLORS: Record<string, string> = {
+  Programada: 'bg-sky-500/15 text-sky-400 border-sky-500/25',
+  Confirmada: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
+  Reagendada: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
+  Cancelada: 'bg-rose-500/15 text-rose-400 border-rose-500/25',
+  Completada: 'bg-teal-500/15 text-teal-400 border-teal-500/25',
+};
+
+const LEAD_ESTADO_LABELS: Record<string, string> = {
+  nuevo: 'Nuevo',
+  contactado: 'Contactado',
+  interesado: 'Interesado',
+  calificado: 'Calificado',
+  escalado: 'Escalado',
+  cita_agendada: 'Cita agendada',
+  convertido: 'Convertido',
+  no_interesado: 'No interesado',
+  descartado: 'Descartado',
+};
+
 /**
  * ============================================================
- * DASHBOARD CLIENT V5 — Clinical Command Center
+ * DASHBOARD CLIENT V6 — Clinical Command Center
  * ============================================================
  * Design: Executive Dashboard + Medical Minimalism
  * Style: Glass cards, teal accents, stagger animations, ambient glow
@@ -49,7 +97,10 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ initialData }: DashboardClientProps) {
   const {
-    kpis, bot, leadsTendencia, consultasTendencia,
+    kpis, bot, acciones, totalAcciones,
+    leadsRecientes, consultasProximas, escalamientosRecientes,
+    leadsTendencia, consultasTendencia,
+    tasaConversion, tasaAsistencia, leadsCrecimientoMes, ingresosCrecimientoMes,
     loading, refresh,
   } = useDashboardV2(initialData);
 
@@ -77,6 +128,17 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
         color: chartColors.teal,
       }));
   }, [leadsTendencia, consultasTendencia]);
+
+  // ── Acciones urgentes items ──
+  const accionItems = useMemo(() => {
+    const items: { label: string; count: number; icon: typeof AlertTriangle; color: string }[] = [];
+    if (acciones.escalamientosPendientes > 0) items.push({ label: 'Escalamientos', count: acciones.escalamientosPendientes, icon: ShieldAlert, color: 'text-rose-400' });
+    if (acciones.leadsCalientesSinCita > 0) items.push({ label: 'Leads calientes sin cita', count: acciones.leadsCalientesSinCita, icon: Flame, color: 'text-orange-400' });
+    if (acciones.consultasSinConfirmar > 0) items.push({ label: 'Sin confirmar', count: acciones.consultasSinConfirmar, icon: Calendar, color: 'text-amber-400' });
+    if (acciones.mensajesNoLeidos > 0) items.push({ label: 'Mensajes no leídos', count: acciones.mensajesNoLeidos, icon: MessageSquare, color: 'text-sky-400' });
+    if (acciones.leadsSinRespuesta24h > 0) items.push({ label: 'Sin respuesta 24h', count: acciones.leadsSinRespuesta24h, icon: Clock, color: 'text-violet-400' });
+    return items;
+  }, [acciones]);
 
   // ── KPI definitions ──
   const metrics = [
@@ -121,6 +183,39 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
     },
   ];
 
+  // ── Secondary KPIs ──
+  const secondaryMetrics = [
+    {
+      label: 'Conversión',
+      value: `${tasaConversion}%`,
+      icon: Percent,
+      color: 'text-teal-400',
+      bg: 'bg-teal-500/10',
+    },
+    {
+      label: 'Asistencia',
+      value: `${tasaAsistencia}%`,
+      icon: Stethoscope,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+    },
+    {
+      label: 'Ingresos mes',
+      value: formatCurrency(kpis.ingresosMes),
+      icon: DollarSign,
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      trend: ingresosCrecimientoMes,
+    },
+    {
+      label: 'Crecimiento',
+      value: `${leadsCrecimientoMes > 0 ? '+' : ''}${leadsCrecimientoMes}%`,
+      icon: TrendingUp,
+      color: leadsCrecimientoMes >= 0 ? 'text-emerald-400' : 'text-rose-400',
+      bg: leadsCrecimientoMes >= 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10',
+    },
+  ];
+
   return (
     <ErrorBoundary>
       <div className="relative min-h-full bg-background text-foreground">
@@ -133,7 +228,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           }}
         />
 
-        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
 
           {/* ═══════════════════════════════════════════
               HEADER — Greeting + date + live indicator
@@ -167,6 +262,44 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           </header>
 
           {/* ═══════════════════════════════════════════
+              ACCIONES URGENTES — Alert banner
+              ═══════════════════════════════════════════ */}
+          {!loading && totalAcciones > 0 && (
+            <section className="animate-fade-up stagger-2">
+              <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-amber-500/[0.04]">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/[0.06] to-transparent pointer-events-none" aria-hidden />
+                <div className="relative px-5 py-4 sm:px-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-1.5 rounded-lg bg-amber-500/15">
+                      <Zap className="h-4 w-4 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-sm font-bold text-foreground font-jakarta">
+                        {totalAcciones} {totalAcciones === 1 ? 'acción pendiente' : 'acciones pendientes'}
+                      </h2>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {accionItems.map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <div
+                          key={item.label}
+                          className="flex items-center gap-1.5 rounded-lg bg-card/60 border border-border/50 px-2.5 py-1.5 text-xs"
+                        >
+                          <Icon className={`h-3 w-3 ${item.color}`} />
+                          <span className="text-muted-foreground">{item.label}</span>
+                          <span className="font-bold text-foreground tabular-nums">{item.count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
           <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
@@ -175,7 +308,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               return (
                 <div
                   key={m.title}
-                  className={`kpi-card ${m.glowClass} grain-overlay relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-5 sm:p-6 flex flex-col animate-fade-up stagger-${i + 2} cursor-default`}
+                  className={`kpi-card ${m.glowClass} grain-overlay relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-5 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default`}
                 >
                   {/* Top row: icon + label */}
                   <div className="flex items-center justify-between mb-4">
@@ -214,9 +347,41 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           </section>
 
           {/* ═══════════════════════════════════════════
+              SECONDARY METRICS — Compact strip
+              ═══════════════════════════════════════════ */}
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fade-up stagger-6">
+            {secondaryMetrics.map(sm => {
+              const Icon = sm.icon;
+              return (
+                <div
+                  key={sm.label}
+                  className="flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors hover:bg-muted/30"
+                >
+                  <div className={`p-1.5 rounded-lg ${sm.bg} shrink-0`}>
+                    <Icon className={`h-3.5 w-3.5 ${sm.color}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate">{sm.label}</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg font-bold tabular-nums text-foreground font-jakarta tracking-tight">
+                        {loading ? '—' : sm.value}
+                      </span>
+                      {'trend' in sm && sm.trend !== undefined && !loading && (
+                        <span className={`text-[10px] font-semibold ${sm.trend >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {sm.trend > 0 ? '↑' : sm.trend < 0 ? '↓' : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </section>
+
+          {/* ═══════════════════════════════════════════
               ACTIVITY CHART — Bar + dual sparklines
               ═══════════════════════════════════════════ */}
-          <section className="animate-fade-up stagger-5 grain-overlay relative overflow-hidden rounded-2xl border border-border bg-card">
+          <section className="animate-fade-up stagger-7 grain-overlay relative overflow-hidden rounded-2xl border border-border bg-card">
             {/* Chart header */}
             <div className="flex items-center justify-between px-5 sm:px-6 pt-5 sm:pt-6 pb-2">
               <div>
@@ -270,6 +435,216 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 </div>
                 <SparklineChart data={consultasTendencia} color="var(--chart-amber)" gradientId="consultasFooter" height={44} />
               </div>
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════════
+              TWO-COLUMN: Consultas Próximas + Leads Recientes
+              ═══════════════════════════════════════════ */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            {/* ── Consultas Próximas ── */}
+            <div className="animate-fade-up stagger-8 rounded-2xl border border-border bg-card overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-teal-500/10">
+                    <Stethoscope className="h-4 w-4 text-teal-400" />
+                  </div>
+                  <h2 className="text-sm font-bold text-foreground font-jakarta">Consultas próximas</h2>
+                </div>
+                <span className="text-xs font-bold tabular-nums text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
+                  {consultasProximas.length}
+                </span>
+              </div>
+
+              <div className="flex-1 overflow-y-auto max-h-[320px] divide-y divide-border">
+                {consultasProximas.length === 0 ? (
+                  <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
+                    Sin consultas próximas
+                  </div>
+                ) : (
+                  consultasProximas.slice(0, 6).map(c => {
+                    const statusClasses = ESTADO_CITA_COLORS[c.estadoCita] || 'bg-muted text-muted-foreground border-border';
+                    return (
+                      <div key={c.id} className="group flex items-center gap-3 px-5 sm:px-6 py-3 transition-colors hover:bg-muted/30">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{c.paciente}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-xs text-muted-foreground">{formatTime(c.fechaHoraInicio)}</span>
+                            {c.tipoCita && (
+                              <>
+                                <span className="text-muted-foreground/40">·</span>
+                                <span className="text-xs text-muted-foreground truncate">{c.tipoCita}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusClasses}`}>
+                            {c.estadoCita}
+                          </span>
+                          {c.confirmadoPaciente && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" title="Confirmado" />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* ── Leads Recientes ── */}
+            <div className="animate-fade-up stagger-9 rounded-2xl border border-border bg-card overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                    <UserCheck className="h-4 w-4 text-emerald-400" />
+                  </div>
+                  <h2 className="text-sm font-bold text-foreground font-jakarta">Leads recientes</h2>
+                </div>
+                <span className="text-xs font-bold tabular-nums text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                  {leadsRecientes.length}
+                </span>
+              </div>
+
+              <div className="flex-1 overflow-y-auto max-h-[320px] divide-y divide-border">
+                {leadsRecientes.length === 0 ? (
+                  <div className="flex items-center justify-center h-32 text-xs text-muted-foreground">
+                    Sin leads recientes
+                  </div>
+                ) : (
+                  leadsRecientes.slice(0, 6).map(l => (
+                    <div key={l.id} className="group flex items-center gap-3 px-5 sm:px-6 py-3 transition-colors hover:bg-muted/30">
+                      <div className="shrink-0">
+                        {l.temperatura ? (
+                          <TemperatureDot temp={l.temperatura} />
+                        ) : (
+                          <span className="h-2 w-2 rounded-full bg-slate-500 inline-block" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{l.nombre}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">
+                            {LEAD_ESTADO_LABELS[l.estado] || l.estado}
+                          </span>
+                          {l.fuente && (
+                            <>
+                              <span className="text-muted-foreground/40">·</span>
+                              <span className="text-xs text-muted-foreground truncate">{l.fuente}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {l.scoreTotal !== null && l.scoreTotal > 0 && (
+                          <span className="text-[10px] font-bold tabular-nums text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                            {l.scoreTotal}
+                          </span>
+                        )}
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                          {timeAgo(l.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════════
+              ESCALAMIENTOS RECIENTES
+              ═══════════════════════════════════════════ */}
+          {escalamientosRecientes.length > 0 && (
+            <section className="animate-fade-up stagger-10 rounded-2xl border border-rose-500/15 bg-card overflow-hidden">
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-rose-500/10">
+                    <ShieldAlert className="h-4 w-4 text-rose-400" />
+                  </div>
+                  <h2 className="text-sm font-bold text-foreground font-jakarta">Escalamientos recientes</h2>
+                </div>
+                <span className="text-xs font-bold tabular-nums text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full">
+                  {escalamientosRecientes.length}
+                </span>
+              </div>
+
+              <div className="divide-y divide-border">
+                {escalamientosRecientes.slice(0, 5).map(e => (
+                  <div key={e.id} className="flex items-center gap-3 px-5 sm:px-6 py-3 transition-colors hover:bg-muted/30">
+                    <div className="shrink-0">
+                      {e.esUrgente ? (
+                        <AlertTriangle className="h-4 w-4 text-rose-400" />
+                      ) : (
+                        <Phone className="h-4 w-4 text-amber-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground truncate">{e.nombre}</p>
+                        {e.esUrgente && (
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/25">
+                            Urgente
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {e.interes && <span className="text-xs text-muted-foreground truncate">{e.interes}</span>}
+                        {e.sintomasPrincipales && (
+                          <>
+                            <span className="text-muted-foreground/40">·</span>
+                            <span className="text-xs text-muted-foreground truncate">{e.sintomasPrincipales}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {e.citaAgendada && (
+                        <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/25 flex items-center gap-1">
+                          <Calendar className="h-2.5 w-2.5" />
+                          Agendada
+                        </span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        {timeAgo(e.createdAt)}
+                      </span>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ═══════════════════════════════════════════
+              BOT PERFORMANCE — Compact summary
+              ═══════════════════════════════════════════ */}
+          <section className="animate-fade-up stagger-11 rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-sky-500/10">
+                  <Zap className="h-4 w-4 text-sky-400" />
+                </div>
+                <h2 className="text-sm font-bold text-foreground font-jakarta">Rendimiento del Bot</h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border">
+              {[
+                { label: 'Resolución', value: `${bot.tasaResolucion}%`, color: 'text-emerald-400' },
+                { label: 'Escalamiento', value: `${bot.tasaEscalamiento}%`, color: 'text-amber-400' },
+                { label: 'Citas por bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
+                { label: 'Resp. promedio', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
+              ].map(stat => (
+                <div key={stat.label} className="px-5 sm:px-6 py-3.5 sm:py-4 text-center sm:text-left">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">{stat.label}</p>
+                  <p className={`text-xl sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
+                    {loading ? '—' : stat.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
 

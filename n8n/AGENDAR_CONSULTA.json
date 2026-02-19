@@ -18,7 +18,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PREPARE NOTIFICATION FOR DR. MARIO (ROBUSTO)\n// ========================================\nconst ctx = $input.first().json;\n\n// 1. FORMATEO SEGURO (Forzando CDMX visualmente)\nlet fechaFormateada = \"Fecha pendiente\";\n\ntry {\n  const fechaObj = new Date(ctx.startTime);\n  \n  // Usamos Intl.DateTimeFormat que es más estable en servidores Linux/Docker\n  const formatter = new Intl.DateTimeFormat('es-MX', {\n    weekday: 'long', \n    year: 'numeric', \n    month: 'long', \n    day: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: true,\n    timeZone: 'America/Mexico_City' // <--- ESTO GARANTIZA QUE EL TEXTO DIGA LA HORA MX\n  });\n  \n  fechaFormateada = formatter.format(fechaObj);\n} catch (e) {\n  fechaFormateada = ctx.startTime; // Fallback por si acaso\n}\n\n// Construir mensaje\nconst mensajeDoctor = `📅 *NUEVA CITA AGENDADA*\\n\\n` +\n  `👤 *Paciente:* ${ctx.patientName}\\n` +\n  `📱 *WhatsApp:* https://wa.me/${ctx.phoneForWhatsApp}\\n\\n` +\n  `📍 *Sede:* ${ctx.sedeDisplayName}\\n` +\n  `🗓️ *Fecha:* ${fechaFormateada}\\n\\n` +\n  `📋 *Tipo:* ${ctx.tipoCita}\\n` +\n  `📝 *Motivo:* ${ctx.motivo}\\n\\n` +\n  `🔗 Ver en calendario: ${ctx.event_link}`;\n\nreturn {\n  json: {\n    ...ctx,\n    doctorNotification: {\n      message: mensajeDoctor,\n      phone: '+526674492872',\n      fechaFormateada\n    }\n  }\n};"
+        "jsCode": "// ========================================\n// PREPARE NOTIFICATION FOR DR. MARIO — safe access pattern\n// ========================================\ntry {\n  const ctx = $input.first()?.json || {};\n\n  let fechaFormateada = 'Fecha pendiente';\n  try {\n    const fechaObj = new Date(ctx.startTime);\n    const formatter = new Intl.DateTimeFormat('es-MX', {\n      weekday: 'long',\n      year: 'numeric',\n      month: 'long',\n      day: 'numeric',\n      hour: '2-digit',\n      minute: '2-digit',\n      hour12: true,\n      timeZone: 'America/Mexico_City'\n    });\n    fechaFormateada = formatter.format(fechaObj);\n  } catch (e) {\n    fechaFormateada = ctx.startTime || 'Fecha pendiente';\n  }\n\n  const mensajeDoctor = `📅 *NUEVA CITA AGENDADA*\\n\\n` +\n    `👤 *Paciente:* ${ctx.patientName || 'Sin nombre'}\\n` +\n    `📱 *WhatsApp:* https://wa.me/${ctx.phoneForWhatsApp || ''}\\n\\n` +\n    `📍 *Sede:* ${ctx.sedeDisplayName || ctx.sede || ''}\\n` +\n    `🗓️ *Fecha:* ${fechaFormateada}\\n\\n` +\n    `📋 *Tipo:* ${ctx.tipoCita || 'primera_vez'}\\n` +\n    `📝 *Motivo:* ${ctx.motivo || 'Consulta urológica'}\\n\\n` +\n    `🔗 Ver en calendario: ${ctx.event_link || ''}`;\n\n  return {\n    json: {\n      ...ctx,\n      doctorNotification: {\n        message: mensajeDoctor,\n        phone: '+526674492872',\n        fechaFormateada\n      }\n    }\n  };\n} catch (err) {\n  console.log(`[PREPARE_NOTIFICATION] Exception: ${err.message}`);\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      ...ctx,\n      doctorNotification: {\n        message: '📅 Nueva cita agendada (error al formatear detalles)',\n        phone: '+526674492872',\n        fechaFormateada: 'Error'\n      }\n    }\n  };\n}"
       },
       "id": "63ec07d3-2c06-4e81-a52c-cc110a7c4bf8",
       "name": "Prepare Doctor Notification",
@@ -72,7 +72,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ================================================================\n// INIT & NORMALIZE v4.0 (FIX ZONA HORARIA CDMX - ROBUSTO)\n// ================================================================\n\nconst input = $input.first().json;\nconst now = Date.now();\nconst randomId = Math.random().toString(36).substring(2, 10);\nconst trace_id = `agendar-${now}-${randomId}`;\n\n// ----------------------------------------------------------------\n// 1. FUNCIÓN MAESTRA DE TIEMPO (SOLUCIÓN AL BUG DE 9PM vs 3PM)\n// ----------------------------------------------------------------\nfunction getMexicoTimeISO(dateInput) {\n  if (!dateInput) return null;\n  \n  try {\n    // 1. Interpretamos la entrada. Si viene con 'Z' (UTC), JS lo entiende nativamente.\n    const date = new Date(dateInput);\n    \n    // Validar si es fecha válida\n    if (isNaN(date.getTime())) return null;\n\n    // 2. MAGIA: Usamos Intl para forzar la conversión a \"Reloj de Pared\" de CDMX.\n    // El formato 'sv-SE' nos da la fecha como \"YYYY-MM-DD HH:mm:ss\"\n    const formatter = new Intl.DateTimeFormat('sv-SE', {\n      timeZone: 'America/Mexico_City',\n      year: 'numeric',\n      month: '2-digit',\n      day: '2-digit',\n      hour: '2-digit',\n      minute: '2-digit',\n      second: '2-digit',\n      hour12: false\n    });\n\n    // Esto convierte 21:00 UTC -> \"2025-12-04 15:00:00\" (Hora local real)\n    const localString = formatter.format(date);\n\n    // 3. Reconstruimos el ISO con el offset fijo de CDMX (-06:00)\n    // Reemplazamos el espacio por T y añadimos milisegundos y zona.\n    // Resultado final: \"2025-12-04T15:00:00.000-06:00\"\n    return localString.replace(' ', 'T') + '.000-06:00';\n\n  } catch (e) {\n    console.log(`Error convirtiendo fecha: ${dateInput}`, e);\n    return null;\n  }\n}\n\n// ----------------------------------------------------------------\n// 2. EXTRAER Y LIMPIAR TELÉFONO\n// ----------------------------------------------------------------\nlet phoneRaw = '';\n\n// Buscamos el teléfono en orden de prioridad\nif (input.lead_telefono) {\n  phoneRaw = input.lead_telefono;\n} else if (input.paciente && typeof input.paciente === 'object' && input.paciente.telefono) {\n  phoneRaw = input.paciente.telefono;\n} else {\n  phoneRaw = input.phone || input.wa_id || input.telefono || '';\n}\n\n// Limpieza agresiva: solo números, últimos 10 dígitos\nconst phone = (phoneRaw || '').toString().replace(/\\D/g, '').slice(-10);\n\n// ----------------------------------------------------------------\n// 3. EXTRAER Y LIMPIAR NOMBRE\n// ----------------------------------------------------------------\nlet patientName = 'Paciente';\n\n// Lógica defensiva para evitar [Object object]\nif (input.paciente && typeof input.paciente === 'object' && input.paciente.nombre) {\n  patientName = input.paciente.nombre;\n} else if (input.paciente && typeof input.paciente === 'string' && input.paciente.trim()) {\n  patientName = input.paciente.trim();\n} else if (input.pacienteNombre && typeof input.pacienteNombre === 'string') {\n  patientName = input.pacienteNombre;\n} else if (input.patientName) {\n  patientName = input.patientName;\n} else if (input.nombre) {\n  patientName = input.nombre;\n}\n\n// Limpieza final del nombre (quitar caracteres raros si es necesario)\npatientName = patientName.replace(/[\"{}]/g, '').trim() || 'Paciente';\n\n// Email opcional\nlet patientEmail = null;\nif (input.paciente && typeof input.paciente === 'object' && input.paciente.email) {\n  patientEmail = input.paciente.email;\n} else if (input.email) {\n  patientEmail = input.email;\n}\n\n// ----------------------------------------------------------------\n// 4. PROCESAMIENTO DE FECHAS (Usando la nueva función)\n// ----------------------------------------------------------------\nlet startTimeISO = '';\nlet endTimeISO = '';\n\nconst rawStart = input.start || input.startTime || '';\nconst rawEnd = input.end || input.endTime || '';\n\n// Convertir inicio\nstartTimeISO = getMexicoTimeISO(rawStart);\n\n// Convertir fin O calcularlo si no viene\nif (rawEnd) {\n  endTimeISO = getMexicoTimeISO(rawEnd);\n} else if (startTimeISO && rawStart) {\n  // Si no hay fin, sumamos 30 minutos a la fecha original\n  try {\n    const startDateObj = new Date(rawStart); // Usamos la UTC original para sumar\n    const endDateObj = new Date(startDateObj.getTime() + 30 * 60000); // +30 mins\n    endTimeISO = getMexicoTimeISO(endDateObj.toISOString());\n  } catch (e) {\n    console.log('Error calculando fecha fin automática');\n  }\n}\n\n// ----------------------------------------------------------------\n// 5. NORMALIZAR SEDE\n// ----------------------------------------------------------------\nlet sede = (input.sede || 'POLANCO').toString().toUpperCase().trim();\n// Quitar todo lo que no sea letras (A-Z) para evitar espacios ocultos\nsede = sede.replace(/[^A-Z]/g, '');\n\n// Corrección de errores comunes de tipeo/IA\nif (sede.includes('SATELITE') || sede.includes('SATELLITE')) sede = 'SATELITE';\nif (sede.includes('POLANCO') || sede.includes('POLNACO')) sede = 'POLANCO';\n\n// Fallback final\nif (!['POLANCO', 'SATELITE'].includes(sede)) {\n  console.log(`[${trace_id}] WARN: Sede desconocida \"${sede}\", default a POLANCO`);\n  sede = 'POLANCO'; \n}\n\n// ----------------------------------------------------------------\n// 6. GENERAR IDs ÚNICOS\n// ----------------------------------------------------------------\n// ID basado en hora CDMX para que sea consistente\nconst dateStr = startTimeISO ? startTimeISO.replace(/[-:]/g, '').substring(0, 15) : Date.now();\nconst consulta_id = `${sede}_${phone}_${dateStr}`;\n\n// ----------------------------------------------------------------\n// 7. SALIDA FINAL\n// ----------------------------------------------------------------\nconsole.log(`[${trace_id}] INIT v4.0 - CDMX Time Fix Applied`);\nconsole.log(`[${trace_id}] Input Raw: ${rawStart} -> Output CDMX: ${startTimeISO}`);\n\nreturn {\n  json: {\n    // Datos limpios\n    phone,\n    phoneOriginal: phoneRaw,\n    phoneForWhatsApp: phone.startsWith('52') ? phone : `52${phone}`,\n    patientName,\n    patientEmail,\n    \n    // Cita normalizada a CDMX\n    sede,\n    startTime: startTimeISO,\n    endTime: endTimeISO,\n    \n    // Metadatos y contexto\n    tipoCita: input.tipoCita || 'primera_vez',\n    motivo: input.motivoConsulta || input.motivo || 'Consulta urológica',\n    slotId: input.slotId || '',\n    \n    // IDs de Trazabilidad\n    _trace_id: trace_id,\n    _consulta_id: consulta_id,\n    _started_at: new Date().toISOString(),\n    _version: '4.0-CDMX-FIX'\n  }\n};"
+        "jsCode": "// ================================================================\n// INIT & NORMALIZE v5.0 — No silent defaults, no hardcoded sedes\n// ================================================================\n\nconst input = $input.first()?.json || {};\nconst now = Date.now();\nconst randomId = Math.random().toString(36).substring(2, 10);\nconst trace_id = `agendar-${now}-${randomId}`;\n\n// ----------------------------------------------------------------\n// 1. FUNCIÓN MAESTRA DE TIEMPO (CDMX)\n// ----------------------------------------------------------------\nfunction getMexicoTimeISO(dateInput) {\n  if (!dateInput) return null;\n  try {\n    const date = new Date(dateInput);\n    if (isNaN(date.getTime())) return null;\n    const formatter = new Intl.DateTimeFormat('sv-SE', {\n      timeZone: 'America/Mexico_City',\n      year: 'numeric', month: '2-digit', day: '2-digit',\n      hour: '2-digit', minute: '2-digit', second: '2-digit',\n      hour12: false\n    });\n    const localString = formatter.format(date);\n    return localString.replace(' ', 'T') + '.000-06:00';\n  } catch (e) {\n    console.log(`Error convirtiendo fecha: ${dateInput}`, e);\n    return null;\n  }\n}\n\n// ----------------------------------------------------------------\n// 2. EXTRAER Y LIMPIAR TELÉFONO\n// ----------------------------------------------------------------\nlet phoneRaw = '';\nif (input.lead_telefono) {\n  phoneRaw = input.lead_telefono;\n} else if (input.paciente && typeof input.paciente === 'object' && input.paciente.telefono) {\n  phoneRaw = input.paciente.telefono;\n} else {\n  phoneRaw = input.phone || input.wa_id || input.telefono || '';\n}\nconst phone = (phoneRaw || '').toString().replace(/\\D/g, '').slice(-10);\n\n// ----------------------------------------------------------------\n// 3. EXTRAER Y LIMPIAR NOMBRE\n// ----------------------------------------------------------------\nlet patientName = 'Paciente';\nif (input.paciente && typeof input.paciente === 'object' && input.paciente.nombre) {\n  patientName = input.paciente.nombre;\n} else if (input.paciente && typeof input.paciente === 'string' && input.paciente.trim()) {\n  patientName = input.paciente.trim();\n} else if (input.pacienteNombre && typeof input.pacienteNombre === 'string') {\n  patientName = input.pacienteNombre;\n} else if (input.patientName) {\n  patientName = input.patientName;\n} else if (input.nombre) {\n  patientName = input.nombre;\n}\npatientName = patientName.replace(/[\"{}]/g, '').trim() || 'Paciente';\n\nlet patientEmail = null;\nif (input.paciente && typeof input.paciente === 'object' && input.paciente.email) {\n  patientEmail = input.paciente.email;\n} else if (input.email) {\n  patientEmail = input.email;\n}\n\n// ----------------------------------------------------------------\n// 4. PROCESAMIENTO DE FECHAS\n// ----------------------------------------------------------------\nlet startTimeISO = '';\nlet endTimeISO = '';\n\nconst rawStart = input.start || input.startTime || '';\nconst rawEnd = input.end || input.endTime || '';\n\nstartTimeISO = getMexicoTimeISO(rawStart);\n\nif (rawEnd) {\n  endTimeISO = getMexicoTimeISO(rawEnd);\n} else if (startTimeISO && rawStart) {\n  try {\n    const startDateObj = new Date(rawStart);\n    const endDateObj = new Date(startDateObj.getTime() + 30 * 60000);\n    endTimeISO = getMexicoTimeISO(endDateObj.toISOString());\n  } catch (e) {\n    console.log('Error calculando fecha fin automática');\n  }\n}\n\n// ----------------------------------------------------------------\n// 5. NORMALIZAR SEDE — Solo limpiar, NO defaultear\n// ----------------------------------------------------------------\nlet sede = (input.sede || '').toString().toUpperCase().trim();\nsede = sede.replace(/[^A-Z]/g, '');\n\n// Corrección de typos comunes de la IA\nif (sede.includes('SATELLITE')) sede = 'SATELITE';\nif (sede.includes('POLNACO')) sede = 'POLANCO';\n\n// NO defaultear a POLANCO — si es inválido, Validate Input lo rechaza\n\n// ----------------------------------------------------------------\n// 6. GENERAR IDs ÚNICOS\n// ----------------------------------------------------------------\nconst dateStr = startTimeISO ? startTimeISO.replace(/[-:]/g, '').substring(0, 15) : Date.now();\nconst consulta_id = `${sede}_${phone}_${dateStr}`;\n\n// ----------------------------------------------------------------\n// 7. SALIDA FINAL\n// ----------------------------------------------------------------\nconsole.log(`[${trace_id}] INIT v5.0 — sede: ${sede || 'EMPTY'}, start: ${rawStart} -> ${startTimeISO}`);\n\nreturn {\n  json: {\n    phone,\n    phoneOriginal: phoneRaw,\n    phoneForWhatsApp: phone.startsWith('52') ? phone : `52${phone}`,\n    patientName,\n    patientEmail,\n    sede,\n    startTime: startTimeISO,\n    endTime: endTimeISO,\n    tipoCita: input.tipoCita || 'primera_vez',\n    motivo: input.motivoConsulta || input.motivo || 'Consulta urológica',\n    slotId: input.slotId || '',\n    _trace_id: trace_id,\n    _consulta_id: consulta_id,\n    _started_at: new Date().toISOString(),\n    _version: '5.0'\n  }\n};"
       },
       "id": "4a004072-ff89-4706-b750-dd84272e545c",
       "name": "Init & Normalize1",
@@ -85,7 +85,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// VALIDATE INPUT v3.0 - TIMEZONE FIX + FLEXIBLE NAME\n// ========================================\nconst input = $input.first().json;\nconst trace_id = input._trace_id;\nconst problems = [];\nconst warnings = [];\n\n// ================================================================\n// 1. VALIDAR TELÉFONO\n// ================================================================\nif (!input.phone || input.phone.length < 10) {\n  problems.push({ \n    field: 'phone', \n    error: 'MISSING_OR_INVALID', \n    value: input.phone,\n    aiHint: 'Pregunta el número de WhatsApp del paciente (10 dígitos).'\n  });\n}\n\n// ================================================================\n// 2. VALIDAR SEDE\n// ================================================================\nif (!input.sede || !['POLANCO', 'SATELITE'].includes(input.sede)) {\n  problems.push({ \n    field: 'sede', \n    error: 'INVALID_SEDE', \n    value: input.sede,\n    aiHint: 'Pregunta en qué sede prefiere: Polanco o Satélite.'\n  });\n}\n\n// ================================================================\n// 3. VALIDAR FECHA/HORA - FIX TIMEZONE\n// ================================================================\nif (!input.startTime) {\n  problems.push({ \n    field: 'startTime', \n    error: 'MISSING',\n    aiHint: 'Usa DISPONIBILIDAD_CALENDARIO para obtener un horario válido.'\n  });\n} else {\n  const d = new Date(input.startTime);\n  \n  if (isNaN(d.getTime())) {\n    problems.push({ \n      field: 'startTime', \n      error: 'INVALID_FORMAT', \n      value: input.startTime,\n      aiHint: 'El formato de fecha es inválido. Usa DISPONIBILIDAD_CALENDARIO.'\n    });\n  } else {\n    // 🔥 FIX: Comparar en zona horaria de México\n    const nowMexico = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));\n    const marginMs = 5 * 60 * 1000; // 5 minutos de margen\n    \n    if (d.getTime() < (nowMexico.getTime() - marginMs)) {\n      problems.push({ \n        field: 'startTime', \n        error: 'DATE_IN_PAST', \n        value: input.startTime,\n        aiHint: 'Esa fecha ya pasó. Usa DISPONIBILIDAD_CALENDARIO para ver horarios futuros.'\n      });\n    }\n  }\n}\n\nif (!input.endTime) {\n  // No es error crítico - se puede calcular\n  warnings.push({ field: 'endTime', warning: 'MISSING_WILL_CALCULATE' });\n} else {\n  const d = new Date(input.endTime);\n  if (isNaN(d.getTime())) {\n    warnings.push({ field: 'endTime', warning: 'INVALID_FORMAT', value: input.endTime });\n  }\n}\n\n// ================================================================\n// 4. VALIDAR NOMBRE - FLEXIBLE (WARNING, NO ERROR)\n// ================================================================\nif (!input.patientName || \n    input.patientName === 'Paciente' || \n    input.patientName.trim().length < 2) {\n  // 🔥 FIX: Es WARNING, no ERROR - permite agendar pero avisa\n  warnings.push({ \n    field: 'patientName', \n    warning: 'NAME_GENERIC_OR_SHORT', \n    value: input.patientName,\n    aiHint: 'Sería ideal tener el nombre completo del paciente.'\n  });\n}\n\n// ================================================================\n// 5. VALIDAR MOTIVO (OPCIONAL)\n// ================================================================\nif (!input.motivo || input.motivo.length < 3) {\n  warnings.push({ \n    field: 'motivo', \n    warning: 'MISSING_OR_SHORT',\n    aiHint: 'Sería útil saber el motivo de la consulta.'\n  });\n}\n\n// ================================================================\n// RESULTADO\n// ================================================================\nconsole.log(`[${trace_id}] VALIDATE v3.0 - Problems: ${problems.length}, Warnings: ${warnings.length}`);\n\nif (problems.length > 0) {\n  return {\n    json: {\n      ...input,\n      success: false,\n      error: 'VALIDATION_FAILED',\n      problems,\n      warnings,\n      _stage: 'validation_failed',\n      // 🔥 NUEVO: Mensaje amigable para el AI\n      aiMessage: `No se puede agendar: ${problems.map(p => p.aiHint || p.error).join(' ')}`,\n      suggestion: 'Revisa los datos faltantes y vuelve a intentar.'\n    }\n  };\n}\n\nreturn {\n  json: {\n    ...input,\n    success: true,\n    warnings: warnings.length > 0 ? warnings : undefined,\n    _validated_at: new Date().toISOString(),\n    _stage: 'validated'\n  }\n};"
+        "jsCode": "// ========================================\n// VALIDATE INPUT v4.0 — No hardcoded sedes, schedule-aware\n// ========================================\nconst input = $input.first()?.json || {};\ntry {\nconst trace_id = input._trace_id;\nconst problems = [];\nconst warnings = [];\n\n// ================================================================\n// 1. VALIDAR TELÉFONO\n// ================================================================\nif (!input.phone || input.phone.length < 10) {\n  problems.push({\n    field: 'phone',\n    error: 'MISSING_OR_INVALID',\n    value: input.phone,\n    aiHint: 'Pregunta el número de WhatsApp del paciente (10 dígitos).'\n  });\n}\n\n// ================================================================\n// 2. VALIDAR SEDE — ya no hardcodeamos, solo que no esté vacía\n// ================================================================\nif (!input.sede || input.sede.length < 3) {\n  problems.push({\n    field: 'sede',\n    error: 'MISSING_SEDE',\n    value: input.sede,\n    aiHint: 'Pregunta en qué sede prefiere: Polanco o Satélite.'\n  });\n}\n\n// ================================================================\n// 3. VALIDAR FECHA/HORA\n// ================================================================\nif (!input.startTime) {\n  problems.push({\n    field: 'startTime',\n    error: 'MISSING',\n    aiHint: 'Usa DISPONIBILIDAD_CALENDARIO para obtener un horario válido.'\n  });\n} else {\n  const d = new Date(input.startTime);\n\n  if (isNaN(d.getTime())) {\n    problems.push({\n      field: 'startTime',\n      error: 'INVALID_FORMAT',\n      value: input.startTime,\n      aiHint: 'El formato de fecha es inválido. Usa DISPONIBILIDAD_CALENDARIO.'\n    });\n  } else {\n    const nowMexico = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));\n    const marginMs = 5 * 60 * 1000;\n\n    if (d.getTime() < (nowMexico.getTime() - marginMs)) {\n      problems.push({\n        field: 'startTime',\n        error: 'DATE_IN_PAST',\n        value: input.startTime,\n        aiHint: 'Esa fecha ya pasó. Usa DISPONIBILIDAD_CALENDARIO para ver horarios futuros.'\n      });\n    }\n  }\n}\n\nif (!input.endTime) {\n  warnings.push({ field: 'endTime', warning: 'MISSING_WILL_CALCULATE' });\n}\n\n// ================================================================\n// 4. VALIDAR NOMBRE — WARNING, NO ERROR\n// ================================================================\nif (!input.patientName ||\n    input.patientName === 'Paciente' ||\n    input.patientName.trim().length < 2) {\n  warnings.push({\n    field: 'patientName',\n    warning: 'NAME_GENERIC_OR_SHORT',\n    value: input.patientName,\n    aiHint: 'Sería ideal tener el nombre completo del paciente.'\n  });\n}\n\n// ================================================================\n// 5. VALIDAR MOTIVO (OPCIONAL)\n// ================================================================\nif (!input.motivo || input.motivo.length < 3) {\n  warnings.push({\n    field: 'motivo',\n    warning: 'MISSING_OR_SHORT',\n    aiHint: 'Sería útil saber el motivo de la consulta.'\n  });\n}\n\n// ================================================================\n// RESULTADO\n// ================================================================\nconsole.log(`[${trace_id}] VALIDATE v4.0 — Problems: ${problems.length}, Warnings: ${warnings.length}`);\n\nif (problems.length > 0) {\n  return {\n    json: {\n      ...input,\n      success: false,\n      error: 'VALIDATION_FAILED',\n      problems,\n      warnings,\n      _stage: 'validation_failed',\n      aiMessage: `No se puede agendar: ${problems.map(p => p.aiHint || p.error).join(' ')}`,\n      suggestion: 'Revisa los datos faltantes y vuelve a intentar.'\n    }\n  };\n}\n\nreturn {\n  json: {\n    ...input,\n    success: true,\n    warnings: warnings.length > 0 ? warnings : undefined,\n    _validated_at: new Date().toISOString(),\n    _stage: 'validated'\n  }\n};\n}\n} catch (err) {\n  console.log(`[VALIDATE_INPUT] Exception: ${err.message}`);\n  return {\n    json: {\n      success: false,\n      error: 'VALIDATION_EXCEPTION',\n      problems: [{ field: 'system', error: err.message, aiHint: 'Error interno de validación. Intenta de nuevo.' }],\n      _stage: 'validation_exception'\n    }\n  };\n}"
       },
       "id": "3387c54f-a666-4521-9ed8-87a6d47ef116",
       "name": "Validate Input1",
@@ -154,7 +154,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PROCESS SEDE\n// ========================================\nconst context = $('Validate Input1').first().json;\nconst sedeResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(sedeResult) ? sedeResult : [sedeResult];\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].calendar_id) {\n  console.log(`[${trace_id}] SEDE - NOT FOUND`);\n  return {\n    json: {\n      ...context,\n      error: 'SEDE_NOT_FOUND',\n      _stage: 'sede_error'\n    }\n  };\n}\n\nconst sede = rows[0];\nconsole.log(`[${trace_id}] SEDE - Found: ${sede.display_name} (id: ${sede.id})`);\n\nreturn {\n  json: {\n    ...context,\n    sede_id: sede.id,\n    calendar_id: sede.calendar_id,\n    sedeDisplayName: sede.display_name,\n    sedeDireccion: sede.direccion,\n    sedeMapsUrl: sede.maps_url,\n    timezone: sede.timezone || 'America/Mexico_City',\n    _stage: 'sede_ok'\n  }\n};"
+        "jsCode": "// ========================================\n// PROCESS SEDE — safe access pattern\n// ========================================\ntry {\n  const context = $('Validate Input1').first()?.json || {};\n  const sedeResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(sedeResult) ? sedeResult : [sedeResult];\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].calendar_id) {\n    console.log(`[${trace_id}] SEDE - NOT FOUND`);\n    return {\n      json: {\n        ...context,\n        error: 'SEDE_NOT_FOUND',\n        _stage: 'sede_error'\n      }\n    };\n  }\n\n  const sede = rows[0];\n  console.log(`[${trace_id}] SEDE - Found: ${sede.display_name} (id: ${sede.id})`);\n\n  return {\n    json: {\n      ...context,\n      sede_id: sede.id,\n      calendar_id: sede.calendar_id,\n      sedeDisplayName: sede.display_name,\n      sedeDireccion: sede.direccion,\n      sedeMapsUrl: sede.maps_url,\n      timezone: sede.timezone || 'America/Mexico_City',\n      _stage: 'sede_ok'\n    }\n  };\n} catch (err) {\n  console.log(`[PROCESS_SEDE] Exception: ${err.message}`);\n  return { json: { error: 'SEDE_PROCESSING_ERROR', errorDetails: err.message, _stage: 'sede_error' } };\n}"
       },
       "id": "99ea5f95-472a-497e-8898-8390c3329d1c",
       "name": "Process Sede1",
@@ -224,7 +224,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PROCESS DUPLICATE CHECK\n// ========================================\nconst context = $('Process Sede1').first().json;\nconst dbResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\nconst isDuplicate = rows.length > 0 && rows[0] && rows[0].id;\n\nif (isDuplicate) {\n  console.log(`[${trace_id}] DUPLICATE - FOUND: ${rows[0].consulta_id}`);\n  return {\n    json: {\n      ...context,\n      isDuplicate: true,\n      existingConsultaId: rows[0].consulta_id,\n      existingEventId: rows[0].calendar_event_id,\n      error: 'DUPLICATE_APPOINTMENT',\n      _stage: 'duplicate_found'\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] DUPLICATE - None found`);\nreturn {\n  json: {\n    ...context,\n    isDuplicate: false,\n    _stage: 'no_duplicate'\n  }\n};"
+        "jsCode": "// ========================================\n// PROCESS DUPLICATE CHECK — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Sede1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n  const isDuplicate = rows.length > 0 && rows[0] && rows[0].id;\n\n  if (isDuplicate) {\n    console.log(`[${trace_id}] DUPLICATE - FOUND: ${rows[0].consulta_id}`);\n    return {\n      json: {\n        ...context,\n        isDuplicate: true,\n        existingConsultaId: rows[0].consulta_id,\n        existingEventId: rows[0].calendar_event_id,\n        error: 'DUPLICATE_APPOINTMENT',\n        _stage: 'duplicate_found'\n      }\n    };\n  }\n\n  console.log(`[${trace_id}] DUPLICATE - None found`);\n  return { json: { ...context, isDuplicate: false, _stage: 'no_duplicate' } };\n} catch (err) {\n  console.log(`[PROCESS_DUPLICATE] Exception: ${err.message}`);\n  return { json: { error: 'DUPLICATE_CHECK_ERROR', errorDetails: err.message, _stage: 'duplicate_error' } };\n}"
       },
       "id": "5192ad16-a0dc-462a-a925-e2dae2a53eb9",
       "name": "Process Duplicate1",
@@ -297,7 +297,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PROCESS FREEBUSY\n// ========================================\nconst context = $('Process Duplicate1').first().json;\nconst freebusyResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconsole.log(`[${trace_id}] FREEBUSY - Processing`);\n\nif (freebusyResult.error || freebusyResult.message) {\n  console.log(`[${trace_id}] FREEBUSY - API Error`);\n  return {\n    json: {\n      ...context,\n      isFree: false,\n      error: 'CALENDAR_API_ERROR',\n      errorDetails: freebusyResult.error || freebusyResult.message,\n      _stage: 'freebusy_error'\n    }\n  };\n}\n\nlet busyPeriods = [];\nif (freebusyResult.calendars && freebusyResult.calendars[context.calendar_id]) {\n  busyPeriods = freebusyResult.calendars[context.calendar_id].busy || [];\n} else if (freebusyResult.busy) {\n  busyPeriods = freebusyResult.busy;\n}\n\nconst isFree = busyPeriods.length === 0;\nconsole.log(`[${trace_id}] FREEBUSY - isFree: ${isFree}`);\n\nreturn {\n  json: {\n    ...context,\n    isFree,\n    _stage: isFree ? 'slot_free' : 'slot_taken'\n  }\n};"
+        "jsCode": "// ========================================\n// PROCESS FREEBUSY — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Duplicate1').first()?.json || {};\n  const freebusyResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  console.log(`[${trace_id}] FREEBUSY - Processing`);\n\n  if (freebusyResult?.error || freebusyResult?.message) {\n    console.log(`[${trace_id}] FREEBUSY - API Error`);\n    return {\n      json: {\n        ...context,\n        isFree: false,\n        error: 'CALENDAR_API_ERROR',\n        errorDetails: freebusyResult.error || freebusyResult.message,\n        _stage: 'freebusy_error'\n      }\n    };\n  }\n\n  let busyPeriods = [];\n  if (freebusyResult?.calendars && freebusyResult.calendars[context.calendar_id]) {\n    busyPeriods = freebusyResult.calendars[context.calendar_id].busy || [];\n  } else if (freebusyResult?.busy) {\n    busyPeriods = freebusyResult.busy;\n  }\n\n  const isFree = busyPeriods.length === 0;\n  console.log(`[${trace_id}] FREEBUSY - isFree: ${isFree}`);\n\n  return { json: { ...context, isFree, _stage: isFree ? 'slot_free' : 'slot_taken' } };\n} catch (err) {\n  console.log(`[PROCESS_FREEBUSY] Exception: ${err.message}`);\n  return { json: { error: 'FREEBUSY_ERROR', errorDetails: err.message, isFree: false, _stage: 'freebusy_error' } };\n}"
       },
       "id": "3243da43-8309-4145-8f2c-67b63e920ec1",
       "name": "Process FreeBusy1",
@@ -369,7 +369,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PROCESS PACIENTE\n// ========================================\nconst context = $('Process FreeBusy1').first().json;\nconst dbResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n  console.log(`[${trace_id}] PACIENTE - FAILED`);\n  return {\n    json: {\n      ...context,\n      error: 'PACIENTE_UPSERT_FAILED',\n      _stage: 'paciente_error'\n    }\n  };\n}\n\nconst paciente = rows[0];\nconsole.log(`[${trace_id}] PACIENTE - OK: ${paciente.id}`);\n\nreturn {\n  json: {\n    ...context,\n    paciente_id: paciente.id,\n    _stage: 'paciente_ok'\n  }\n};"
+        "jsCode": "// ========================================\n// PROCESS PACIENTE — safe access pattern\n// ========================================\ntry {\n  const context = $('Process FreeBusy1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n    console.log(`[${trace_id}] PACIENTE - FAILED`);\n    return { json: { ...context, error: 'PACIENTE_UPSERT_FAILED', _stage: 'paciente_error' } };\n  }\n\n  const paciente = rows[0];\n  console.log(`[${trace_id}] PACIENTE - OK: ${paciente.id}`);\n\n  return { json: { ...context, paciente_id: paciente.id, _stage: 'paciente_ok' } };\n} catch (err) {\n  console.log(`[PROCESS_PACIENTE] Exception: ${err.message}`);\n  return { json: { error: 'PACIENTE_ERROR', errorDetails: err.message, _stage: 'paciente_error' } };\n}"
       },
       "id": "ba7fca5c-93bf-4d75-8909-718269fb159c",
       "name": "Process Paciente1",
@@ -447,7 +447,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PROCESS EVENT CREATION\n// ========================================\nconst context = $('Process Paciente1').first().json;\nconst eventResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nif (!eventResult || eventResult.error || !eventResult.id) {\n  console.log(`[${trace_id}] EVENT - FAILED`);\n  return {\n    json: {\n      ...context,\n      eventCreated: false,\n      error: 'EVENT_CREATION_FAILED',\n      errorDetails: eventResult?.error || 'No event ID',\n      _stage: 'event_failed'\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] EVENT - Created: ${eventResult.id}`);\n\nreturn {\n  json: {\n    ...context,\n    eventCreated: true,\n    event_id: eventResult.id,\n    event_link: eventResult.htmlLink || '',\n    _stage: 'event_ok'\n  }\n};"
+        "jsCode": "// ========================================\n// PROCESS EVENT CREATION — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Paciente1').first()?.json || {};\n  const eventResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  if (!eventResult || eventResult.error || !eventResult.id) {\n    console.log(`[${trace_id}] EVENT - FAILED`);\n    return {\n      json: {\n        ...context,\n        eventCreated: false,\n        error: 'EVENT_CREATION_FAILED',\n        errorDetails: eventResult?.error || 'No event ID',\n        _stage: 'event_failed'\n      }\n    };\n  }\n\n  console.log(`[${trace_id}] EVENT - Created: ${eventResult.id}`);\n\n  return {\n    json: {\n      ...context,\n      eventCreated: true,\n      event_id: eventResult.id,\n      event_link: eventResult.htmlLink || '',\n      _stage: 'event_ok'\n    }\n  };\n} catch (err) {\n  console.log(`[PROCESS_EVENT] Exception: ${err.message}`);\n  return { json: { error: 'EVENT_ERROR', eventCreated: false, errorDetails: err.message, _stage: 'event_failed' } };\n}"
       },
       "id": "be39c047-c5ee-4d75-9498-2350e44da464",
       "name": "Process Event1",
@@ -519,7 +519,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// VALIDATE DB SAVE\n// ========================================\nconst context = $('Process Event1').first().json;\nconst dbResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n  console.log(`[${trace_id}] DB - FAILED`);\n  return {\n    json: {\n      ...context,\n      dbSaved: false,\n      error: 'DB_SAVE_FAILED',\n      _stage: 'db_failed',\n      _needs_rollback: true\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] DB - OK: ${rows[0].id}`);\n\nreturn {\n  json: {\n    ...context,\n    dbSaved: true,\n    db_id: rows[0].id,\n    db_consulta_id: rows[0].consulta_id,\n    _stage: 'db_ok'\n  }\n};"
+        "jsCode": "// ========================================\n// VALIDATE DB SAVE — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Event1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n    console.log(`[${trace_id}] DB - FAILED`);\n    return {\n      json: {\n        ...context,\n        dbSaved: false,\n        error: 'DB_SAVE_FAILED',\n        _stage: 'db_failed',\n        _needs_rollback: true\n      }\n    };\n  }\n\n  console.log(`[${trace_id}] DB - OK: ${rows[0].id}`);\n\n  return {\n    json: {\n      ...context,\n      dbSaved: true,\n      db_id: rows[0].id,\n      db_consulta_id: rows[0].consulta_id,\n      _stage: 'db_ok'\n    }\n  };\n} catch (err) {\n  console.log(`[VALIDATE_DB] Exception: ${err.message}`);\n  return { json: { dbSaved: false, error: 'DB_VALIDATION_ERROR', errorDetails: err.message, _stage: 'db_failed', _needs_rollback: true } };\n}"
       },
       "id": "83691e63-9d90-42bb-b1c5-97aadd7e5152",
       "name": "Validate DB Save1",
@@ -564,7 +564,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// RETURN SUCCESS v2.0\n// ========================================\nconst ctx = $('Prepare Doctor Notification').first().json;\nconst notifyResult = $input.first().json;\nconst duration = Date.now() - new Date(ctx._started_at).getTime();\n\nconst notificationSent = !(notifyResult?.error);\n\nconsole.log(`[${ctx._trace_id}] SUCCESS - ${duration}ms - Notify: ${notificationSent}`);\n\nreturn {\n  json: {\n    success: true,\n    message: 'Cita agendada exitosamente',\n    data: {\n      consultaId: ctx.db_consulta_id,\n      eventId: ctx.event_id,\n      eventLink: ctx.event_link,\n      paciente: ctx.patientName,\n      telefono: ctx.phoneOriginal,\n      telefonoWhatsApp: ctx.phoneForWhatsApp,\n      sede: ctx.sede,\n      sedeNombre: ctx.sedeDisplayName,\n      sedeDireccion: ctx.sedeDireccion,\n      sedeMaps: ctx.sedeMapsUrl,\n      fechaInicio: ctx.startTime,\n      fechaFin: ctx.endTime,\n      fechaFormateada: ctx.doctorNotification?.fechaFormateada,\n      tipoCita: ctx.tipoCita,\n      motivo: ctx.motivo\n    },\n    notifications: {\n      doctorNotified: notificationSent,\n      notifyError: notifyResult?.error || null\n    },\n    meta: {\n      trace_id: ctx._trace_id,\n      consulta_id: ctx._consulta_id,\n      duration_ms: duration\n    }\n  }\n};"
+        "jsCode": "// ========================================\n// RETURN SUCCESS v3.0 — Compact output for LLM\n// ========================================\ntry {\n  const ctx = $('Prepare Doctor Notification').first()?.json || {};\n  const notifyResult = $input.first()?.json || {};\n\n  const notificationSent = !(notifyResult?.error);\n  console.log(`[${ctx._trace_id || 'unknown'}] SUCCESS — Notify: ${notificationSent}`);\n\n  return {\n    json: {\n      success: true,\n      message: 'Cita agendada exitosamente.',\n      data: {\n        paciente: ctx.patientName,\n        sede: ctx.sedeDisplayName,\n        sedeDireccion: ctx.sedeDireccion,\n        fecha: ctx.doctorNotification?.fechaFormateada || ctx.startTime,\n        tipoCita: ctx.tipoCita,\n        motivo: ctx.motivo\n      },\n      meta: {\n        trace_id: ctx._trace_id,\n        consulta_id: ctx._consulta_id\n      }\n    }\n  };\n} catch (err) {\n  console.log(`[RETURN_SUCCESS] Exception: ${err.message}`);\n  return { json: { success: true, message: 'Cita agendada (error al formatear respuesta).', meta: { error: err.message } } };\n}"
       },
       "id": "5c106e05-8d7b-44c6-9917-1a6326124146",
       "name": "Return Success1",
@@ -608,7 +608,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $('Validate DB Save1').first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'DB_SAVE_FAILED',\n    message: 'Error al guardar. Horario liberado.',\n    rollback: { attempted: true, event_id: ctx.event_id },\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+        "jsCode": "try {\n  const ctx = $('Validate DB Save1').first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'DB_SAVE_FAILED',\n      message: 'Error al guardar. Horario liberado.',\n      rollback: { attempted: true, event_id: ctx.event_id },\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'DB_SAVE_FAILED', message: err.message } };\n}"
       },
       "id": "0304c410-837a-40c1-a60e-bca5cf316c93",
       "name": "Return Rollback Error1",
@@ -621,7 +621,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'VALIDATION_FAILED',\n    problems: ctx.problems || [],\n    message: 'Datos incompletos para agendar.',\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+        "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'VALIDATION_FAILED',\n      problems: ctx.problems || [],\n      message: 'Datos incompletos para agendar.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'VALIDATION_FAILED', message: err.message } };\n}"
       },
       "id": "275925c7-8c5f-4846-8d25-8ae406a8bd59",
       "name": "Return Validation Error1",
@@ -634,7 +634,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'SEDE_NOT_FOUND',\n    message: `Sede '${ctx.sede}' no configurada.`,\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+        "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'SEDE_NOT_FOUND',\n      message: `Sede '${ctx.sede || 'desconocida'}' no configurada.`,\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'SEDE_NOT_FOUND', message: err.message } };\n}"
       },
       "id": "af8915f5-0dbb-4a51-88de-0e5a0de46a1f",
       "name": "Return Sede Error1",
@@ -647,7 +647,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'DUPLICATE_APPOINTMENT',\n    message: 'Ya existe una cita en ese horario.',\n    existingId: ctx.existingConsultaId,\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+        "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'DUPLICATE_APPOINTMENT',\n      message: 'Ya existe una cita en ese horario.',\n      existingId: ctx.existingConsultaId,\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'DUPLICATE_APPOINTMENT', message: err.message } };\n}"
       },
       "id": "e9282c0c-7971-4383-9f22-ce5ad022826a",
       "name": "Return Duplicate Error1",
@@ -660,7 +660,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'SLOT_NOT_AVAILABLE',\n    message: 'El horario ya no está disponible.',\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+        "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'SLOT_NOT_AVAILABLE',\n      message: 'El horario ya no está disponible. Usa DISPONIBILIDAD_CALENDARIO para ver horarios actualizados.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'SLOT_NOT_AVAILABLE', message: err.message } };\n}"
       },
       "id": "bbf661d8-3083-4b85-8342-e8b6660e0606",
       "name": "Return Slot Error1",
@@ -673,7 +673,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'PACIENTE_ERROR',\n    message: 'Error al registrar paciente.',\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+        "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'PACIENTE_ERROR',\n      message: 'Error al registrar paciente.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'PACIENTE_ERROR', message: err.message } };\n}"
       },
       "id": "5ccd8dc6-fd07-4ee3-a610-10d4584d9324",
       "name": "Return Paciente Error1",
@@ -686,7 +686,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nreturn {\n  json: {\n    success: false,\n    error: 'EVENT_CREATION_FAILED',\n    message: 'Error al crear evento en calendario.',\n    errorDetails: ctx.errorDetails,\n    meta: { trace_id: ctx._trace_id }\n  }\n};"
+        "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'EVENT_CREATION_FAILED',\n      message: 'Error al crear evento en calendario.',\n      errorDetails: ctx.errorDetails,\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'EVENT_CREATION_FAILED', message: err.message } };\n}"
       },
       "id": "ffcb5d6c-1b3d-44c7-a848-54135018a57a",
       "name": "Return Event Error1",
@@ -729,6 +729,88 @@
       ],
       "id": "45ff7da6-30c1-4d8b-ae48-bb92ba9fcf72",
       "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT horario_json FROM sedes WHERE sede = $1 LIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $json.sede }}"
+        }
+      },
+      "id": "a1b2c3d4-schedule-get-horario",
+      "name": "Get Horario1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -14400,
+        2280
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// VALIDATE SCHEDULE v1.0 — Verify slot is within doctor's hours\n// ========================================\nconst context = $('Process Sede1').first()?.json || {};\nconst sedeData = $input.first()?.json;\nconst trace_id = context._trace_id;\n\n// sedeData comes from a new Postgres query that fetches horario_json\nconst rows = Array.isArray(sedeData) ? sedeData : [sedeData];\nconst horario = rows[0]?.horario_json;\n\nif (!horario) {\n  console.log(`[${trace_id}] SCHEDULE_CHECK — No horario_json found, allowing (fail-open)`);\n  return { json: { ...context, scheduleValid: true, _stage: 'schedule_ok_no_data' } };\n}\n\n// Parse the requested start time\nconst startISO = context.startTime;\nif (!startISO) {\n  return { json: { ...context, scheduleValid: false, scheduleError: 'No startTime', _stage: 'schedule_fail' } };\n}\n\n// Get day of week and time in CDMX\nconst DAY_NAMES = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];\n\nlet requestedDOW, requestedHour, requestedMinute;\ntry {\n  const d = new Date(startISO);\n  // Get CDMX day/time using Intl\n  const dayFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Mexico_City', weekday: 'short' });\n  const hourFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false });\n\n  const dayStr = dayFormatter.format(d);\n  const dayMap = { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 };\n  requestedDOW = dayMap[dayStr];\n\n  const timeStr = hourFormatter.format(d); // \"15:00\"\n  const parts = timeStr.split(':');\n  requestedHour = parseInt(parts[0]);\n  requestedMinute = parseInt(parts[1]);\n} catch (e) {\n  console.log(`[${trace_id}] SCHEDULE_CHECK — Error parsing date: ${e.message}`);\n  return { json: { ...context, scheduleValid: true, _stage: 'schedule_ok_parse_error' } };\n}\n\nconst dayName = DAY_NAMES[requestedDOW];\nconst requestedTime = requestedHour * 60 + requestedMinute; // minutes since midnight\n\nconsole.log(`[${trace_id}] SCHEDULE_CHECK — DOW: ${requestedDOW} (${dayName}), time: ${requestedHour}:${String(requestedMinute).padStart(2,'0')}`);\n\n// Check both weekA and weekB — if the slot fits in EITHER week, it's valid\n// (We don't know which week it is at booking time, and the doctor could be there)\nlet isValid = false;\nconst checkedShifts = [];\n\nfor (const weekKey of ['weekA', 'weekB']) {\n  const week = horario[weekKey];\n  if (!week || !week[dayName]) continue;\n\n  const shifts = week[dayName];\n  if (!Array.isArray(shifts)) continue;\n\n  for (const shift of shifts) {\n    if (!Array.isArray(shift) || shift.length < 2) continue;\n\n    const [startStr, endStr] = shift;\n    const [sh, sm] = startStr.split(':').map(Number);\n    const [eh, em] = endStr.split(':').map(Number);\n    const shiftStart = sh * 60 + sm;\n    const shiftEnd = eh * 60 + em;\n\n    checkedShifts.push(`${weekKey}.${dayName}: ${startStr}-${endStr}`);\n\n    // Slot start must be >= shift start AND < shift end (can't start at closing time)\n    if (requestedTime >= shiftStart && requestedTime < shiftEnd) {\n      isValid = true;\n      break;\n    }\n  }\n  if (isValid) break;\n}\n\nif (!isValid) {\n  const dayNameDisplay = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][requestedDOW];\n  console.log(`[${trace_id}] SCHEDULE_CHECK — REJECTED: ${dayNameDisplay} ${requestedHour}:${String(requestedMinute).padStart(2,'0')} not in shifts: ${checkedShifts.join(', ')}`);\n  return {\n    json: {\n      ...context,\n      scheduleValid: false,\n      scheduleError: 'OUTSIDE_WORKING_HOURS',\n      _stage: 'schedule_fail',\n      aiHint: `Ese horario no está dentro del horario de consulta de ${context.sedeDisplayName || context.sede} el ${dayNameDisplay}. Usa DISPONIBILIDAD_CALENDARIO para obtener horarios válidos.`\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] SCHEDULE_CHECK — VALID`);\nreturn { json: { ...context, scheduleValid: true, _stage: 'schedule_ok' } };"
+      },
+      "id": "a1b2c3d4-schedule-validate",
+      "name": "Validate Schedule1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -14176,
+        2280
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "schedule-valid",
+              "leftValue": "={{ $json.scheduleValid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-schedule-ok-if",
+      "name": "Schedule OK?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -13952,
+        2280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'OUTSIDE_WORKING_HOURS',\n      message: ctx.aiHint || 'El horario solicitado está fuera del horario de consulta.',\n      instruction: 'Usa DISPONIBILIDAD_CALENDARIO para obtener horarios válidos.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'OUTSIDE_WORKING_HOURS', message: err.message } };\n}"
+      },
+      "id": "a1b2c3d4-schedule-error",
+      "name": "Return Schedule Error1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -13728,
+        2384
+      ]
     }
   ],
   "pinData": {
@@ -848,7 +930,7 @@
       "main": [
         [
           {
-            "node": "Check Duplicate1",
+            "node": "Get Horario1",
             "type": "main",
             "index": 0
           }
@@ -1078,6 +1160,46 @@
         [
           {
             "node": "Notify Dr. Mario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Horario1": {
+      "main": [
+        [
+          {
+            "node": "Validate Schedule1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Schedule1": {
+      "main": [
+        [
+          {
+            "node": "Schedule OK?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule OK?1": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Schedule Error1",
             "type": "main",
             "index": 0
           }

@@ -775,26 +775,6 @@
               "canBeUsedToMatch": true,
               "type": "string",
               "removed": false
-            },
-            {
-              "id": "onlyMorning",
-              "displayName": "onlyMorning",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "boolean",
-              "removed": false
-            },
-            {
-              "id": "onlyAfternoon",
-              "displayName": "onlyAfternoon",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "boolean",
-              "removed": false
             }
           ],
           "attemptToConvertTypes": false,

@@ -86,6 +86,20 @@
   color-scheme: dark;
 }
 
+/* ── Chart color tokens (used by design-system.ts) ── */
+:root, .dark {
+  --chart-blue: oklch(0.70 0.14 240);
+  --chart-emerald: oklch(0.72 0.17 162);
+  --chart-purple: oklch(0.65 0.18 295);
+  --chart-amber: oklch(0.80 0.16 75);
+  --chart-rose: oklch(0.68 0.19 18);
+  --chart-cyan: oklch(0.78 0.12 200);
+  --chart-indigo: oklch(0.60 0.18 270);
+  --chart-teal: oklch(0.75 0.14 175);
+  --chart-orange: oklch(0.75 0.16 55);
+  --chart-slate: oklch(0.55 0.02 260);
+}
+
 @layer base {
 * {
   @apply border-border outline-ring/50;
@@ -93,4 +107,119 @@
 body {
   @apply bg-background text-foreground;
 }
+}
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD ANIMATIONS — Clinical Command Center
+   ══════════════════════════════════════════════════════ */
+
+/* ── Fade-up entrance ── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out both;
+}
+
+/* ── Stagger delays (1–12) ── */
+.stagger-1  { animation-delay: 0ms; }
+.stagger-2  { animation-delay: 60ms; }
+.stagger-3  { animation-delay: 120ms; }
+.stagger-4  { animation-delay: 180ms; }
+.stagger-5  { animation-delay: 240ms; }
+.stagger-6  { animation-delay: 300ms; }
+.stagger-7  { animation-delay: 380ms; }
+.stagger-8  { animation-delay: 460ms; }
+.stagger-9  { animation-delay: 540ms; }
+.stagger-10 { animation-delay: 620ms; }
+.stagger-11 { animation-delay: 700ms; }
+.stagger-12 { animation-delay: 780ms; }
+
+/* ── Count-in (number pop) ── */
+@keyframes count-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-count-in {
+  animation: count-in 0.4s ease-out both;
+}
+
+/* ── Live dot pulse ── */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.5); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(45, 212, 191, 0); }
+}
+
+.live-dot {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* ── Grain overlay (subtle texture) ── */
+.grain-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  z-index: 1;
+}
+
+/* ── Noise overlay (AppShell background) ── */
+.noise-overlay {
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ── KPI card glow variants ── */
+.kpi-card {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  box-shadow: 0 0 24px -6px var(--kpi-glow, transparent);
+}
+
+.kpi-card--sky    { --kpi-glow: rgba(56, 189, 248, 0.08); }
+.kpi-card--emerald { --kpi-glow: rgba(52, 211, 153, 0.08); }
+.kpi-card--amber  { --kpi-glow: rgba(251, 191, 36, 0.08); }
+.kpi-card--teal   { --kpi-glow: rgba(45, 212, 191, 0.08); }
+.kpi-card--rose   { --kpi-glow: rgba(251, 113, 133, 0.08); }
+
+/* ── Shine top (subtle top highlight for kpi variant) ── */
+.shine-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  pointer-events: none;
+}
+
+/* ── Scrollbar hide utility ── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

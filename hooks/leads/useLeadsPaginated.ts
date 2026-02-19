@@ -22,35 +22,41 @@ interface LeadsStats {
   citaPropuesta: number;
   enSeguimiento: number;
   citaAgendada: number;
+  show: number;
+  noShow: number;
   convertidos: number;
   perdidos: number;
   calientes: number;
   inactivos: number;
+  scorePromedio: number;
 }
 
 const DEFAULT_STATS: LeadsStats = {
   total: 0, nuevos: 0, interactuando: 0, contactados: 0, citaPropuesta: 0,
-  enSeguimiento: 0, citaAgendada: 0, convertidos: 0, perdidos: 0, calientes: 0, inactivos: 0,
+  enSeguimiento: 0, citaAgendada: 0, show: 0, noShow: 0, convertidos: 0,
+  perdidos: 0, calientes: 0, inactivos: 0, scorePromedio: 0,
 };
 
 const fetchStats = async (): Promise<LeadsStats> => {
   const { data, error } = await supabase.rpc('get_leads_stats_optimized' as never);
   if (error) return DEFAULT_STATS;
   
-  // Mapear campos de la RPC real (get_leads_stats_optimized) — sincronizado con BD
   const s = data as Record<string, number>;
   return {
     total: s.total || 0,
     nuevos: s.nuevos || 0,
     interactuando: s.interactuando || 0,
-    contactados: s.contactados || 0,
+    contactados: s.contactado || 0,
     citaPropuesta: s.cita_propuesta || 0,
     enSeguimiento: s.en_seguimiento || 0,
     citaAgendada: s.cita_agendada || 0,
+    show: s.show || 0,
+    noShow: s.no_show || 0,
     convertidos: s.convertidos || 0,
     perdidos: s.perdidos || 0,
     calientes: s.calientes || 0,
-    inactivos: 0, // No disponible en esta RPC
+    inactivos: s.inactivos || 0,
+    scorePromedio: s.score_promedio || 0,
   };
 };
 

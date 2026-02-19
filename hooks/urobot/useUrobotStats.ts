@@ -153,11 +153,11 @@ export function useUrobotStats(dias: number = 7) {
 export async function marcarAlertaRevisada(alertaId: string, notas?: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
-    .from('urobot_alertas')
+    .from('escalamientos')
     .update({
-      fue_revisada: true,
-      revisada_at: new Date().toISOString(),
-      notas_revision: notas || null,
+      resultado: 'revisado',
+      notas: notas || null,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', alertaId);
 
