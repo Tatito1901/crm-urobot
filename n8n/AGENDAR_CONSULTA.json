@@ -131,7 +131,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT sede, display_name, direccion, maps_url, calendar_id, timezone FROM sedes WHERE sede = $1 LIMIT 1",
+        "query": "SELECT id, sede, display_name, direccion, maps_url, calendar_id, timezone FROM sedes WHERE sede = $1 LIMIT 1",
         "options": {
           "queryReplacement": "={{ $json.sede }}"
         }
@@ -147,14 +147,14 @@
       "credentials": {
         "postgres": {
           "id": "LZyK5sbzVT7Dy3RU",
-          "name": "Postgres account"
+          "name": "Postgres urobot"
         }
       },
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PROCESS SEDE\n// ========================================\nconst context = $('Validate Input1').first().json;\nconst sedeResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(sedeResult) ? sedeResult : [sedeResult];\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].calendar_id) {\n  console.log(`[${trace_id}] SEDE - NOT FOUND`);\n  return {\n    json: {\n      ...context,\n      error: 'SEDE_NOT_FOUND',\n      _stage: 'sede_error'\n    }\n  };\n}\n\nconst sede = rows[0];\nconsole.log(`[${trace_id}] SEDE - Found: ${sede.display_name}`);\n\nreturn {\n  json: {\n    ...context,\n    calendar_id: sede.calendar_id,\n    sedeDisplayName: sede.display_name,\n    sedeDireccion: sede.direccion,\n    sedeMapsUrl: sede.maps_url,\n    timezone: sede.timezone || 'America/Mexico_City',\n    _stage: 'sede_ok'\n  }\n};"
+        "jsCode": "// ========================================\n// PROCESS SEDE\n// ========================================\nconst context = $('Validate Input1').first().json;\nconst sedeResult = $input.first().json;\nconst trace_id = context._trace_id;\n\nconst rows = Array.isArray(sedeResult) ? sedeResult : [sedeResult];\n\nif (!rows || rows.length === 0 || !rows[0] || !rows[0].calendar_id) {\n  console.log(`[${trace_id}] SEDE - NOT FOUND`);\n  return {\n    json: {\n      ...context,\n      error: 'SEDE_NOT_FOUND',\n      _stage: 'sede_error'\n    }\n  };\n}\n\nconst sede = rows[0];\nconsole.log(`[${trace_id}] SEDE - Found: ${sede.display_name} (id: ${sede.id})`);\n\nreturn {\n  json: {\n    ...context,\n    sede_id: sede.id,\n    calendar_id: sede.calendar_id,\n    sedeDisplayName: sede.display_name,\n    sedeDireccion: sede.direccion,\n    sedeMapsUrl: sede.maps_url,\n    timezone: sede.timezone || 'America/Mexico_City',\n    _stage: 'sede_ok'\n  }\n};"
       },
       "id": "99ea5f95-472a-497e-8898-8390c3329d1c",
       "name": "Process Sede1",
@@ -217,7 +217,7 @@
       "credentials": {
         "postgres": {
           "id": "LZyK5sbzVT7Dy3RU",
-          "name": "Postgres account"
+          "name": "Postgres urobot"
         }
       },
       "onError": "continueErrorOutput"
@@ -289,8 +289,8 @@
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "Hm8ggB0P1TTFp0A0",
-          "name": "GOOGLE UROBOT"
+          "id": "RzMlWUma86JGl9rZ",
+          "name": "Google Calendar account"
         }
       },
       "onError": "continueErrorOutput"
@@ -343,7 +343,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO pacientes (telefono, nombre_completo, email, origen_lead) VALUES ($1, $2, $3, 'WhatsApp') ON CONFLICT (telefono) DO UPDATE SET nombre_completo = CASE WHEN $2 != 'Paciente' THEN $2 ELSE pacientes.nombre_completo END, updated_at = NOW() RETURNING id, telefono, nombre_completo",
+        "query": "INSERT INTO pacientes (telefono, nombre, email, origen_lead) VALUES ($1, $2, $3, 'WhatsApp') ON CONFLICT (telefono) DO UPDATE SET nombre = CASE WHEN $2 != 'Paciente' THEN $2 ELSE pacientes.nombre END, updated_at = NOW() RETURNING id, telefono, nombre",
         "options": {
           "queryReplacement": "={{ $json.phone }}, {{ $json.patientName }}, {{ $json.patientEmail || null }}"
         }
@@ -362,7 +362,7 @@
       "credentials": {
         "postgres": {
           "id": "LZyK5sbzVT7Dy3RU",
-          "name": "Postgres account"
+          "name": "Postgres urobot"
         }
       },
       "onError": "continueErrorOutput"
@@ -439,8 +439,8 @@
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "Hm8ggB0P1TTFp0A0",
-          "name": "GOOGLE UROBOT"
+          "id": "RzMlWUma86JGl9rZ",
+          "name": "Google Calendar account"
         }
       },
       "onError": "continueErrorOutput"
@@ -493,9 +493,9 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO consultas (consulta_id, paciente_id, sede, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita) VALUES ($1, $2::uuid, $3, $4::timestamptz, $5::timestamptz, 'Programada', $6, $7, $8, $9) ON CONFLICT (consulta_id) DO UPDATE SET calendar_event_id = EXCLUDED.calendar_event_id, calendar_link = EXCLUDED.calendar_link, updated_at = NOW() RETURNING id, consulta_id, calendar_event_id",
+        "query": "INSERT INTO consultas (consulta_id, paciente_id, sede_id, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita) VALUES ($1, $2::uuid, $3::uuid, $4::timestamptz, $5::timestamptz, 'Programada', $6, $7, $8, $9) ON CONFLICT (consulta_id) DO UPDATE SET calendar_event_id = EXCLUDED.calendar_event_id, calendar_link = EXCLUDED.calendar_link, updated_at = NOW() RETURNING id, consulta_id, calendar_event_id",
         "options": {
-          "queryReplacement": "={{ $json._consulta_id }}, {{ $json.paciente_id }}, {{ $json.sede }}, {{ $json.startTime }}, {{ $json.endTime }}, {{ $json.event_id }}, {{ $json.event_link }}, {{ $json.motivo }}, {{ $json.tipoCita }}"
+          "queryReplacement": "={{ $json._consulta_id }}, {{ $json.paciente_id }}, {{ $json.sede_id }}, {{ $json.startTime }}, {{ $json.endTime }}, {{ $json.event_id }}, {{ $json.event_link }}, {{ $json.motivo }}, {{ $json.tipoCita }}"
         }
       },
       "id": "b8080793-6067-4daa-811e-4e758bdf45d8",
@@ -512,7 +512,7 @@
       "credentials": {
         "postgres": {
           "id": "LZyK5sbzVT7Dy3RU",
-          "name": "Postgres account"
+          "name": "Postgres urobot"
         }
       },
       "onError": "continueErrorOutput"
@@ -600,8 +600,8 @@
       "maxTries": 3,
       "credentials": {
         "googleCalendarOAuth2Api": {
-          "id": "Hm8ggB0P1TTFp0A0",
-          "name": "GOOGLE UROBOT"
+          "id": "RzMlWUma86JGl9rZ",
+          "name": "Google Calendar account"
         }
       },
       "onError": "continueErrorOutput"
