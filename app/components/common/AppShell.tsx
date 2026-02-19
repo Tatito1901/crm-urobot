@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { lazy, Suspense, useEffect, useState, type PropsWithChildren } from 'react'
 import { usePrefetchRoutes } from '@/hooks/common/usePrefetchRoutes'
 import { createClient } from '@/lib/supabase/client'
+import { RouteProgress } from './RouteProgress'
 
 // Lazy loading de componentes pesados para optimizar carga inicial
 const Sidebar = lazy(() => import('./Sidebar').then(mod => ({ default: mod.Sidebar })))
@@ -49,6 +50,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <div className="flex min-h-screen w-full bg-background relative">
+      <RouteProgress />
       {/* Subtle noise texture for depth */}
       <div className="pointer-events-none fixed inset-0 noise-overlay z-0" aria-hidden />
       <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80 shrink-0" />}>

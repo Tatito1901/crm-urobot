@@ -8,7 +8,8 @@ import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { Pagination } from '@/app/components/common/Pagination';
 import { cards } from '@/app/lib/design-system';
-import { Building2, MapPin, Search, RefreshCw, Loader2 } from 'lucide-react';
+import { Building2, MapPin, Search, RefreshCw } from 'lucide-react';
+import { EmptyState } from '@/app/components/common/EmptyState';
 import { ConsultasTable } from './components/ConsultasTable';
 import { ConsultasMetrics } from './components/ConsultasMetrics';
 
@@ -124,6 +125,7 @@ export default function ConsultasPage() {
               <button
                 onClick={() => refetch()}
                 disabled={loading}
+                aria-label={loading ? 'Recargando datos...' : 'Recargar datos'}
                 className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 shrink-0"
                 title="Recargar datos"
               >
@@ -144,14 +146,10 @@ export default function ConsultasPage() {
             minHeight="min-h-[500px]"
             skeleton={<TableContentSkeleton rows={7} />}
             emptyState={
-              <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/10">
-                  <Building2 className="h-7 w-7 sm:h-9 sm:w-9 text-primary/60" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {search ? 'No se encontraron consultas' : 'No hay consultas registradas'}
-                </p>
-              </div>
+              <EmptyState
+                icon={Building2}
+                title={search ? 'No se encontraron consultas' : 'No hay consultas registradas'}
+              />
             }
           >
             <ConsultasTable

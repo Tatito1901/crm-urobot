@@ -88,24 +88,7 @@ export default function EstadisticasPage() {
     loading 
   } = useStats();
 
-  if (loading) {
-    return (
-      <PageShell 
-        title="Analítica y Reportes" 
-        eyebrow="Cargando..."
-        description="Cargando tablero de control..."
-        fullWidth
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 w-full" />)}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-80 w-full" />
-          <Skeleton className="h-80 w-full" />
-        </div>
-      </PageShell>
-    );
-  }
+  const showChartSkeletons = loading;
 
   return (
     <PageShell
@@ -125,6 +108,7 @@ export default function EstadisticasPage() {
           iconComponent={Users}
           trend={kpi.pacientesNuevosMes > 0 ? "Creciendo" : undefined}
           tooltip="Total de pacientes registrados en el sistema"
+          loading={loading}
         />
         <MetricCard
           variant="kpi"
@@ -133,6 +117,7 @@ export default function EstadisticasPage() {
           subtitle={`${kpi.consultasConfirmadasMes} confirmadas`}
           iconComponent={Calendar}
           tooltip="Consultas programadas este mes"
+          loading={loading}
         />
         <MetricCard
           variant="kpi"
@@ -142,6 +127,7 @@ export default function EstadisticasPage() {
           iconComponent={Target}
           trend={kpi.tasaConversion > 5 ? `${kpi.tasaConversion}%` : undefined}
           tooltip="Porcentaje de leads que se convierten en pacientes"
+          loading={loading}
         />
         <MetricCard
           variant="kpi"
@@ -150,6 +136,7 @@ export default function EstadisticasPage() {
           subtitle={`${kpi.leadsNuevosMes} nuevos`}
           iconComponent={MessageSquare}
           tooltip="Total de leads en el sistema"
+          loading={loading}
         />
       </section>
 
@@ -166,7 +153,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-xs text-muted-foreground">Consultas vs Pacientes Nuevos (6 meses)</CardDescription>
           </CardHeader>
           <CardContent>
-            <EvolutionChart data={evolucionMensual} />
+            {showChartSkeletons ? <Skeleton className="h-[300px] w-full" /> : <EvolutionChart data={evolucionMensual} />}
           </CardContent>
         </Card>
 
@@ -180,7 +167,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-xs text-muted-foreground">Flujo de leads desde captura hasta cierre</CardDescription>
           </CardHeader>
           <CardContent>
-            <FunnelChart data={funnelLeads} />
+            {showChartSkeletons ? <Skeleton className="h-[300px] w-full" /> : <FunnelChart data={funnelLeads} />}
           </CardContent>
         </Card>
 
@@ -230,7 +217,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-[11px] text-muted-foreground truncate">Origen de leads</CardDescription>
           </CardHeader>
           <CardContent>
-            <SourcesChart data={fuentesCaptacion} />
+            {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <SourcesChart data={fuentesCaptacion} />}
           </CardContent>
         </Card>
 
@@ -244,7 +231,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-[11px] text-muted-foreground truncate">Estado actual</CardDescription>
           </CardHeader>
           <CardContent>
-            <StatusChart data={estadoCitas} />
+            {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <StatusChart data={estadoCitas} />}
           </CardContent>
         </Card>
 
@@ -258,7 +245,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-[11px] text-muted-foreground truncate">Distribución</CardDescription>
           </CardHeader>
           <CardContent>
-            <SedesChart data={consultasPorSede} />
+            {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <SedesChart data={consultasPorSede} />}
           </CardContent>
         </Card>
 
@@ -272,7 +259,7 @@ export default function EstadisticasPage() {
             <CardDescription className="text-[11px] text-muted-foreground truncate">Resolución</CardDescription>
           </CardHeader>
           <CardContent>
-            <DestinosChart data={destinosPacientes} />
+            {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <DestinosChart data={destinosPacientes} />}
           </CardContent>
         </Card>
 

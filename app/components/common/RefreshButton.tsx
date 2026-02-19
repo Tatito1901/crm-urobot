@@ -31,6 +31,7 @@ export function RefreshButton({
       type="button"
       onClick={onClick}
       disabled={loading}
+      aria-label={loading ? 'Actualizando datos...' : label}
       className={cn(buttons.refresh, colorClass, className)}
     >
       <span className={loading ? 'animate-spin' : ''}>↻</span>

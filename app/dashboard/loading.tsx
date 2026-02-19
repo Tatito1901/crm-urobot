@@ -1,69 +1,88 @@
 /**
  * ============================================================
- * LOADING STATE - Dashboard
+ * LOADING STATE - Dashboard V3
  * ============================================================
- * Matches the new tab-less layout: Header → Hero KPIs → Activity → Charts
+ * Matches: Header → Hero 3-col KPIs → 4 secondary → 5-col bot → Activity → Charts
  */
 
 import { MetricCardSkeleton, CardSkeleton, ListItemSkeleton } from '@/app/components/common/SkeletonLoader';
 
 export default function DashboardLoading() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* Atmospheric glow */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[700px] opacity-25 overflow-hidden" aria-hidden>
-        <div className="absolute left-1/4 top-[-10%] h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-teal-500/20 blur-[180px] dark:bg-teal-500/25" />
-        <div className="absolute right-[5%] top-[8%] h-[350px] w-[350px] rounded-full bg-cyan-500/12 blur-[140px] dark:bg-cyan-500/18" />
-        <div className="absolute left-[60%] top-[20%] h-[200px] w-[200px] rounded-full bg-indigo-500/8 blur-[100px] dark:bg-indigo-500/12" />
-      </div>
-      
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-4 px-3 py-3 sm:gap-5 sm:px-6 sm:py-5 lg:px-8 lg:py-6 xl:px-10">
+    <div className="relative min-h-screen bg-background text-foreground">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-3 sm:gap-5 sm:px-6 sm:py-5 lg:px-8 lg:py-6 xl:px-10">
         {/* Header skeleton */}
-        <header className="animate-fade-up">
+        <header>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <div className="h-[3px] w-8 rounded-full bg-gradient-to-r from-teal-500/40 to-cyan-500/40" />
-                <div className="h-3 w-24 bg-white/[0.05] rounded" />
-              </div>
-              <div className="h-8 w-44 bg-white/[0.06] rounded-lg" />
-              <div className="h-4 w-64 bg-white/[0.04] rounded max-w-full" />
+              <div className="h-3 w-36 bg-muted/40 rounded" />
+              <div className="h-8 w-44 bg-muted/50 rounded-lg" />
+              <div className="h-4 w-64 bg-muted/30 rounded max-w-full" />
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 bg-white/[0.05] rounded-lg" />
-              <div className="h-9 w-28 bg-white/[0.05] rounded-xl" />
+              <div className="h-9 w-28 bg-muted/40 rounded-xl" />
             </div>
           </div>
         </header>
 
-        {/* KPIs skeleton - Hero pair + Secondary trio */}
-        <section className="animate-fade-up stagger-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <MetricCardSkeleton />
-            <MetricCardSkeleton />
-          </div>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <MetricCardSkeleton />
-            <MetricCardSkeleton />
-            <MetricCardSkeleton />
+        {/* Hero KPIs skeleton — 3 columns */}
+        <section>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-4 sm:p-5 animate-pulse">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-8 w-8 rounded-lg bg-muted/50" />
+                  <div className="h-3 w-24 bg-muted/40 rounded" />
+                </div>
+                <div className="h-10 w-20 bg-muted/50 rounded-lg mb-2" />
+                <div className="h-3 w-40 bg-muted/30 rounded mb-3" />
+                <div className="h-[50px] w-full bg-muted/20 rounded" />
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Activity section skeleton */}
-        <section className="animate-fade-up stagger-3">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="h-5 w-5 bg-teal-500/10 rounded-md" />
-            <div className="h-3 w-32 bg-white/[0.05] rounded" />
-            <div className="flex-1 h-px bg-gradient-to-r from-white/[0.06] to-transparent" />
+        {/* Secondary KPIs — 4 columns */}
+        <section>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            {[...Array(4)].map((_, i) => (
+              <MetricCardSkeleton key={i} />
+            ))}
+          </div>
+        </section>
+
+        {/* Bot section — 5 columns */}
+        <section>
+          <div className="mb-3">
+            <div className="h-3 w-32 bg-muted/40 rounded" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-3 sm:p-4 animate-pulse">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-3.5 w-3.5 rounded bg-muted/50" />
+                  <div className="h-2.5 w-16 bg-muted/40 rounded" />
+                </div>
+                <div className="h-8 w-14 bg-muted/50 rounded mb-1" />
+                <div className="h-2.5 w-20 bg-muted/30 rounded" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Activity section */}
+        <section>
+          <div className="mb-3">
+            <div className="h-3 w-28 bg-muted/40 rounded" />
           </div>
           <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden shine-top">
-              <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/[0.06]">
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
                 <div className="space-y-1.5">
-                  <div className="h-5 w-32 bg-white/[0.06] rounded" />
-                  <div className="h-3 w-44 bg-white/[0.04] rounded" />
+                  <div className="h-5 w-32 bg-muted/40 rounded" />
+                  <div className="h-3 w-44 bg-muted/30 rounded" />
                 </div>
-                <div className="h-6 w-10 bg-white/[0.05] rounded-full" />
+                <div className="h-6 w-10 bg-muted/30 rounded-full" />
               </div>
               <div className="p-1">
                 {[...Array(5)].map((_, i) => (
@@ -71,13 +90,13 @@ export default function DashboardLoading() {
                 ))}
               </div>
             </div>
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden shine-top">
-              <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/[0.06]">
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
                 <div className="space-y-1.5">
-                  <div className="h-5 w-36 bg-white/[0.06] rounded" />
-                  <div className="h-3 w-40 bg-white/[0.04] rounded" />
+                  <div className="h-5 w-36 bg-muted/40 rounded" />
+                  <div className="h-3 w-40 bg-muted/30 rounded" />
                 </div>
-                <div className="h-6 w-10 bg-white/[0.05] rounded-full" />
+                <div className="h-6 w-10 bg-muted/30 rounded-full" />
               </div>
               <div className="p-1">
                 {[...Array(5)].map((_, i) => (
@@ -89,11 +108,9 @@ export default function DashboardLoading() {
         </section>
 
         {/* Charts skeleton */}
-        <section className="animate-fade-up stagger-4 pb-8 sm:pb-4">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="h-5 w-5 bg-teal-500/10 rounded-md" />
-            <div className="h-3 w-20 bg-white/[0.05] rounded" />
-            <div className="flex-1 h-px bg-gradient-to-r from-white/[0.06] to-transparent" />
+        <section className="pb-8 sm:pb-4">
+          <div className="mb-3">
+            <div className="h-3 w-20 bg-muted/40 rounded" />
           </div>
           <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
             <CardSkeleton />

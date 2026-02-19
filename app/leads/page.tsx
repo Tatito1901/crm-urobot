@@ -13,6 +13,7 @@ import { LeadsTable } from './components/LeadsTable';
 import { LeadClinicSidebar } from './components/LeadClinicSidebar';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
 import { Users, UserPlus, Clock, Calendar, UserCheck, Loader2, Stethoscope } from 'lucide-react';
+import { EmptyState } from '@/app/components/common/EmptyState';
 
 export default function LeadsPage() {
   const {
@@ -166,17 +167,12 @@ export default function LeadsPage() {
               minHeight="min-h-[300px]"
               skeleton={<TableContentSkeleton rows={6} />}
               emptyState={
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 ring-1 ring-primary/10">
-                    <Users className="h-9 w-9 text-primary/60" />
-                  </div>
-                  <p className="text-lg font-semibold text-foreground">
-                    {search ? 'No se encontraron leads' : 'No hay leads registrados'}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2 max-w-sm leading-relaxed">
-                    {search ? 'Intenta con otros términos de búsqueda' : 'Los leads aparecerán aquí cuando los pacientes envíen mensajes'}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={Users}
+                  size="lg"
+                  title={search ? 'No se encontraron leads' : 'No hay leads registrados'}
+                  description={search ? 'Intenta con otros términos de búsqueda' : 'Los leads aparecerán aquí cuando los pacientes envíen mensajes'}
+                />
               }
             >
               <LeadsTable

@@ -5,6 +5,7 @@
  * One single RPC call returns ALL dashboard data (~3KB payload).
  */
 import { createClient } from '@/lib/supabase/server';
+import { parseDashboardV2 } from '@/hooks/dashboard/dashboardV2-parser';
 import DashboardClient from './DashboardClient';
 
 export const dynamic = 'force-dynamic';
@@ -15,13 +16,10 @@ export default async function DashboardPage() {
   try {
     const supabase = await createClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any).rpc('get_dashboard_v2');
+    const { data } = await (supabase as any).rpc('get_dashboard_v3');
 
     if (data) {
-      // Pass raw RPC data — the hook's fetcher does the same parsing,
-      // but for SSR we pass the raw jsonb and let the client hook normalize it.
-      // This avoids duplicating the mapping logic.
-      initialData = undefined; // Let the client hook fetch & parse uniformly
+      initialData = parseDashboardV2(data);
     }
   } catch {
     // Graceful fallback: client will fetch on mount

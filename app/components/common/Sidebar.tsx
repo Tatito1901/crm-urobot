@@ -12,6 +12,7 @@ import {
   BarChart3,
   Bot,
   Stethoscope,
+  Clock,
   X,
   type LucideProps,
 } from "lucide-react";
@@ -45,6 +46,12 @@ const NAV_SECTIONS: readonly NavSection[] = [
     items: [
       { label: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
       { label: "UroBot", href: "/urobot", icon: Bot },
+    ],
+  },
+  {
+    title: "Configuración",
+    items: [
+      { label: "Sedes", href: "/sedes", icon: Clock },
     ],
   },
 ];
@@ -182,6 +189,7 @@ const BOTTOM_NAV_ITEMS: readonly { label: string; href: string; icon: ReactNode 
 const SECONDARY_NAV_ITEMS: readonly { label: string; href: string; icon: ComponentType<LucideProps> }[] = [
   { label: "Estadísticas", href: "/estadisticas", icon: BarChart3 },
   { label: "UroBot", href: "/urobot", icon: Bot },
+  { label: "Sedes", href: "/sedes", icon: Clock },
 ];
 
 export function BottomNav() {

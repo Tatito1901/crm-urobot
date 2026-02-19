@@ -19,20 +19,31 @@ import { useIsMobile, useSlowConnection } from './useIsMobile';
  */
 const PREFETCH_MAP: Record<string, string[]> = {
   '/dashboard': [
-    '/agenda',
     '/leads',
+    '/conversaciones',
     '/consultas',
   ],
-  '/agenda': [],
   '/leads': [
-    '/agenda',
+    '/conversaciones',
+    '/consultas',
   ],
-  '/consultas': [
-    '/agenda',
-  ],
-  '/metricas': [
+  '/conversaciones': [
+    '/leads',
     '/dashboard',
   ],
+  '/consultas': [
+    '/leads',
+    '/dashboard',
+  ],
+  '/estadisticas': [
+    '/urobot',
+    '/dashboard',
+  ],
+  '/urobot': [
+    '/estadisticas',
+    '/dashboard',
+  ],
+  '/agenda': [],
 };
 
 /**
