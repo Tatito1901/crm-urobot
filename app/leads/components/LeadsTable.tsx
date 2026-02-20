@@ -46,14 +46,14 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
       id: lead.id,
       nombre: (
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary/80 flex items-center justify-center text-xs font-bold text-foreground border border-border">
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-[11px] font-bold text-primary border border-primary/20">
             {initials}
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="font-semibold text-foreground leading-tight text-sm">
               {lead.nombre}
             </span>
-            <span className="text-[11px] text-muted-foreground font-mono">{lead.telefono}</span>
+            <span className="text-[11px] text-muted-foreground/80 font-mono">{lead.telefono}</span>
           </div>
         </div>
       ),
@@ -88,38 +88,51 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
           />
         </div>
       ),
-      temp: (
-        <div className="flex items-center gap-1.5">
-          <Badge 
-            label={lead.temperatura.toUpperCase()} 
-            tone={
-              lead.temperatura === 'frio' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-              lead.temperatura === 'tibio' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-              lead.temperatura === 'caliente' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-              'bg-red-500/20 text-red-500 border-red-500/30 font-bold'
-            }
-            className="w-24 justify-center"
-          />
-        </div>
-      ),
-      fuente: (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-          <span>{CANAL_COLORS[lead.fuente]?.icon || '📌'}</span>
-          <span className="capitalize">{lead.fuente.toLowerCase().replace(/_/g, ' ')}</span>
-        </div>
-      ),
+      temp: (() => {
+        const tempConfig = {
+          frio:         { dot: 'bg-blue-400',  label: 'Frío',         cls: 'text-blue-400' },
+          tibio:        { dot: 'bg-amber-400', label: 'Tibio',        cls: 'text-amber-400' },
+          caliente:     { dot: 'bg-rose-400',  label: 'Caliente',     cls: 'text-rose-400' },
+          muy_caliente: { dot: 'bg-red-500',   label: 'Muy caliente', cls: 'text-red-400 font-bold' },
+          urgente:      { dot: 'bg-red-500',   label: 'Urgente',      cls: 'text-red-400 font-bold' },
+        }[lead.temperatura] ?? { dot: 'bg-slate-400', label: lead.temperatura, cls: 'text-slate-400' };
+        return (
+          <div className="flex items-center gap-1.5">
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${tempConfig.dot}`} />
+            <span className={`text-xs font-medium whitespace-nowrap ${tempConfig.cls}`}>{tempConfig.label}</span>
+          </div>
+        );
+      })(),
+      fuente: (() => {
+        const canal = CANAL_COLORS[lead.fuente] ?? CANAL_COLORS['Otro'];
+        return (
+          <div className="flex flex-col gap-1">
+            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md whitespace-nowrap ${canal.chip}`}>
+              <span className="font-black text-[10px] leading-none">{canal.icon}</span>
+              {canal.abbr}
+            </span>
+            {lead.esMetaAds && lead.campanaHeadline && (
+              <span className="text-[10px] text-muted-foreground truncate max-w-[120px]" title={lead.campanaHeadline}>
+                {lead.campanaHeadline}
+              </span>
+            )}
+          </div>
+        );
+      })(),
       mensajes: (
-        <div className="flex items-center gap-1.5 text-xs font-semibold">
-          <span className="text-blue-400">💬</span>
-          <span className="text-foreground">{lead.totalMensajes}</span>
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-sky-500/10 text-sky-400 text-[10px] font-bold">{lead.totalMensajes}</span>
+          <span className="text-muted-foreground">msgs</span>
         </div>
       ),
       ultimoMensaje: (
-        <div className="text-xs text-muted-foreground text-right">
+        <div className="text-xs text-right">
           {lead.ultimaInteraccion ? (
-            <span>Hace {lead.diasDesdeUltimaInteraccion} {lead.diasDesdeUltimaInteraccion === 1 ? 'día' : 'días'}</span>
+            <span className={lead.diasDesdeUltimaInteraccion !== null && lead.diasDesdeUltimaInteraccion > 3 ? 'text-amber-400/80' : 'text-muted-foreground'}>
+              {lead.diasDesdeUltimaInteraccion === 0 ? 'Hoy' : `${lead.diasDesdeUltimaInteraccion}d`}
+            </span>
           ) : (
-            <span>-</span>
+            <span className="text-muted-foreground/50">—</span>
           )}
         </div>
       ),

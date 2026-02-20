@@ -25,61 +25,90 @@ export type CanalMarketing = typeof CANALES_MARKETING[number];
 /**
  * Colores para cada canal (para badges y visualización)
  */
-export const CANAL_COLORS: Record<CanalMarketing, { bg: string; text: string; border: string; icon: string }> = {
+export interface CanalStyle {
+  bg: string;
+  text: string;
+  border: string;
+  icon: string;
+  /** Short brand label for the chip (e.g. "WA", "Meta", "G") */
+  abbr: string;
+  /** Pre-composed chip className: bg + text + border */
+  chip: string;
+}
+
+export const CANAL_COLORS: Record<CanalMarketing, CanalStyle> = {
   'Meta Ads': {
-    bg: 'bg-blue-50 dark:bg-blue-500/10',
-    text: 'text-blue-700 dark:text-blue-300',
-    border: 'border-blue-200 dark:border-blue-500/30',
-    icon: '📘'
+    bg: 'bg-[#1877f2]/12',
+    text: 'text-[#5b9bf5]',
+    border: 'border-[#1877f2]/25',
+    icon: 'f',
+    abbr: 'Meta',
+    chip: 'bg-[#1877f2]/12 text-[#5b9bf5] border border-[#1877f2]/25',
   },
   'Google Ads': {
-    bg: 'bg-red-50 dark:bg-red-500/10',
-    text: 'text-red-700 dark:text-red-300',
-    border: 'border-red-200 dark:border-red-500/30',
-    icon: '🔍'
+    bg: 'bg-[#ea4335]/12',
+    text: 'text-[#f28b83]',
+    border: 'border-[#ea4335]/25',
+    icon: 'G',
+    abbr: 'Google',
+    chip: 'bg-[#ea4335]/12 text-[#f28b83] border border-[#ea4335]/25',
   },
   'Instagram': {
-    bg: 'bg-pink-50 dark:bg-pink-500/10',
-    text: 'text-pink-700 dark:text-pink-300',
-    border: 'border-pink-200 dark:border-pink-500/30',
-    icon: '📸'
+    bg: 'bg-[#e1306c]/12',
+    text: 'text-[#f472b6]',
+    border: 'border-[#e1306c]/25',
+    icon: 'IG',
+    abbr: 'Instagram',
+    chip: 'bg-[#e1306c]/12 text-[#f472b6] border border-[#e1306c]/25',
   },
   'Orgánico': {
-    bg: 'bg-green-50 dark:bg-green-500/10',
-    text: 'text-green-700 dark:text-green-300',
-    border: 'border-green-200 dark:border-green-500/30',
-    icon: '🌱'
+    bg: 'bg-emerald-500/12',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/25',
+    icon: '○',
+    abbr: 'Orgánico',
+    chip: 'bg-emerald-500/12 text-emerald-400 border border-emerald-500/25',
   },
   'Referido': {
-    bg: 'bg-purple-50 dark:bg-purple-500/10',
-    text: 'text-purple-700 dark:text-purple-300',
-    border: 'border-purple-200 dark:border-purple-500/30',
-    icon: '👥'
+    bg: 'bg-violet-500/12',
+    text: 'text-violet-400',
+    border: 'border-violet-500/25',
+    icon: '⇄',
+    abbr: 'Referido',
+    chip: 'bg-violet-500/12 text-violet-400 border border-violet-500/25',
   },
   'WhatsApp Directo': {
-    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-    text: 'text-emerald-700 dark:text-emerald-300',
-    border: 'border-emerald-200 dark:border-emerald-500/30',
-    icon: '💬'
+    bg: 'bg-[#25d366]/12',
+    text: 'text-[#25d366]',
+    border: 'border-[#25d366]/25',
+    icon: 'WA',
+    abbr: 'WhatsApp',
+    chip: 'bg-[#25d366]/12 text-[#25d366] border border-[#25d366]/25',
   },
   'Doctoralia': {
-    bg: 'bg-teal-50 dark:bg-teal-500/10',
-    text: 'text-teal-700 dark:text-teal-300',
-    border: 'border-teal-200 dark:border-teal-500/30',
-    icon: '🏥'
+    bg: 'bg-teal-500/12',
+    text: 'text-teal-400',
+    border: 'border-teal-500/25',
+    icon: '+',
+    abbr: 'Doctoralia',
+    chip: 'bg-teal-500/12 text-teal-400 border border-teal-500/25',
   },
   'Sitio Web': {
-    bg: 'bg-cyan-50 dark:bg-cyan-500/10',
-    text: 'text-cyan-700 dark:text-cyan-300',
-    border: 'border-cyan-200 dark:border-cyan-500/30',
-    icon: '🌐'
+    bg: 'bg-cyan-500/12',
+    text: 'text-cyan-400',
+    border: 'border-cyan-500/25',
+    icon: '◎',
+    abbr: 'Web',
+    chip: 'bg-cyan-500/12 text-cyan-400 border border-cyan-500/25',
   },
   'Otro': {
-    bg: 'bg-slate-50 dark:bg-slate-500/10',
-    text: 'text-slate-700 dark:text-slate-300',
-    border: 'border-slate-200 dark:border-slate-500/30',
-    icon: '📌'
-  }
+    bg: 'bg-slate-500/12',
+    text: 'text-slate-400',
+    border: 'border-slate-500/25',
+    icon: '•',
+    abbr: 'Otro',
+    chip: 'bg-slate-500/12 text-slate-400 border border-slate-500/25',
+  },
 };
 
 /**
