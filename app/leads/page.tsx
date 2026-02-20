@@ -41,6 +41,11 @@ export default function LeadsPage() {
     [leads, selectedLeadId]
   );
 
+  const selectedIndex = useMemo(
+    () => leads.findIndex(l => l.id === selectedLeadId),
+    [leads, selectedLeadId]
+  );
+
   const handleRowClick = useCallback((leadId: string) => {
     setSelectedLeadId(prev => prev === leadId ? null : leadId);
   }, []);
@@ -48,6 +53,15 @@ export default function LeadsPage() {
   const handleCloseSidebar = useCallback(() => {
     setSelectedLeadId(null);
   }, []);
+
+  const handleNavigate = useCallback((direction: 'prev' | 'next') => {
+    const idx = leads.findIndex(l => l.id === selectedLeadId);
+    if (idx === -1) return;
+    const newIdx = direction === 'prev' ? idx - 1 : idx + 1;
+    if (newIdx >= 0 && newIdx < leads.length) {
+      setSelectedLeadId(leads[newIdx].id);
+    }
+  }, [leads, selectedLeadId]);
 
   // Cerrar drawer con Escape
   useEffect(() => {
@@ -224,11 +238,15 @@ export default function LeadsPage() {
             role="dialog"
             aria-label="Panel clínico del lead"
             aria-modal="true"
-            className="fixed top-0 right-0 z-50 h-full w-[340px] max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+            className="fixed top-0 right-0 z-50 h-full w-[420px] max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
           >
             <LeadClinicSidebar
               lead={selectedLead}
               onClose={handleCloseSidebar}
+              onNavigate={handleNavigate}
+              hasPrev={selectedIndex > 0}
+              hasNext={selectedIndex < leads.length - 1}
+              onRefresh={handleRefresh}
             />
           </aside>
         </>

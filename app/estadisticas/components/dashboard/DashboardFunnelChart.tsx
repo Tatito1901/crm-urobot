@@ -17,13 +17,13 @@ import { ChartData } from '@/hooks/dashboard/useStats';
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number | string; payload: { fill: string } }[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs shadow-lg">
-        <p className="font-bold text-white mb-2">{label}</p>
+      <div className="bg-popover border border-border rounded-lg p-3 text-xs shadow-lg">
+        <p className="font-bold text-foreground mb-2">{label}</p>
         {payload?.map((p: { name: string; value: number | string; payload: { fill: string } }, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1 last:mb-0 min-w-[120px]">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.payload.fill }} />
-            <span className="text-foreground">{p.name}:</span>
-            <span className="font-medium text-white ml-auto">{p.value}</span>
+            <span className="text-muted-foreground">{p.name}:</span>
+            <span className="font-medium text-foreground ml-auto">{p.value}</span>
           </div>
         ))}
       </div>

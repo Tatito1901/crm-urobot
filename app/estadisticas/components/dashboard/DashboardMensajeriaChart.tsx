@@ -21,12 +21,12 @@ interface MetricData {
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { name: string; value: number | string; payload: { fill: string } }[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs shadow-lg">
-        <p className="font-bold text-white mb-2">{payload[0].name}</p>
+      <div className="bg-popover border border-border rounded-lg p-3 text-xs shadow-lg">
+        <p className="font-bold text-foreground mb-2">{payload[0].name}</p>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.fill }} />
-          <span className="text-foreground">Total:</span>
-          <span className="font-medium text-white ml-auto">{payload[0].value}</span>
+          <span className="text-muted-foreground">Total:</span>
+          <span className="font-medium text-foreground ml-auto">{payload[0].value}</span>
         </div>
       </div>
     );

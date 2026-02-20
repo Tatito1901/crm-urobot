@@ -91,8 +91,8 @@ function MiniDonut({ data, colors, title }: { data: { label: string; total: numb
   );
 }
 
-export default function BehavioralDistributionChart() {
-  const { stats, isLoading } = useBehavioralDistribution(30);
+export default function BehavioralDistributionChart({ dias = 30 }: { dias?: number }) {
+  const { stats, isLoading } = useBehavioralDistribution(dias);
 
   if (isLoading) {
     return (

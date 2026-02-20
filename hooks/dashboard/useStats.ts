@@ -78,40 +78,74 @@ const fetchStats = async (): Promise<StatsData> => {
 
   if (error) throw error;
 
-  const d = data as Record<string, Record<string, unknown>> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const d = data as Record<string, any> | null;
   if (!d) return { kpi: defaultKPI, consultasPorSede: [], estadoCitas: [], evolucionMensual: [], funnelLeads: [], fuentesCaptacion: [], metricasMensajeria: [], destinosPacientes: [] };
 
   const leads = d.leads || {};
   const consultas = d.consultas || {};
   const pacientes = d.pacientes || {};
+  const tasas = d.tasas || {};
   const porEstado = (leads.por_estado || {}) as Record<string, number>;
   const porFuente = (leads.por_fuente || {}) as Record<string, number>;
 
-  // Construir KPI desde la estructura real
   const kpi: KPIData = {
     totalPacientes: Number(pacientes.total) || 0,
     pacientesNuevosMes: Number(pacientes.nuevos_mes) || 0,
-    consultasMes: Number(consultas.completadas_mes) || 0,
-    consultasConfirmadasMes: Number(consultas.programadas) || 0,
-    tasaAsistencia: 0,
-    tasaConversion: 0,
+    consultasMes: Number(consultas.total_mes) || 0,
+    consultasConfirmadasMes: Number(consultas.confirmadas_mes) + Number(consultas.programadas) || 0,
+    tasaAsistencia: Number(tasas.asistencia) || 0,
+    tasaConversion: Number(tasas.conversion) || 0,
     totalLeads: Number(leads.total) || 0,
-    leadsNuevosMes: Number(leads.hoy) || 0,
+    leadsNuevosMes: Number(leads.nuevos_mes) || 0,
   };
 
-  // Construir charts desde por_estado y por_fuente
-  const funnelLeads: ChartData[] = Object.entries(porEstado).map(([name, value]) => ({ name, value: Number(value) }));
-  const fuentesCaptacion: ChartData[] = Object.entries(porFuente).map(([name, value]) => ({ name, value: Number(value) }));
+  // Funnel from por_estado with chart colors
+  const stateColorMap: Record<string, string> = {
+    nuevo: 'var(--chart-blue)',
+    contactado: 'var(--chart-purple)',
+    interesado: 'var(--chart-indigo)',
+    calificado: 'var(--chart-cyan)',
+    escalado: 'var(--chart-amber)',
+    cita_agendada: 'var(--chart-teal)',
+    convertido: 'var(--chart-emerald)',
+    no_interesado: 'var(--chart-slate)',
+    descartado: 'var(--chart-rose)',
+  };
+  const funnelLeads: ChartData[] = Object.entries(porEstado)
+    .map(([name, value]) => ({ name, value: Number(value), fill: stateColorMap[name] || 'var(--chart-slate)' }))
+    .sort((a, b) => b.value - a.value);
+
+  // Sources from por_fuente with chart colors
+  const sourceColors = ['var(--chart-blue)', 'var(--chart-emerald)', 'var(--chart-purple)', 'var(--chart-amber)', 'var(--chart-cyan)', 'var(--chart-rose)', 'var(--chart-indigo)', 'var(--chart-teal)'];
+  const fuentesCaptacion: ChartData[] = Object.entries(porFuente)
+    .map(([name, value], i) => ({ name, value: Number(value), fill: sourceColors[i % sourceColors.length] }))
+    .sort((a, b) => b.value - a.value);
+
+  // Chart data from RPC (already formatted as {name, value} arrays)
+  const consultasPorSede: ChartData[] = (d.consultas_por_sede || []).map((item: ChartData, i: number) => ({
+    ...item, fill: sourceColors[i % sourceColors.length]
+  }));
+  const estadoCitas: ChartData[] = (d.estado_citas || []).map((item: ChartData, i: number) => ({
+    ...item, fill: sourceColors[i % sourceColors.length]
+  }));
+  const evolucionMensual: MonthlyData[] = d.evolucion_mensual || [];
+  const destinosPacientes: ChartData[] = (d.destinos_pacientes || []).map((item: ChartData, i: number) => ({
+    ...item, fill: sourceColors[i % sourceColors.length]
+  }));
+  const metricasMensajeria: ChartData[] = (d.metricas_mensajeria || []).map((item: ChartData, i: number) => ({
+    ...item, fill: sourceColors[i % sourceColors.length]
+  }));
 
   return {
     kpi,
-    consultasPorSede: [],
-    estadoCitas: [],
-    evolucionMensual: [],
+    consultasPorSede,
+    estadoCitas,
+    evolucionMensual,
     funnelLeads,
     fuentesCaptacion,
-    metricasMensajeria: [],
-    destinosPacientes: [],
+    metricasMensajeria,
+    destinosPacientes,
   };
 };
 

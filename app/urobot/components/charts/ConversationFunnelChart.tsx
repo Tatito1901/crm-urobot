@@ -19,8 +19,8 @@ const PHASE_COLORS: Record<string, string> = {
   conversacion: 'var(--chart-gray, #9ca3af)',
 };
 
-export default function ConversationFunnelChart() {
-  const { stats, isLoading } = useConversationFunnel(30);
+export default function ConversationFunnelChart({ dias = 30 }: { dias?: number }) {
+  const { stats, isLoading } = useConversationFunnel(dias);
 
   const chartData = useMemo(() => {
     return stats.fases.map((f) => ({
@@ -69,15 +69,15 @@ export default function ConversationFunnelChart() {
 
       {/* Chart */}
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+        <BarChart data={chartData} layout="vertical" margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
           <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
           <YAxis
             dataKey="fase"
             type="category"
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-            width={100}
+            width={80}
           />
           <Tooltip
             contentStyle={{

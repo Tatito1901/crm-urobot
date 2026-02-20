@@ -8,8 +8,6 @@ import {
   Filter, 
   Share2, 
   MessageSquare, 
-  Zap, 
-  Activity,
   Stethoscope,
   TrendingUp
 } from 'lucide-react';
@@ -51,25 +49,15 @@ const menuItems = [
     href: '/estadisticas/mensajeria', 
     icon: MessageSquare,
   },
-  { 
-    title: 'Performance', 
-    href: '/estadisticas/performance', 
-    icon: Activity,
-  },
-  { 
-    title: 'Tiempo Real', 
-    href: '/estadisticas/realtime', 
-    icon: Zap,
-  },
 ];
 
 export function StatisticsTabs() {
   const pathname = usePathname();
 
   return (
-    <div className="border-b border-border bg-background sticky top-0 z-20">
+    <div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
       <div className="px-3 sm:px-6 lg:px-8">
-        <div className="flex space-x-3 sm:space-x-6 overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
+        <div className="flex space-x-1 sm:space-x-2 overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -79,13 +67,13 @@ export function StatisticsTabs() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group inline-flex items-center gap-1.5 sm:gap-2 border-b-2 px-1 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all whitespace-nowrap",
+                  "group inline-flex items-center gap-1.5 sm:gap-2 border-b-2 px-2.5 sm:px-3 py-3 sm:py-3.5 text-xs sm:text-sm font-medium transition-all whitespace-nowrap rounded-t-md",
                   isActive
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                    ? "border-primary text-primary bg-primary/5"
+                    : "border-transparent text-muted-foreground hover:border-border hover:text-foreground hover:bg-muted/50"
                 )}
               >
-                <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
+                <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
                 {item.title}
               </Link>
             );

@@ -33,10 +33,10 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<
   if (active && payload && payload.length) {
     const item = payload[0];
     return (
-      <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-700/50 rounded-lg px-3 py-2 shadow-xl">
+      <div className="bg-popover/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-xl">
         <p className="text-xs font-semibold text-foreground mb-1">{item.payload.name}</p>
         <div className="space-y-1">
-          <p className="text-lg font-bold text-white tabular-nums">
+          <p className="text-lg font-bold text-foreground tabular-nums">
             {item.value} <span className="text-xs font-normal text-muted-foreground">consultas</span>
           </p>
           <p className="text-xs text-muted-foreground">

@@ -35,7 +35,7 @@ const RechartsPieChart = dynamic(
               if (active && payload && payload.length) {
                 const p = payload[0];
                 return (
-                  <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs shadow-lg">
+                  <div className="bg-popover border border-border rounded-lg p-3 text-xs shadow-lg">
                     <p className="font-bold text-foreground mb-2">{p.name}</p>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: String(p.payload?.fill || 'var(--chart-slate)') }} />
@@ -54,7 +54,7 @@ const RechartsPieChart = dynamic(
     )};
   }),
   { 
-    loading: () => <div className="h-[500px] w-full bg-slate-800/20 rounded-lg animate-pulse flex items-center justify-center"><div className="w-40 h-40 rounded-full bg-slate-700" /></div>,
+    loading: () => <div className="h-[500px] w-full bg-muted/20 rounded-lg animate-pulse flex items-center justify-center"><div className="w-40 h-40 rounded-full bg-muted" /></div>,
     ssr: false 
   }
 );

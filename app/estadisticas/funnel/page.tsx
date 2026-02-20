@@ -42,11 +42,11 @@ export default function FunnelPage() {
     >
       <Card className={cards.base}>
         <CardHeader className={spacing.cardHeader}>
-          <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
+          <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
             <Target className="w-4 h-4 text-emerald-400" />
             Embudo General
           </CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardDescription className="text-xs text-muted-foreground">
             Visualización del proceso de ventas
           </CardDescription>
         </CardHeader>

@@ -81,7 +81,7 @@ export function DashboardHourlyPatterns() {
                       title={`${['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][dayIndex]} ${pattern.hour}:00 - ${count} citas`}
                     >
                       {count > 0 && (
-                        <span className="text-[9px] font-bold text-white drop-shadow-sm">
+                        <span className="text-[9px] font-bold text-primary-foreground drop-shadow-sm">
                           {count}
                         </span>
                       )}

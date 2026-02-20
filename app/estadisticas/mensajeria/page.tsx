@@ -43,11 +43,11 @@ export default function MensajeriaPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
-            <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
+            <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-purple-400" />
               Volumen de Mensajes
             </CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardDescription className="text-xs text-muted-foreground">
               Enviados vs Recibidos
             </CardDescription>
           </CardHeader>

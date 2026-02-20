@@ -1,78 +1,28 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import { useState, useMemo, useCallback } from 'react';
 import { PageShell } from '@/app/components/crm/page-shell';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUrobotStats, marcarAlertaRevisada } from '@/hooks/urobot/useUrobotStats';
-import { useConversacionesStats } from '@/hooks/conversaciones/useConversacionesStats';
-import { useUrobotMetricasCRM } from '@/hooks/urobot/useUrobotMetricasCRM';
-import { Bot, RefreshCw, XCircle, AlertTriangle, MessageCircle, Activity, Target, Brain } from 'lucide-react';
+import { Bot, MessageCircle, Activity, Target } from 'lucide-react';
 import { RefreshButton } from '@/app/components/common/RefreshButton';
 import { TabBar } from '@/app/components/common/TabBar';
-import { buttons, spacing, layouts } from '@/app/lib/design-system';
+import { buttons } from '@/app/lib/design-system';
+import { invalidateDomain } from '@/lib/swr-config';
 
-// Componentes optimizados
-import { UrobotMetrics } from './components/UrobotMetrics';
-import { ErrorsTable } from './components/ErrorsTable';
-import { AlertasPanel } from './components/AlertasPanel';
-import { 
-  ConversacionesKPIs, 
-  MensajesResumen, 
-  TiposInteraccionCard, 
-  TopPreguntasCard,
-  ActividadPorHora 
-} from './components/ConversacionesStats';
-import {
-  MetricasCRMKPIs,
-  FunnelConversion,
-  IntentsDistribucion,
-  SentimentPanel,
-  ActividadHeatmap,
-} from './components/MetricasCRMPanel';
+import { CRMTab } from './components/tabs/CRMTab';
+import { MensajesTab } from './components/tabs/MensajesTab';
+import { MonitoreoTab } from './components/tabs/MonitoreoTab';
 
-import { ChartSkeleton } from './components/ChartSkeleton';
+// ============================================================
+// HELPERS
+// ============================================================
 
-// Lazy loading de gráficos (heavy components)
-const ActivityChart = dynamic(
-  () => import('./components/charts/ActivityChart').then(mod => ({ default: mod.ActivityChart })),
-  { 
-    loading: () => <ChartSkeleton />,
-    ssr: false,
-  }
-);
-
-const InteractionsPieChart = dynamic(
-  () => import('./components/charts/InteractionsPieChart').then(mod => ({ default: mod.InteractionsPieChart })),
-  { 
-    loading: () => <ChartSkeleton />,
-    ssr: false,
-  }
-);
-
-const HorizontalBarChart = dynamic(
-  () => import('./components/charts/HorizontalBarChart').then(mod => ({ default: mod.HorizontalBarChart })),
-  { 
-    loading: () => <ChartSkeleton height={180} />,
-    ssr: false,
-  }
-);
-
-const ConversationFunnelChart = dynamic(
-  () => import('./components/charts/ConversationFunnelChart'),
-  {
-    loading: () => <ChartSkeleton height={320} />,
-    ssr: false,
-  }
-);
-
-const BehavioralDistributionChart = dynamic(
-  () => import('./components/charts/BehavioralDistributionChart'),
-  {
-    loading: () => <ChartSkeleton height={280} />,
-    ssr: false,
-  }
-);
+function formatBadge(n: number): string | number | undefined {
+  if (n <= 0) return undefined;
+  if (n >= 10_000) return `${(n / 1000).toFixed(0)}k`;
+  if (n >= 1_000) return `${(n / 1000).toFixed(1)}k`;
+  return n;
+}
 
 // ============================================================
 // PÁGINA PRINCIPAL
@@ -82,42 +32,29 @@ type TabView = 'crm' | 'mensajes' | 'monitoreo';
 
 export default function UrobotPage() {
   const [dias, setDias] = useState(7);
-  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<TabView>('crm');
-  
+
   const { stats, kpi, isLoading, refetch } = useUrobotStats(dias);
-  const { stats: convStats, kpi: convKpi, isLoading: convLoading, refetch: convRefetch } = useConversacionesStats(dias);
-  const { data: crmData, resumen: crmResumen, isLoading: crmLoading, refetch: crmRefetch } = useUrobotMetricasCRM(dias);
 
-  // Prevenir mismatch de hidratación
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     refetch();
-    convRefetch();
-    crmRefetch();
-  };
+    invalidateDomain('urobot');
+  }, [refetch]);
 
-  const handleRevisarAlerta = async (alertaId: string) => {
+  const handleRevisarAlerta = useCallback(async (alertaId: string) => {
     try {
       await marcarAlertaRevisada(alertaId);
       refetch();
     } catch (error) {
       console.error('Error al marcar alerta:', error);
     }
-  };
+  }, [refetch]);
 
-  // Calcular estado general
   const estadoGeneral = useMemo(() => {
     if (kpi.tasaExito >= 95) return { status: 'Óptimo', color: 'text-emerald-400', bg: 'bg-emerald-500' };
     if (kpi.tasaExito >= 85) return { status: 'Estable', color: 'text-yellow-400', bg: 'bg-yellow-500' };
     return { status: 'Atención', color: 'text-red-400', bg: 'bg-red-500' };
   }, [kpi.tasaExito]);
-
-  // Estado de carga seguro para hidratación
-  const showLoading = mounted && (isLoading || convLoading || crmLoading);
 
   return (
     <PageShell
@@ -144,7 +81,7 @@ export default function UrobotPage() {
             <option value={7}>7 días</option>
             <option value={30}>30 días</option>
           </select>
-          <RefreshButton onClick={handleRefresh} loading={showLoading} variant="cyan" />
+          <RefreshButton onClick={handleRefresh} loading={isLoading} variant="cyan" />
         </div>
       }
     >
@@ -157,15 +94,13 @@ export default function UrobotPage() {
             key: 'crm',
             label: 'Conversiones',
             icon: <Target className="w-4 h-4" />,
-            badge: crmResumen.citasAgendadas > 0 ? crmResumen.citasAgendadas : undefined,
-            badgeColor: 'emerald',
             accentColor: 'emerald',
           },
           {
             key: 'mensajes',
             label: 'Mensajes',
             icon: <MessageCircle className="w-4 h-4" />,
-            badge: convKpi.totalMensajesRecibidos + convKpi.totalMensajesEnviados,
+            badge: formatBadge(kpi.totalMensajes),
             accentColor: 'cyan',
           },
           {
@@ -180,165 +115,27 @@ export default function UrobotPage() {
         active={activeTab}
         onChange={(key) => setActiveTab(key as TabView)}
       />
-      {/* ============================================================ */}
-      {/* TAB: CRM - Métricas de conversión */}
-      {/* ============================================================ */}
+
       {activeTab === 'crm' && (
-        <>
-          {/* KPIs de conversiones */}
-          <section className={spacing.sectionGap}>
-            <MetricasCRMKPIs resumen={crmResumen} />
-          </section>
-
-          {/* Funnel + Intenciones */}
-          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
-            <FunnelConversion funnel={crmData.funnel} />
-            <IntentsDistribucion intents={crmData.intents} />
-          </div>
-
-          {/* Sentiment + Actividad */}
-          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
-            <SentimentPanel 
-              positivo={crmResumen.sentimentPositivo}
-              negativo={crmResumen.sentimentNegativo}
-              urgente={crmResumen.sentimentUrgente}
-              neutral={crmResumen.sentimentNeutral}
-            />
-            <ActividadHeatmap datos={crmData.porHora} />
-          </div>
-
-          {/* Funnel de fases de conversación */}
-          <div className={spacing.sectionGap}>
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4 text-violet-500" />
-                  Funnel de Conversación (30d)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ConversationFunnelChart />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Distribución Behavioral */}
-          <div className={spacing.sectionGap}>
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-violet-500" />
-                  Perfiles Behavioral (30d)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BehavioralDistributionChart />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Gráfico de evolución */}
-          <div className={spacing.sectionGap}>
-            <ActivityChart data={stats.evolucionHoras} />
-          </div>
-        </>
+        <CRMTab dias={dias} evolucionHoras={stats.evolucionHoras} />
       )}
 
-      {/* ============================================================ */}
-      {/* TAB: MENSAJES - Estadísticas de conversaciones */}
-      {/* ============================================================ */}
       {activeTab === 'mensajes' && (
-        <>
-          {/* KPIs de conversaciones */}
-          <section className={spacing.sectionGap}>
-            <ConversacionesKPIs kpi={convKpi} />
-          </section>
-
-          {/* Fila principal: Resumen + Actividad por hora */}
-          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
-            <MensajesResumen 
-              recibidos={convKpi.totalMensajesRecibidos}
-              enviados={convKpi.totalMensajesEnviados}
-              conversaciones={convKpi.totalConversaciones}
-            />
-            <ActividadPorHora datos={convStats.mensajesPorHora} />
-          </div>
-
-          {/* Segunda fila: Tipos de interacción + Top preguntas */}
-          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
-            <TiposInteraccionCard tipos={convStats.tiposInteraccion} />
-            <TopPreguntasCard preguntas={convStats.topPreguntas} />
-          </div>
-
-          {/* Gráfico de evolución */}
-          <div className={spacing.sectionGap}>
-            <ActivityChart data={stats.evolucionHoras} />
-          </div>
-        </>
+        <MensajesTab dias={dias} evolucionHoras={stats.evolucionHoras} />
       )}
 
-      {/* ============================================================ */}
-      {/* TAB: MONITOREO - Estado técnico del bot */}
-      {/* ============================================================ */}
       {activeTab === 'monitoreo' && (
-        <>
-          {/* KPIs técnicos */}
-          <section className={spacing.sectionGap}>
-            <UrobotMetrics kpi={kpi} />
-          </section>
-
-          {/* Gráficos principales */}
-          <div className={`${layouts.grid2} ${spacing.sectionGap}`}>
-            <ActivityChart data={stats.evolucionHoras} />
-            <InteractionsPieChart data={stats.interaccionesPorTipo} />
-          </div>
-
-          {/* Segunda fila de gráficos */}
-          <div className={`${layouts.grid3} ${spacing.sectionGap}`}>
-            <HorizontalBarChart 
-              data={stats.erroresPorTipo} 
-              title="Errores por Tipo"
-              emptyMessage="Sin errores en el período"
-            />
-            <HorizontalBarChart 
-              data={stats.herramientasUsadas} 
-              title="Herramientas Usadas"
-              emptyMessage="Sin datos de herramientas"
-            />
-            <InteractionsPieChart 
-              data={stats.sentimentDistribucion} 
-              title="Sentiment de Usuarios"
-              innerRadius={40}
-            />
-          </div>
-
-          {/* Tablas de errores y alertas */}
-          <div className={layouts.grid2}>
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-red-400" />
-                  Últimos Errores
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ErrorsTable errors={stats.ultimosErrores} />
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-400" />
-                  Alertas Pendientes ({stats.alertasPendientes.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AlertasPanel alertas={stats.alertasPendientes} onRevisar={handleRevisarAlerta} />
-              </CardContent>
-            </Card>
-          </div>
-        </>
+        <MonitoreoTab
+          kpi={kpi}
+          evolucionHoras={stats.evolucionHoras}
+          interaccionesPorTipo={stats.interaccionesPorTipo}
+          erroresPorTipo={stats.erroresPorTipo}
+          herramientasUsadas={stats.herramientasUsadas}
+          sentimentDistribucion={stats.sentimentDistribucion}
+          ultimosErrores={stats.ultimosErrores}
+          alertasPendientes={stats.alertasPendientes}
+          onRevisarAlerta={handleRevisarAlerta}
+        />
       )}
     </PageShell>
   );
