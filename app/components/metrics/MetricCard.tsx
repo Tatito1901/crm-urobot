@@ -150,22 +150,27 @@ export const MetricCard = React.memo(({
   if (variant === 'compact') {
     return (
       <div
-        className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-border/80 hover:bg-card hover:shadow-sm min-h-[72px] cursor-pointer"
+        className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 hover:shadow-sm min-h-[72px] cursor-pointer relative overflow-hidden group"
         title={tooltip}
       >
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:animate-shimmer pointer-events-none" />
+        
         {(icon || IconComponent) && (
-          <div className={cn('p-2 sm:p-2.5 rounded-xl shrink-0', iconColor || `${colors.bg}`)}>
-            {IconComponent ? <IconComponent className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : icon}
+          <div className={cn('p-2.5 sm:p-3 rounded-xl shrink-0 flex items-center justify-center shadow-inner transition-transform group-hover:scale-110', iconColor ? `bg-muted/50 border border-border/50 ${iconColor}` : `${colors.bg} border border-${color}-500/20 text-${color}-500`)}>
+            {IconComponent ? <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" /> : icon}
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground font-semibold truncate leading-tight uppercase tracking-wide">
-            {title}
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] sm:text-xs text-muted-foreground font-semibold truncate uppercase tracking-wider">
+              {title}
+            </p>
+            <ArrowUpRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+          </div>
           {loading ? (
-            <div className="h-6 w-10 mt-1 bg-muted rounded animate-pulse" />
+            <div className="h-6 w-12 mt-1 bg-muted rounded animate-pulse" />
           ) : (
-            <p className={cn('text-lg sm:text-xl font-bold tabular-nums leading-tight mt-0.5', iconColor ? iconColor.split(' ')[0] : 'text-foreground')}>
+            <p className={cn('text-lg sm:text-2xl font-bold tabular-nums leading-tight mt-0.5 tracking-tight', iconColor ? iconColor.split(' ')[0] : 'text-foreground')}>
               {percentage !== undefined ? `${percentage}%` : displayValue}
             </p>
           )}
