@@ -3,6 +3,12 @@
 import { useRef, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { MessageCircle, ArrowLeft, RefreshCw, ExternalLink, MessageSquare, Sparkles, Phone } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { TipoMensaje } from '@/types/chat'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -226,12 +232,25 @@ export function ChatArea({
           {/* Footer con acciones rápidas */}
           <footer className="shrink-0 py-2 px-3 bg-slate-900/80 backdrop-blur border-t border-slate-800/50">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+              <div className="flex items-center gap-1.5 text-xs text-slate-400">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>Solo lectura</span>
               </div>
               
-              <div className="flex items-center gap-1.5">
+            {/* Acciones de Footer */}
+            <div className="flex items-center gap-1.5">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center p-1.5 rounded-full hover:bg-slate-800 transition-colors mr-1 cursor-help">
+                      <MessageCircle className="w-4 h-4 text-slate-500" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs max-w-[200px] mb-2">
+                    <p>La interacción directa ocurre vía WhatsApp. Este panel es de solo lectura.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
                 <a
                   href={`https://wa.me/52${contactoActivo?.telefono.replace(/\D/g, '')}`}
                   target="_blank"

@@ -41,7 +41,7 @@ export const TableHeaders = {
   UltimoMensaje: memo(function UltimoMensajeHeader() {
     return (
       <div className="flex items-center gap-1.5">
-        <span>Último msg</span>
+        <span>Última Actividad</span>
         <HelpIcon 
           content={
             <div className="space-y-1">
@@ -58,7 +58,7 @@ export const TableHeaders = {
   Etapa: memo(function EtapaHeader() {
     return (
       <div className="flex items-center gap-1.5">
-        <span>Etapa</span>
+        <span>Estado</span>
         <HelpIcon 
           content={GLOSARIO.estados.descripcion} 
           side="bottom" 

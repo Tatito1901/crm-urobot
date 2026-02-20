@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useHasMounted } from '@/hooks/common/useHasMounted'
 import { useConversaciones } from '@/hooks/conversaciones/useConversaciones'
 import { RefreshCw } from 'lucide-react'
@@ -9,7 +9,7 @@ import { ConversationsSidebar, type FiltroTipo } from './components/Conversation
 import { ChatArea } from './components/ChatArea'
 import { ConversationActionsPanel } from './components/ConversationActionsPanel'
 
-export default function ConversacionesPage() {
+function ConversacionesContent() {
   const searchParams = useSearchParams()
   const telefonoParam = searchParams.get('telefono')
   const mounted = useHasMounted()
@@ -168,6 +168,18 @@ export default function ConversacionesPage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function ConversacionesPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex items-center justify-center">
+        <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <ConversacionesContent />
+    </Suspense>
   )
 }
 

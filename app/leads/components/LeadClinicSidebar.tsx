@@ -93,7 +93,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
               <h3 className="font-semibold text-sm text-foreground truncate">
                 {lead.nombreDisplay}
               </h3>
-              <p className="text-[11px] text-muted-foreground truncate font-mono">
+              <p className="text-xs text-muted-foreground truncate font-mono">
                 {lead.telefono}
               </p>
             </div>
@@ -175,7 +175,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           <span className="text-xs font-semibold text-foreground">
                             Síntomas reportados
                           </span>
-                          <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 rounded-md">
+                          <Badge variant="default" className="text-xs px-2 py-0 h-5 rounded-md">
                             {clinico?.sintomas_reportados.length}
                           </Badge>
                         </div>
@@ -186,7 +186,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                             <Badge
                               key={i}
                               variant="default"
-                              className="text-[11px] font-medium rounded-md px-2 py-0.5"
+                              className="text-xs font-medium rounded-md px-2 py-0.5"
                             >
                               {s}
                             </Badge>
@@ -205,7 +205,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           <span className="text-xs font-semibold text-foreground">
                             Banderas rojas
                           </span>
-                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4 rounded-md">
+                          <Badge variant="destructive" className="text-xs px-2 py-0 h-5 rounded-md">
                             {clinico?.banderas_rojas.length}
                           </Badge>
                         </div>
@@ -216,7 +216,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                             <Badge
                               key={i}
                               variant="destructive"
-                              className="text-[11px] font-medium rounded-md px-2 py-0.5"
+                              className="text-xs font-medium rounded-md px-2 py-0.5"
                             >
                               <AlertTriangle className="w-3 h-3 mr-1" />
                               {b}
@@ -277,7 +277,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pb-3 pt-0">
-                        <p className="text-[13px] text-muted-foreground leading-relaxed">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
                           {clinico?.resumen_caso}
                         </p>
                       </AccordionContent>
@@ -295,7 +295,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           </span>
                           <Badge
                             variant={lead.scoreTotal >= 70 ? 'success' : lead.scoreTotal >= 40 ? 'warning' : 'secondary'}
-                            className="text-[10px] px-1.5 py-0 h-4 rounded-md font-bold"
+                            className="text-xs px-2 py-0 h-5 rounded-md font-bold"
                           >
                             {lead.scoreTotal}
                           </Badge>
@@ -306,7 +306,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           {/* Score bar */}
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] text-muted-foreground">Score total</span>
+                              <span className="text-xs text-muted-foreground font-medium">Score total</span>
                               <span className={cn(
                                 'text-sm font-bold tabular-nums',
                                 lead.scoreTotal >= 70 ? 'text-emerald-500' :
@@ -371,7 +371,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           {lead.signals.prediccion_conversion && (
                             <Badge
                               variant={lead.signals.prediccion_conversion === 'alta' ? 'success' : lead.signals.prediccion_conversion === 'media' ? 'warning' : 'secondary'}
-                              className="text-[10px] px-1.5 py-0 h-4 rounded-md"
+                              className="text-xs px-2 py-0 h-5 rounded-md"
                             >
                               {lead.signals.prediccion_conversion}
                             </Badge>
@@ -402,7 +402,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           {lead.signals.nivel_compromiso !== null && (
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between">
-                                <span className="text-[11px] text-muted-foreground">Compromiso</span>
+                                <span className="text-xs text-muted-foreground font-medium">Compromiso</span>
                                 <span className="text-xs font-bold tabular-nums text-violet-500">
                                   {lead.signals.nivel_compromiso}/10
                                 </span>
@@ -419,7 +419,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                             <div className="flex items-center gap-2 px-2.5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                               <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Barrera</p>
+                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Barrera</p>
                                 <p className="text-xs font-semibold text-foreground capitalize">
                                   {lead.signals.barrera_principal.replace(/_/g, ' ')}
                                 </p>
@@ -430,10 +430,10 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           {/* Emociones detectadas */}
                           {lead.signals.emociones.length > 0 && (
                             <div className="space-y-1.5">
-                              <span className="text-[11px] text-muted-foreground">Emociones detectadas</span>
+                              <span className="text-xs text-muted-foreground font-medium mb-1.5 block">Emociones detectadas</span>
                               <div className="flex flex-wrap gap-1">
                                 {lead.signals.emociones.map((emo, i) => (
-                                  <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 h-5 rounded-md capitalize">
+                                  <Badge key={i} variant="outline" className="text-xs px-2 py-0 h-6 rounded-md capitalize">
                                     {emo}
                                   </Badge>
                                 ))}
@@ -446,7 +446,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                             <div className="flex items-center gap-2 px-2.5 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                               <Lightbulb className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Incentivo sugerido</p>
+                                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Incentivo sugerido</p>
                                 <p className="text-xs font-semibold text-foreground capitalize">
                                   {lead.signals.incentivo_sugerido.replace(/_/g, ' ')}
                                 </p>
@@ -467,7 +467,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           <span className="text-xs font-semibold text-foreground">
                             Meta Ads
                           </span>
-                          <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 rounded-md bg-blue-500/20 text-blue-400 border-0">
+                          <Badge variant="default" className="text-[11px] sm:text-xs px-2 py-0 h-5 rounded-md bg-blue-500/20 text-blue-400 border-0">
                             Campaña
                           </Badge>
                         </div>
@@ -476,13 +476,13 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                         <div className="space-y-2">
                           {lead.campanaHeadline && (
                             <div className="space-y-0.5">
-                              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Headline</span>
+                              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Headline</span>
                               <p className="text-xs font-semibold text-foreground">{lead.campanaHeadline}</p>
                             </div>
                           )}
                           {lead.campanaUrl && (
                             <div className="space-y-0.5">
-                              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">URL</span>
+                              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">URL</span>
                               <a
                                 href={lead.campanaUrl}
                                 target="_blank"
@@ -496,14 +496,14 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
                           )}
                           {lead.ctwaClid && (
                             <div className="space-y-0.5">
-                              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Click ID</span>
-                              <p className="text-[11px] text-muted-foreground font-mono truncate">{lead.ctwaClid}</p>
+                              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Click ID</span>
+                              <p className="text-xs text-muted-foreground font-mono truncate">{lead.ctwaClid}</p>
                             </div>
                           )}
                           {lead.campanaId && (
                             <div className="space-y-0.5">
-                              <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Campaign ID</span>
-                              <p className="text-[11px] text-muted-foreground font-mono truncate">{lead.campanaId}</p>
+                              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Campaign ID</span>
+                              <p className="text-xs text-muted-foreground font-mono truncate">{lead.campanaId}</p>
                             </div>
                           )}
                         </div>
@@ -520,7 +520,7 @@ export function LeadClinicSidebar({ lead, onClose }: LeadClinicSidebarProps) {
         {/* ── Footer ── */}
         <Separator />
         <div className="shrink-0 px-4 py-2.5 bg-secondary/30">
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Stethoscope className="w-3 h-3" />
             <span>{activeTab === 'clinico' ? 'Datos recopilados por el bot' : 'Solo lectura — mensajes de WhatsApp'}</span>
           </div>
@@ -559,7 +559,7 @@ function TabButton({
       {label}
       {badge !== undefined && (
         <span className={cn(
-          'text-[9px] font-bold tabular-nums px-1.5 py-0 rounded-full min-w-[18px] text-center',
+          'text-[10px] sm:text-xs font-bold tabular-nums px-2 py-0 rounded-full min-w-[20px] text-center',
           active ? 'bg-primary/10 text-primary' : 'bg-secondary text-muted-foreground'
         )}>
           {badge > 99 ? '99+' : badge}
@@ -587,9 +587,9 @@ function ScoreBar({ label, value, max, color }: { label: string; value: number; 
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
   return (
     <div className="space-y-0.5">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] text-muted-foreground">{label}</span>
-        <span className={cn('text-[10px] font-bold tabular-nums', color)}>{value}/{max}</span>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] sm:text-xs text-muted-foreground font-medium">{label}</span>
+        <span className={cn('text-[11px] sm:text-xs font-bold tabular-nums', color)}>{value}/{max}</span>
       </div>
       <div className="h-1 bg-secondary rounded-full overflow-hidden">
         <div className={cn('h-full rounded-full transition-all', color.replace('text-', 'bg-'))} style={{ width: `${pct}%` }} />
@@ -611,7 +611,7 @@ function ScoreDetailCard({
     <div className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border">
       <div className="text-muted-foreground">{icon}</div>
       <div className="min-w-0">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{label}</p>
         <p className="text-xs font-semibold text-foreground capitalize truncate">
           {value.replace(/_/g, ' ')}
         </p>

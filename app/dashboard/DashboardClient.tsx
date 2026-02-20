@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo } from 'react';
 import dynamicImport from 'next/dynamic';
 import {
@@ -238,7 +239,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2.5">
                   <span className="inline-block h-2 w-2 rounded-full bg-teal-400 live-dot" />
-                  <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-teal-400/80">
+                  <p className="text-xs uppercase tracking-[0.2em] font-bold text-teal-400/80">
                     Centro de Comando
                   </p>
                 </div>
@@ -282,15 +283,23 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                   <div className="flex flex-wrap gap-2">
                     {accionItems.map(item => {
                       const Icon = item.icon;
+                      // Mapeo de rutas para cada tipo de acción urgente
+                      const href = item.label === 'Escalamientos' ? '/leads?filtro=escalado' 
+                                 : item.label === 'Leads calientes sin cita' ? '/leads'
+                                 : item.label === 'Sin confirmar' ? '/consultas'
+                                 : item.label === 'Mensajes no leídos' ? '/conversaciones'
+                                 : '/leads';
+                                 
                       return (
-                        <div
+                        <Link
+                          href={href}
                           key={item.label}
-                          className="flex items-center gap-1.5 rounded-lg bg-card/60 border border-border/50 px-2.5 py-1.5 text-xs"
+                          className="flex items-center gap-1.5 rounded-lg bg-card/60 border border-border/50 px-2.5 py-1.5 text-xs hover:bg-card hover:border-amber-500/30 transition-colors"
                         >
                           <Icon className={`h-3 w-3 ${item.color}`} />
-                          <span className="text-muted-foreground">{item.label}</span>
+                          <span className="text-muted-foreground group-hover:text-foreground transition-colors">{item.label}</span>
                           <span className="font-bold text-foreground tabular-nums">{item.count}</span>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
@@ -316,7 +325,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                       <div className={`p-2 rounded-lg ${m.accentBg}`}>
                         <Icon className={`h-4 w-4 ${m.accentColor}`} />
                       </div>
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         {m.title}
                       </span>
                     </div>
@@ -361,13 +370,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     <Icon className={`h-3.5 w-3.5 ${sm.color}`} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate">{sm.label}</p>
+                    <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">{sm.label}</p>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg font-bold tabular-nums text-foreground font-jakarta tracking-tight">
                         {loading ? '—' : sm.value}
                       </span>
                       {'trend' in sm && sm.trend !== undefined && !loading && (
-                        <span className={`text-[10px] font-semibold ${sm.trend >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        <span className={`text-[11px] sm:text-xs font-bold ${sm.trend >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                           {sm.trend > 0 ? '↑' : sm.trend < 0 ? '↓' : ''}
                         </span>
                       )}
@@ -392,7 +401,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                   Leads + consultas — últimos días
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: chartColors.teal }} />
                 Actividad total
               </div>
@@ -481,7 +490,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusClasses}`}>
+                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${statusClasses}`}>
                             {c.estadoCita}
                           </span>
                           {c.confirmadoPaciente && (
@@ -540,11 +549,11 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {l.scoreTotal !== null && l.scoreTotal > 0 && (
-                          <span className="text-[10px] font-bold tabular-nums text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                          <span className="text-[11px] sm:text-xs font-bold tabular-nums text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
                             {l.scoreTotal}
                           </span>
                         )}
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        <span className="text-[11px] sm:text-xs font-medium text-muted-foreground whitespace-nowrap">
                           {timeAgo(l.createdAt)}
                         </span>
                       </div>
@@ -586,7 +595,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-foreground truncate">{e.nombre}</p>
                         {e.esUrgente && (
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/25">
+                          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-rose-400 bg-rose-500/15 px-2 py-0.5 rounded border border-rose-500/25">
                             Urgente
                           </span>
                         )}
@@ -603,7 +612,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {e.citaAgendada && (
-                        <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/25 flex items-center gap-1">
+                        <span className="text-[11px] sm:text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25 flex items-center gap-1.5">
                           <Calendar className="h-2.5 w-2.5" />
                           Agendada
                         </span>
@@ -639,7 +648,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 { label: 'Resp. promedio', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
               ].map(stat => (
                 <div key={stat.label} className="px-5 sm:px-6 py-3.5 sm:py-4 text-center sm:text-left">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">{stat.label}</p>
+                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{stat.label}</p>
                   <p className={`text-xl sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}
                   </p>

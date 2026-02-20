@@ -51,4 +51,4 @@ export function LeadActionButton({ lead, onRefresh }: LeadActionButtonProps) {
   );
 }
 
-export default LeadActionButton;
+

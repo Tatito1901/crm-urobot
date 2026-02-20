@@ -402,4 +402,4 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
   );
 }
 
-export default LeadActionsModal;
+

@@ -16,6 +16,15 @@ import {
   X,
   type LucideProps,
 } from "lucide-react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerClose,
+} from "@/components/ui/drawer";
 
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
@@ -104,7 +113,7 @@ export function Sidebar() {
                           aria-current={isActive ? "page" : undefined}
                           className={cn(
                             "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-150",
-                            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
+                            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
                             isActive 
                               ? "bg-muted text-foreground border border-border shadow-sm"
                               : "text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent"
@@ -147,7 +156,7 @@ export function Sidebar() {
                 "w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-all duration-150",
                 "hover:border-rose-500/25 hover:bg-rose-500/15 hover:text-rose-400",
                 "active:bg-rose-500/10 active:scale-[0.98]",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
               )}
             >
               <svg
@@ -244,44 +253,6 @@ export function BottomNav() {
 
   return (
     <>
-      {/* Menú expandido "Más" */}
-      {showMore && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowMore(false)}
-          />
-          <div className="absolute bottom-[calc(64px+env(safe-area-inset-bottom))] left-2 right-2 z-50 
-                          bg-card border border-border rounded-2xl shadow-2xl p-2 
-                          animate-in slide-in-from-bottom-4 duration-200">
-            <div className="grid grid-cols-2 gap-1">
-              {SECONDARY_NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setShowMore(false)}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
-                      "active:scale-95 active:bg-muted/50 min-h-[48px]",
-                      isActive
-                        ? "bg-teal-500/15 text-teal-400"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span>{item.label}</span>
-                    {isActive && <span className="ml-auto text-teal-400">•</span>}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Bottom Navigation — Glass Premium */}
       <nav
         aria-label="Navegación inferior"
@@ -296,22 +267,55 @@ export function BottomNav() {
             
             if (isMoreButton) {
               return (
-                <button
-                  key={item.label}
-                  onClick={() => setShowMore(!showMore)}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
-                    "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
-                    isActive
-                      ? "text-teal-400"
-                      : "text-muted-foreground"
-                  )}
-                  aria-expanded={showMore}
-                  aria-label="Más opciones"
-                >
-                  {showMore ? <X className="w-5 h-5" aria-hidden /> : item.icon}
-                  <span className="text-xs font-medium">{showMore ? "Cerrar" : item.label}</span>
-                </button>
+                <Drawer open={showMore} onOpenChange={setShowMore} key={item.label}>
+                  <DrawerTrigger asChild>
+                    <button
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
+                        "active:scale-95 focus-visible:outline-2 focus-visible:outline-teal-400",
+                        isActive
+                          ? "text-teal-400"
+                          : "text-muted-foreground"
+                      )}
+                      aria-expanded={showMore}
+                      aria-label="Más opciones"
+                    >
+                      {item.icon}
+                      <span className="text-xs font-medium">{item.label}</span>
+                    </button>
+                  </DrawerTrigger>
+                  <DrawerContent className="bg-card border-border">
+                    <div className="mx-auto w-full max-w-sm">
+                      <DrawerHeader className="text-left pb-2">
+                        <DrawerTitle className="text-foreground">Más opciones</DrawerTitle>
+                        <DrawerDescription className="text-muted-foreground">Inteligencia y Configuración</DrawerDescription>
+                      </DrawerHeader>
+                      <div className="px-4 pb-6 grid grid-cols-2 gap-2">
+                        {SECONDARY_NAV_ITEMS.map((secItem) => {
+                          const isSecActive = pathname === secItem.href || pathname?.startsWith(`${secItem.href}/`);
+                          const SecIcon = secItem.icon;
+                          return (
+                            <Link
+                              key={secItem.label}
+                              href={secItem.href}
+                              onClick={() => setShowMore(false)}
+                              className={cn(
+                                "flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-colors",
+                                "active:scale-95 border",
+                                isSecActive
+                                  ? "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                                  : "bg-muted/50 text-foreground hover:bg-muted border-border"
+                              )}
+                            >
+                              <SecIcon className="h-5 w-5 shrink-0" />
+                              <span>{secItem.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
               );
             }
 
@@ -323,7 +327,7 @@ export function BottomNav() {
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
-                  "active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400",
+                  "active:scale-95 focus-visible:outline-2 focus-visible:outline-teal-400",
                   isActive 
                     ? "text-teal-400 font-semibold" 
                     : "text-muted-foreground"

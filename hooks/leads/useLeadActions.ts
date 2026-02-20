@@ -524,4 +524,4 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
   };
 }
 
-export default useLeadActions;
+

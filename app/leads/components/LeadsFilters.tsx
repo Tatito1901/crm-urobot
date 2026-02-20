@@ -15,13 +15,13 @@ interface LeadsFiltersProps {
 // Constante fuera del componente para evitar re-creación
 // Nota: "Convertidos" no aparece porque si ya son pacientes, NO son leads
 const FILTERS: { id: FilterStatus; label: string }[] = [
-  { id: 'all', label: 'Todos' },
-  { id: 'nuevo', label: '🆕 Nuevos' },
-  { id: 'interactuando', label: '🤖 Bot' },
-  { id: 'contactado', label: '� Contactados' },
-  { id: 'cita_propuesta', label: '📋 Propuestas' },
-  { id: 'cita_agendada', label: '� Agendados' },
-  { id: 'perdido', label: '💤 Perdidos' },
+  { id: 'all', label: 'TODOS' },
+  { id: 'nuevo', label: 'NUEVOS' },
+  { id: 'interactuando', label: 'INTERACTUANDO' },
+  { id: 'contactado', label: 'CONTACTADOS' },
+  { id: 'cita_propuesta', label: 'CITA OFRECIDA' },
+  { id: 'cita_agendada', label: 'CITA AGENDADA' },
+  { id: 'perdido', label: 'PERDIDOS' },
 ];
 
 export const LeadsFilters = React.memo(function LeadsFilters({
@@ -37,10 +37,26 @@ export const LeadsFilters = React.memo(function LeadsFilters({
   );
 
   return (
-    <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between w-full">
+      {/* Buscador y total */}
+      <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="relative w-full sm:w-64">
+          <label htmlFor="leads-search" className="sr-only">Buscar por nombre o teléfono...</label>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden />
+          <input
+            id="leads-search"
+            type="text"
+            value={searchValue}
+            onChange={handleSearchChange}
+            className="w-full pl-9 pr-3 py-2 bg-transparent border-b border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary text-sm transition-all"
+            placeholder="Buscar por nombre o teléfono..."
+          />
+        </div>
+      </div>
+
       {/* Tabs de Filtros */}
-      <div className="flex-shrink-0 overflow-x-auto no-scrollbar" role="tablist" aria-label="Filtrar leads por estado">
-        <div className="inline-flex p-1 bg-muted/50 rounded-lg border border-border">
+      <div className="flex-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Filtrar leads por estado">
+        <div className="flex gap-2 p-1">
           {FILTERS.map((filter) => (
             <button
               key={filter.id}
@@ -48,10 +64,10 @@ export const LeadsFilters = React.memo(function LeadsFilters({
               aria-selected={currentFilter === filter.id}
               onClick={() => onFilterChange(filter.id)}
               className={`
-                px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap
+                px-4 py-1.5 text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wider transition-all whitespace-nowrap border
                 ${currentFilter === filter.id
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                  : 'bg-transparent text-muted-foreground border-border hover:bg-muted/30 hover:text-foreground'
                 }
               `}
             >
@@ -59,20 +75,6 @@ export const LeadsFilters = React.memo(function LeadsFilters({
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Buscador */}
-      <div className="relative w-full sm:w-56 sm:flex-shrink-0">
-        <label htmlFor="leads-search" className="sr-only">Buscar leads</label>
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden />
-        <input
-          id="leads-search"
-          type="text"
-          value={searchValue}
-          onChange={handleSearchChange}
-          className="w-full pl-9 pr-3 py-2 border border-border rounded-lg bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm transition-all"
-          placeholder="Buscar lead..."
-        />
       </div>
     </div>
   );

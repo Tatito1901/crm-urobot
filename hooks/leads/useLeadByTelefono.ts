@@ -104,4 +104,4 @@ export function useLeadByTelefono(telefono: string | null): UseLeadByTelefonoRet
   };
 }
 
-export default useLeadByTelefono;
+
