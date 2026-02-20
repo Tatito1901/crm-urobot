@@ -41,7 +41,7 @@ export const TableHeaders = {
   UltimoMensaje: memo(function UltimoMensajeHeader() {
     return (
       <div className="flex items-center gap-1.5">
-        <span>Último mensaje</span>
+        <span>Último msg</span>
         <HelpIcon 
           content={
             <div className="space-y-1">

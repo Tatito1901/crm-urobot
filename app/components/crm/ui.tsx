@@ -123,7 +123,7 @@ export function DataTable({
   return (
     <div className="space-y-4">
       <div className="hidden w-full overflow-x-auto rounded-xl border border-border bg-card md:block">
-        <table className="min-w-full divide-y divide-border text-left text-sm text-foreground">
+        <table className="min-w-full divide-y divide-border text-left text-sm text-foreground" role="grid">
           <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground font-medium">
             <tr>
               {headers.map((header) => (
@@ -138,14 +138,29 @@ export function DataTable({
               <tr
                 key={row.id}
                 className={cn(
-                  "hover:bg-muted/30 transition-colors",
-                  onRowClick && "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-teal-500"
+                  "hover:bg-muted/30 transition-colors outline-none",
+                  onRowClick && "cursor-pointer focus-visible:bg-muted/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500/50"
                 )}
                 onClick={onRowClick ? () => onRowClick(row.id) : undefined}
-                onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row.id); } } : undefined}
+                onKeyDown={onRowClick ? (e) => { 
+                  if (e.key === 'Enter' || e.key === ' ') { 
+                    e.preventDefault(); 
+                    onRowClick(row.id); 
+                  }
+                  // Navegación por teclado
+                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const current = e.currentTarget as HTMLElement;
+                    const next = e.key === 'ArrowDown' ? current.nextElementSibling : current.previousElementSibling;
+                    if (next instanceof HTMLElement) {
+                      next.focus();
+                    }
+                  }
+                } : undefined}
                 onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
                 tabIndex={onRowClick ? 0 : undefined}
-                role={onRowClick ? "button" : undefined}
+                role="row"
+                aria-selected={false}
               >
                 {headers.map((header) => (
                   <td key={header.key} className={cn("px-4 py-3 align-middle", getAlignmentClasses(header.align))}>
@@ -160,7 +175,7 @@ export function DataTable({
 
       {/* Mobile: Card-based layout optimizado */}
       <div className="space-y-2 md:hidden px-2 sm:px-3">
-        {rows.map((row) => {
+        {rows.map((row, index) => {
           const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
           const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
           const metadata = mobileConfig?.metadata ?? [];
@@ -169,9 +184,23 @@ export function DataTable({
             <div
               key={row.id}
               onClick={onRowClick ? () => onRowClick(row.id) : undefined}
-              onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row.id); } } : undefined}
+              onKeyDown={onRowClick ? (e) => { 
+                if (e.key === 'Enter' || e.key === ' ') { 
+                  e.preventDefault(); 
+                  onRowClick(row.id); 
+                }
+                // Navegación por teclado
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  const current = e.currentTarget;
+                  const next = e.key === 'ArrowDown' ? current.nextElementSibling : current.previousElementSibling;
+                  if (next instanceof HTMLElement) {
+                    next.focus();
+                  }
+                }
+              } : undefined}
               onMouseEnter={onRowHover ? () => onRowHover(row.id) : undefined}
-              tabIndex={onRowClick ? 0 : undefined}
+              tabIndex={onRowClick ? index === 0 ? 0 : -1 : undefined}
               role={onRowClick ? "button" : undefined}
               className={cn(
                 "rounded-xl border border-border bg-card p-3 sm:p-4 min-h-[72px] flex flex-col justify-center shadow-sm",

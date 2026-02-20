@@ -26,6 +26,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
     { key: 'mensajes', label: 'Msgs' },
     { key: 'ultimoMensaje', label: <TableHeaders.UltimoMensaje /> },
     { key: 'estado', label: <TableHeaders.Etapa /> },
+    { key: 'sintomas', label: 'Síntomas' },
     { key: 'accion', label: 'Acción' },
   ];
 
@@ -39,11 +40,11 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
             <span className="font-medium text-foreground leading-tight">{lead.nombre}</span>
             {lead.esCaliente && <span className="text-amber-500" title="Lead caliente">🔥</span>}
           </div>
-          <span className="text-xs text-muted-foreground font-mono">{lead.telefono}</span>
+          <span className="text-[11px] sm:text-xs text-muted-foreground font-mono">{lead.telefono}</span>
         </div>
       ),
       fuente: (
-        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium border ${CANAL_COLORS[lead.fuente]?.bg || 'bg-secondary'} ${CANAL_COLORS[lead.fuente]?.text || 'text-foreground'} ${CANAL_COLORS[lead.fuente]?.border || 'border-border'}`}>
+        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] sm:text-xs font-medium border ${CANAL_COLORS[lead.fuente]?.bg || 'bg-secondary'} ${CANAL_COLORS[lead.fuente]?.text || 'text-foreground'} ${CANAL_COLORS[lead.fuente]?.border || 'border-border'}`}>
           <span>{CANAL_COLORS[lead.fuente]?.icon || '📌'}</span>
           <span className="hidden sm:inline">{lead.fuente}</span>
         </div>
@@ -59,11 +60,11 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
           }`}>
             {lead.totalMensajes}
           </span>
-          <span className="text-xs text-muted-foreground ml-1">msgs</span>
+          <span className="text-[11px] sm:text-xs text-muted-foreground ml-1">msgs</span>
         </div>
       ),
       ultimoMensaje: (
-        <div className="text-xs">
+        <div className="text-[11px] sm:text-xs">
           {lead.ultimaInteraccion ? (
             <div className="flex flex-col">
               <span className="text-foreground">
@@ -95,9 +96,21 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
           side="right"
         >
           <div className="inline-block cursor-help">
-            <Badge label={lead.estado} tone={STATE_COLORS[lead.estado]} />
+            <Badge label={lead.estadoDisplay} tone={STATE_COLORS[lead.estado]} />
           </div>
         </WrapTooltip>
+      ),
+      sintomas: (
+        <div className="text-[11px] sm:text-xs max-w-[150px] truncate">
+          {lead.signals?.perfil_paciente ? (
+            <span className="text-foreground capitalize">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</span>
+          ) : (
+            <span className="text-muted-foreground italic">Sin datos</span>
+          )}
+          {lead.signals?.pregunto_precio && (
+            <span className="text-amber-500 ml-2" title="Preguntó precio">💰</span>
+          )}
+        </div>
       ),
       accion: <LeadActionButton lead={lead} onRefresh={onRefresh} />,
     };
@@ -112,7 +125,7 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
       mobileConfig={{
         primary: 'nombre',
         secondary: 'fuente',
-        metadata: ['estado', 'accion']
+        metadata: ['estado', 'sintomas', 'accion']
       }}
     />
   );
