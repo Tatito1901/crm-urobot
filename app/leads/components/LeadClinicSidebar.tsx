@@ -281,7 +281,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
                         </AccordionTrigger>
                         <AccordionContent className="pb-3 pt-0">
                           <div className="flex flex-wrap gap-1.5">
-                            {clinico.sintomas_reportados.map((s, i) => (
+                            {clinico.sintomas_reportados.map((s: string, i: number) => (
                               <Badge key={i} variant="default" className="text-xs font-medium rounded-md px-2 py-0.5">{s}</Badge>
                             ))}
                           </div>
@@ -301,7 +301,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
                         </AccordionTrigger>
                         <AccordionContent className="pb-3 pt-0">
                           <div className="flex flex-wrap gap-1.5">
-                            {clinico.banderas_rojas.map((b, i) => (
+                            {clinico.banderas_rojas.map((b: string, i: number) => (
                               <Badge key={i} variant="destructive" className="text-xs font-medium rounded-md px-2 py-0.5">
                                 <AlertTriangle className="w-3 h-3 mr-1" />{b}
                               </Badge>
