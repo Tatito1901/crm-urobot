@@ -12,7 +12,7 @@ import { LeadsFilters } from './components/LeadsFilters';
 import { LeadsTable } from './components/LeadsTable';
 import { LeadClinicSidebar } from './components/LeadClinicSidebar';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
-import { Users, UserPlus, Clock, Calendar, UserCheck, Loader2, Stethoscope } from 'lucide-react';
+import { Users, UserPlus, Clock, Calendar, CalendarCheck, UserCheck, Loader2, Stethoscope, ArrowRight } from 'lucide-react';
 import { EmptyState } from '@/app/components/common/EmptyState';
 
 export default function LeadsPage() {
@@ -28,6 +28,8 @@ export default function LeadsPage() {
     setSearch,
     estadoFilter,
     setEstadoFilter,
+    fuenteFilter,
+    setFuenteFilter,
     isLoading,
     isSearching,
     error,
@@ -97,7 +99,7 @@ export default function LeadsPage() {
         fullWidth
         compact
         eyebrow="Gestión Comercial"
-        title="Leads"
+        title={<span className="text-gradient-teal">Leads</span>}
         description="Gestiona y da seguimiento a tus prospectos"
         headerSlot={
           <div className="flex items-center gap-2">
@@ -118,11 +120,20 @@ export default function LeadsPage() {
         }
       >
 
+      {/* Ambient background gradient */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-30 z-0"
+        aria-hidden="true"
+        style={{
+          background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(20, 184, 166, 0.06) 0%, transparent 70%)',
+        }}
+      />
+
       {/* ── Main content ── */}
-      <div className="space-y-4">
+      <div className="relative z-[1] space-y-4">
 
         {/* ── Stats grid ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 animate-fade-up stagger-1">
           <MetricCard
             variant="compact"
             icon={<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />}
@@ -151,24 +162,50 @@ export default function LeadsPage() {
             variant="compact"
             icon={<Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500" />}
             color="purple"
-            title="Citas"
-            value={stats.citaAgendada}
+            title="Cita ofrecida"
+            value={stats.citaPropuesta}
             loading={statsLoading}
+            tooltip="Leads a los que se les ofreci\u00f3 cita"
           />
           <MetricCard
             variant="compact"
-            icon={<UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />}
+            icon={<CalendarCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />}
             color="emerald"
+            title="Cita agendada"
+            value={stats.citaAgendada}
+            loading={statsLoading}
+            tooltip="Leads que agendaron cita"
+          />
+          <MetricCard
+            variant="compact"
+            icon={<UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-teal-500" />}
+            color="teal"
             title="Convertidos"
             value={stats.convertidos}
             loading={statsLoading}
           />
         </div>
 
+        {/* ── Conversion funnel mini-bar ── */}
+        {(stats.citasOfrecidasTotal > 0 || stats.citasAgendadasTotal > 0) && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 border border-border text-xs text-muted-foreground animate-fade-up stagger-2">
+            <span className="font-medium text-foreground">{stats.total}</span> leads
+            <ArrowRight className="w-3 h-3" />
+            <span className="font-medium text-purple-400">{stats.citasOfrecidasTotal}</span> ofrecidas
+            <ArrowRight className="w-3 h-3" />
+            <span className="font-medium text-emerald-400">{stats.citasAgendadasTotal}</span> agendadas
+            {stats.tasaOfertaAAgenda > 0 && (
+              <span className="ml-auto font-semibold text-emerald-400">
+                {stats.tasaOfertaAAgenda}% conversi\u00f3n
+              </span>
+            )}
+          </div>
+        )}
+
         {/* ── Table ── */}
-        <div className="space-y-4">
+        <div className="space-y-4 animate-fade-up stagger-2">
           {/* Search + filters bar */}
-          <div className="bg-card p-3 sm:p-4 rounded-xl border border-border shadow-sm space-y-2">
+          <div className="bg-card p-3 sm:p-4 rounded-xl border border-border shadow-sm space-y-2 shine-top relative overflow-hidden">
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
                 <LeadsFilters
@@ -176,6 +213,8 @@ export default function LeadsPage() {
                   onFilterChange={handleFilterChange}
                   searchValue={search}
                   onSearchChange={setSearch}
+                  fuenteFilter={fuenteFilter}
+                  onFuenteChange={setFuenteFilter}
                 />
               </div>
               <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground shrink-0">
@@ -187,7 +226,7 @@ export default function LeadsPage() {
           </div>
 
           {/* Table card */}
-          <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm">
+          <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm glow-ring-teal">
             <ContentLoader
               loading={statsLoading}
               error={error}

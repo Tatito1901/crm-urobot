@@ -174,8 +174,11 @@ function ConversacionesContent() {
 export default function ConversacionesPage() {
   return (
     <Suspense fallback={
-      <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex items-center justify-center">
-        <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+      <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex flex-col items-center justify-center gap-3 animate-float-in">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center">
+          <RefreshCw className="w-5 h-5 animate-spin text-primary/60" />
+        </div>
+        <p className="text-xs text-muted-foreground font-medium">Cargando conversaciones...</p>
       </div>
     }>
       <ConversacionesContent />

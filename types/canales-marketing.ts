@@ -4,8 +4,8 @@
  * ============================================================
  * Fuente de verdad: leads_fuente_check en BD
  * DB values: whatsapp, whatsapp_directo, meta_ads, instagram,
- *            google_ads, referido, sitio_web, doctoralia, otro
- * Última sync: 2026-02-18
+ *            google_ads, referido, sitio_web, doctoralia, organico, otro
+ * Última sync: 2026-02-20
  */
 
 export const CANALES_MARKETING = [
@@ -202,3 +202,33 @@ export function normalizeCanalMarketing(value: string | null | undefined): Canal
   
   return mappings[normalized] || 'Otro';
 }
+
+/**
+ * Mapeo inverso: Display name → DB value (para filtros que envían al RPC)
+ */
+export const CANAL_TO_DB: Record<CanalMarketing, string> = {
+  'Meta Ads': 'meta_ads',
+  'Google Ads': 'google_ads',
+  'Instagram': 'instagram',
+  'Orgánico': 'organico',
+  'Referido': 'referido',
+  'WhatsApp Directo': 'whatsapp_directo',
+  'Doctoralia': 'doctoralia',
+  'Sitio Web': 'sitio_web',
+  'Otro': 'otro',
+};
+
+/**
+ * Opciones de fuente para filtros UI (ordenadas por relevancia)
+ */
+export const FUENTE_FILTER_OPTIONS = [
+  { value: '', label: 'Todas' },
+  { value: 'meta_ads', label: 'Meta Ads', canal: 'Meta Ads' as CanalMarketing },
+  { value: 'google_ads', label: 'Google Ads', canal: 'Google Ads' as CanalMarketing },
+  { value: 'whatsapp_directo', label: 'WhatsApp', canal: 'WhatsApp Directo' as CanalMarketing },
+  { value: 'instagram', label: 'Instagram', canal: 'Instagram' as CanalMarketing },
+  { value: 'organico', label: 'Orgánico', canal: 'Orgánico' as CanalMarketing },
+  { value: 'referido', label: 'Referido', canal: 'Referido' as CanalMarketing },
+  { value: 'doctoralia', label: 'Doctoralia', canal: 'Doctoralia' as CanalMarketing },
+  { value: 'sitio_web', label: 'Sitio Web', canal: 'Sitio Web' as CanalMarketing },
+] as const;

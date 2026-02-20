@@ -220,12 +220,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   return (
     <ErrorBoundary>
       <div className="relative min-h-full bg-background text-foreground">
-        {/* Ambient background gradient */}
+        {/* Ambient background gradient — dual layer for depth */}
         <div
           className="pointer-events-none fixed inset-0 opacity-40"
           aria-hidden="true"
           style={{
-            background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(20, 184, 166, 0.06) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(20, 184, 166, 0.07) 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 80% 20%, rgba(56, 189, 248, 0.03) 0%, transparent 60%)',
           }}
         />
 
@@ -243,7 +243,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     Centro de Comando
                   </p>
                 </div>
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-foreground">
+                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-gradient-teal">
                   {getGreeting()}
                 </h1>
                 <p className="text-sm text-muted-foreground capitalize">
@@ -267,7 +267,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               ═══════════════════════════════════════════ */}
           {!loading && totalAcciones > 0 && (
             <section className="animate-fade-up stagger-2">
-              <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-amber-500/[0.04]">
+              <div className="group relative overflow-hidden rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] animate-pulse-border">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500/[0.06] to-transparent pointer-events-none" aria-hidden />
                 <div className="relative px-5 py-4 sm:px-6">
                   <div className="flex items-center gap-3 mb-3">
@@ -317,7 +317,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               return (
                 <div
                   key={m.title}
-                  className={`kpi-card ${m.glowClass} grain-overlay relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-5 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default`}
+                  className={`kpi-card ${m.glowClass} grain-overlay shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-5 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default transition-transform duration-200 hover:scale-[1.01]`}
                 >
                   {/* Top row: icon + label */}
                   <div className="flex items-center justify-between mb-4">
@@ -453,7 +453,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
             {/* ── Consultas Próximas ── */}
-            <div className="animate-fade-up stagger-8 rounded-2xl border border-border bg-card overflow-hidden flex flex-col">
+            <div className="animate-fade-up stagger-8 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal">
               <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-teal-500/10">
@@ -505,7 +505,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
             </div>
 
             {/* ── Leads Recientes ── */}
-            <div className="animate-fade-up stagger-9 rounded-2xl border border-border bg-card overflow-hidden flex flex-col">
+            <div className="animate-fade-up stagger-9 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal">
               <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-emerald-500/10">
@@ -631,7 +631,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               BOT PERFORMANCE — Compact summary
               ═══════════════════════════════════════════ */}
-          <section className="animate-fade-up stagger-11 rounded-2xl border border-border bg-card overflow-hidden">
+          <section className="animate-fade-up stagger-11 rounded-2xl border border-border bg-card overflow-hidden shine-top relative">
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-sky-500/10">

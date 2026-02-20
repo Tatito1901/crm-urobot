@@ -83,9 +83,9 @@ export const ConversationItem = memo(function ConversationItem({
     <button
       onClick={() => onSelect(telefono)}
       className={`
-        group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors
+        conv-active-indicator group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200
         ${isActive 
-          ? 'bg-primary/10 text-foreground' 
+          ? 'is-active bg-primary/10 text-foreground shadow-sm' 
           : 'hover:bg-muted/60 text-foreground'}
       `}
     >
@@ -101,7 +101,7 @@ export const ConversationItem = memo(function ConversationItem({
       <div className="flex-1 min-w-0">
         {/* Row 1: Name + time */}
         <div className="flex items-baseline justify-between gap-2">
-          <span className={`text-sm font-medium truncate ${isActive ? 'text-primary' : ''}`}>
+          <span className={`text-sm font-medium truncate transition-colors ${isActive ? 'text-primary' : 'group-hover:text-foreground'}`}>
             {nombreContacto || telefono}
           </span>
           <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums" suppressHydrationWarning>

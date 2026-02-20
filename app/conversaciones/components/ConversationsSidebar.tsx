@@ -64,18 +64,21 @@ export function ConversationsSidebar({
       ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
     `}>
       {/* Header */}
-      <div className="hidden sm:flex items-center justify-between px-5 py-4 border-b border-border">
-        <div>
-          <h2 className="font-semibold text-foreground text-base font-jakarta">Conversaciones</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
+      <div className="hidden sm:flex flex-col border-b border-border">
+        <div className="flex items-center justify-between px-5 py-4">
+          <div>
+            <h2 className="font-semibold text-foreground text-base font-jakarta">Conversaciones</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
+          </div>
+          <button 
+            onClick={onRefetch} 
+            title="Actualizar" 
+            className="p-2 rounded-lg hover:bg-muted transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
-        <button 
-          onClick={onRefetch} 
-          title="Actualizar" 
-          className="p-2 rounded-lg hover:bg-muted transition-colors"
-        >
-          <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="section-divider" />
       </div>
 
       {/* Search + Filters */}
@@ -87,9 +90,9 @@ export function ConversationsSidebar({
             placeholder="Buscar por nombre o teléfono..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-muted/60 border border-border rounded-lg
+            className="w-full pl-9 pr-3 py-2.5 text-sm bg-muted/40 border border-border rounded-xl
                      focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40
-                     placeholder:text-muted-foreground/60 transition-all"
+                     placeholder:text-muted-foreground/50 transition-all hover:bg-muted/60"
           />
         </div>
         
@@ -144,14 +147,14 @@ export function ConversationsSidebar({
             ))}
           </div>
         ) : filteredConversaciones.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 px-8">
-            <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
-              {filtroActivo === 'leads' ? <Users className="w-5 h-5 text-muted-foreground" /> :
-               filtroActivo === 'pacientes' ? <UserCheck className="w-5 h-5 text-muted-foreground" /> :
-               filtroActivo === 'recientes' ? <Clock className="w-5 h-5 text-muted-foreground" /> :
-               <MessageCircle className="w-5 h-5 text-muted-foreground" />}
+          <div className="flex flex-col items-center justify-center h-64 px-8 animate-float-in">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-muted to-muted/50 border border-border flex items-center justify-center mb-4 shadow-sm">
+              {filtroActivo === 'leads' ? <Users className="w-6 h-6 text-muted-foreground" /> :
+               filtroActivo === 'pacientes' ? <UserCheck className="w-6 h-6 text-muted-foreground" /> :
+               filtroActivo === 'recientes' ? <Clock className="w-6 h-6 text-muted-foreground" /> :
+               <MessageCircle className="w-6 h-6 text-muted-foreground" />}
             </div>
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-sm font-semibold text-foreground">
               {searchQuery ? 'Sin resultados' : 
                filtroActivo === 'leads' ? 'Sin leads' :
                filtroActivo === 'pacientes' ? 'Sin pacientes' :

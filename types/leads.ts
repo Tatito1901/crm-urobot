@@ -128,6 +128,8 @@ export interface Lead {
   subestado: LeadSubestado | null;     // BD: subestado (CHECK constraint)
   accionRecomendada: string | null;    // BD: accion_recomendada
   fechaSiguienteAccion: string | null; // BD: fecha_siguiente_accion
+  citaOfrecidaAt: string | null;       // BD: cita_ofrecida_at (auto-set by upsert_lead_v12)
+  citaAgendadaAt: string | null;       // BD: cita_agendada_at (auto-set by upsert_lead_v12)
   createdAt: string;
   updatedAt: string;
 
@@ -235,6 +237,8 @@ export function mapLeadFromDB(row: LeadRow): Lead {
     subestado,
     accionRecomendada: row.accion_recomendada,
     fechaSiguienteAccion: row.fecha_siguiente_accion,
+    citaOfrecidaAt: (row as Record<string, unknown>).cita_ofrecida_at as string | null ?? null,
+    citaAgendadaAt: (row as Record<string, unknown>).cita_agendada_at as string | null ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
 

@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client';
 import { SWR_CONFIG_STANDARD, SWR_CONFIG_DASHBOARD, CACHE_KEYS } from '@/lib/swr-config';
 import type { Lead, LeadSignals, LeadScores } from '@/types/leads';
 import { LEAD_ESTADO_DISPLAY, LEAD_ESTADOS_ACTIVOS } from '@/types/leads';
+import { normalizeCanalMarketing } from '@/types/canales-marketing';
 
 const supabase = createClient();
 
@@ -29,12 +30,21 @@ interface LeadsStats {
   calientes: number;
   inactivos: number;
   scorePromedio: number;
+  // Cita funnel tracking
+  citasOfrecidasTotal: number;
+  citasAgendadasTotal: number;
+  citasOfrecidasMes: number;
+  citasAgendadasMes: number;
+  tasaOfertaAAgenda: number;
+  tasaLeadAAgenda: number;
 }
 
 const DEFAULT_STATS: LeadsStats = {
   total: 0, nuevos: 0, interactuando: 0, contactados: 0, citaPropuesta: 0,
   enSeguimiento: 0, citaAgendada: 0, show: 0, noShow: 0, convertidos: 0,
   perdidos: 0, calientes: 0, inactivos: 0, scorePromedio: 0,
+  citasOfrecidasTotal: 0, citasAgendadasTotal: 0, citasOfrecidasMes: 0,
+  citasAgendadasMes: 0, tasaOfertaAAgenda: 0, tasaLeadAAgenda: 0,
 };
 
 const fetchStats = async (): Promise<LeadsStats> => {
@@ -57,6 +67,12 @@ const fetchStats = async (): Promise<LeadsStats> => {
     calientes: s.calientes || 0,
     inactivos: s.inactivos || 0,
     scorePromedio: s.score_promedio || 0,
+    citasOfrecidasTotal: s.citas_ofrecidas_total || 0,
+    citasAgendadasTotal: s.citas_agendadas_total || 0,
+    citasOfrecidasMes: s.citas_ofrecidas_mes || 0,
+    citasAgendadasMes: s.citas_agendadas_mes || 0,
+    tasaOfertaAAgenda: s.tasa_oferta_a_agenda || 0,
+    tasaLeadAAgenda: s.tasa_lead_a_agenda || 0,
   };
 };
 
@@ -94,11 +110,13 @@ const fetchLeadsPaginated = async (
   page: number,
   pageSize: number,
   search: string,
-  estado: string
+  estado: string,
+  fuente: string
 ): Promise<{ data: Lead[]; totalCount: number }> => {
   const { data, error } = await supabase.rpc('search_leads_optimized' as never, {
     p_search: search || null,
     p_estado: estado || null,
+    p_fuente: fuente || null,
     p_limit: pageSize,
     p_page: page,
   } as never);
@@ -142,7 +160,7 @@ const fetchLeadsPaginated = async (
       nombre,
       telefono,
       estado: estadoLead,
-      fuente: ((l.fuente as string) || 'Otro') as Lead['fuente'],
+      fuente: normalizeCanalMarketing(l.fuente as string),
       canal: (l.canal as string) || null,
       temperatura,
       notas: (l.notas as string) || null,
@@ -156,6 +174,8 @@ const fetchLeadsPaginated = async (
       subestado: (l.subestado as Lead['subestado']) || null,
       accionRecomendada: (l.accion_recomendada as string) || null,
       fechaSiguienteAccion,
+      citaOfrecidaAt: (l.cita_ofrecida_at as string) || null,
+      citaAgendadaAt: (l.cita_agendada_at as string) || null,
       createdAt: (l.created_at as string) || '',
       updatedAt: (l.updated_at as string) || '',
       // Behavioral signals
@@ -197,6 +217,7 @@ export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: 
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [estadoFilter, setEstadoFilter] = useState('');
+  const [fuenteFilter, setFuenteFilter] = useState('');
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Debounce optimizado con ref para evitar memory leaks
@@ -219,12 +240,19 @@ export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: 
   
   // Reset página al cambiar filtro (solo si realmente cambió)
   const prevEstadoRef = useRef(estadoFilter);
+  const prevFuenteRef = useRef(fuenteFilter);
   useEffect(() => {
     if (prevEstadoRef.current !== estadoFilter) {
       prevEstadoRef.current = estadoFilter;
       setCurrentPage(1);
     }
   }, [estadoFilter]);
+  useEffect(() => {
+    if (prevFuenteRef.current !== fuenteFilter) {
+      prevFuenteRef.current = fuenteFilter;
+      setCurrentPage(1);
+    }
+  }, [fuenteFilter]);
   
   // Stats con staleTime largo (cambian poco)
   const { data: stats } = useSWR<LeadsStats>(
@@ -235,14 +263,14 @@ export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: 
   
   // Key estable para SWR
   const swrKey = useMemo(
-    () => `${CACHE_KEYS.LEADS}-v2-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}`,
-    [currentPage, pageSize, debouncedSearch, estadoFilter]
+    () => `${CACHE_KEYS.LEADS}-v2-p${currentPage}-s${pageSize}-q${debouncedSearch}-e${estadoFilter}-f${fuenteFilter}`,
+    [currentPage, pageSize, debouncedSearch, estadoFilter, fuenteFilter]
   );
   
   // Fetcher memoizado
   const fetcher = useCallback(
-    () => fetchLeadsPaginated(currentPage, pageSize, debouncedSearch, estadoFilter),
-    [currentPage, pageSize, debouncedSearch, estadoFilter]
+    () => fetchLeadsPaginated(currentPage, pageSize, debouncedSearch, estadoFilter, fuenteFilter),
+    [currentPage, pageSize, debouncedSearch, estadoFilter, fuenteFilter]
   );
   
   const { data, error, isLoading, mutate } = useSWR(swrKey, fetcher, {
@@ -270,6 +298,8 @@ export function useLeadsPaginated(config: { pageSize?: number; searchDebounce?: 
     setSearch: useCallback((q: string) => setSearchInternal(q), []),
     estadoFilter,
     setEstadoFilter,
+    fuenteFilter,
+    setFuenteFilter,
     isLoading,
     isSearching,
     error: error ?? null,

@@ -277,3 +277,85 @@ body {
     transition: transform 0.1s ease-out;
   }
 }
+
+/* ── Gradient text utility ── */
+.text-gradient-teal {
+  background: linear-gradient(135deg, oklch(0.85 0.13 165), oklch(0.70 0.15 162), oklch(0.78 0.12 200));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Shimmer sweep (card hover) ── */
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.group:hover .animate-shimmer {
+  animation: shimmer-sweep 0.8s ease-in-out;
+}
+
+/* ── Pulse border (alert banner) ── */
+@keyframes pulse-border {
+  0%, 100% { border-color: oklch(0.80 0.16 75 / 20%); }
+  50% { border-color: oklch(0.80 0.16 75 / 40%); }
+}
+.animate-pulse-border {
+  animation: pulse-border 3s ease-in-out infinite;
+}
+
+/* ── Float entrance (empty states) ── */
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-float-in {
+  animation: float-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Subtle glow ring on hover ── */
+.glow-ring-teal {
+  transition: box-shadow 0.3s ease;
+}
+.glow-ring-teal:hover {
+  box-shadow: 0 0 0 1px oklch(0.70 0.15 162 / 15%), 0 0 20px -4px oklch(0.70 0.15 162 / 10%);
+}
+
+/* ── Active conversation indicator ── */
+.conv-active-indicator {
+  position: relative;
+}
+.conv-active-indicator::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 4px 4px 0;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.conv-active-indicator.is-active::before {
+  opacity: 1;
+}
+
+/* ── Gradient divider between sections ── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 6%), transparent);
+}
+
+/* ── Chat area subtle pattern ── */
+.chat-pattern {
+  background-image: radial-gradient(circle at 1px 1px, oklch(1 0 0 / 2%) 1px, transparent 0);
+  background-size: 24px 24px;
+}

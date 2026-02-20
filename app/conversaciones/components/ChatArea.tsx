@@ -155,7 +155,7 @@ export function ChatArea({
           {/* Messages area */}
           <div 
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 scroll-smooth overscroll-contain momentum-scroll"
+            className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 scroll-smooth overscroll-contain momentum-scroll chat-pattern"
           >
             {isLoadingMensajes ? (
               <div className="flex items-center justify-center h-full">
@@ -165,12 +165,12 @@ export function ChatArea({
                 </div>
               </div>
             ) : mensajesAgrupados.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full">
-                <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
-                  <MessageCircle className="w-7 h-7 text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center h-full animate-float-in">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-muted to-muted/50 border border-border flex items-center justify-center mb-4 shadow-sm">
+                  <MessageCircle className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-foreground">Sin mensajes</p>
-                <p className="text-xs text-muted-foreground mt-1">Esta conversación está vacía</p>
+                <p className="text-sm font-semibold text-foreground">Sin mensajes</p>
+                <p className="text-xs text-muted-foreground mt-1.5">Esta conversación está vacía</p>
               </div>
             ) : (
               <div className="space-y-4 pb-4 max-w-3xl mx-auto">
@@ -215,7 +215,7 @@ export function ChatArea({
           </div>
 
           {/* Minimal footer — read-only indicator */}
-          <div className="shrink-0 py-2 px-3 sm:px-4 border-t border-border flex items-center justify-between safe-area-bottom">
+          <div className="shrink-0 py-2 px-3 sm:px-4 border-t border-border flex items-center justify-between safe-area-bottom bg-card/50 backdrop-blur-sm">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>Solo lectura</span>
@@ -231,13 +231,13 @@ export function ChatArea({
         </>
       ) : (
         /* Empty state (Desktop) */
-        <div className="hidden sm:flex flex-1 flex-col items-center justify-center p-8">
-          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <MessageSquare className="w-7 h-7 text-muted-foreground" />
+        <div className="hidden sm:flex flex-1 flex-col items-center justify-center p-8 animate-float-in">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/15 flex items-center justify-center mb-5 shadow-lg shadow-primary/5">
+            <MessageSquare className="w-9 h-9 text-primary/60" />
           </div>
-          <h3 className="text-base font-semibold text-foreground mb-1">Selecciona una conversación</h3>
-          <p className="text-sm text-muted-foreground">
-            Elige un contacto para ver sus mensajes
+          <h3 className="text-lg font-bold text-foreground mb-1.5 font-jakarta">Selecciona una conversación</h3>
+          <p className="text-sm text-muted-foreground max-w-xs text-center">
+            Elige un contacto del panel izquierdo para ver sus mensajes
           </p>
         </div>
       )}

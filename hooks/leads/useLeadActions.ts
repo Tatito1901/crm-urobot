@@ -366,13 +366,33 @@ async function cambiarEstadoLead(
 ): Promise<void> {
   const timestamp = new Date().toISOString();
   
+  // Build update payload with conditional cita timestamps
+  const updatePayload: Record<string, unknown> = {
+    estado: nuevoEstado,
+    updated_at: timestamp,
+  };
+  
+  // Set cita_ofrecida_at when transitioning to cita_propuesta or cita_agendada (if not already set)
+  if (nuevoEstado === 'cita_propuesta' || nuevoEstado === 'cita_agendada') {
+    // Only set if not already set — fetch current value first
+    const { data: current } = await supabase
+      .from('leads')
+      .select('cita_ofrecida_at, cita_agendada_at')
+      .eq('id', leadId)
+      .single();
+    
+    const row = current as { cita_ofrecida_at: string | null; cita_agendada_at: string | null } | null;
+    if (!row?.cita_ofrecida_at) {
+      updatePayload.cita_ofrecida_at = timestamp;
+    }
+    if (nuevoEstado === 'cita_agendada' && !row?.cita_agendada_at) {
+      updatePayload.cita_agendada_at = timestamp;
+    }
+  }
+  
   await supabase
     .from('leads')
-    .update({
-      estado: nuevoEstado,
-      updated_at: timestamp,
-      // Convertido no necesita campo adicional en nueva BD
-    })
+    .update(updatePayload as never)
     .eq('id', leadId);
 
   await registrarAccion(

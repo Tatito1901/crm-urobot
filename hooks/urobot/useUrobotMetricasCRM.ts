@@ -89,12 +89,28 @@ export interface MetricasCRMResumen {
   intentOtro: number;
 }
 
+export interface FunnelLeads {
+  totalLeads: number;
+  interactuando: number;
+  citaOfrecida: number;
+  citaOfrecidaTotal: number;
+  citaAgendada: number;
+  citaAgendadaTotal: number;
+  show: number;
+  convertido: number;
+  tasaOfertaAAgenda: number;
+  tasaLeadAOferta: number;
+  tasaLeadAAgenda: number;
+  porEstado: Record<string, number>;
+}
+
 interface UrobotMetricasCRMData {
   resumen: MetricasCRMResumen;
   diario: MetricasCRMDiarias[];
   porHora: ActividadPorHora[];
   intents: IntentDistribucion[];
   funnel: ConversionFunnel[];
+  funnelLeads: FunnelLeads;
 }
 
 // ============================================================
@@ -128,12 +144,19 @@ const defaultResumen: MetricasCRMResumen = {
   intentOtro: 0,
 };
 
+const defaultFunnelLeads: FunnelLeads = {
+  totalLeads: 0, interactuando: 0, citaOfrecida: 0, citaOfrecidaTotal: 0,
+  citaAgendada: 0, citaAgendadaTotal: 0, show: 0, convertido: 0,
+  tasaOfertaAAgenda: 0, tasaLeadAOferta: 0, tasaLeadAAgenda: 0, porEstado: {},
+};
+
 const defaultData: UrobotMetricasCRMData = {
   resumen: defaultResumen,
   diario: [],
   porHora: [],
   intents: [],
   funnel: [],
+  funnelLeads: defaultFunnelLeads,
 };
 
 // ============================================================
@@ -270,30 +293,55 @@ async function fetchMetricasCRM(dias: number): Promise<UrobotMetricasCRMData> {
     .sort((a, b) => b.cantidad - a.cantidad);
 
   // ============================================================
-  // FUNNEL DE CONVERSIÓN
+  // PARSE FUNNEL LEADS from RPC (NEW)
+  // ============================================================
+  const fl = (d.funnelLeads || {}) as Record<string, unknown>;
+  const funnelLeads: FunnelLeads = {
+    totalLeads: Number(fl.totalLeads) || 0,
+    interactuando: Number(fl.interactuando) || 0,
+    citaOfrecida: Number(fl.citaOfrecida) || 0,
+    citaOfrecidaTotal: Number(fl.citaOfrecidaTotal) || 0,
+    citaAgendada: Number(fl.citaAgendada) || 0,
+    citaAgendadaTotal: Number(fl.citaAgendadaTotal) || 0,
+    show: Number(fl.show) || 0,
+    convertido: Number(fl.convertido) || 0,
+    tasaOfertaAAgenda: Number(fl.tasaOfertaAAgenda) || 0,
+    tasaLeadAOferta: Number(fl.tasaLeadAOferta) || 0,
+    tasaLeadAAgenda: Number(fl.tasaLeadAAgenda) || 0,
+    porEstado: (fl.porEstado as Record<string, number>) || {},
+  };
+
+  // ============================================================
+  // FUNNEL DE CONVERSIÓN (now uses lead-based data)
   // ============================================================
   const funnel: ConversionFunnel[] = [
     {
-      etapa: 'Intención de agendar',
-      cantidad: resumen.intentAgendar,
+      etapa: 'Leads totales',
+      cantidad: funnelLeads.totalLeads,
       porcentaje: 100,
       color: FUNNEL_COLORS.intentos,
     },
     {
-      etapa: 'Citas agendadas',
-      cantidad: resumen.citasAgendadas,
-      porcentaje: resumen.intentAgendar > 0 ? Math.round((resumen.citasAgendadas / resumen.intentAgendar) * 100) : 0,
+      etapa: 'Cita ofrecida',
+      cantidad: funnelLeads.citaOfrecida,
+      porcentaje: funnelLeads.totalLeads > 0 ? Math.round((funnelLeads.citaOfrecida / funnelLeads.totalLeads) * 100) : 0,
+      color: FUNNEL_COLORS.confirmadas,
+    },
+    {
+      etapa: 'Cita agendada',
+      cantidad: funnelLeads.citaAgendada,
+      porcentaje: funnelLeads.citaOfrecida > 0 ? Math.round((funnelLeads.citaAgendada / funnelLeads.citaOfrecida) * 100) : 0,
       color: FUNNEL_COLORS.agendadas,
     },
     {
-      etapa: 'Confirmaciones',
-      cantidad: resumen.confirmaciones,
-      porcentaje: resumen.citasAgendadas > 0 ? Math.round((resumen.confirmaciones / resumen.citasAgendadas) * 100) : 0,
-      color: FUNNEL_COLORS.confirmadas,
+      etapa: 'Asistió / Convertido',
+      cantidad: funnelLeads.show + funnelLeads.convertido,
+      porcentaje: funnelLeads.citaAgendada > 0 ? Math.round(((funnelLeads.show + funnelLeads.convertido) / funnelLeads.citaAgendada) * 100) : 0,
+      color: FUNNEL_COLORS.completadas,
     },
   ];
 
-  return { resumen, diario, porHora, intents, funnel };
+  return { resumen, diario, porHora, intents, funnel, funnelLeads };
 }
 
 // ============================================================
@@ -313,6 +361,7 @@ export function useUrobotMetricasCRM(dias: number = 7) {
   return {
     data: data || defaultData,
     resumen: data?.resumen || defaultResumen,
+    funnelLeads: data?.funnelLeads || defaultFunnelLeads,
     isLoading,
     error: error ?? null,
     refetch: () => mutate(),
