@@ -2,13 +2,7 @@
 
 import { useRef, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { MessageCircle, ArrowLeft, RefreshCw, ExternalLink, MessageSquare, Sparkles, Phone } from 'lucide-react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { MessageCircle, ArrowLeft, Loader2, ExternalLink, MessageSquare, PanelRight, Phone } from 'lucide-react'
 import type { TipoMensaje } from '@/types/chat'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -85,7 +79,9 @@ export function ChatArea({
   }, [mensajesActivos])
 
   const openWhatsApp = useCallback((telefono: string) => {
-    window.open(`https://wa.me/52${telefono}`, '_blank')
+    const clean = telefono.replace(/\D/g, '')
+    const full = clean.length === 10 ? `52${clean}` : clean
+    window.open(`https://wa.me/${full}`, '_blank')
   }, [])
 
   const viewProfile = useCallback((contacto: ContactoActivo | null | undefined) => {
@@ -93,112 +89,101 @@ export function ChatArea({
     router.push(`/leads?search=${contacto.telefono}`)
   }, [router])
 
+  // Tipo label
+  const tipoLabel = contactoActivo?.tipoContacto === 'paciente' 
+    ? 'Paciente' 
+    : contactoActivo?.estadoLead || 'Contacto'
+
   return (
     <main className={`
       flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
-      bg-gradient-to-b from-slate-950 to-slate-900
+      bg-background
       ${isMobileViewingChat ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}
     `}>
       {telefonoActivo && contactoActivo ? (
         <>
-          {/* Header del chat */}
-          <header className="shrink-0 min-h-[60px] sm:min-h-[64px] px-2 sm:px-4 flex items-center gap-2 sm:gap-3 border-b border-slate-800/60 bg-slate-900/80 backdrop-blur-xl z-10 safe-area-top">
+          {/* Header — clean, single row */}
+          <header className="shrink-0 h-14 sm:h-14 px-2 sm:px-4 flex items-center gap-2 sm:gap-3 border-b border-border bg-card z-10">
             <button
               onClick={onBackToList}
-              className="sm:hidden p-2 -ml-1 hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="sm:hidden p-2.5 -ml-1 hover:bg-muted rounded-lg transition-colors touch-target"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
             
-            {/* Avatar circular */}
-            <div className={`
-              w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0
-              bg-gradient-to-br ${contactoActivo.tipoContacto === 'paciente' 
-                ? 'from-emerald-500 to-emerald-600' 
-                : contactoActivo.tipoContacto === 'lead' 
-                  ? 'from-amber-500 to-orange-500' 
-                  : 'from-slate-400 to-slate-500'}
-            `}>
-              {(contactoActivo.nombreContacto?.[0] || contactoActivo.telefono.slice(-2)).toUpperCase()}
-            </div>
-            
-            {/* Info contacto */}
+            {/* Contact info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground text-sm sm:text-[15px] truncate leading-tight">
-                {contactoActivo.nombreContacto || 'Sin nombre'}
+              <h3 className="font-semibold text-foreground text-sm truncate">
+                {contactoActivo.nombreContacto || contactoActivo.telefono}
               </h3>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-slate-400">
-                <span className="font-mono truncate">{contactoActivo.telefono}</span>
-                <span className="hidden xs:inline">•</span>
-                <span className="hidden xs:inline truncate">{contactoActivo.tipoContacto === 'paciente' ? '✓ Paciente' : contactoActivo.estadoLead || 'Contacto'}</span>
-              </div>
+              <p className="text-xs text-muted-foreground truncate">
+                {contactoActivo.telefono} · {tipoLabel}
+              </p>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-0.5 sm:gap-1">
+            {/* Actions — icon buttons only */}
+            <div className="flex items-center gap-0.5">
               <button
                 onClick={() => openWhatsApp(contactoActivo.telefono)}
-                className="p-2 sm:p-2.5 hover:bg-slate-800 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
-                title="Abrir en WhatsApp"
+                className="p-2.5 hover:bg-muted rounded-lg transition-colors touch-target"
+                title="Abrir WhatsApp"
               >
-                <MessageCircle className="w-5 h-5 text-emerald-500" />
+                <Phone className="w-4 h-4 text-emerald-500" />
               </button>
               <button
                 onClick={() => viewProfile(contactoActivo)}
-                className="hidden sm:flex p-2.5 hover:bg-slate-800 rounded-full transition-colors min-w-[44px] min-h-[44px] items-center justify-center"
+                className="hidden sm:flex p-2.5 hover:bg-muted rounded-lg transition-colors touch-target"
                 title="Ver perfil"
               >
-                <ExternalLink className="w-5 h-5 text-slate-500" />
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
               </button>
               <button
                 onClick={onToggleActionsPanel}
-                className={`p-2 sm:p-2.5 rounded-full transition-colors min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center
+                className={`p-2.5 rounded-lg transition-colors touch-target
                   ${showActionsPanel 
-                    ? 'bg-teal-500/20 text-teal-400' 
-                    : 'hover:bg-slate-800 text-slate-500'}`}
-                title={showActionsPanel ? 'Cerrar acciones' : 'Acciones de lead'}
+                    ? 'bg-primary/10 text-primary' 
+                    : 'hover:bg-muted text-muted-foreground'}`}
+                title={showActionsPanel ? 'Cerrar panel' : 'Panel de acciones'}
               >
-                <Sparkles className="w-5 h-5" />
+                <PanelRight className="w-4 h-4" />
               </button>
             </div>
           </header>
 
-          {/* Lista de Mensajes */}
+          {/* Messages area */}
           <div 
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-6 py-2.5 sm:py-4 scroll-smooth bg-slate-900 overscroll-contain"
+            className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 scroll-smooth overscroll-contain momentum-scroll"
           >
             {isLoadingMensajes ? (
               <div className="flex items-center justify-center h-full">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-teal-900/30 flex items-center justify-center">
-                    <RefreshCw className="w-6 h-6 animate-spin text-teal-500" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-400">Cargando mensajes...</span>
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Cargando mensajes...</span>
                 </div>
               </div>
             ) : mensajesAgrupados.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
-                <div className="w-20 h-20 rounded-3xl bg-slate-800 flex items-center justify-center mb-4">
-                  <MessageCircle className="w-10 h-10 text-slate-600" />
+                <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                  <MessageCircle className="w-7 h-7 text-muted-foreground" />
                 </div>
-                <p className="text-base font-semibold text-slate-400">Sin mensajes</p>
-                <p className="text-sm text-slate-500 mt-1">Esta conversación está vacía</p>
+                <p className="text-sm font-medium text-foreground">Sin mensajes</p>
+                <p className="text-xs text-muted-foreground mt-1">Esta conversación está vacía</p>
               </div>
             ) : (
-              <div className="space-y-6 pb-4 max-w-4xl mx-auto">
+              <div className="space-y-4 pb-4 max-w-3xl mx-auto">
                 {mensajesAgrupados.map((grupo) => (
                   <div key={grupo.fecha}>
-                    {/* Separador de fecha */}
-                    <div className="sticky top-0 flex items-center justify-center py-3 z-10 pointer-events-none">
-                      <div className="px-3 py-1 bg-slate-900/80 backdrop-blur rounded-full text-[11px] font-medium text-slate-400 shadow-sm">
+                    {/* Date separator */}
+                    <div className="sticky top-0 flex items-center justify-center py-2 z-10 pointer-events-none">
+                      <div className="px-3 py-1 bg-card/90 backdrop-blur-sm border border-border rounded-full text-[11px] font-medium text-muted-foreground">
                         {format(new Date(grupo.fecha), "d MMM yyyy", { locale: es })}
                       </div>
                     </div>
                     
-                    {/* Mensajes del día */}
+                    {/* Day messages */}
                     <div className="space-y-0">
                       {grupo.mensajes.map((msg, idx) => {
                         const prevMsg = grupo.mensajes[idx - 1];
@@ -229,58 +214,29 @@ export function ChatArea({
             )}
           </div>
 
-          {/* Footer con acciones rápidas */}
-          <footer className="shrink-0 py-2 px-3 bg-slate-900/80 backdrop-blur border-t border-slate-800/50">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Solo lectura</span>
-              </div>
-              
-            {/* Acciones de Footer */}
-            <div className="flex items-center gap-1.5">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center justify-center p-1.5 rounded-full hover:bg-slate-800 transition-colors mr-1 cursor-help">
-                      <MessageCircle className="w-4 h-4 text-slate-500" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs max-w-[200px] mb-2">
-                    <p>La interacción directa ocurre vía WhatsApp. Este panel es de solo lectura.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-                <a
-                  href={`https://wa.me/52${contactoActivo?.telefono.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 
-                           text-white text-xs font-medium rounded-lg transition-colors shadow-sm"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">WhatsApp</span>
-                </a>
-                <button
-                  onClick={() => onToggleActionsPanel()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500 hover:bg-teal-600 
-                           text-white text-xs font-medium rounded-lg transition-colors shadow-sm shadow-teal-500/20 lg:hidden"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Acciones</span>
-                </button>
-              </div>
+          {/* Minimal footer — read-only indicator */}
+          <div className="shrink-0 py-2 px-3 sm:px-4 border-t border-border flex items-center justify-between safe-area-bottom">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Solo lectura</span>
             </div>
-          </footer>
+            <button
+              onClick={() => onToggleActionsPanel()}
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/70 rounded-lg transition-colors lg:hidden"
+            >
+              <PanelRight className="w-3.5 h-3.5" />
+              <span>Acciones</span>
+            </button>
+          </div>
         </>
       ) : (
-        /* Estado vacío (Desktop) */
+        /* Empty state (Desktop) */
         <div className="hidden sm:flex flex-1 flex-col items-center justify-center p-8">
-          <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mb-4">
-            <MessageSquare className="w-8 h-8 text-slate-400" />
+          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+            <MessageSquare className="w-7 h-7 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-200 mb-1">Selecciona una conversación</h3>
-          <p className="text-sm text-slate-400">
+          <h3 className="text-base font-semibold text-foreground mb-1">Selecciona una conversación</h3>
+          <p className="text-sm text-muted-foreground">
             Elige un contacto para ver sus mensajes
           </p>
         </div>

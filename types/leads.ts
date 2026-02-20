@@ -98,10 +98,10 @@ export interface LeadSignals {
 }
 
 export interface LeadScores {
-  clinical: number;
-  intent: number;
-  bant: number;
-  engagement: number;
+  necesidad_clinica: number;   // 0-35: Síntomas, severidad, urgencia
+  intencion_agendar: number;   // 0-30: Intención de agendar cita
+  compromiso: number;          // 0-20: Engagement (mensajes, actividad)
+  perfil_paciente: number;     // 0-15: Fit del paciente (para quién, actitud)
 }
 
 // ============================================================
@@ -185,12 +185,15 @@ function parseSignals(raw: unknown): LeadSignals | null {
 function parseScores(raw: unknown): LeadScores | null {
   if (!raw || typeof raw !== 'object') return null;
   const s = raw as Record<string, unknown>;
-  if (s.clinical === undefined && s.intent === undefined) return null;
+  // Support both v12 (new names) and v11 (old names) for backward compatibility
+  const nc = s.necesidad_clinica ?? s.clinical;
+  const ia = s.intencion_agendar ?? s.intent;
+  if (nc === undefined && ia === undefined) return null;
   return {
-    clinical: Number(s.clinical) || 0,
-    intent: Number(s.intent) || 0,
-    bant: Number(s.bant) || 0,
-    engagement: Number(s.engagement) || 0,
+    necesidad_clinica: Number(nc) || 0,
+    intencion_agendar: Number(ia) || 0,
+    compromiso: Number(s.compromiso ?? s.engagement) || 0,
+    perfil_paciente: Number(s.perfil_paciente ?? s.bant) || 0,
   };
 }
 

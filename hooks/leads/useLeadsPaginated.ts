@@ -78,12 +78,15 @@ function parseSignals(raw: unknown): LeadSignals | null {
 function parseScores(raw: unknown): LeadScores | null {
   if (!raw || typeof raw !== 'object') return null;
   const s = raw as Record<string, unknown>;
-  if (s.clinical === undefined && s.intent === undefined) return null;
+  // Support both v12 (new names) and v11 (old names) for backward compatibility
+  const nc = s.necesidad_clinica ?? s.clinical;
+  const ia = s.intencion_agendar ?? s.intent;
+  if (nc === undefined && ia === undefined) return null;
   return {
-    clinical: Number(s.clinical) || 0,
-    intent: Number(s.intent) || 0,
-    bant: Number(s.bant) || 0,
-    engagement: Number(s.engagement) || 0,
+    necesidad_clinica: Number(nc) || 0,
+    intencion_agendar: Number(ia) || 0,
+    compromiso: Number(s.compromiso ?? s.engagement) || 0,
+    perfil_paciente: Number(s.perfil_paciente ?? s.bant) || 0,
   };
 }
 

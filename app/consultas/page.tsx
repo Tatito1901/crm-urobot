@@ -109,15 +109,15 @@ export default function ConsultasPage() {
                     type="button"
                     onClick={() => handleSedeFilterChange(option.key)}
                     className={`
-                      flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center sm:justify-start gap-1 sm:gap-1.5 whitespace-nowrap
+                      flex-1 sm:flex-none px-2.5 sm:px-3 py-2 min-h-[36px] text-xs font-medium rounded-md transition-all flex items-center justify-center sm:justify-start gap-1 sm:gap-1.5 whitespace-nowrap no-select
                       ${sedeFilter === option.key
                         ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
+                        : 'text-muted-foreground hover:text-foreground active:bg-muted/50'
                       }
                     `}
                   >
                     {option.icon}
-                    <span className="hidden xs:inline sm:inline">{option.label}</span>
+                    <span>{option.label}</span>
                   </button>
                 ))}
               </div>

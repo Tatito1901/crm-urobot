@@ -174,7 +174,7 @@ export function DataTable({
       </div>
 
       {/* Mobile: Card-based layout optimizado */}
-      <div className="space-y-2 md:hidden px-2 sm:px-3">
+      <div className="space-y-2 md:hidden px-3 sm:px-4 py-2 momentum-scroll">
         {rows.map((row, index) => {
           const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
           const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
@@ -189,7 +189,6 @@ export function DataTable({
                   e.preventDefault(); 
                   onRowClick(row.id); 
                 }
-                // Navegación por teclado
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                   e.preventDefault();
                   const current = e.currentTarget;
@@ -203,19 +202,19 @@ export function DataTable({
               tabIndex={onRowClick ? index === 0 ? 0 : -1 : undefined}
               role={onRowClick ? "button" : undefined}
               className={cn(
-                "rounded-xl border border-border bg-card p-3 sm:p-4 min-h-[72px] flex flex-col justify-center shadow-sm",
-                onRowClick && "cursor-pointer active:scale-[0.99] transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+                "rounded-xl border border-border bg-card p-3.5 sm:p-4 min-h-[76px] flex flex-col justify-center shadow-sm",
+                onRowClick && "cursor-pointer active:scale-[0.98] transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 press-feedback"
               )}
             >
-              <div className="flex justify-between items-start gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+              <div className="flex justify-between items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  {primary && <div className="text-sm sm:text-base font-semibold text-foreground leading-tight">{primary}</div>}
-                  {secondary && <div className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">{secondary}</div>}
+                  {primary && <div className="text-sm font-semibold text-foreground leading-tight">{primary}</div>}
+                  {secondary && <div className="mt-1.5 text-xs text-muted-foreground">{secondary}</div>}
                 </div>
               </div>
               
               {metadata.length > 0 && (
-                <div className="mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-border/30 flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
+                <div className="mt-2.5 pt-2 border-t border-border/30 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
                   {metadata.map((key) => (
                     <div key={key} className="flex items-center gap-1.5">
                       <div className="text-foreground">{row[key]}</div>

@@ -229,7 +229,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           }}
         />
 
-        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-5 sm:gap-6 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
 
           {/* ═══════════════════════════════════════════
               HEADER — Greeting + date + live indicator
@@ -243,7 +243,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     Centro de Comando
                   </p>
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-foreground">
+                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-foreground">
                   {getGreeting()}
                 </h1>
                 <p className="text-sm text-muted-foreground capitalize">
@@ -333,7 +333,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
                   {/* Big number */}
                   <div className="flex-1 flex items-end">
-                    <div className={`text-5xl sm:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
+                    <div className={`text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
                       {loading ? '—' : m.value}
                     </div>
                   </div>
@@ -644,12 +644,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               {[
                 { label: 'Resolución', value: `${bot.tasaResolucion}%`, color: 'text-emerald-400' },
                 { label: 'Escalamiento', value: `${bot.tasaEscalamiento}%`, color: 'text-amber-400' },
-                { label: 'Citas por bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
-                { label: 'Resp. promedio', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
+                { label: 'Citas bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
+                { label: 'Resp. prom.', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
               ].map(stat => (
-                <div key={stat.label} className="px-5 sm:px-6 py-3.5 sm:py-4 text-center sm:text-left">
-                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{stat.label}</p>
-                  <p className={`text-xl sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
+                <div key={stat.label} className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                  <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{stat.label}</p>
+                  <p className={`text-lg sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}
                   </p>
                 </div>

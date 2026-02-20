@@ -37,10 +37,10 @@ export const LeadsFilters = React.memo(function LeadsFilters({
   );
 
   return (
-    <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between w-full">
-      {/* Buscador y total */}
+    <div className="flex flex-col gap-3 w-full">
+      {/* Buscador */}
       <div className="flex items-center gap-3 w-full sm:w-auto">
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full sm:w-72">
           <label htmlFor="leads-search" className="sr-only">Buscar por nombre o teléfono...</label>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden />
           <input
@@ -48,15 +48,15 @@ export const LeadsFilters = React.memo(function LeadsFilters({
             type="text"
             value={searchValue}
             onChange={handleSearchChange}
-            className="w-full pl-9 pr-3 py-2 bg-transparent border-b border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary text-sm transition-all"
+            className="w-full pl-9 pr-3 py-2.5 bg-transparent border-b border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary text-sm transition-all"
             placeholder="Buscar por nombre o teléfono..."
           />
         </div>
       </div>
 
-      {/* Tabs de Filtros */}
-      <div className="flex-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Filtrar leads por estado">
-        <div className="flex gap-2 p-1">
+      {/* Tabs de Filtros — horizontal scroll con touch targets grandes */}
+      <div className="overflow-x-auto scrollbar-hide scroll-fade-x -mx-1 px-1" role="tablist" aria-label="Filtrar leads por estado">
+        <div className="flex gap-1.5 sm:gap-2 py-0.5">
           {FILTERS.map((filter) => (
             <button
               key={filter.id}
@@ -64,10 +64,10 @@ export const LeadsFilters = React.memo(function LeadsFilters({
               aria-selected={currentFilter === filter.id}
               onClick={() => onFilterChange(filter.id)}
               className={`
-                px-4 py-1.5 text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-wider transition-all whitespace-nowrap border
+                px-3 sm:px-4 py-2 min-h-[36px] text-[11px] sm:text-xs font-bold rounded-full uppercase tracking-wider transition-all whitespace-nowrap border no-select
                 ${currentFilter === filter.id
                   ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                  : 'bg-transparent text-muted-foreground border-border hover:bg-muted/30 hover:text-foreground'
+                  : 'bg-transparent text-muted-foreground border-border hover:bg-muted/30 hover:text-foreground active:bg-muted/50'
                 }
               `}
             >

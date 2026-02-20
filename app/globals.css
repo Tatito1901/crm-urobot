@@ -223,3 +223,57 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ── Mobile: Horizontal scroll with fade indicators ── */
+.scroll-fade-x {
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-fade-x::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  background: linear-gradient(to right, transparent, var(--background));
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+/* ── Mobile: Touch-friendly minimum targets ── */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ── Mobile: Safe area padding for notch devices ── */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── Mobile: Prevent text selection on interactive elements ── */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* ── Mobile: Smooth momentum scrolling ── */
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ── Mobile: Active press feedback ── */
+@media (hover: none) {
+  .press-feedback:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease-out;
+  }
+}

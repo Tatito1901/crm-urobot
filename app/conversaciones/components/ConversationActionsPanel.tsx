@@ -156,35 +156,30 @@ export function ConversationActionsPanel({
   return (
     <div className={containerClass}>
       {/* Header */}
-      <div className={`shrink-0 px-4 py-3 border-b border-border flex items-center justify-between ${isMobile ? 'pt-2' : ''}`}>
+      <div className={`shrink-0 px-4 py-3 border-b border-border flex items-center justify-between ${isMobile ? 'pt-4' : ''}`}>
         {isMobile && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-slate-600 rounded-full" />
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-muted-foreground/30 rounded-full" />
         )}
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-blue-500/25 rounded-lg">
-            <Sparkles className="w-4 h-4 text-blue-400" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-sm text-slate-100">Acciones</h3>
-            <p className="text-[10px] text-slate-500">{nombreContacto || 'Contacto'}</p>
-          </div>
+        <div>
+          <h3 className="font-semibold text-sm text-foreground">Acciones</h3>
+          <p className="text-[11px] text-muted-foreground">{nombreContacto || 'Contacto'}</p>
         </div>
         {onClose && (
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-800 rounded-xl transition-colors"
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
           >
-            <X className="w-4 h-4 text-slate-400" />
+            <X className="w-4 h-4 text-muted-foreground" />
           </button>
         )}
       </div>
 
       {/* Contenido */}
-      <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'} space-y-3`}>
+      <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'} space-y-4`}>
         
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <>
@@ -193,24 +188,23 @@ export function ConversationActionsPanel({
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 
-                       hover:from-emerald-600 hover:to-emerald-700 rounded-xl transition-all shadow-lg shadow-emerald-500/20
-                       active:scale-[0.98]"
+              className="flex items-center gap-3 px-4 py-3 bg-emerald-600 hover:bg-emerald-700
+                       rounded-lg transition-colors active:scale-[0.98]"
             >
-              <Phone className="w-5 h-5 text-white" />
-              <span className="text-sm font-semibold text-white flex-1">Abrir WhatsApp</span>
-              <ExternalLink className="w-4 h-4 text-white/70" />
+              <Phone className="w-4 h-4 text-white" />
+              <span className="text-sm font-medium text-white flex-1">Abrir WhatsApp</span>
+              <ExternalLink className="w-3.5 h-3.5 text-white/60" />
             </a>
 
             {/* ===== ESTADO DEL LEAD ===== */}
             {lead && (
-              <div className="bg-muted/50 rounded-xl p-3">
+              <div className="rounded-lg border border-border p-3">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Estado actual</span>
-                  <div className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1
-                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-500/25 text-emerald-400' : 
-                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-500/25 text-amber-400' : 
-                      'bg-blue-500/25 text-blue-400'}`}
+                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Estado</span>
+                  <div className={`px-2 py-0.5 rounded-md text-xs font-medium flex items-center gap-1
+                    ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-500/15 text-emerald-400' : 
+                      lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-500/15 text-amber-400' : 
+                      'bg-primary/10 text-primary'}`}
                   >
                     {etapaConfig?.icon} {etapaConfig?.nombre || lead.estado}
                   </div>
@@ -250,47 +244,47 @@ export function ConversationActionsPanel({
 
             {/* ===== PERFIL BEHAVIORAL COMPACTO ===== */}
             {lead && (lead.signals || lead.esMetaAds) && (
-              <div className="bg-violet-500/15 rounded-xl p-3 space-y-2">
+              <div className="rounded-lg border border-border p-3 space-y-2">
                 <div className="flex items-center gap-1.5">
-                  <Brain className="w-3.5 h-3.5 text-violet-500" />
-                  <span className="text-[11px] font-medium text-violet-400 uppercase tracking-wider">Perfil</span>
+                  <Brain className="w-3.5 h-3.5 text-violet-400" />
+                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Perfil</span>
                   {lead.esMetaAds && (
-                    <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-blue-500 bg-blue-500/15 px-1.5 py-0.5 rounded">
+                    <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
                       <Megaphone className="w-3 h-3" /> Ads
                     </span>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {lead.signals?.perfil_paciente && (
-                    <div className="px-2 py-1.5 bg-muted rounded-lg">
-                      <p className="text-[9px] text-slate-400 uppercase">Perfil</p>
-                      <p className="text-[11px] font-semibold text-slate-200 capitalize">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</p>
+                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
+                      <p className="text-[9px] text-muted-foreground uppercase">Perfil</p>
+                      <p className="text-[11px] font-semibold text-foreground capitalize">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {lead.signals?.prediccion_conversion && (
-                    <div className="px-2 py-1.5 bg-muted rounded-lg">
-                      <p className="text-[9px] text-slate-400 uppercase">Conversión</p>
+                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
+                      <p className="text-[9px] text-muted-foreground uppercase">Conversión</p>
                       <p className={`text-[11px] font-semibold capitalize ${
                         lead.signals.prediccion_conversion === 'alta' ? 'text-emerald-400' :
-                        lead.signals.prediccion_conversion === 'media' ? 'text-amber-400' : 'text-slate-500'
+                        lead.signals.prediccion_conversion === 'media' ? 'text-amber-400' : 'text-muted-foreground'
                       }`}>{lead.signals.prediccion_conversion}</p>
                     </div>
                   )}
                   {lead.signals?.barrera_principal && (
-                    <div className="px-2 py-1.5 bg-muted rounded-lg">
-                      <p className="text-[9px] text-slate-400 uppercase">Barrera</p>
+                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
+                      <p className="text-[9px] text-muted-foreground uppercase">Barrera</p>
                       <p className="text-[11px] font-semibold text-amber-400 capitalize">{lead.signals.barrera_principal.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {lead.signals?.nivel_compromiso != null && (
-                    <div className="px-2 py-1.5 bg-muted rounded-lg">
-                      <p className="text-[9px] text-slate-400 uppercase">Compromiso</p>
+                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
+                      <p className="text-[9px] text-muted-foreground uppercase">Compromiso</p>
                       <p className="text-[11px] font-semibold text-violet-400">{lead.signals.nivel_compromiso}/10</p>
                     </div>
                   )}
                 </div>
                 {lead.signals?.incentivo_sugerido && (
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-emerald-500/15 rounded-lg">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-emerald-500/10 rounded-md">
                     <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
                     <span className="text-[10px] text-emerald-400">Incentivo: <strong className="capitalize">{lead.signals.incentivo_sugerido.replace(/_/g, ' ')}</strong></span>
                   </div>
@@ -307,27 +301,27 @@ export function ConversationActionsPanel({
                          transition-all"
               >
                 <div className="flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm font-medium text-slate-200">
+                  <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
                     {selectedPlantilla ? selectedPlantilla.nombre : 'Mensaje rápido'}
                   </span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showPlantillas ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showPlantillas ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Lista de plantillas */}
               {showPlantillas && (
-                <div className="bg-muted border border-border rounded-xl 
+                <div className="bg-card border border-border rounded-lg
                               overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   {plantillas.slice(0, 5).map((plantilla, idx) => (
                     <button
                       key={plantilla.id}
                       onClick={() => handleSelectPlantilla(plantilla)}
-                      className={`w-full text-left px-4 py-3 hover:bg-slate-700/50 
+                      className={`w-full text-left px-4 py-2.5 hover:bg-muted
                                 transition-colors ${idx !== 0 ? 'border-t border-border' : ''}`}
                     >
-                      <p className="text-sm font-medium text-slate-200">{plantilla.nombre}</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">{plantilla.descripcion}</p>
+                      <p className="text-sm font-medium text-foreground">{plantilla.nombre}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{plantilla.descripcion}</p>
                     </button>
                   ))}
                 </div>
@@ -341,8 +335,8 @@ export function ConversationActionsPanel({
                     onChange={(e) => setMensajePersonalizado(e.target.value)}
                     rows={4}
                     className="w-full px-3 py-3 text-sm bg-muted border border-border 
-                             rounded-xl focus:outline-none focus:ring-2 
-                             focus:ring-blue-500/30 focus:border-blue-500 resize-none"
+                             rounded-lg focus:outline-none focus:ring-2 
+                             focus:ring-primary/20 focus:border-primary/40 resize-none"
                     placeholder="Escribe tu mensaje..."
                   />
                   
@@ -351,8 +345,8 @@ export function ConversationActionsPanel({
                       onClick={handleEnviarMensaje}
                       disabled={enviando || !mensajePersonalizado.trim()}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
-                               bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold 
-                               rounded-xl transition-all active:scale-[0.98]
+                               bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium 
+                               rounded-lg transition-all active:scale-[0.98]
                                disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -365,14 +359,14 @@ export function ConversationActionsPanel({
                                disabled:opacity-50"
                       title="Copiar"
                     >
-                      {copiado ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-slate-500" />}
+                      {copiado ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
                     </button>
                     <button
                       onClick={() => { setSelectedPlantilla(null); setMensajePersonalizado(''); }}
-                      className="px-3 py-2.5 bg-muted hover:bg-muted/80 rounded-xl transition-colors"
+                      className="px-3 py-2.5 bg-muted hover:bg-muted/80 rounded-lg transition-colors"
                       title="Cancelar"
                     >
-                      <X className="w-4 h-4 text-slate-500" />
+                      <X className="w-4 h-4 text-muted-foreground" />
                     </button>
                   </div>
                 </div>
@@ -381,33 +375,33 @@ export function ConversationActionsPanel({
 
             {/* ===== ACCIONES SECUNDARIAS ===== */}
             {lead && (
-              <div className="grid grid-cols-2 gap-2 pt-2">
+              <div className="flex gap-2 pt-1">
                 <a
                   href={`/leads?search=${telefono}`}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-muted 
-                           hover:bg-muted/80 rounded-xl transition-colors text-xs font-medium
-                           text-slate-400"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-muted 
+                           hover:bg-muted/80 rounded-lg transition-colors text-xs font-medium
+                           text-muted-foreground"
                 >
-                  <User className="w-4 h-4" />
-                  Ver perfil
+                  <User className="w-3.5 h-3.5" />
+                  Perfil
                 </a>
                 <a
                   href={`/citas/nueva?telefono=${telefono}`}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 bg-muted 
-                           hover:bg-muted/80 rounded-xl transition-colors text-xs font-medium
-                           text-slate-400"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-muted 
+                           hover:bg-muted/80 rounded-lg transition-colors text-xs font-medium
+                           text-muted-foreground"
                 >
-                  <Calendar className="w-4 h-4" />
-                  Agendar cita
+                  <Calendar className="w-3.5 h-3.5" />
+                  Agendar
                 </a>
               </div>
             )}
 
             {/* Info si no hay lead */}
             {!lead && (
-              <div className="text-center py-4">
-                <User className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
-                <p className="text-xs text-slate-400">Contacto no registrado como lead</p>
+              <div className="text-center py-6">
+                <User className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Contacto no registrado como lead</p>
               </div>
             )}
           </>
@@ -416,8 +410,8 @@ export function ConversationActionsPanel({
 
       {/* Footer con último contacto */}
       {lead && lead.ultimaInteraccion && (
-        <div className="shrink-0 px-4 py-2 border-t border-border bg-muted/50">
-          <div className="flex items-center gap-2 text-[11px] text-slate-500">
+        <div className="shrink-0 px-4 py-2.5 border-t border-border">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <Clock className="w-3 h-3" />
             <span>Último contacto: {new Date(lead.ultimaInteraccion).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>
           </div>

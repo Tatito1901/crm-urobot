@@ -1,15 +1,13 @@
 'use client'
 
-import { type ReactNode } from 'react'
-import { MessageCircle, Search, RefreshCw, MessageSquare, Users, UserCheck } from 'lucide-react'
+import { MessageCircle, Search, RefreshCw, Users, UserCheck, Clock } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
 
-const FILTER_ICON_MAP = { MessageSquare, RefreshCw, Users, UserCheck } as const
 const FILTER_OPTIONS = [
-  { id: 'todos', label: 'Todos', icon: 'MessageSquare' as const },
-  { id: 'recientes', label: '24h', icon: 'RefreshCw' as const },
-  { id: 'leads', label: 'Leads', icon: 'Users' as const },
-  { id: 'pacientes', label: 'Pacientes', icon: 'UserCheck' as const },
+  { id: 'todos', label: 'Todos' },
+  { id: 'recientes', label: 'Recientes' },
+  { id: 'leads', label: 'Leads' },
+  { id: 'pacientes', label: 'Pacientes' },
 ] as const
 
 export type FiltroTipo = 'todos' | 'leads' | 'pacientes' | 'recientes'
@@ -59,122 +57,119 @@ export function ConversationsSidebar({
 }: ConversationsSidebarProps) {
   return (
     <aside className={`
-      w-full sm:w-[280px] md:w-[320px] lg:w-[380px] border-r border-white/[0.10] flex flex-col 
-      bg-white/[0.04] backdrop-blur-xl shrink-0 z-10
+      w-full sm:w-[300px] md:w-[340px] lg:w-[380px] border-r border-border flex flex-col 
+      bg-card shrink-0 z-10
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
       ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}
     `}>
-      {/* Header Desktop del Sidebar */}
-      <div className="hidden sm:flex items-center justify-between px-4 py-3 border-b border-white/[0.10]">
+      {/* Header */}
+      <div className="hidden sm:flex items-center justify-between px-5 py-4 border-b border-border">
         <div>
-          <h2 className="font-semibold text-foreground text-lg font-jakarta">Mensajes</h2>
-          <p className="text-xs text-muted-foreground">{mounted ? conteosPorTipo.todos : 0} conversaciones</p>
+          <h2 className="font-semibold text-foreground text-base font-jakarta">Conversaciones</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
         </div>
         <button 
           onClick={onRefetch} 
           title="Actualizar" 
-          className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-lg hover:bg-muted transition-colors"
         >
-          <RefreshCw className={`w-4 h-4 text-slate-400 ${mounted && isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
-      {/* Buscador y Filtros */}
-      <div className="px-3 py-2 space-y-2 shrink-0">
+      {/* Search + Filters */}
+      <div className="px-4 pt-3 pb-2 space-y-3 shrink-0">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Buscar contacto..."
+            placeholder="Buscar por nombre o teléfono..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm bg-slate-800/60 rounded-lg
-                     focus:outline-none focus:ring-2 focus:ring-teal-500/20
-                     placeholder:text-slate-400 transition-all"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-muted/60 border border-border rounded-lg
+                     focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40
+                     placeholder:text-muted-foreground/60 transition-all"
           />
         </div>
         
-        {/* Filtros rápidos */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none mobile-scroll pr-4 -mr-4">
-          {FILTER_OPTIONS.map(({ id, label, icon }) => {
-            const Icon = FILTER_ICON_MAP[icon]
-            return (
-              <button
-                key={id}
-                onClick={() => onFiltroChange(id)}
-                className={`flex items-center justify-center gap-1.5 px-3 py-2 min-h-[36px] rounded-lg text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500
-                  ${filtroActivo === id 
-                    ? 'bg-teal-500 text-white shadow-sm shadow-teal-500/20' 
-                    : 'bg-white/[0.08] text-slate-400 hover:bg-white/[0.12]'}`}
-              >
-                <Icon className="w-3 h-3" />
-                <span>{label}</span>
-                {conteosPorTipo[id] > 0 && (
-                  <span className={`ml-0.5 text-[10px] ${filtroActivo === id ? 'text-white/80' : 'text-slate-400'}`}>
-                    {conteosPorTipo[id]}
-                  </span>
-                )}
-              </button>
-            )
-          })}
+        {/* Filter tabs — minimal pill style with touch-friendly targets */}
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+          {FILTER_OPTIONS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => onFiltroChange(id)}
+              className={`px-3 py-2 min-h-[36px] rounded-full text-xs font-medium whitespace-nowrap transition-all no-select
+                ${filtroActivo === id 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/70'}`}
+            >
+              {label}
+              {mounted && conteosPorTipo[id] > 0 && (
+                <span className={`ml-1.5 ${filtroActivo === id ? 'text-primary-foreground/70' : 'text-muted-foreground/60'}`}>
+                  {conteosPorTipo[id]}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Lista de conversaciones */}
-      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-slate-700 hover:scrollbar-thumb-slate-600">
+      {/* Conversation list */}
+      <div className="flex-1 overflow-y-auto min-h-0">
         {error ? (
-          <div className="p-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-red-900/30 flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="w-7 h-7 text-red-500" />
+          <div className="p-8 text-center">
+            <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center mx-auto mb-3">
+              <MessageCircle className="w-6 h-6 text-destructive" />
             </div>
-            <p className="text-sm font-semibold text-red-400">Error al cargar</p>
-            <p className="text-xs mt-1 text-red-500/70">{error.message}</p>
+            <p className="text-sm font-medium text-destructive">Error al cargar</p>
+            <p className="text-xs mt-1 text-muted-foreground">{error.message}</p>
             <button 
               onClick={onRefetch}
-              className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-medium transition-colors"
+              className="mt-4 px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg text-xs font-medium transition-colors"
             >
               Reintentar
             </button>
           </div>
         ) : !mounted || isLoading ? (
-          <div className="p-4 space-y-3">
+          <div className="px-4 py-2">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 animate-pulse">
-                <div className="w-12 h-12 rounded-2xl bg-slate-800 shrink-0" />
+              <div key={i} className="flex items-center gap-3 px-2 py-3 animate-pulse">
+                <div className="w-10 h-10 rounded-full bg-muted shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-slate-800 rounded-lg w-3/4" />
-                  <div className="h-3 bg-slate-800 rounded-lg w-1/2" />
+                  <div className="h-3.5 bg-muted rounded w-2/3" />
+                  <div className="h-3 bg-muted rounded w-4/5" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredConversaciones.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground px-6">
-            <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mb-4">
-              {filtroActivo === 'leads' ? <Users className="w-8 h-8 text-slate-400" /> :
-               filtroActivo === 'pacientes' ? <UserCheck className="w-8 h-8 text-slate-400" /> :
-               <MessageCircle className="w-8 h-8 text-slate-400" />}
+          <div className="flex flex-col items-center justify-center h-64 px-8">
+            <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+              {filtroActivo === 'leads' ? <Users className="w-5 h-5 text-muted-foreground" /> :
+               filtroActivo === 'pacientes' ? <UserCheck className="w-5 h-5 text-muted-foreground" /> :
+               filtroActivo === 'recientes' ? <Clock className="w-5 h-5 text-muted-foreground" /> :
+               <MessageCircle className="w-5 h-5 text-muted-foreground" />}
             </div>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-medium text-foreground">
               {searchQuery ? 'Sin resultados' : 
                filtroActivo === 'leads' ? 'Sin leads' :
                filtroActivo === 'pacientes' ? 'Sin pacientes' :
                filtroActivo === 'recientes' ? 'Sin actividad reciente' :
                'Sin conversaciones'}
             </p>
-            <p className="text-xs mt-2 text-center text-slate-400">
-              {searchQuery ? `No hay resultados para "${searchQuery}"` :
+            <p className="text-xs mt-1.5 text-center text-muted-foreground">
+              {searchQuery ? `No se encontró "${searchQuery}"` :
                filtroActivo === 'recientes' ? 'No hay mensajes en las últimas 24h' :
                filtroActivo !== 'todos' ? (
-                 <button onClick={() => onFiltroChange('todos')} className="text-blue-500 hover:underline">
-                   Ver todas las conversaciones
+                 <button onClick={() => onFiltroChange('todos')} className="text-primary hover:underline">
+                   Ver todas
                  </button>
                ) : 'Las conversaciones aparecerán aquí'}
             </p>
           </div>
         ) : (
-          <div className="p-2">
+          <div className="px-2 py-1">
             {filteredConversaciones.map(conv => (
               <ConversationItem
                 key={conv.telefono}

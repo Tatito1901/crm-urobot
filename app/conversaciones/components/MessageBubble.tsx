@@ -451,27 +451,27 @@ export const MessageBubble = memo(function MessageBubble({
     : 'rounded-2xl rounded-tr-sm';
 
   return (
-    <div className={`cv-auto-message flex w-full ${isBot ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-0.5' : 'mt-3 first:mt-0'}`}>
+    <div className={`flex w-full ${isBot ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-0.5' : 'mt-3 first:mt-0'}`}>
       {/* Bot avatar — only on first message of a group */}
       {isBot && (
-        <div className={`shrink-0 mr-2 self-end ${isConsecutive ? 'w-7' : ''}`}>
+        <div className={`shrink-0 mr-2 self-end ${isConsecutive ? 'w-6' : ''}`}>
           {!isConsecutive && (
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-sm">
-              <Bot className="w-3.5 h-3.5 text-white" />
+            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+              <Bot className="w-3 h-3 text-muted-foreground" />
             </div>
           )}
         </div>
       )}
 
-      <div className={`flex flex-col max-w-[82%] sm:max-w-[70%] lg:max-w-[60%] ${isBot ? 'items-start' : 'items-end'}`}>
+      <div className={`flex flex-col max-w-[80%] sm:max-w-[68%] lg:max-w-[58%] ${isBot ? 'items-start' : 'items-end'}`}>
         <div className={`
           relative group
           ${isBot 
-            ? `bg-slate-800/90 text-slate-100
-               ${botRadius} shadow-none
-               border border-slate-700/60` 
-            : `bg-gradient-to-br from-teal-500 to-teal-600 text-white
-               ${userRadius} shadow-sm shadow-teal-500/15`}
+            ? `bg-card text-foreground
+               ${botRadius}
+               border border-border` 
+            : `bg-primary text-primary-foreground
+               ${userRadius}`}
         `}>
           {/* Contenido principal */}
           <div className="px-3.5 sm:px-4 pt-2.5 pb-1.5">
@@ -488,7 +488,7 @@ export const MessageBubble = memo(function MessageBubble({
           )}
 
           {/* Footer: hora + indicadores */}
-          <div className={`flex items-center justify-end gap-1.5 px-3.5 pb-2 select-none ${isBot ? 'text-slate-500' : 'text-white/55'}`}>
+          <div className={`flex items-center justify-end gap-1.5 px-3.5 pb-2 select-none ${isBot ? 'text-muted-foreground' : 'text-primary-foreground/50'}`}>
             {tipoMensaje !== 'text' && (
               <>
                 {tipoMensaje === 'image' && <ImageIcon className="w-3 h-3" />}
@@ -501,7 +501,7 @@ export const MessageBubble = memo(function MessageBubble({
             <span className="text-[10px] tabular-nums">
               {format(createdAt, 'HH:mm')}
             </span>
-            {!isBot && <CheckCheck className="w-3.5 h-3.5 text-white/40" />}
+            {!isBot && <CheckCheck className="w-3.5 h-3.5 text-primary-foreground/40" />}
           </div>
         </div>
       </div>

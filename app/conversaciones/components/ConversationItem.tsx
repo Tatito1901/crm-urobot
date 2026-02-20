@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { UserCheck, Calendar, Bot, Clock, Zap } from 'lucide-react';
 
 interface ConversationItemProps {
   telefono: string;
@@ -16,34 +15,47 @@ interface ConversationItemProps {
   onSelect: (telefono: string) => void;
 }
 
-// Función para obtener iniciales del nombre
 const getInitials = (nombre: string | null, telefono: string) => {
   if (nombre) {
     const parts = nombre.trim().split(' ').filter(Boolean);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
     return nombre.slice(0, 2).toUpperCase();
   }
   return telefono.slice(-2);
 };
 
-// Función para formatear tiempo compacto
 const formatTimeCompact = (fecha: Date | string) => {
   const dateObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
   if (isNaN(dateObj.getTime())) return '';
-
-  const now = new Date();
-  const diff = now.getTime() - dateObj.getTime();
+  const diff = Date.now() - dateObj.getTime();
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-  
   if (mins < 1) return 'ahora';
   if (mins < 60) return `${mins}m`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
   return formatDistanceToNow(dateObj, { addSuffix: false, locale: es });
+};
+
+const cleanPreview = (text: string) =>
+  text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/\n/g, ' ').trim();
+
+const AVATAR_COLORS = [
+  'bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600',
+  'bg-rose-600', 'bg-cyan-600', 'bg-indigo-600',
+];
+
+const ESTADO_LABEL: Record<string, string> = {
+  nuevo: 'Nuevo',
+  contactado: 'Contactado',
+  interactuando: 'Interactuando',
+  cita_propuesta: 'Cita propuesta',
+  cita_agendada: 'Cita agendada',
+  convertido: 'Convertido',
+  show: 'Show',
+  no_show: 'No show',
+  no_interesado: 'No interesado',
 };
 
 export const ConversationItem = memo(function ConversationItem({
@@ -58,144 +70,56 @@ export const ConversationItem = memo(function ConversationItem({
   isActive,
   onSelect
 }: ConversationItemProps) {
-  
-  // Colores del avatar basados en el teléfono (consistente)
-  const avatarColors = [
-    'from-blue-500 to-blue-600',
-    'from-emerald-500 to-emerald-600', 
-    'from-purple-500 to-purple-600',
-    'from-amber-500 to-orange-500',
-    'from-pink-500 to-rose-500',
-    'from-cyan-500 to-teal-500',
-    'from-indigo-500 to-violet-500',
-  ];
-  
-  const colorIndex = telefono.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length;
-  const avatarGradient = avatarColors[colorIndex];
+  const colorIndex = telefono.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length;
 
-  // Verificar si es reciente (últimas 2 horas)
-  const esReciente = () => {
-    const fecha = typeof ultimaFecha === 'string' ? new Date(ultimaFecha) : ultimaFecha;
-    const hace2h = Date.now() - 2 * 60 * 60 * 1000;
-    return fecha.getTime() > hace2h;
-  };
-  
-  // Verificar si necesita atención (lead nuevo o interactuando sin cita)
-  const necesitaAtencion = tipoContacto === 'lead' && 
-    (estadoLead === 'nuevo' || estadoLead === 'interactuando') && 
-    citasValidas === 0;
-
-  // Limpiar preview del mensaje (quitar formato markdown)
-  const cleanPreview = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
-      .replace(/\n/g, ' ')
-      .trim();
-  };
+  // Tipo badge — single subtle indicator
+  const tipoBadge = tipoContacto === 'paciente' 
+    ? { label: 'Paciente', cls: 'text-emerald-400' }
+    : estadoLead 
+      ? { label: ESTADO_LABEL[estadoLead] || estadoLead, cls: 'text-muted-foreground' }
+      : null;
 
   return (
     <button
       onClick={() => onSelect(telefono)}
       className={`
-        cv-auto-item group w-full px-3 py-3.5 sm:py-3 flex items-center gap-3 text-left transition-all duration-200
-        active:bg-slate-800
+        group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors
         ${isActive 
-          ? 'bg-blue-950/40 border-l-2 border-blue-500' 
-          : 'hover:bg-slate-800/40 border-l-2 border-transparent'}
+          ? 'bg-primary/10 text-foreground' 
+          : 'hover:bg-muted/60 text-foreground'}
       `}
     >
-      {/* Avatar minimalista */}
-      <div className="relative shrink-0">
-        <div className={`
-          w-12 h-12 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-medium text-sm
-          ${isActive 
-            ? 'bg-blue-500 text-white' 
-            : `bg-gradient-to-br ${avatarGradient} text-white`}
-          transition-all duration-200 shadow-sm
-        `}>
-          {getInitials(nombreContacto, telefono)}
-        </div>
-        
-        {/* Indicador de tipo - más sutil */}
-        {tipoContacto === 'paciente' && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center shadow-sm">
-            <UserCheck className="w-2.5 h-2.5 text-white" />
-          </div>
-        )}
-        {citasValidas > 0 && tipoContacto !== 'paciente' && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue-500 border-2 border-slate-900 flex items-center justify-center shadow-sm">
-            <Calendar className="w-2.5 h-2.5 text-white" />
-          </div>
-        )}
+      {/* Avatar — compact circle */}
+      <div className={`
+        w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0
+        ${isActive ? 'bg-primary' : AVATAR_COLORS[colorIndex]}
+      `}>
+        {getInitials(nombreContacto, telefono)}
       </div>
       
-      {/* Info - diseño más limpio */}
+      {/* Content — 2 rows only */}
       <div className="flex-1 min-w-0">
-        {/* Row 1: Nombre + Tiempo + Indicadores */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className={`font-medium text-sm truncate transition-colors ${
-              isActive ? 'text-blue-400' : 'text-slate-100'
-            }`}>
-              {nombreContacto || telefono}
-            </span>
-            {/* Indicador de reciente */}
-            {esReciente() && !isActive && (
-              <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            )}
-            {/* Indicador de atención */}
-            {necesitaAtencion && !isActive && (
-              <span className="shrink-0" title="Requiere seguimiento">
-                <Zap className="w-3 h-3 text-amber-500" />
-              </span>
-            )}
-          </div>
-          <span className="text-[10px] text-slate-500 shrink-0 tabular-nums font-medium" suppressHydrationWarning>
+        {/* Row 1: Name + time */}
+        <div className="flex items-baseline justify-between gap-2">
+          <span className={`text-sm font-medium truncate ${isActive ? 'text-primary' : ''}`}>
+            {nombreContacto || telefono}
+          </span>
+          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums" suppressHydrationWarning>
             {formatTimeCompact(ultimaFecha)}
           </span>
         </div>
         
-        {/* Row 2: Preview del mensaje - más elegante */}
-        <div className="flex items-center gap-1.5 mt-1">
-          <Bot className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:block" />
-          <p className="text-[13px] sm:text-[13px] truncate text-slate-400 leading-snug">
+        {/* Row 2: Preview + optional tipo */}
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <p className="text-xs text-muted-foreground truncate flex-1 leading-relaxed">
             {cleanPreview(ultimoMensaje)}
           </p>
+          {tipoBadge && (
+            <span className={`text-[10px] font-medium shrink-0 ${tipoBadge.cls}`}>
+              {tipoBadge.label}
+            </span>
+          )}
         </div>
-        
-        {/* Row 3: Tags - más minimalistas */}
-        {(estadoLead || citasValidas > 0 || tipoContacto === 'paciente') && (
-          <div className="flex items-center gap-1.5 mt-2">
-            {/* Mostrar badge de Paciente cuando es paciente */}
-            {tipoContacto === 'paciente' && (
-              <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-900/30 text-emerald-400">
-                Paciente
-              </span>
-            )}
-            
-            {/* Mostrar estado del lead cuando NO es paciente */}
-            {estadoLead && tipoContacto !== 'paciente' && (
-              <span className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
-                estadoLead === 'convertido' || estadoLead === 'show'
-                  ? 'bg-emerald-900/30 text-emerald-400' 
-                  : estadoLead === 'cita_propuesta' || estadoLead === 'cita_agendada'
-                    ? 'bg-purple-900/30 text-purple-400'
-                    : estadoLead === 'contactado' || estadoLead === 'interactuando'
-                      ? 'bg-blue-900/30 text-blue-400'
-                      : 'bg-amber-900/30 text-amber-400'
-              }`}>
-                {estadoLead}
-              </span>
-            )}
-            
-            {citasValidas > 0 && (
-              <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-blue-900/30 text-blue-400">
-                {citasValidas} cita{citasValidas !== 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-        )}
       </div>
     </button>
   );

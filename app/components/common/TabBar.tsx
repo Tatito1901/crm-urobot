@@ -67,13 +67,15 @@ export function TabBar(props: TabBarProps) {
                 onClick={() => onChange(tab.key)}
                 className={cn(
                   tabTokens.tabWithIcon,
+                  'min-h-[44px] no-select',
                   isActive
                     ? `border-${color}-500 text-${color}-400`
                     : tabTokens.tabIconInactive
                 )}
               >
                 {tab.icon}
-                <span>{tab.label}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden text-xs">{tab.label}</span>
                 {tab.badge !== undefined && tab.badge !== 0 && (
                   <span className={
                     tab.badgeColor

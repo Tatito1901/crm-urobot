@@ -122,7 +122,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
         <div className="shrink-0 border-b border-border">
           {/* Top bar: nav + close */}
           <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               {onNavigate && (
                 <>
                   <Tooltip>
@@ -130,7 +130,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
                       <button
                         onClick={() => onNavigate('prev')}
                         disabled={!hasPrev}
-                        className="p-1.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed touch-target"
                       >
                         <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                       </button>
@@ -142,7 +142,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
                       <button
                         onClick={() => onNavigate('next')}
                         disabled={!hasNext}
-                        className="p-1.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed touch-target"
                       >
                         <ChevronRight className="w-4 h-4 text-muted-foreground" />
                       </button>
@@ -156,7 +156,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
               <TooltipTrigger asChild>
                 <button
                   onClick={onClose}
-                  className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
+                  className="p-2.5 hover:bg-secondary rounded-lg transition-colors touch-target"
                 >
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
@@ -395,10 +395,10 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
                             <Separator />
                             {lead.scores && (
                               <div className="space-y-2">
-                                <ScoreBar label="Clínico" value={lead.scores.clinical} max={30} color="text-teal-500" />
-                                <ScoreBar label="Intención" value={lead.scores.intent} max={35} color="text-blue-500" />
-                                <ScoreBar label="Engagement" value={lead.scores.engagement} max={20} color="text-violet-500" />
-                                <ScoreBar label="BANT" value={lead.scores.bant} max={15} color="text-amber-500" />
+                                <ScoreBar label="Necesidad clínica" value={lead.scores.necesidad_clinica} max={35} color="text-teal-500" />
+                                <ScoreBar label="Intención de agendar" value={lead.scores.intencion_agendar} max={30} color="text-blue-500" />
+                                <ScoreBar label="Compromiso" value={lead.scores.compromiso} max={20} color="text-violet-500" />
+                                <ScoreBar label="Perfil paciente" value={lead.scores.perfil_paciente} max={15} color="text-amber-500" />
                               </div>
                             )}
                           </div>
@@ -519,20 +519,20 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
         )}
 
         {/* ── Footer: Quick actions ── */}
-        <div className="shrink-0 border-t border-border px-3 py-2.5 bg-secondary/20">
+        <div className="shrink-0 border-t border-border px-3 py-3 bg-secondary/20 safe-area-bottom">
           <div className="flex items-center gap-2">
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-lg hover:bg-emerald-500/25 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-lg hover:bg-emerald-500/25 active:bg-emerald-500/30 transition-colors"
             >
               <Phone className="w-3.5 h-3.5" />
               WhatsApp
             </a>
             <a
               href={`/conversaciones?search=${lead.telefono}`}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary/10 text-primary text-xs font-semibold rounded-lg hover:bg-primary/20 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] bg-primary/10 text-primary text-xs font-semibold rounded-lg hover:bg-primary/20 active:bg-primary/25 transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ver completo

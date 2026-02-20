@@ -122,7 +122,7 @@ export default function LeadsPage() {
       <div className="space-y-4">
 
         {/* ── Stats grid ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
           <MetricCard
             variant="compact"
             icon={<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />}
@@ -168,17 +168,21 @@ export default function LeadsPage() {
         {/* ── Table ── */}
         <div className="space-y-4">
           {/* Search + filters bar */}
-          <div className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
-            <LeadsFilters
-              currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'nuevo' | 'interactuando' | 'contactado' | 'cita_propuesta' | 'cita_agendada' | 'perdido'}
-              onFilterChange={handleFilterChange}
-              searchValue={search}
-              onSearchChange={setSearch}
-            />
-            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground shrink-0">
-              <span className="tabular-nums font-medium text-foreground">{totalCount}</span>
-              <span>leads</span>
-              {isSearching && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
+          <div className="bg-card p-3 sm:p-4 rounded-xl border border-border shadow-sm space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <LeadsFilters
+                  currentFilter={estadoFilter === '' ? 'all' : estadoFilter as 'nuevo' | 'interactuando' | 'contactado' | 'cita_propuesta' | 'cita_agendada' | 'perdido'}
+                  onFilterChange={handleFilterChange}
+                  searchValue={search}
+                  onSearchChange={setSearch}
+                />
+              </div>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground shrink-0">
+                <span className="tabular-nums font-medium text-foreground">{totalCount}</span>
+                <span className="hidden sm:inline">leads</span>
+                {isSearching && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />}
+              </div>
             </div>
           </div>
 
@@ -238,7 +242,7 @@ export default function LeadsPage() {
             role="dialog"
             aria-label="Panel clínico del lead"
             aria-modal="true"
-            className="fixed top-0 right-0 z-50 h-full w-[420px] max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+            className="fixed top-0 right-0 z-50 h-full w-full sm:w-[420px] sm:max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
           >
             <LeadClinicSidebar
               lead={selectedLead}

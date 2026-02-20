@@ -258,7 +258,7 @@ export function BottomNav() {
         aria-label="Navegación inferior"
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg lg:hidden"
       >
-        <div className="flex items-center justify-around px-1 py-1.5">
+        <div className="flex items-center justify-around px-1 py-1">
           {BOTTOM_NAV_ITEMS.map((item) => {
             const isMoreButton = item.href === "#more";
             const isActive = isMoreButton 
@@ -271,7 +271,7 @@ export function BottomNav() {
                   <DrawerTrigger asChild>
                     <button
                       className={cn(
-                        "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
+                        "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[48px] min-w-[56px] transition-all duration-150 no-select",
                         "active:scale-95 focus-visible:outline-2 focus-visible:outline-teal-400",
                         isActive
                           ? "text-teal-400"
@@ -281,7 +281,7 @@ export function BottomNav() {
                       aria-label="Más opciones"
                     >
                       {item.icon}
-                      <span className="text-xs font-medium">{item.label}</span>
+                      <span className="text-[10px] font-medium">{item.label}</span>
                     </button>
                   </DrawerTrigger>
                   <DrawerContent className="bg-card border-border">
@@ -290,7 +290,7 @@ export function BottomNav() {
                         <DrawerTitle className="text-foreground">Más opciones</DrawerTitle>
                         <DrawerDescription className="text-muted-foreground">Inteligencia y Configuración</DrawerDescription>
                       </DrawerHeader>
-                      <div className="px-4 pb-6 grid grid-cols-2 gap-2">
+                      <div className="px-4 pb-6 grid grid-cols-2 gap-2.5">
                         {SECONDARY_NAV_ITEMS.map((secItem) => {
                           const isSecActive = pathname === secItem.href || pathname?.startsWith(`${secItem.href}/`);
                           const SecIcon = secItem.icon;
@@ -300,7 +300,7 @@ export function BottomNav() {
                               href={secItem.href}
                               onClick={() => setShowMore(false)}
                               className={cn(
-                                "flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-colors",
+                                "flex items-center gap-3 rounded-xl px-4 py-4 text-sm font-medium transition-colors min-h-[52px]",
                                 "active:scale-95 border",
                                 isSecActive
                                   ? "bg-teal-500/10 text-teal-400 border-teal-500/20"
@@ -326,7 +326,7 @@ export function BottomNav() {
                 prefetch={true}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-150",
+                  "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[48px] min-w-[56px] transition-all duration-150 no-select",
                   "active:scale-95 focus-visible:outline-2 focus-visible:outline-teal-400",
                   isActive 
                     ? "text-teal-400 font-semibold" 
@@ -334,10 +334,10 @@ export function BottomNav() {
                 )}
               >
                 {isActive && (
-                  <span className="absolute top-1 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-teal-400" aria-hidden />
+                  <span className="absolute top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-teal-400" aria-hidden />
                 )}
                 {item.icon}
-                <span className="text-xs font-medium">{item.label}</span>
+                <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
             );
           })}
