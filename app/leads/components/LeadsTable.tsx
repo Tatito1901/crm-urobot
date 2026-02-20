@@ -7,7 +7,6 @@ import { GLOSARIO } from '@/app/lib/glosario-medico';
 import { CANAL_COLORS } from '@/types/canales-marketing';
 import { WrapTooltip } from '@/app/components/common/InfoTooltip';
 import { TableHeaders } from '@/app/components/leads/LeadsTooltips';
-import { LeadActionButton } from './LeadActionButton';
 import type { Lead } from '@/types/leads';
 
 interface LeadsTableProps {
@@ -59,9 +58,16 @@ export const LeadsTable = React.memo(function LeadsTable({ leads, emptyMessage, 
       ),
       sintomas: (
         <div className="flex flex-col gap-1.5">
-          {lead.signals?.perfil_paciente ? (
+          {lead.sintomasReportados.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-1">
+              {lead.sintomasReportados.map((s, i) => (
+                <span key={i} className="text-[10px] font-bold text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
+                  {s.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          ) : lead.signals?.perfil_paciente ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-blue-500 text-[10px]">⚛</span>
               <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
                 {lead.signals.perfil_paciente.replace(/_/g, ' ')}
               </span>

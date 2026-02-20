@@ -25,16 +25,9 @@ import {
   ChevronRight,
   Copy,
   Check,
-  Zap,
-  Star,
-  Calendar,
-  User,
-  XCircle,
-  Send,
 } from 'lucide-react';
 import { useLeadClinico } from '@/hooks/leads/useLeadClinico';
-import { useLeadActions } from '@/hooks/leads/useLeadActions';
-import type { Lead, LeadEstado } from '@/types/leads';
+import type { Lead } from '@/types/leads';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -63,21 +56,6 @@ const TEMP_CONFIG: Record<string, { bg: string; text: string; label: string; rin
   urgente:      { bg: 'bg-red-600',     text: 'text-red-400',   label: 'Urgente',      ring: 'ring-red-500/40' },
 };
 
-// ── Estado config for actions tab ──
-const ESTADOS_CONFIG: { estado: LeadEstado; icon: React.ReactNode; label: string; color: string }[] = [
-  { estado: 'nuevo', icon: <Star className="w-3.5 h-3.5" />, label: 'Nuevo', color: 'bg-blue-500' },
-  { estado: 'interactuando', icon: <Zap className="w-3.5 h-3.5" />, label: 'Bot activo', color: 'bg-sky-500' },
-  { estado: 'contactado', icon: <MessageCircle className="w-3.5 h-3.5" />, label: 'Contactado', color: 'bg-amber-500' },
-  { estado: 'cita_propuesta', icon: <Calendar className="w-3.5 h-3.5" />, label: 'Cita propuesta', color: 'bg-purple-500' },
-  { estado: 'en_seguimiento', icon: <Clock className="w-3.5 h-3.5" />, label: 'En seguimiento', color: 'bg-orange-500' },
-  { estado: 'cita_agendada', icon: <Calendar className="w-3.5 h-3.5" />, label: 'Cita agendada', color: 'bg-emerald-500' },
-  { estado: 'show', icon: <Check className="w-3.5 h-3.5" />, label: 'Asistió', color: 'bg-teal-500' },
-  { estado: 'convertido', icon: <User className="w-3.5 h-3.5" />, label: 'Paciente', color: 'bg-green-600' },
-  { estado: 'no_show', icon: <XCircle className="w-3.5 h-3.5" />, label: 'No asistió', color: 'bg-red-400' },
-  { estado: 'perdido', icon: <X className="w-3.5 h-3.5" />, label: 'Perdido', color: 'bg-slate-400' },
-  { estado: 'no_interesado', icon: <XCircle className="w-3.5 h-3.5" />, label: 'No interesado', color: 'bg-slate-500' },
-  { estado: 'descartado', icon: <X className="w-3.5 h-3.5" />, label: 'Descartado', color: 'bg-red-500' },
-];
 
 interface LeadClinicSidebarProps {
   lead: Lead;
@@ -88,7 +66,7 @@ interface LeadClinicSidebarProps {
   onRefresh?: () => void;
 }
 
-type SidebarTab = 'resumen' | 'conversacion' | 'acciones';
+type SidebarTab = 'resumen' | 'conversacion';
 
 export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext, onRefresh }: LeadClinicSidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab>('resumen');
@@ -262,7 +240,6 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
           <div className="flex gap-0.5 py-1">
             <TabPill active={activeTab === 'resumen'} onClick={() => setActiveTab('resumen')} icon={<Stethoscope className="w-3.5 h-3.5" />} label="Resumen" />
             <TabPill active={activeTab === 'conversacion'} onClick={() => setActiveTab('conversacion')} icon={<MessageCircle className="w-3.5 h-3.5" />} label="Chat" badge={lead.totalMensajes > 0 ? lead.totalMensajes : undefined} />
-            <TabPill active={activeTab === 'acciones'} onClick={() => setActiveTab('acciones')} icon={<Zap className="w-3.5 h-3.5" />} label="Acciones" />
           </div>
         </div>
 
@@ -271,8 +248,6 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
           <div className="flex-1 overflow-hidden">
             <SidebarChatViewer telefono={lead.telefono} nombreDisplay={lead.nombreDisplay} />
           </div>
-        ) : activeTab === 'acciones' ? (
-          <ActionsTab lead={lead} onRefresh={onRefresh} onClose={onClose} />
         ) : (
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-2">
@@ -566,116 +541,6 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
         </div>
       </div>
     </TooltipProvider>
-  );
-}
-
-// ── Actions Tab ──
-
-function ActionsTab({ lead, onRefresh, onClose }: { lead: Lead; onRefresh?: () => void; onClose: () => void }) {
-  const [cambioExitoso, setCambioExitoso] = useState<string | null>(null);
-  const { historial, recomendacion, isLoading, cambiarEstado, generarURLWhatsApp } = useLeadActions(lead);
-
-  const handleCambiarEstado = useCallback(async (nuevoEstado: LeadEstado) => {
-    await cambiarEstado(nuevoEstado);
-    setCambioExitoso(nuevoEstado);
-    setTimeout(() => {
-      setCambioExitoso(null);
-      onRefresh?.();
-    }, 1200);
-  }, [cambiarEstado, onRefresh]);
-
-  return (
-    <ScrollArea className="flex-1">
-      <div className="p-3 space-y-3">
-        {/* Recomendación IA */}
-        {recomendacion && recomendacion.prioridad !== 'no_contactar' && (
-          <div className={cn(
-            'flex items-start gap-2 px-3 py-2.5 rounded-lg text-xs border animate-in fade-in duration-300',
-            recomendacion.prioridad === 'alta' ? 'bg-red-500/10 text-red-300 border-red-500/20' :
-            recomendacion.prioridad === 'media' ? 'bg-amber-500/10 text-amber-300 border-amber-500/20' :
-            'bg-blue-500/10 text-blue-300 border-blue-500/20'
-          )}>
-            <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{recomendacion.razon}</span>
-          </div>
-        )}
-
-        {/* Quick WhatsApp */}
-        <div className="space-y-1.5">
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Contacto rápido</span>
-          <a
-            href={generarURLWhatsApp('')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/20"
-          >
-            <Send className="w-3.5 h-3.5" />
-            Abrir WhatsApp
-            <ExternalLink className="w-3 h-3 opacity-70" />
-          </a>
-        </div>
-
-        <Separator />
-
-        {/* Cambiar estado */}
-        <div className="space-y-1.5">
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Cambiar estado</span>
-          <div className="grid grid-cols-2 gap-1.5">
-            {ESTADOS_CONFIG.filter(e => e.estado !== lead.estado).map(({ estado, icon, label, color }) => (
-              <button
-                key={estado}
-                onClick={() => handleCambiarEstado(estado)}
-                disabled={cambioExitoso !== null}
-                className={cn(
-                  'flex items-center gap-2 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all active:scale-[0.97]',
-                  cambioExitoso === estado
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                    : 'border-border hover:border-border/80 hover:bg-secondary/50 text-foreground',
-                  'disabled:opacity-50'
-                )}
-              >
-                <div className={cn('w-5 h-5 rounded-full flex items-center justify-center text-white shrink-0', color)}>
-                  {icon}
-                </div>
-                <span className="truncate">{cambioExitoso === estado ? '✓ Listo' : label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Historial info */}
-        {historial && (
-          <>
-            <Separator />
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Historial</span>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="text-center p-2 bg-secondary/50 rounded-lg">
-                  <p className="text-sm font-bold text-foreground tabular-nums">{historial.totalMensajesEnviados}</p>
-                  <p className="text-[10px] text-muted-foreground">Enviados</p>
-                </div>
-                <div className="text-center p-2 bg-secondary/50 rounded-lg">
-                  <p className="text-sm font-bold text-foreground tabular-nums">{historial.totalMensajesRecibidos}</p>
-                  <p className="text-[10px] text-muted-foreground">Recibidos</p>
-                </div>
-                <div className="text-center p-2 bg-secondary/50 rounded-lg">
-                  <p className={cn('text-sm font-bold tabular-nums', historial.diasSinRespuesta > 3 ? 'text-amber-400' : 'text-foreground')}>
-                    {historial.diasSinRespuesta === 0 ? 'Hoy' : historial.diasSinRespuesta === 999 ? '—' : `${historial.diasSinRespuesta}d`}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">Sin resp.</p>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {isLoading && (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-          </div>
-        )}
-      </div>
-    </ScrollArea>
   );
 }
 

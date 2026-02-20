@@ -164,6 +164,8 @@ const fetchLeadsPaginated = async (
       campanaUrl: (l.campana_url as string) || null,
       ctwaClid: (l.ctwa_clid as string) || null,
       esMetaAds: !!(l.campana_id || l.ctwa_clid),
+      // Clínicos (from lead_clinico JOIN in RPC)
+      sintomasReportados: Array.isArray(l.sintomas_reportados) ? l.sintomas_reportados as string[] : [],
       // Calculados
       nombreDisplay: nombre,
       diasDesdeContacto: 0,

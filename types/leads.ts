@@ -142,6 +142,9 @@ export interface Lead {
   ctwaClid: string | null;              // BD: ctwa_clid
   esMetaAds: boolean;                   // Derivado: true si campana_id o ctwa_clid existen
 
+  // === Datos clínicos (BD: lead_clinico JOIN) ===
+  sintomasReportados: string[];        // BD: lead_clinico.sintomas_reportados
+
   // === Campos calculados/UI ===
   nombreDisplay: string;               // Display name
   estadoDisplay: string;               // LEAD_ESTADO_DISPLAY[estado]
@@ -242,6 +245,9 @@ export function mapLeadFromDB(row: LeadRow): Lead {
     campanaUrl: (row as Record<string, unknown>).campana_url as string | null ?? null,
     ctwaClid: (row as Record<string, unknown>).ctwa_clid as string | null ?? null,
     esMetaAds: !!((row as Record<string, unknown>).campana_id || (row as Record<string, unknown>).ctwa_clid),
+
+    // Clínicos (not available in single-row mapper, populated by paginated hook)
+    sintomasReportados: [],
 
     // Calculados
     nombreDisplay: row.nombre || row.telefono,
