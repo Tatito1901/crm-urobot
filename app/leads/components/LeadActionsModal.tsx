@@ -31,6 +31,7 @@ import {
 import { useLeadActions } from '@/hooks/leads/useLeadActions';
 import { useBloqueo } from '@/hooks/leads/useBloqueo';
 import type { Lead, LeadEstado } from '@/types/leads';
+import { getValidTransitions, LEAD_ESTADO_DESCRIPCION } from '@/types/leads';
 
 // ============================================================
 // TIPOS
@@ -72,6 +73,7 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
   const [copiado, setCopiado] = useState(false);
   const [showBloqueoConfirm, setShowBloqueoConfirm] = useState(false);
   const [bloqueoMotivo, setBloqueoMotivo] = useState('');
+  const [transitionError, setTransitionError] = useState<string | null>(null);
 
   // Hook de bloqueo
   const { estaBloqueado, bloquear, desbloquear } = useBloqueo(lead.telefono, {
@@ -150,15 +152,20 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
     setTimeout(() => setCopiado(false), 2000);
   }, [mensaje]);
 
-  // Cambiar estado
+  // Cambiar estado (con feedback de validación)
   const handleCambiarEstado = useCallback(async (nuevoEstado: LeadEstado) => {
-    await cambiarEstado(nuevoEstado);
-    setCambioExitoso(nuevoEstado);
-    setTimeout(() => {
-      setCambioExitoso(null);
-      onRefresh?.();
-      onClose();
-    }, 1000);
+    setTransitionError(null);
+    const result = await cambiarEstado(nuevoEstado);
+    if (result.success) {
+      setCambioExitoso(nuevoEstado);
+      setTimeout(() => {
+        setCambioExitoso(null);
+        onRefresh?.();
+        onClose();
+      }, 1000);
+    } else {
+      setTransitionError(result.error || 'Error al cambiar estado');
+    }
   }, [cambiarEstado, onRefresh, onClose]);
 
   // URL de WhatsApp
@@ -360,11 +367,17 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-muted-foreground mb-4">
-                  Selecciona el nuevo estado del lead
+                <p className="text-xs text-muted-foreground mb-2">
+                  Transiciones válidas desde <span className="font-semibold text-foreground">{ESTADOS_CONFIG.find(e => e.estado === lead.estado)?.label || lead.estado}</span>
                 </p>
+                {transitionError && (
+                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {transitionError}
+                  </div>
+                )}
                 
-                {ESTADOS_CONFIG.filter(e => e.estado !== lead.estado).map(({ estado, icon, label, color }) => (
+                {ESTADOS_CONFIG.filter(e => getValidTransitions(lead.estado).includes(e.estado)).map(({ estado, icon, label, color }) => (
                   <button
                     key={estado}
                     onClick={() => handleCambiarEstado(estado)}

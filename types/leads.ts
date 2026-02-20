@@ -30,9 +30,6 @@ export type LeadRow = Tables<'leads'>;
 // ============================================================
 
 // Estados de lead (estado) - Sincronizado con leads_estado_check
-// Flujo principal: nuevo → interactuando → contactado → cita_propuesta → cita_agendada → show → convertido
-// Flujo alterno: (cualquiera) → en_seguimiento | perdido | no_interesado | descartado
-// Post-cita: cita_agendada → show | no_show
 export const LEAD_ESTADOS = [
   'nuevo', 'interactuando', 'contactado', 'cita_propuesta',
   'en_seguimiento', 'cita_agendada', 'show', 'convertido',
@@ -52,16 +49,80 @@ const LEAD_SUBESTADOS = [
 ] as const;
 export type LeadSubestado = (typeof LEAD_SUBESTADOS)[number];
 
-// Estados terminales (no permiten transiciones)
-const LEAD_ESTADOS_TERMINALES: LeadEstado[] = ['convertido'];
+// ============================================================
+// MÁQUINA DE ESTADOS — Fuente de verdad para transiciones
+// Mirrors DB function: validate_lead_transition()
+// ============================================================
+//
+// Pipeline (bot automático, lineal):
+//   nuevo → interactuando → cita_propuesta → cita_agendada
+//
+// Humano toma el caso (manual):
+//   cualquier_activo → contactado
+//
+// Post-cita (manual/webhook):
+//   cita_agendada → show | no_show
+//
+// Terminal:
+//   show → convertido
+//
+// Salida (manual, desde cualquier activo):
+//   → en_seguimiento | perdido | no_interesado | descartado
+//
+// Re-entrada (lead vuelve a escribir):
+//   en_seguimiento/perdido/no_interesado → interactuando
 
-// Estados "activos" en el pipeline
+// Transiciones válidas para HUMANO (CRM manual)
+export const LEAD_TRANSITION_MATRIX: Record<LeadEstado, LeadEstado[]> = {
+  nuevo:          ['interactuando', 'contactado', 'cita_propuesta', 'cita_agendada', 'en_seguimiento', 'perdido', 'no_interesado', 'descartado'],
+  interactuando:  ['contactado', 'cita_propuesta', 'cita_agendada', 'en_seguimiento', 'perdido', 'no_interesado', 'descartado'],
+  contactado:     ['cita_propuesta', 'cita_agendada', 'en_seguimiento', 'perdido', 'no_interesado', 'descartado'],
+  cita_propuesta: ['cita_agendada', 'contactado', 'en_seguimiento', 'perdido', 'no_interesado', 'descartado'],
+  cita_agendada:  ['show', 'no_show', 'en_seguimiento', 'perdido', 'descartado'],
+  show:           ['convertido', 'en_seguimiento'],
+  no_show:        ['contactado', 'cita_agendada', 'en_seguimiento', 'perdido'],
+  convertido:     [],  // Terminal
+  descartado:     [],  // Terminal
+  en_seguimiento: ['interactuando', 'contactado', 'cita_propuesta', 'cita_agendada', 'perdido', 'no_interesado', 'descartado'],
+  perdido:        ['interactuando', 'contactado'],
+  no_interesado:  ['interactuando', 'contactado'],
+};
+
+// Descripción clara de cada estado para tooltips / documentación
+export const LEAD_ESTADO_DESCRIPCION: Record<LeadEstado, string> = {
+  nuevo:          'Primer mensaje recibido, sin interacción significativa',
+  interactuando:  'Bot está conversando activamente con el paciente',
+  contactado:     'Un humano del equipo tomó el caso',
+  cita_propuesta: 'Se le ofreció disponibilidad de cita al paciente',
+  cita_agendada:  'Cita confirmada en el calendario',
+  show:           'Paciente asistió a la cita',
+  no_show:        'Paciente no asistió a la cita',
+  convertido:     'Se convirtió en paciente activo',
+  en_seguimiento: 'Requiere seguimiento futuro (humano)',
+  perdido:        'No respondió después de múltiples intentos',
+  no_interesado:  'Paciente indicó que no le interesa',
+  descartado:     'No es un lead real (spam, número equivocado, etc.)',
+};
+
+// Obtener transiciones válidas desde un estado
+export function getValidTransitions(from: LeadEstado): LeadEstado[] {
+  return LEAD_TRANSITION_MATRIX[from] ?? [];
+}
+
+// Validar si una transición es legal
+export function isValidTransition(from: LeadEstado, to: LeadEstado): boolean {
+  if (from === to) return true; // no-op
+  return (LEAD_TRANSITION_MATRIX[from] ?? []).includes(to);
+}
+
+// Clasificaciones de estados
+export const LEAD_ESTADOS_TERMINALES: LeadEstado[] = ['convertido', 'descartado'];
+
 export const LEAD_ESTADOS_ACTIVOS: LeadEstado[] = [
   'nuevo', 'interactuando', 'contactado', 'cita_propuesta',
   'en_seguimiento', 'cita_agendada'
 ];
 
-// Estados "cerrados" (no activos)
 const LEAD_ESTADOS_CERRADOS: LeadEstado[] = [
   'convertido', 'perdido', 'no_interesado', 'descartado'
 ];
@@ -69,16 +130,16 @@ const LEAD_ESTADOS_CERRADOS: LeadEstado[] = [
 // Display names para cada estado
 export const LEAD_ESTADO_DISPLAY: Record<LeadEstado, string> = {
   nuevo: 'Nuevo',
-  interactuando: 'Interactuando',
-  contactado: 'Contactado',
-  cita_propuesta: 'Cita Propuesta',
-  en_seguimiento: 'En Seguimiento',
-  cita_agendada: 'Cita Agendada',
+  interactuando: 'Bot activo',
+  contactado: 'Contactado por humano',
+  cita_propuesta: 'Cita ofrecida',
+  en_seguimiento: 'En seguimiento',
+  cita_agendada: 'Cita agendada',
   show: 'Asistió',
-  convertido: 'Convertido',
-  no_show: 'No Asistió',
+  convertido: 'Paciente',
+  no_show: 'No asistió',
   perdido: 'Perdido',
-  no_interesado: 'No Interesado',
+  no_interesado: 'No interesado',
   descartado: 'Descartado',
 };
 

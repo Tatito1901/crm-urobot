@@ -12,7 +12,7 @@ import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { invalidateDomain } from '@/lib/swr-config';
-import type { Lead, LeadEstado } from '@/types/leads';
+import { isValidTransition, type Lead, type LeadEstado } from '@/types/leads';
 
 const supabase = createClient();
 
@@ -357,49 +357,49 @@ async function registrarAccion(
 }
 
 /**
- * Cambia el estado de un lead y registra la acción
+ * Cambia el estado de un lead usando la máquina de estados del servidor.
+ * 1. Valida client-side (fail-fast)
+ * 2. Llama transition_lead_estado RPC (valida + ejecuta + loguea)
+ * 3. Registra acción en notas
  */
 async function cambiarEstadoLead(
   leadId: string,
   nuevoEstado: LeadEstado,
   estadoAnterior: LeadEstado
-): Promise<void> {
-  const timestamp = new Date().toISOString();
-  
-  // Build update payload with conditional cita timestamps
-  const updatePayload: Record<string, unknown> = {
-    estado: nuevoEstado,
-    updated_at: timestamp,
-  };
-  
-  // Set cita_ofrecida_at when transitioning to cita_propuesta or cita_agendada (if not already set)
-  if (nuevoEstado === 'cita_propuesta' || nuevoEstado === 'cita_agendada') {
-    // Only set if not already set — fetch current value first
-    const { data: current } = await supabase
-      .from('leads')
-      .select('cita_ofrecida_at, cita_agendada_at')
-      .eq('id', leadId)
-      .single();
-    
-    const row = current as { cita_ofrecida_at: string | null; cita_agendada_at: string | null } | null;
-    if (!row?.cita_ofrecida_at) {
-      updatePayload.cita_ofrecida_at = timestamp;
-    }
-    if (nuevoEstado === 'cita_agendada' && !row?.cita_agendada_at) {
-      updatePayload.cita_agendada_at = timestamp;
-    }
+): Promise<{ success: boolean; error?: string }> {
+  // Client-side validation (fail-fast, avoids unnecessary RPC call)
+  if (!isValidTransition(estadoAnterior, nuevoEstado)) {
+    const msg = `Transición no permitida: ${estadoAnterior} → ${nuevoEstado}`;
+    console.warn('[LeadStateMachine]', msg);
+    return { success: false, error: msg };
   }
-  
-  await supabase
-    .from('leads')
-    .update(updatePayload as never)
-    .eq('id', leadId);
+
+  // Server-side: validated transition + audit log + cita timestamps
+  const { data, error } = await supabase.rpc('transition_lead_estado', {
+    p_lead_id: leadId,
+    p_new_estado: nuevoEstado,
+    p_triggered_by: 'human',
+    p_motivo: `CRM manual: ${estadoAnterior} → ${nuevoEstado}`,
+  });
+
+  if (error) {
+    console.error('[LeadStateMachine] RPC error:', error);
+    return { success: false, error: error.message };
+  }
+
+  const result = data as { success: boolean; error?: string } | null;
+  if (!result?.success) {
+    console.warn('[LeadStateMachine] Transition rejected by server:', result?.error);
+    return { success: false, error: result?.error || 'Transición rechazada por el servidor' };
+  }
 
   await registrarAccion(
     leadId,
     'etapa_cambiada',
     `Cambio de etapa: ${estadoAnterior} → ${nuevoEstado}`
   );
+
+  return { success: true };
 }
 
 /**
@@ -432,7 +432,7 @@ interface UseLeadActionsReturn {
   
   // Acciones
   enviarMensajeWhatsApp: (mensaje: string, plantillaId?: string) => Promise<void>;
-  cambiarEstado: (nuevoEstado: LeadEstado) => Promise<void>;
+  cambiarEstado: (nuevoEstado: LeadEstado) => Promise<{ success: boolean; error?: string }>;
   registrarLlamada: (notas?: string) => Promise<void>;
   marcarComoNoMolestar: () => Promise<void>;
   
@@ -494,12 +494,14 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
     await Promise.all([invalidateDomain('leads'), mutate()]);
   }, [lead, mutate]);
 
-  // Cambiar estado
-  const cambiarEstado = useCallback(async (nuevoEstado: LeadEstado) => {
-    if (!lead) return;
-    await cambiarEstadoLead(lead.id, nuevoEstado, lead.estado);
-    // ✅ Invalida: leads-list, leads-stats, lead-by-telefono-*, dashboard-*, stats-dashboard
-    await Promise.all([invalidateDomain('leads'), mutate()]);
+  // Cambiar estado (con validación client+server)
+  const cambiarEstado = useCallback(async (nuevoEstado: LeadEstado): Promise<{ success: boolean; error?: string }> => {
+    if (!lead) return { success: false, error: 'No lead selected' };
+    const result = await cambiarEstadoLead(lead.id, nuevoEstado, lead.estado);
+    if (result.success) {
+      await Promise.all([invalidateDomain('leads'), mutate()]);
+    }
+    return result;
   }, [lead, mutate]);
 
   // Registrar llamada
