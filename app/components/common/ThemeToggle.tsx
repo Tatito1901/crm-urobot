@@ -3,31 +3,48 @@
 import * as React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <Button variant="ghost" size="icon-sm" disabled className="opacity-0" />;
-  }
-
-  const isDark = theme === 'dark';
 
   return (
-    <Button
-      variant="outline"
-      size="icon-sm"
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      aria-label={`Cambiar a modo ${isDark ? 'claro' : 'oscuro'}`}
-    >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-    </Button>
+    <div className="flex items-center gap-1 p-1 bg-slate-800/40 border border-slate-700 rounded-lg">
+      <button
+        onClick={() => setTheme('light')}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+          theme === 'light'
+            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-sm'
+            : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+        }`}
+        title="Modo claro"
+      >
+        <Sun className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Claro</span>
+      </button>
+      <button
+        onClick={() => setTheme('dark')}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+          theme === 'dark'
+            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-sm'
+            : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+        }`}
+        title="Modo oscuro"
+      >
+        <Moon className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Oscuro</span>
+      </button>
+      <button
+        onClick={() => setTheme('system')}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+          theme === 'system'
+            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-sm'
+            : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/50'
+        }`}
+        title="Tema del sistema"
+      >
+        <span className="h-3.5 w-3.5 font-bold">A</span>
+        <span className="hidden sm:inline">Auto</span>
+      </button>
+    </div>
   );
 }
