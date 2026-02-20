@@ -38,6 +38,7 @@ interface ConversationsSidebarProps {
   onFiltroChange: (filtro: FiltroTipo) => void
   onSelectConversation: (telefono: string) => void
   onRefetch: () => void
+  estaBloqueado?: (telefono: string) => boolean
 }
 
 export function ConversationsSidebar({
@@ -54,6 +55,7 @@ export function ConversationsSidebar({
   onFiltroChange,
   onSelectConversation,
   onRefetch,
+  estaBloqueado,
 }: ConversationsSidebarProps) {
   return (
     <aside className={`
@@ -186,6 +188,7 @@ export function ConversationsSidebar({
                 totalMensajes={conv.totalMensajes}
                 isActive={conv.telefono === telefonoActivo}
                 onSelect={onSelectConversation}
+                isBloqueado={estaBloqueado?.(conv.telefono) ?? false}
               />
             ))}
           </div>

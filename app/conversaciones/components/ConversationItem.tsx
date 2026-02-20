@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ShieldBan } from 'lucide-react';
 
 interface ConversationItemProps {
   telefono: string;
@@ -13,6 +14,7 @@ interface ConversationItemProps {
   totalMensajes: number;
   isActive: boolean;
   onSelect: (telefono: string) => void;
+  isBloqueado?: boolean;
 }
 
 const getInitials = (nombre: string | null, telefono: string) => {
@@ -68,7 +70,8 @@ export const ConversationItem = memo(function ConversationItem({
   citasValidas,
   totalMensajes,
   isActive,
-  onSelect
+  onSelect,
+  isBloqueado = false
 }: ConversationItemProps) {
   const colorIndex = telefono.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_COLORS.length;
 
@@ -90,11 +93,13 @@ export const ConversationItem = memo(function ConversationItem({
       `}
     >
       {/* Avatar — compact circle */}
-      <div className={`
-        w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0
-        ${isActive ? 'bg-primary' : AVATAR_COLORS[colorIndex]}
-      `}>
-        {getInitials(nombreContacto, telefono)}
+      <div className="relative shrink-0">
+        <div className={`
+          w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-semibold
+          ${isBloqueado ? 'bg-red-900/60 ring-2 ring-red-500/40' : isActive ? 'bg-primary' : AVATAR_COLORS[colorIndex]}
+        `}>
+          {isBloqueado ? <ShieldBan className="w-4 h-4 text-red-300" /> : getInitials(nombreContacto, telefono)}
+        </div>
       </div>
       
       {/* Content — 2 rows only */}
@@ -114,11 +119,13 @@ export const ConversationItem = memo(function ConversationItem({
           <p className="text-xs text-muted-foreground truncate flex-1 leading-relaxed">
             {cleanPreview(ultimoMensaje)}
           </p>
-          {tipoBadge && (
+          {isBloqueado ? (
+            <span className="text-[10px] font-medium shrink-0 text-red-400">Bloqueado</span>
+          ) : tipoBadge ? (
             <span className={`text-[10px] font-medium shrink-0 ${tipoBadge.cls}`}>
               {tipoBadge.label}
             </span>
-          )}
+          ) : null}
         </div>
       </div>
     </button>

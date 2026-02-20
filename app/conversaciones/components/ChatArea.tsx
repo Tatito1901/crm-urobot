@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useEffect, useMemo, useCallback } from 'react'
+import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MessageCircle, ArrowLeft, Loader2, ExternalLink, MessageSquare, PanelRight, Phone } from 'lucide-react'
+import { MessageCircle, ArrowLeft, Loader2, ExternalLink, MessageSquare, PanelRight, Phone, ShieldBan } from 'lucide-react'
 import type { TipoMensaje } from '@/types/chat'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -37,8 +37,10 @@ interface ChatAreaProps {
   isLoadingMensajes: boolean
   isMobileViewingChat: boolean
   showActionsPanel: boolean
+  estaBloqueado?: boolean
   onBackToList: () => void
   onToggleActionsPanel: () => void
+  onRefreshBloqueados?: () => void
 }
 
 export function ChatArea({
@@ -48,11 +50,15 @@ export function ChatArea({
   isLoadingMensajes,
   isMobileViewingChat,
   showActionsPanel,
+  estaBloqueado = false,
   onBackToList,
   onToggleActionsPanel,
+  onRefreshBloqueados,
 }: ChatAreaProps) {
   const router = useRouter()
   const chatContainerRef = useRef<HTMLDivElement>(null)
+  const [showBloqueoConfirm, setShowBloqueoConfirm] = useState(false)
+  const [bloqueoMotivo, setBloqueoMotivo] = useState('')
 
   // Auto-scroll al final cuando cambian los mensajes
   useEffect(() => {
@@ -125,6 +131,12 @@ export function ChatArea({
 
             {/* Actions — icon buttons only */}
             <div className="flex items-center gap-0.5">
+              {estaBloqueado && (
+                <span className="hidden sm:flex items-center gap-1 px-2 py-1 bg-red-500/10 border border-red-500/20 rounded-md text-[10px] font-medium text-red-400 mr-1">
+                  <ShieldBan className="w-3 h-3" />
+                  Bloqueado
+                </span>
+              )}
               <button
                 onClick={() => openWhatsApp(contactoActivo.telefono)}
                 className="p-2.5 hover:bg-muted rounded-lg transition-colors touch-target"
@@ -151,6 +163,16 @@ export function ChatArea({
               </button>
             </div>
           </header>
+
+          {/* Blocked banner */}
+          {estaBloqueado && (
+            <div className="shrink-0 px-4 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-red-400">
+                <ShieldBan className="w-4 h-4" />
+                <span className="font-medium">Número bloqueado — el bot no responderá a este contacto</span>
+              </div>
+            </div>
+          )}
 
           {/* Messages area */}
           <div 
@@ -217,8 +239,8 @@ export function ChatArea({
           {/* Minimal footer — read-only indicator */}
           <div className="shrink-0 py-2 px-3 sm:px-4 border-t border-border flex items-center justify-between safe-area-bottom bg-card/50 backdrop-blur-sm">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>Solo lectura</span>
+              <div className={`w-1.5 h-1.5 rounded-full ${estaBloqueado ? 'bg-red-500' : 'bg-emerald-500'}`} />
+              <span>{estaBloqueado ? 'Bloqueado' : 'Solo lectura'}</span>
             </div>
             <button
               onClick={() => onToggleActionsPanel()}

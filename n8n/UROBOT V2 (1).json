@@ -1423,6 +1423,62 @@
           "name": "GOOGLE UROBOT"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT (r->>'bloqueado')::boolean AS bloqueado, r->>'motivo' AS motivo, r->>'tipo' AS tipo FROM check_numero_bloqueado($1::text) AS r",
+        "options": {
+          "queryReplacement": "={{ [$('1️⃣ Validar y Normalizar').first().json.telefono] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -6096,
+        4176
+      ],
+      "id": "b1a2c3d4-e5f6-7890-abcd-111111111111",
+      "name": "🛑 Check Bloqueo DB",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "not-blocked",
+              "leftValue": "={{ $json.bloqueado }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -5872,
+        4176
+      ],
+      "id": "b1a2c3d4-e5f6-7890-abcd-222222222222",
+      "name": "🛑 ¿Bloqueado?"
     }
   ],
   "pinData": {
@@ -1674,7 +1730,7 @@
       "main": [
         [
           {
-            "node": "2️⃣ Upsert Conversación",
+            "node": "🛑 Check Bloqueo DB",
             "type": "main",
             "index": 0
           }
@@ -1682,6 +1738,28 @@
         [
           {
             "node": "⏳ Rate Limit Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛑 Check Bloqueo DB": {
+      "main": [
+        [
+          {
+            "node": "🛑 ¿Bloqueado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛑 ¿Bloqueado?": {
+      "main": [
+        [
+          {
+            "node": "2️⃣ Upsert Conversación",
             "type": "main",
             "index": 0
           }

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useHasMounted } from '@/hooks/common/useHasMounted'
 import { useConversaciones } from '@/hooks/conversaciones/useConversaciones'
+import { useNumerosBloqueados } from '@/hooks/leads/useNumerosBloqueados'
 import { RefreshCw } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { ConversationsSidebar, type FiltroTipo } from './components/ConversationsSidebar'
@@ -24,6 +25,8 @@ function ConversacionesContent() {
     refetch,
     error,
   } = useConversaciones()
+
+  const { estaBloqueado, refetch: refetchBloqueados } = useNumerosBloqueados()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -125,6 +128,7 @@ function ConversacionesContent() {
           onFiltroChange={setFiltroActivo}
           onSelectConversation={handleSelectConversation}
           onRefetch={refetch}
+          estaBloqueado={estaBloqueado}
         />
 
         <ChatArea
@@ -134,8 +138,10 @@ function ConversacionesContent() {
           isLoadingMensajes={isLoadingMensajes}
           isMobileViewingChat={isMobileViewingChat}
           showActionsPanel={showActionsPanel}
+          estaBloqueado={telefonoActivo ? estaBloqueado(telefonoActivo) : false}
           onBackToList={() => setIsMobileViewingChat(false)}
           onToggleActionsPanel={() => setShowActionsPanel(!showActionsPanel)}
+          onRefreshBloqueados={refetchBloqueados}
         />
 
         {/* Panel de Acciones (Desktop) */}

@@ -18,7 +18,9 @@ import {
   Copy,
   Loader2,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  ShieldBan,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   getEtapaConfig, 
@@ -27,6 +29,7 @@ import {
   type PlantillaMensaje
 } from '@/app/lib/funnel-config';
 import { useLeadActions } from '@/hooks/leads/useLeadActions';
+import { useBloqueo } from '@/hooks/leads/useBloqueo';
 import type { Lead, LeadEstado } from '@/types/leads';
 
 // ============================================================
@@ -67,6 +70,14 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
   const [enviando, setEnviando] = useState(false);
   const [cambioExitoso, setCambioExitoso] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const [showBloqueoConfirm, setShowBloqueoConfirm] = useState(false);
+  const [bloqueoMotivo, setBloqueoMotivo] = useState('');
+
+  // Hook de bloqueo
+  const { estaBloqueado, bloquear, desbloquear } = useBloqueo(lead.telefono, {
+    nombre: lead.nombre,
+    leadId: lead.id,
+  });
 
   // Hook de acciones
   const { 
@@ -377,25 +388,85 @@ export function LeadActionsModal({ lead, isOpen, onClose, onRefresh }: LeadActio
             )}
           </div>
 
-          {/* Footer con info */}
-          {historial && (
-            <div className="px-5 py-3 border-t border-border bg-secondary/30">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>
-                    {historial.diasSinRespuesta === 0 ? 'Activo hoy' :
-                     historial.diasSinRespuesta === 999 ? 'Sin interacción' :
-                     `${historial.diasSinRespuesta}d sin respuesta`}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span>{historial.totalMensajesEnviados} enviados</span>
-                  <span>{historial.totalMensajesRecibidos} recibidos</span>
-                </div>
+          {/* Bloqueo banner */}
+          {estaBloqueado && (
+            <div className="px-5 py-2.5 bg-red-500/10 border-t border-red-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-red-400">
+                <ShieldBan className="w-4 h-4" />
+                <span className="font-medium">Número bloqueado — el bot no responderá</span>
+              </div>
+              <button
+                onClick={async () => { await desbloquear(); onRefresh?.(); }}
+                className="text-xs font-medium text-red-300 hover:text-red-200 underline underline-offset-2"
+              >
+                Desbloquear
+              </button>
+            </div>
+          )}
+
+          {/* Bloqueo confirm dialog */}
+          {showBloqueoConfirm && (
+            <div className="px-5 py-3 border-t border-border bg-red-500/5 space-y-2">
+              <p className="text-xs text-red-400 font-medium">¿Bloquear este número? El bot dejará de responder.</p>
+              <input
+                type="text"
+                value={bloqueoMotivo}
+                onChange={(e) => setBloqueoMotivo(e.target.value)}
+                placeholder="Motivo del bloqueo (opcional)"
+                className="w-full px-3 py-2 text-xs bg-muted border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-red-500/30"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    await bloquear(bloqueoMotivo || 'Bloqueado desde CRM');
+                    setShowBloqueoConfirm(false);
+                    setBloqueoMotivo('');
+                    onRefresh?.();
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition-colors"
+                >
+                  <ShieldBan className="w-3.5 h-3.5" />
+                  Confirmar bloqueo
+                </button>
+                <button
+                  onClick={() => { setShowBloqueoConfirm(false); setBloqueoMotivo(''); }}
+                  className="px-3 py-2 bg-secondary hover:bg-secondary/80 text-xs font-medium rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
               </div>
             </div>
           )}
+
+          {/* Footer con info */}
+          <div className="px-5 py-3 border-t border-border bg-secondary/30">
+            <div className="flex items-center justify-between">
+              {historial ? (
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>
+                      {historial.diasSinRespuesta === 0 ? 'Activo hoy' :
+                       historial.diasSinRespuesta === 999 ? 'Sin interacción' :
+                       `${historial.diasSinRespuesta}d sin respuesta`}
+                    </span>
+                  </div>
+                  <span>{historial.totalMensajesEnviados} enviados</span>
+                  <span>{historial.totalMensajesRecibidos} recibidos</span>
+                </div>
+              ) : <div />}
+              {!estaBloqueado && !showBloqueoConfirm && (
+                <button
+                  onClick={() => setShowBloqueoConfirm(true)}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-400 transition-colors"
+                  title="Bloquear número"
+                >
+                  <ShieldBan className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Bloquear</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </>
