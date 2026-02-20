@@ -41,11 +41,11 @@ export const LEAD_ESTADOS = [
 export type LeadEstado = (typeof LEAD_ESTADOS)[number];
 
 // Temperaturas - Sincronizado con leads_temperatura_check
-export const LEAD_TEMPERATURAS = ['frio', 'tibio', 'caliente', 'muy_caliente', 'urgente'] as const;
+const LEAD_TEMPERATURAS = ['frio', 'tibio', 'caliente', 'muy_caliente', 'urgente'] as const;
 export type LeadTemperatura = (typeof LEAD_TEMPERATURAS)[number];
 
 // Subestados - Sincronizado con leads_subestado_check
-export const LEAD_SUBESTADOS = [
+const LEAD_SUBESTADOS = [
   'en_espera', 'seguimiento_sugerido', 'listo_para_contactar',
   'requiere_atencion', 'paciente_respondio', 'pregunto_precio',
   'describio_sintomas', 'solicito_cita', 'cita_confirmada', 'escalado_pendiente'
@@ -53,7 +53,7 @@ export const LEAD_SUBESTADOS = [
 export type LeadSubestado = (typeof LEAD_SUBESTADOS)[number];
 
 // Estados terminales (no permiten transiciones)
-export const LEAD_ESTADOS_TERMINALES: LeadEstado[] = ['convertido'];
+const LEAD_ESTADOS_TERMINALES: LeadEstado[] = ['convertido'];
 
 // Estados "activos" en el pipeline
 export const LEAD_ESTADOS_ACTIVOS: LeadEstado[] = [
@@ -62,7 +62,7 @@ export const LEAD_ESTADOS_ACTIVOS: LeadEstado[] = [
 ];
 
 // Estados "cerrados" (no activos)
-export const LEAD_ESTADOS_CERRADOS: LeadEstado[] = [
+const LEAD_ESTADOS_CERRADOS: LeadEstado[] = [
   'convertido', 'perdido', 'no_interesado', 'descartado'
 ];
 
@@ -157,7 +157,7 @@ export interface Lead {
 // ============================================================
 // DEFAULTS
 // ============================================================
-export const DEFAULT_LEAD_ESTADO: LeadEstado = 'nuevo';
+const DEFAULT_LEAD_ESTADO: LeadEstado = 'nuevo';
 
 // ============================================================
 // PARSERS JSONB → TYPED
@@ -260,14 +260,14 @@ export function mapLeadFromDB(row: LeadRow): Lead {
 // TYPE GUARDS
 // ============================================================
 
-export function isLeadEstado(value: unknown): value is LeadEstado {
+function isLeadEstado(value: unknown): value is LeadEstado {
   return typeof value === 'string' && (LEAD_ESTADOS as readonly string[]).includes(value);
 }
 
-export function isLeadTemperatura(value: unknown): value is LeadTemperatura {
+function isLeadTemperatura(value: unknown): value is LeadTemperatura {
   return typeof value === 'string' && (LEAD_TEMPERATURAS as readonly string[]).includes(value);
 }
 
-export function isLeadSubestado(value: unknown): value is LeadSubestado {
+function isLeadSubestado(value: unknown): value is LeadSubestado {
   return typeof value === 'string' && (LEAD_SUBESTADOS as readonly string[]).includes(value);
 }

@@ -9,23 +9,23 @@
 import type { Tables } from "@/types/database";
 
 // ===== ENUMS Y TIPOS LITERALES =====
-export type TabKey = "leads" | "pacientes" | "consultas" | "confirmaciones" | "metricas";
+type TabKey = "leads" | "pacientes" | "consultas" | "confirmaciones" | "metricas";
 
-export type LeadEstado = "nuevo" | "contactado" | "interesado" | "calificado" | "escalado" | "cita_agendada" | "convertido" | "no_interesado" | "descartado";
-export type PacienteEstado = "Activo" | "Inactivo";
-export type ConsultaEstado = "Programada" | "Confirmada" | "Reagendada" | "Cancelada" | "Completada";
-export type RecordatorioTipo = "confirmacion_inicial" | "48h" | "24h" | "3h";
-export type RecordatorioEstado = "pendiente" | "procesando" | "enviado" | "error";
-export type SedeType = "POLANCO" | "SATELITE";
+type LeadEstado = "nuevo" | "contactado" | "interesado" | "calificado" | "escalado" | "cita_agendada" | "convertido" | "no_interesado" | "descartado";
+type PacienteEstado = "Activo" | "Inactivo";
+type ConsultaEstado = "Programada" | "Confirmada" | "Reagendada" | "Cancelada" | "Completada";
+type RecordatorioTipo = "confirmacion_inicial" | "48h" | "24h" | "3h";
+type RecordatorioEstado = "pendiente" | "procesando" | "enviado" | "error";
+type SedeType = "POLANCO" | "SATELITE";
 
 // ===== TIPOS BASE (desde Supabase) =====
-export type LeadRow = Tables<"leads">;
-export type PacienteRow = Tables<"pacientes">;
-export type ConsultaRow = Tables<"consultas">;
+type LeadRow = Tables<"leads">;
+type PacienteRow = Tables<"pacientes">;
+type ConsultaRow = Tables<"consultas">;
 // RecordatorioRow se importa desde types/recordatorios.ts si es necesario
 
 // ===== TIPOS TRANSFORMADOS PARA UI =====
-export type Lead = {
+type Lead = {
   id: string;
   leadId?: string | null;
   nombre: string;
@@ -36,7 +36,7 @@ export type Lead = {
   ultimaInteraccion?: string | null;
 };
 
-export type Paciente = {
+type Paciente = {
   id: string;
   nombre: string;
   telefono: string;
@@ -46,7 +46,7 @@ export type Paciente = {
   estado: PacienteEstado;
 };
 
-export type Consulta = {
+type Consulta = {
   id: string; // consulta_id (folio público)
   uuid: string; // id (uuid real)
   paciente: string;
@@ -72,7 +72,7 @@ export type Consulta = {
 };
 
 // Tipo para notification_queue (no generado automáticamente)
-export type Recordatorio = {
+type Recordatorio = {
   id: string;
   consulta_id: string | null;
   phone_number: string;
@@ -89,7 +89,7 @@ export type Recordatorio = {
   sent_at: string | null;
 };
 
-export type RecordatorioDetalle = Recordatorio & {
+type RecordatorioDetalle = Recordatorio & {
   consulta?: {
     id: string;
     consulta_id: string | null;

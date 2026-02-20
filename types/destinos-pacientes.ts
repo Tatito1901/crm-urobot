@@ -13,13 +13,13 @@ import type { Tables } from './database';
 // ============================================================
 // TIPO BD (automático de Supabase)
 // ============================================================
-export type DestinoPacienteRow = Tables<'destinos_pacientes'>;
+type DestinoPacienteRow = Tables<'destinos_pacientes'>;
 
 // ============================================================
 // CONSTANTES Y ENUMS
 // ============================================================
 
-export const TIPOS_DESTINO = [
+const TIPOS_DESTINO = [
   'alta_definitiva',
   'presupuesto_enviado', 
   'cirugia_realizada',
@@ -27,7 +27,7 @@ export const TIPOS_DESTINO = [
   'pendiente'
 ] as const;
 
-export const TIPOS_CIRUGIA = [
+const TIPOS_CIRUGIA = [
   'Prostatectomía',
   'Cistoscopía',
   'Vasectomía',
@@ -38,14 +38,14 @@ export const TIPOS_CIRUGIA = [
   'Otro'
 ] as const;
 
-export const MONEDAS = ['MXN', 'USD'] as const;
+const MONEDAS = ['MXN', 'USD'] as const;
 
 export type TipoDestino = (typeof TIPOS_DESTINO)[number];
-export type TipoCirugia = (typeof TIPOS_CIRUGIA)[number];
-export type Moneda = (typeof MONEDAS)[number];
+type TipoCirugia = (typeof TIPOS_CIRUGIA)[number];
+type Moneda = (typeof MONEDAS)[number];
 
 // Labels para UI
-export const DESTINO_LABELS: Record<TipoDestino, string> = {
+const DESTINO_LABELS: Record<TipoDestino, string> = {
   alta_definitiva: 'Alta Definitiva',
   presupuesto_enviado: 'Presupuesto Enviado',
   cirugia_realizada: 'Cirugía Realizada',
@@ -53,7 +53,7 @@ export const DESTINO_LABELS: Record<TipoDestino, string> = {
   pendiente: 'Pendiente'
 };
 
-export const DESTINO_COLORS: Record<TipoDestino, string> = {
+const DESTINO_COLORS: Record<TipoDestino, string> = {
   alta_definitiva: 'bg-green-500',
   presupuesto_enviado: 'bg-blue-500',
   cirugia_realizada: 'bg-purple-500',
@@ -65,7 +65,7 @@ export const DESTINO_COLORS: Record<TipoDestino, string> = {
 // INTERFACE FRONTEND (camelCase)
 // ============================================================
 
-export interface DestinoPaciente {
+interface DestinoPaciente {
   // === Campos directos de BD ===
   id: string;
   pacienteId: string | null;         // BD: paciente_id (FK)
@@ -87,7 +87,7 @@ export interface DestinoPaciente {
 // MAPPER BD → FRONTEND
 // ============================================================
 
-export function mapDestinoPacienteFromDB(row: DestinoPacienteRow): DestinoPaciente {
+function mapDestinoPacienteFromDB(row: DestinoPacienteRow): DestinoPaciente {
   const tipoDestino = isTipoDestino(row.tipo_destino) ? row.tipo_destino : 'pendiente';
   
   return {
@@ -112,11 +112,11 @@ export function mapDestinoPacienteFromDB(row: DestinoPacienteRow): DestinoPacien
 // TYPE GUARDS
 // ============================================================
 
-export function isTipoDestino(value: unknown): value is TipoDestino {
+function isTipoDestino(value: unknown): value is TipoDestino {
   return typeof value === 'string' && (TIPOS_DESTINO as readonly string[]).includes(value);
 }
 
-export function isMoneda(value: unknown): value is Moneda {
+function isMoneda(value: unknown): value is Moneda {
   return typeof value === 'string' && (MONEDAS as readonly string[]).includes(value);
 }
 
@@ -124,7 +124,7 @@ export function isMoneda(value: unknown): value is Moneda {
 // HELPERS PARA CREAR
 // ============================================================
 
-export interface CreateDestinoInput {
+interface CreateDestinoInput {
   pacienteId: string;
   tipoDestino: TipoDestino;
   tipoCirugia?: string;
@@ -133,7 +133,7 @@ export interface CreateDestinoInput {
   notas?: string;
 }
 
-export function prepareDestinoForInsert(input: CreateDestinoInput): Record<string, unknown> {
+function prepareDestinoForInsert(input: CreateDestinoInput): Record<string, unknown> {
   return {
     paciente_id: input.pacienteId,
     tipo_destino: input.tipoDestino,

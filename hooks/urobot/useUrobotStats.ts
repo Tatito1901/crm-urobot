@@ -59,7 +59,7 @@ export interface Alerta {
   telefono: string | null;
 }
 
-export interface UrobotStats {
+interface UrobotStats {
   kpi: UrobotKPI;
   erroresPorTipo: ChartData[];
   interaccionesPorTipo: ChartData[];

@@ -34,12 +34,12 @@ const fetchSedes = async (): Promise<Sede[]> => {
 // UPDATE FUNCTIONS
 // ============================================================
 
-export interface UpdateSedeHorarioParams {
+interface UpdateSedeHorarioParams {
   sedeId: string;
   horarioJson: HorarioJson;
 }
 
-export interface UpdateSedeInfoParams {
+interface UpdateSedeInfoParams {
   sedeId: string;
   displayName?: string;
   direccion?: string;
@@ -94,7 +94,7 @@ async function updateSedeInfo(params: UpdateSedeInfoParams): Promise<{ success: 
 // HOOK
 // ============================================================
 
-export interface UseSedesReturn {
+interface UseSedesReturn {
   sedes: Sede[];
   loading: boolean;
   error: Error | null;

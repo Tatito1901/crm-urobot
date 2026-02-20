@@ -18,7 +18,7 @@ const supabase = createClient();
 // TIPOS DE RESPUESTA
 // ============================================================
 
-export interface ServiceResponse<T = void> {
+interface ServiceResponse<T = void> {
   success: boolean;
   data?: T;
   error?: string;
@@ -56,7 +56,7 @@ export interface UpdateAppointmentData {
   sede?: SedeActiva;
 }
 
-export interface CancelAppointmentData {
+interface CancelAppointmentData {
   reason: string;
   cancelledBy: 'paciente' | 'doctor' | 'asistente' | 'sistema';
 }

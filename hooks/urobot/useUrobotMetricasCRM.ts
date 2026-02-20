@@ -16,7 +16,7 @@ const supabase = createClient();
 // TIPOS
 // ============================================================
 
-export interface MetricasCRMDiarias {
+interface MetricasCRMDiarias {
   fecha: string;
   totalMensajes: number;
   citasAgendadas: number;
@@ -89,7 +89,7 @@ export interface MetricasCRMResumen {
   intentOtro: number;
 }
 
-export interface UrobotMetricasCRMData {
+interface UrobotMetricasCRMData {
   resumen: MetricasCRMResumen;
   diario: MetricasCRMDiarias[];
   porHora: ActividadPorHora[];

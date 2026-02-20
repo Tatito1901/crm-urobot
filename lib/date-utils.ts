@@ -109,7 +109,7 @@ export function getMonthMatrix(year: number, month: number): Date[][] {
 /**
  * Formatea fecha a ISO (YYYY-MM-DD)
  */
-export function formatISO(date: Date): string {
+function formatISO(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -139,7 +139,7 @@ export function getDayName(day: number, short = false): string {
 /**
  * Genera slots de tiempo cada hora completa
  */
-export function generateTimeSlots(startHour: number, endHour: number): string[] {
+function generateTimeSlots(startHour: number, endHour: number): string[] {
   const slots: string[] = [];
 
   for (let hour = startHour; hour < endHour; hour++) {
@@ -191,7 +191,7 @@ export function generateTimeSlotsDetailed(startHour: number, endHour: number): A
 /**
  * Formatea hora en formato 12h (AM/PM) estilo Google Calendar
  */
-export function formatHour12(hour: number): string {
+function formatHour12(hour: number): string {
   if (hour === 0) return '12 AM';
   if (hour === 12) return '12 PM';
   if (hour < 12) return `${hour} AM`;
@@ -201,7 +201,7 @@ export function formatHour12(hour: number): string {
 /**
  * Formatea hora en formato compacto para grid
  */
-export function formatHourCompact(hour: number): string {
+function formatHourCompact(hour: number): string {
   if (hour === 0) return '12a';
   if (hour === 12) return '12p';
   if (hour < 12) return `${hour}a`;

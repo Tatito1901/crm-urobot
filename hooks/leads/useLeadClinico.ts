@@ -12,7 +12,7 @@ import type { Tables } from '@/types/database';
 
 const supabase = createClient();
 
-export type LeadClinico = Tables<'lead_clinico'>;
+type LeadClinico = Tables<'lead_clinico'>;
 
 async function fetchLeadClinico(leadId: string): Promise<LeadClinico | null> {
   const { data, error } = await supabase

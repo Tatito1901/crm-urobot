@@ -18,7 +18,7 @@ export type EstadoConsulta =
   | 'En_Curso'
   | 'No_Acudio';
 
-export interface EstadoConfig {
+interface EstadoConfig {
   value: EstadoConsulta;
   label: string;
   color: string;
@@ -100,9 +100,9 @@ export const getEstadoConfig = (estado: string): EstadoConfig => {
 
 // ========== SEDES ==========
 // TRINIDAD es histórica (ya no activa) pero tiene datos de pacientes anteriores
-export type Sede = 'POLANCO' | 'SATELITE' | 'TRINIDAD' | 'ALL';
+type Sede = 'POLANCO' | 'SATELITE' | 'TRINIDAD' | 'ALL';
 
-export interface SedeConfig {
+interface SedeConfig {
   value: Sede;
   label: string;
   color: string;
@@ -161,7 +161,7 @@ export const getSedeConfig = (sede: string): SedeConfig => {
 };
 
 // ========== TIPOS DE CONSULTA ==========
-export type TipoConsulta = 
+type TipoConsulta = 
   | 'primera_vez'
   | 'subsecuente'
   | 'control_post_op'
@@ -170,7 +170,7 @@ export type TipoConsulta =
   | 'valoracion_prequirurgica'
   | 'teleconsulta';
 
-export interface TipoConsultaConfig {
+interface TipoConsultaConfig {
   value: TipoConsulta;
   label: string;
 }
@@ -186,9 +186,9 @@ export const TIPOS_CONSULTA: TipoConsultaConfig[] = [
 ];
 
 // ========== PRIORIDADES ==========
-export type Prioridad = 'normal' | 'alta' | 'urgente';
+type Prioridad = 'normal' | 'alta' | 'urgente';
 
-export interface PrioridadConfig {
+interface PrioridadConfig {
   value: Prioridad;
   label: string;
   color: string;

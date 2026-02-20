@@ -63,7 +63,7 @@ export const useColorPreferences = create<ColorPreferences>()(
 /**
  * Hook simple para obtener el color de una cita por sede
  */
-export function useAppointmentColor(sede: string): string {
+function useAppointmentColor(sede: string): string {
   const { sedeColors } = useColorPreferences();
   return sedeColors[sede as 'POLANCO' | 'SATELITE'] || '#64748b';
 }

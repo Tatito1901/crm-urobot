@@ -17,13 +17,13 @@ import {
 // ========== ENUMS Y CONSTANTES ==========
 
 // Re-exportamos para compatibilidad, pero usando la fuente de verdad en consultas.ts
-export { CONSULTA_TIPOS as CONSULT_TYPES };
+const CONSULT_TYPES = CONSULTA_TIPOS;
 
-export const APPOINTMENT_PRIORITIES = ['normal', 'alta', 'urgente'] as const;
+const APPOINTMENT_PRIORITIES = ['normal', 'alta', 'urgente'] as const;
 
-export const APPOINTMENT_MODALITIES = ['presencial', 'teleconsulta', 'hibrida'] as const;
+const APPOINTMENT_MODALITIES = ['presencial', 'teleconsulta', 'hibrida'] as const;
 
-export const BLOCK_TYPES = [
+const BLOCK_TYPES = [
   'comida',
   'quirofano',
   'procedimientos',
@@ -32,10 +32,10 @@ export const BLOCK_TYPES = [
   'personal',
 ] as const;
 
-export type ConsultType = ConsultaTipo; // Alias para compatibilidad
+type ConsultType = ConsultaTipo; // Alias para compatibilidad
 export type AppointmentPriority = (typeof APPOINTMENT_PRIORITIES)[number];
 export type AppointmentModality = (typeof APPOINTMENT_MODALITIES)[number];
-export type BlockType = (typeof BLOCK_TYPES)[number];
+type BlockType = (typeof BLOCK_TYPES)[number];
 
 // ========== INTERFACES ==========
 
@@ -124,7 +124,7 @@ export interface TimeSlot {
 /**
  * Bloque de tiempo reservado
  */
-export interface CalendarBlock {
+interface CalendarBlock {
   id: string;
   tipo: BlockType;
   titulo: string;
@@ -151,7 +151,7 @@ export interface CalendarBlock {
 /**
  * Regla de duración por tipo de consulta
  */
-export interface ConsultDurationRule {
+interface ConsultDurationRule {
   tipo: ConsultaTipo;
   duracionDefecto: number;
   duracionMinima: number;
@@ -162,7 +162,7 @@ export interface ConsultDurationRule {
 
 // ========== CONFIGURACIÓN DE DURACIONES ==========
 
-export const CONSULT_DURATION_RULES: Record<ConsultaTipo, Omit<ConsultDurationRule, 'tipo'>> = {
+const CONSULT_DURATION_RULES: Record<ConsultaTipo, Omit<ConsultDurationRule, 'tipo'>> = {
   'Primera Vez': {
     duracionDefecto: 45,
     duracionMinima: 30,
@@ -203,7 +203,7 @@ export const CONSULT_DURATION_RULES: Record<ConsultaTipo, Omit<ConsultDurationRu
 /**
  * Límites de citas por día
  */
-export const DAILY_LIMITS = {
+const DAILY_LIMITS = {
   POLANCO: {
     maxCitas: 12,
     maxUrgencias: 3,
@@ -218,7 +218,7 @@ export const DAILY_LIMITS = {
 
 // ========== TIPOS PARA FORMULARIOS ==========
 
-export interface CreateAppointmentDTO {
+interface CreateAppointmentDTO {
   patientId: string;
   slotId: string;
   tipo: ConsultaTipo;
@@ -231,7 +231,7 @@ export interface CreateAppointmentDTO {
   requisitosEspeciales?: string[];
 }
 
-export interface UpdateAppointmentDTO {
+interface UpdateAppointmentDTO {
   motivoConsulta?: string;
   notasInternas?: string;
   duracionMinutos?: number;
@@ -239,19 +239,19 @@ export interface UpdateAppointmentDTO {
   modalidad?: AppointmentModality;
 }
 
-export interface RescheduleAppointmentDTO {
+interface RescheduleAppointmentDTO {
   newSlotId: string;
   reason?: string;
 }
 
-export interface CancelAppointmentDTO {
+interface CancelAppointmentDTO {
   reason: string;
   cancelledBy: string;
 }
 
 // ========== TIPOS PARA DISPONIBILIDAD ==========
 
-export interface AvailabilityParams {
+interface AvailabilityParams {
   startDate: string; // ISO date string
   endDate: string;
   sede: ConsultaSede | 'ANY';
@@ -259,7 +259,7 @@ export interface AvailabilityParams {
   duration?: number;
 }
 
-export interface AvailabilityResponse {
+interface AvailabilityResponse {
   slots: TimeSlot[];
   metadata: {
     totalSlots: number;

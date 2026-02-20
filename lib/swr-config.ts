@@ -289,7 +289,7 @@ export async function invalidateDomain(domain: CacheDomain): Promise<void> {
  * @example
  * await invalidateDomains(['leads', 'conversaciones'])
  */
-export async function invalidateDomains(domains: CacheDomain[]): Promise<void> {
+async function invalidateDomains(domains: CacheDomain[]): Promise<void> {
   await Promise.allSettled(domains.map(d => invalidateDomain(d)));
 }
 
@@ -300,7 +300,7 @@ export async function invalidateDomains(domains: CacheDomain[]): Promise<void> {
 /**
  * Limpiar caché específico (útil después de mutaciones)
  */
-export function clearCacheKey(key: string): void {
+function clearCacheKey(key: string): void {
   if (typeof window !== 'undefined') {
     try {
       const cache = JSON.parse(localStorage.getItem(`${CACHE_PREFIX}${CACHE_VERSION}`) || '[]');
@@ -315,7 +315,7 @@ export function clearCacheKey(key: string): void {
 /**
  * Limpiar todo el caché (útil en logout o problemas)
  */
-export function clearAllCache(): void {
+function clearAllCache(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(`${CACHE_PREFIX}${CACHE_VERSION}`);
   }

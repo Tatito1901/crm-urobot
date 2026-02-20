@@ -12,7 +12,7 @@ import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { SWR_CONFIG_DASHBOARD, CACHE_KEYS } from '@/lib/swr-config';
 
-export interface KPIData {
+interface KPIData {
   totalPacientes: number;
   pacientesNuevosMes: number;
   consultasMes: number;

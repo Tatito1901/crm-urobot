@@ -12,7 +12,7 @@ import { SWR_CONFIG_STANDARD } from '@/lib/swr-config';
 
 const supabase = createClient();
 
-export interface CampaignStat {
+interface CampaignStat {
   campana: string;
   total_leads: number;
   convertidos: number;
@@ -20,7 +20,7 @@ export interface CampaignStat {
   calientes: number;
 }
 
-export interface CampaignStats {
+interface CampaignStats {
   campaigns: CampaignStat[];
   total_meta_ads: number;
   total_organico: number;

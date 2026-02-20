@@ -16,13 +16,13 @@ const supabase = createClient();
 // TIPOS
 // ============================================================
 
-export interface ServiceResponse<T = void> {
+interface ServiceResponse<T = void> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-export interface CreatePatientData {
+interface CreatePatientData {
   nombre: string;
   telefono: string;
   email?: string;

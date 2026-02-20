@@ -61,7 +61,7 @@ export interface TopPregunta {
   cantidad: number;
 }
 
-export interface ConversacionReciente {
+interface ConversacionReciente {
   telefono: string;
   totalMensajes: number;
   ultimoMensaje: string;
@@ -69,7 +69,7 @@ export interface ConversacionReciente {
   tipoContacto: 'paciente' | 'lead' | 'desconocido';
 }
 
-export interface ConversacionesStats {
+interface ConversacionesStats {
   kpi: ConversacionesKPI;
   mensajesPorHora: MensajesPorHora[];
   tiposInteraccion: TipoInteraccion[];

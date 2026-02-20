@@ -15,7 +15,7 @@ import type { Tables } from './database';
 export type PacienteRow = Tables<'pacientes'>;
 
 // Stats ahora están en la tabla pacientes directamente
-export interface PacienteStatsRow {
+interface PacienteStatsRow {
   paciente_id: string;
   total_consultas: number | null;
   ultima_consulta: string | null;

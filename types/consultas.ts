@@ -75,9 +75,9 @@ export interface Consulta {
 // ============================================================
 // DEFAULTS
 // ============================================================
-export const DEFAULT_CONSULTA_ESTADO: ConsultaEstado = 'Programada';
-export const DEFAULT_CONSULTA_SEDE: ConsultaSede = 'POLANCO';
-export const DEFAULT_CONSULTA_TIPO: ConsultaTipo = 'Primera Vez';
+const DEFAULT_CONSULTA_ESTADO: ConsultaEstado = 'Programada';
+const DEFAULT_CONSULTA_SEDE: ConsultaSede = 'POLANCO';
+const DEFAULT_CONSULTA_TIPO: ConsultaTipo = 'Primera Vez';
 
 // ============================================================
 // MAPPER BD → FRONTEND
@@ -125,15 +125,15 @@ export function mapConsultaFromDB(row: ConsultaRow, pacienteNombre?: string): Co
 // TYPE GUARDS
 // ============================================================
 
-export function isConsultaEstado(value: unknown): value is ConsultaEstado {
+function isConsultaEstado(value: unknown): value is ConsultaEstado {
   return typeof value === 'string' && (CONSULTA_ESTADOS as readonly string[]).includes(value);
 }
 
-export function isConsultaSede(value: unknown): value is ConsultaSede {
+function isConsultaSede(value: unknown): value is ConsultaSede {
   return typeof value === 'string' && (CONSULTA_SEDES as readonly string[]).includes(value);
 }
 
-export function isConsultaTipo(value: unknown): value is ConsultaTipo {
+function isConsultaTipo(value: unknown): value is ConsultaTipo {
   return typeof value === 'string' && (CONSULTA_TIPOS as readonly string[]).includes(value);
 }
 

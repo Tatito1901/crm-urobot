@@ -12,12 +12,12 @@ import { SWR_CONFIG_STANDARD } from '@/lib/swr-config';
 
 const supabase = createClient();
 
-export interface DistributionItem {
+interface DistributionItem {
   label: string;
   total: number;
 }
 
-export interface BehavioralStats {
+interface BehavioralStats {
   perfiles: DistributionItem[];
   predicciones: DistributionItem[];
   barreras: DistributionItem[];

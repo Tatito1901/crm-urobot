@@ -48,7 +48,7 @@ export const formatLongDate = (date: Temporal.ZonedDateTime): string => {
  * Formatea una fecha corta
  * @example "15/05"
  */
-export const formatShortDate = (date: Temporal.ZonedDateTime): string => {
+const formatShortDate = (date: Temporal.ZonedDateTime): string => {
   return `${String(date.day).padStart(2, '0')}/${String(date.month).padStart(2, '0')}`;
 };
 
@@ -56,7 +56,7 @@ export const formatShortDate = (date: Temporal.ZonedDateTime): string => {
  * Formatea una fecha media
  * @example "15 may"
  */
-export const formatMediumDate = (date: Temporal.ZonedDateTime): string => {
+const formatMediumDate = (date: Temporal.ZonedDateTime): string => {
   const shortMonths = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   return `${date.day} ${shortMonths[date.month - 1]}`;
 };
@@ -67,7 +67,7 @@ export const formatMediumDate = (date: Temporal.ZonedDateTime): string => {
  * Calcula el tiempo relativo hasta una fecha
  * @returns Objeto con información del tiempo relativo
  */
-export const getTimeUntil = (appointmentDate: Temporal.ZonedDateTime) => {
+const getTimeUntil = (appointmentDate: Temporal.ZonedDateTime) => {
   const now = Temporal.Now.zonedDateTimeISO(appointmentDate.timeZoneId);
   const duration = appointmentDate.since(now);
 
@@ -110,7 +110,7 @@ export const getTimeUntil = (appointmentDate: Temporal.ZonedDateTime) => {
 /**
  * Agrupa citas por día
  */
-export const groupAppointmentsByDay = <T extends { start: Temporal.ZonedDateTime }>(
+const groupAppointmentsByDay = <T extends { start: Temporal.ZonedDateTime }>(
   appointments: T[]
 ) => {
   const groups = new Map<string, T[]>();
@@ -131,9 +131,9 @@ export const groupAppointmentsByDay = <T extends { start: Temporal.ZonedDateTime
 
 // ========== HELPERS DE ESTADO ==========
 
-export type AppointmentStatus = 'programada' | 'confirmada' | 'reagendada' | 'cancelada' | 'completada';
+type AppointmentStatus = 'programada' | 'confirmada' | 'reagendada' | 'cancelada' | 'completada';
 
-export const STATUS_CONFIG = {
+const STATUS_CONFIG = {
   programada: {
     label: 'Programada',
     icon: '',
@@ -188,7 +188,7 @@ export const getStatusConfig = (status: string) => {
 
 // ========== HELPERS DE URGENCIA ==========
 
-export const URGENCY_CONFIG = {
+const URGENCY_CONFIG = {
   urgent: {
     label: 'Urgente',
     borderClass: 'border-red-500 border-2 shadow-lg shadow-red-500/30',
@@ -217,7 +217,7 @@ export const URGENCY_CONFIG = {
  * Obtiene las iniciales de un nombre
  * @example "Juan Pérez" → "JP"
  */
-export const getInitials = (name: string): string => {
+const getInitials = (name: string): string => {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 0) return '??';
   if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
@@ -228,14 +228,14 @@ export const getInitials = (name: string): string => {
  * Acorta un nombre para visualización compacta
  * @example "Juan Pérez Gómez" → "Juan Pérez"
  */
-export const getShortName = (name: string): string => {
+const getShortName = (name: string): string => {
   const parts = name.trim().split(/\s+/);
   return parts.slice(0, 2).join(' ');
 };
 
 // ========== ESTADÍSTICAS ==========
 
-export const calculateStats = (consultas: Consulta[]) => {
+const calculateStats = (consultas: Consulta[]) => {
   const total = consultas.length;
   const confirmadas = consultas.filter(c => c.estadoCita.toLowerCase() === 'confirmada').length;
   const programadas = consultas.filter(c => c.estadoCita.toLowerCase() === 'programada').length;
@@ -287,7 +287,7 @@ export const calculateStats = (consultas: Consulta[]) => {
 /**
  * Filtra citas según criterios de búsqueda
  */
-export const filterAppointments = (
+const filterAppointments = (
   consultas: Consulta[],
   filters: {
     searchQuery?: string;

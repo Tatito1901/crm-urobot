@@ -26,7 +26,7 @@ export interface CanalRendimiento {
   consultas_completadas: number;
 }
 
-export interface ImpactoUrobot {
+interface ImpactoUrobot {
   citasAgendadasBot: number;
   mensajesAtendidos: number;
   mensajesFueraHorario: number;
@@ -35,7 +35,7 @@ export interface ImpactoUrobot {
   usuariosUnicos: number;
 }
 
-export interface DatosMes {
+interface DatosMes {
   periodo: string;
   consultasProgramadas: number;
   consultasCompletadas: number;
@@ -44,19 +44,19 @@ export interface DatosMes {
   leadsConvertidos: number;
 }
 
-export interface Variaciones {
+interface Variaciones {
   consultas: number;
   pacientes: number;
   leads: number;
 }
 
-export interface ComparativaMensual {
+interface ComparativaMensual {
   mesActual: DatosMes;
   mesAnterior: DatosMes;
   variaciones: Variaciones;
 }
 
-export interface Eficiencia {
+interface Eficiencia {
   tasaConfirmacion: number;
   tasaAsistencia: number;
   tasaCancelacion: number;
@@ -73,13 +73,13 @@ export interface EvolucionMes {
   pacientes_unicos: number;
 }
 
-export interface OrigenTop {
+interface OrigenTop {
   origen: string;
   total: number;
   activos: number;
 }
 
-export interface ImpactStats {
+interface ImpactStats {
   rendimientoCanales: CanalRendimiento[];
   impactoUrobot: ImpactoUrobot;
   comparativaMensual: ComparativaMensual;

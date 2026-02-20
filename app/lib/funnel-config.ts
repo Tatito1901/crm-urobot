@@ -39,7 +39,7 @@ export interface PlantillaMensaje {
   descripcion: string;
 }
 
-export interface AccionFunnel {
+interface AccionFunnel {
   id: string;
   label: string;
   icon: string;
@@ -49,7 +49,7 @@ export interface AccionFunnel {
   color: string;
 }
 
-export interface EtapaFunnel {
+interface EtapaFunnel {
   estado: LeadEstado;
   nombre: string;
   descripcion: string;

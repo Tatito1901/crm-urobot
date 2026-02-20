@@ -85,14 +85,14 @@ export const CANAL_COLORS: Record<CanalMarketing, { bg: string; text: string; bo
 /**
  * Valida si un string es un canal de marketing válido
  */
-export function isCanalMarketing(value: unknown): value is CanalMarketing {
+function isCanalMarketing(value: unknown): value is CanalMarketing {
   return typeof value === 'string' && (CANALES_MARKETING as readonly string[]).includes(value);
 }
 
 /**
  * Obtiene el canal por defecto si no existe
  */
-export const DEFAULT_CANAL: CanalMarketing = 'Otro';
+const DEFAULT_CANAL: CanalMarketing = 'Otro';
 
 /**
  * Normaliza valores de canal que pueden venir de n8n con diferentes formatos

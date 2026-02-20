@@ -12,13 +12,13 @@ import { SWR_CONFIG_STANDARD } from '@/lib/swr-config';
 
 const supabase = createClient();
 
-export interface FunnelPhase {
+interface FunnelPhase {
   fase: string;
   total: number;
   porcentaje: number;
 }
 
-export interface FunnelStats {
+interface FunnelStats {
   fases: FunnelPhase[];
   total_mensajes_clasificados: number;
   total_conversaciones: number;

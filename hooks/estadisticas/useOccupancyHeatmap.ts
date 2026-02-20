@@ -18,28 +18,28 @@ export interface DayOccupancy {
   percentage: number; // 0-100
 }
 
-export interface OccupancyStats {
+interface OccupancyStats {
   min: number;
   max: number;
   avg: number;
   total: number;
 }
 
-export interface WeekdayStats {
+interface WeekdayStats {
   dayIndex: number; // 0=Sunday
   avgCount: number;
   totalCount: number;
   label: string;
 }
 
-export interface PredictionStats {
+interface PredictionStats {
   busiestDay: WeekdayStats;
   quietestDay: WeekdayStats;
   monthlyGrowth: number; // percentage
   predictedNextWeekCount: number;
 }
 
-export interface HourlyPattern {
+interface HourlyPattern {
   hour: number; // 0-23
   countsByDay: number[]; // Array de 7 elementos (Dom-Sab) con conteo de citas
   total: number;

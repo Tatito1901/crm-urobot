@@ -22,7 +22,7 @@ interface PositionedAppointment extends Appointment {
  * @param gridStartHour - Hora de inicio del grid (default: 0)
  * @param slotHeight - Altura de cada slot de 60min en pixels (default: 60)
  */
-export function calculateTop(
+function calculateTop(
   start: Temporal.ZonedDateTime,
   gridStartHour: number = 0,
   slotHeight: number = 60
@@ -43,7 +43,7 @@ export function calculateTop(
  * @param duracionMinutos - Duración en minutos
  * @param slotHeight - Altura de cada slot de 60min en pixels (default: 60)
  */
-export function calculateHeight(
+function calculateHeight(
   duracionMinutos: number,
   slotHeight: number = 60
 ): number {
@@ -74,7 +74,7 @@ export function getDayOfWeek(
 /**
  * Detecta superposiciones entre citas
  */
-export function detectOverlaps(
+function detectOverlaps(
   appointments: Appointment[]
 ): Map<string, Appointment[]> {
   const overlaps = new Map<string, Appointment[]>();
@@ -112,7 +112,7 @@ export function detectOverlaps(
 /**
  * Calcula posiciones horizontales para citas superpuestas
  */
-export function calculateHorizontalPositions(
+function calculateHorizontalPositions(
   overlappingAppointments: Appointment[]
 ): Map<string, { left: number; width: number }> {
   const positions = new Map<string, { left: number; width: number }>();

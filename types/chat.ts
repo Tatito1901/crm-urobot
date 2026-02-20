@@ -13,7 +13,7 @@ import type { Tables } from './database';
 // ============================================================
 
 // Tabla conversaciones (metadata de la conversación)
-export type ConversacionRow = Tables<'conversaciones'>;
+type ConversacionRow = Tables<'conversaciones'>;
 
 // Tabla mensajes (mensajes individuales)
 export type MensajeRow = Tables<'mensajes'>;
@@ -48,12 +48,12 @@ export interface Mensaje {
 }
 
 // Fases de conversación posibles (generadas por el clasificador híbrido en n8n)
-export const FASES_CONVERSACION = [
+const FASES_CONVERSACION = [
   'bienvenida', 'descubrimiento', 'horarios_dados', 'oferta_cita',
   'confirmacion', 'precio_dado', 'ubicacion_dada', 'escalamiento',
   'seguimiento', 'conversacion'
 ] as const;
-export type FaseConversacion = (typeof FASES_CONVERSACION)[number];
+type FaseConversacion = (typeof FASES_CONVERSACION)[number];
 
 // Display y colores para badges de fases
 export const FASE_DISPLAY: Record<string, { label: string; color: string }> = {

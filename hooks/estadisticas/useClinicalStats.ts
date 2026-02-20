@@ -65,7 +65,7 @@ export interface PacienteFiel {
 }
 
 // Tipo para motivos de consulta
-export interface MotivoConsulta {
+interface MotivoConsulta {
   name: string;
   value: number;
   tasaAsistencia: number;

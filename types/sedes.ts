@@ -123,7 +123,7 @@ export const EMPTY_HORARIO_DIA: HorarioDia = {
   domingo: [],
 };
 
-export const EMPTY_HORARIO_JSON: HorarioJson = {
+const EMPTY_HORARIO_JSON: HorarioJson = {
   weekA: { ...EMPTY_HORARIO_DIA },
   weekB: { ...EMPTY_HORARIO_DIA },
 };

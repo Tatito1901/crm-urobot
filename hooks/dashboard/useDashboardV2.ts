@@ -16,8 +16,7 @@ import { parseDashboardV2, defaultKPIs, defaultAcciones, defaultBot, defaultData
 import type { DashboardV2Data } from './dashboardV2-parser';
 
 // Re-export types & parser for consumer convenience
-export type { DashboardV2Data, DashboardKPIs, DashboardAcciones, PipelineItem, TemperaturaItem, FuenteItem, BotMetrics, LeadReciente, ConsultaProxima, EscalamientoReciente, ConsultaEstadoItem, TrendPoint, FunnelItem } from './dashboardV2-parser';
-export { parseDashboardV2 } from './dashboardV2-parser';
+export type { DashboardV2Data } from './dashboardV2-parser';
 
 const supabase = createClient();
 

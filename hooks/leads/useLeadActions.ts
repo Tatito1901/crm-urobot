@@ -20,7 +20,7 @@ const supabase = createClient();
 // TIPOS
 // ============================================================
 
-export type TipoAccion = 
+type TipoAccion = 
   | 'mensaje_enviado'
   | 'llamada_realizada'
   | 'etapa_cambiada'
@@ -28,7 +28,7 @@ export type TipoAccion =
   | 'nota_agregada'
   | 'reactivacion_intentada';
 
-export interface AccionLead {
+interface AccionLead {
   id: string;
   leadId: string;
   tipo: TipoAccion;
@@ -39,7 +39,7 @@ export interface AccionLead {
   creadoEn: Date;
 }
 
-export interface RecomendacionLead {
+interface RecomendacionLead {
   accion: 'contactar' | 'esperar' | 'descartar' | 'urgente';
   razon: string;
   diasEsperar?: number;
@@ -48,7 +48,7 @@ export interface RecomendacionLead {
   alertas: string[];
 }
 
-export interface HistorialContacto {
+interface HistorialContacto {
   totalMensajesEnviados: number;
   totalMensajesRecibidos: number;
   ultimoMensajeEnviado?: Date;
