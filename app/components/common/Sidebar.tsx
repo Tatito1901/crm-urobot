@@ -28,6 +28,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/auth/actions";
+import { BotKillSwitch, BotKillSwitchCompact } from "./BotKillSwitch";
 
 type NavItem = {
   readonly label: string;
@@ -141,6 +142,8 @@ export function Sidebar() {
         </div>
 
         <footer className="relative space-y-3">
+          <BotKillSwitch />
+
           <div className="rounded-xl border border-border bg-muted/30 px-3.5 py-3">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
@@ -312,6 +315,7 @@ export function BottomNav() {
                             </Link>
                           );
                         })}
+                        <BotKillSwitchCompact />
                       </div>
                     </div>
                   </DrawerContent>
