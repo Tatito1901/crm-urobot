@@ -126,7 +126,8 @@
         448,
         2112
       ],
-      "notes": "v6.0: Detecta errores de API y NO asume calendario libre"
+      "notes": "v6.0: Detecta errores de API y NO asume calendario libre",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -140,7 +141,8 @@
         672,
         2112
       ],
-      "notes": "v13.0: Soporte onlyMorning/onlyAfternoon, límite configurable"
+      "notes": "v13.0: Soporte onlyMorning/onlyAfternoon, límite configurable",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -154,7 +156,8 @@
         -448,
         2112
       ],
-      "notes": "v17.0: Validación de semanas A/B, soporte onlyMorning/Afternoon"
+      "notes": "v17.0: Validación de semanas A/B, soporte onlyMorning/Afternoon",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -168,7 +171,8 @@
         0,
         1920
       ],
-      "notes": "v3.0: Detecta errores de API, NO asume calendario libre"
+      "notes": "v3.0: Detecta errores de API, NO asume calendario libre",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -182,7 +186,8 @@
         0,
         2112
       ],
-      "notes": "v3.0: Detecta errores de API, NO asume calendario libre"
+      "notes": "v3.0: Detecta errores de API, NO asume calendario libre",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -203,7 +208,8 @@
           "id": "LZyK5sbzVT7Dy3RU",
           "name": "Postgres urobot"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -217,7 +223,8 @@
         -896,
         2112
       ],
-      "notes": "v5.0: FIX CRÍTICO — transforma horario_json a DOW-indexed para SCHEDULE_GATE"
+      "notes": "v5.0: FIX CRÍTICO — transforma horario_json a DOW-indexed para SCHEDULE_GATE",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -231,7 +238,8 @@
         -672,
         2112
       ],
-      "notes": "v11.0: Mejor normalización de sede, soporte onlyMorning/Afternoon"
+      "notes": "v11.0: Mejor normalización de sede, soporte onlyMorning/Afternoon",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -287,7 +295,8 @@
         0,
         2304
       ],
-      "notes": "v3.0: Detecta errores de API, NO asume calendario libre"
+      "notes": "v3.0: Detecta errores de API, NO asume calendario libre",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -301,7 +310,8 @@
         896,
         2112
       ],
-      "notes": "v34.0: Structured output for LLM — no pre-formatted messages"
+      "notes": "v34.0: Structured output for LLM — no pre-formatted messages",
+      "continueOnFail": true
     }
   ],
   "pinData": {

@@ -188,15 +188,15 @@ export default function LeadsPage() {
 
         {/* ── Conversion funnel mini-bar ── */}
         {(stats.citasOfrecidasTotal > 0 || stats.citasAgendadasTotal > 0) && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 border border-border text-xs text-muted-foreground animate-fade-up stagger-2">
-            <span className="font-medium text-foreground">{stats.total}</span> leads
-            <ArrowRight className="w-3 h-3" />
-            <span className="font-medium text-purple-400">{stats.citasOfrecidasTotal}</span> ofrecidas
-            <ArrowRight className="w-3 h-3" />
-            <span className="font-medium text-emerald-400">{stats.citasAgendadasTotal}</span> agendadas
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 border border-border text-xs text-muted-foreground animate-fade-up stagger-2 overflow-x-auto scrollbar-hide">
+            <span className="font-medium text-foreground shrink-0">{stats.total}</span><span className="shrink-0">leads</span>
+            <ArrowRight className="w-3 h-3 shrink-0" />
+            <span className="font-medium text-purple-400 shrink-0">{stats.citasOfrecidasTotal}</span><span className="shrink-0">ofrecidas</span>
+            <ArrowRight className="w-3 h-3 shrink-0" />
+            <span className="font-medium text-emerald-400 shrink-0">{stats.citasAgendadasTotal}</span><span className="shrink-0">agendadas</span>
             {stats.tasaOfertaAAgenda > 0 && (
-              <span className="ml-auto font-semibold text-emerald-400">
-                {stats.tasaOfertaAAgenda}% conversi\u00f3n
+              <span className="ml-auto font-semibold text-emerald-400 shrink-0 whitespace-nowrap">
+                {stats.tasaOfertaAAgenda}% conversión
               </span>
             )}
           </div>

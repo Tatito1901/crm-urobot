@@ -25,9 +25,9 @@ interface ConsultasMetricsProps {
 export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, loading }: ConsultasMetricsProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-24 bg-muted/50 rounded-lg animate-pulse" />
+          <div key={i} className={`h-20 sm:h-24 bg-muted/50 rounded-lg animate-pulse ${i === 4 ? 'col-span-2 sm:col-span-1' : ''}`} />
         ))}
       </div>
     );
@@ -39,9 +39,9 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
   const hintClass = "text-[10px] text-muted-foreground mt-1";
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
       {/* Total */}
-      <div className="bg-card border border-border rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+      <div className="bg-card border border-border rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
           <BarChart3 className="w-10 h-10" />
         </div>
@@ -53,7 +53,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
       </div>
 
       {/* Programadas */}
-      <div className="bg-card border border-blue-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+      <div className="bg-card border border-blue-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
           <Calendar className="w-10 h-10 text-blue-400" />
         </div>
@@ -65,7 +65,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
       </div>
 
       {/* Confirmadas */}
-      <div className="bg-card border border-emerald-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+      <div className="bg-card border border-emerald-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
           <CheckCircle2 className="w-10 h-10 text-emerald-400" />
         </div>
@@ -77,7 +77,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
       </div>
 
       {/* Hoy */}
-      <div className="bg-card border border-purple-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+      <div className="bg-card border border-purple-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
           <Clock className="w-10 h-10 text-purple-400" />
         </div>
@@ -91,7 +91,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
       </div>
 
       {/* Esta semana */}
-      <div className="bg-card border border-amber-500/20 rounded-lg p-3 flex flex-col justify-between relative overflow-hidden group">
+      <div className="col-span-2 sm:col-span-1 bg-card border border-amber-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
           <CalendarDays className="w-10 h-10 text-amber-400" />
         </div>

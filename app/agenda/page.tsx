@@ -552,7 +552,7 @@ export default function AgendaPage() {
             blockId: null,
           });
         }}
-        className="lg:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all active:scale-95"
+        className="lg:hidden fixed bottom-20 right-4 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all active:scale-95 safe-area-bottom"
         aria-label="Nueva cita"
       >
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

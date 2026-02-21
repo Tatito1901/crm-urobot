@@ -27,7 +27,8 @@
       "position": [
         -10848,
         1904
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -81,7 +82,8 @@
       "position": [
         -15552,
         2576
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -94,7 +96,8 @@
       "position": [
         -15328,
         2576
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -163,7 +166,8 @@
       "position": [
         -14656,
         2480
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -233,7 +237,8 @@
       "position": [
         -13984,
         2384
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -306,7 +311,8 @@
       "position": [
         -13312,
         2288
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -378,7 +384,8 @@
       "position": [
         -12640,
         2192
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -456,7 +463,8 @@
       "position": [
         -11968,
         2096
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -493,9 +501,9 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO consultas (consulta_id, paciente_id, sede_id, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita) VALUES ($1, $2::uuid, $3::uuid, $4::timestamptz, $5::timestamptz, 'Programada', $6, $7, $8, $9) ON CONFLICT (consulta_id) DO UPDATE SET calendar_event_id = EXCLUDED.calendar_event_id, calendar_link = EXCLUDED.calendar_link, updated_at = NOW() RETURNING id, consulta_id, calendar_event_id",
+        "query": "INSERT INTO consultas (consulta_id, paciente_id, sede_id, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita, origen) VALUES ($1, $2::uuid, $3::uuid, $4::timestamptz, $5::timestamptz, 'Programada', $6, $7, $8, $9, $10) ON CONFLICT (consulta_id) DO UPDATE SET calendar_event_id = EXCLUDED.calendar_event_id, calendar_link = EXCLUDED.calendar_link, updated_at = NOW() RETURNING id, consulta_id, calendar_event_id",
         "options": {
-          "queryReplacement": "={{ $json._consulta_id }}, {{ $json.paciente_id }}, {{ $json.sede_id }}, {{ $json.startTime }}, {{ $json.endTime }}, {{ $json.event_id }}, {{ $json.event_link }}, {{ $json.motivo }}, {{ $json.tipoCita }}"
+          "queryReplacement": "={{ $json._consulta_id }}, {{ $json.paciente_id }}, {{ $json.sede_id }}, {{ $json.startTime }}, {{ $json.endTime }}, {{ $json.event_id }}, {{ $json.event_link }}, {{ $json.motivo }}, {{ $json.tipoCita }}, {{ $json.origen || 'urobot' }}"
         }
       },
       "id": "b8080793-6067-4daa-811e-4e758bdf45d8",
@@ -528,7 +536,8 @@
       "position": [
         -11296,
         2000
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -573,7 +582,8 @@
       "position": [
         -10096,
         1840
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -617,7 +627,8 @@
       "position": [
         -10528,
         2096
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -630,7 +641,8 @@
       "position": [
         -14880,
         2672
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -643,7 +655,8 @@
       "position": [
         -14208,
         2576
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -656,7 +669,8 @@
       "position": [
         -13536,
         2480
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -669,7 +683,8 @@
       "position": [
         -12864,
         2384
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -682,7 +697,8 @@
       "position": [
         -12192,
         2288
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -695,7 +711,8 @@
       "position": [
         -11520,
         2192
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -765,7 +782,8 @@
       "position": [
         -14176,
         2280
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -810,7 +828,8 @@
       "position": [
         -13728,
         2384
-      ]
+      ],
+      "continueOnFail": true
     }
   ],
   "pinData": {

@@ -229,7 +229,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           }}
         />
 
-        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-5 sm:gap-6 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6 px-3 py-4 sm:px-6 sm:py-10 lg:px-8">
 
           {/* ═══════════════════════════════════════════
               HEADER — Greeting + date + live indicator
@@ -243,7 +243,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     Centro de Comando
                   </p>
                 </div>
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-gradient-teal">
+                <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-gradient-teal">
                   {getGreeting()}
                 </h1>
                 <p className="text-sm text-muted-foreground capitalize">
@@ -311,13 +311,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
                 <div
                   key={m.title}
-                  className={`kpi-card ${m.glowClass} grain-overlay shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-5 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default transition-transform duration-200 hover:scale-[1.01]`}
+                  className={`kpi-card ${m.glowClass} grain-overlay shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-4 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default transition-transform duration-200 hover:scale-[1.01]`}
                 >
                   {/* Top row: icon + label */}
                   <div className="flex items-center justify-between mb-4">
@@ -333,7 +333,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
                   {/* Big number */}
                   <div className="flex-1 flex items-end">
-                    <div className={`text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
+                    <div className={`text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
                       {loading ? '—' : m.value}
                     </div>
                   </div>
@@ -358,13 +358,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               SECONDARY METRICS — Compact strip
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fade-up stagger-6">
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 animate-fade-up stagger-6">
             {secondaryMetrics.map(sm => {
               const Icon = sm.icon;
               return (
                 <div
                   key={sm.label}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors hover:bg-muted/30"
+                  className="flex items-center gap-2 sm:gap-3 rounded-xl border border-border bg-card px-2.5 py-2.5 sm:px-4 sm:py-3.5 transition-colors hover:bg-muted/30"
                 >
                   <div className={`p-1.5 rounded-lg ${sm.bg} shrink-0`}>
                     <Icon className={`h-3.5 w-3.5 ${sm.color}`} />
@@ -401,7 +401,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                   Leads + consultas — últimos días
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: chartColors.teal }} />
                 Actividad total
               </div>
@@ -647,9 +647,9 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 { label: 'Citas bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
                 { label: 'Resp. prom.', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
               ].map(stat => (
-                <div key={stat.label} className="px-4 sm:px-6 py-3 sm:py-4 text-center">
-                  <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">{stat.label}</p>
-                  <p className={`text-lg sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
+                <div key={stat.label} className="px-3 sm:px-6 py-2.5 sm:py-4 text-center">
+                  <p className="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">{stat.label}</p>
+                  <p className={`text-base sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}
                   </p>
                 </div>

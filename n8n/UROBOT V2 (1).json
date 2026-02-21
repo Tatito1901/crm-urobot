@@ -523,7 +523,8 @@
           "id": "LZyK5sbzVT7Dy3RU",
           "name": "Postgres urobot"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -546,7 +547,8 @@
           "id": "LZyK5sbzVT7Dy3RU",
           "name": "Postgres urobot"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -675,7 +677,8 @@
         4176
       ],
       "id": "6cd6136f-110c-416a-8441-a0aa33533388",
-      "name": "5️⃣ Procesar Contexto"
+      "name": "5️⃣ Procesar Contexto",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -688,7 +691,8 @@
         4176
       ],
       "id": "b88c057e-9bfb-4586-b976-1fce1af31e80",
-      "name": "9️⃣ Formatear Contexto"
+      "name": "9️⃣ Formatear Contexto",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -709,7 +713,8 @@
       "name": "🤖 AI Agent",
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 2000
+      "waitBetweenTries": 2000,
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -809,11 +814,12 @@
         4624
       ],
       "id": "b749e2c0-61e7-4d4f-9998-6b0fe633d3e1",
-      "name": "Call 'DISPONIBILIDAD_CALENDARIO'"
+      "name": "Call 'DISPONIBILIDAD_CALENDARIO'",
+      "continueOnFail": true
     },
     {
       "parameters": {
-        "description": "AGENDAR_CONSULTA — Reserva una cita con el Dr. Mario. SIEMPRE verifica disponibilidad primero. Si SLOT_TAKEN, llama DISPONIBILIDAD de nuevo.\n\nRequiere: telefono, nombre, fecha (YYYY-MM-DD), hora (HH:MM), motivo.",
+        "description": "AGENDAR_CONSULTA — Reserva una cita con el Dr. Mario. SIEMPRE verifica disponibilidad primero. Si SLOT_TAKEN, llama DISPONIBILIDAD de nuevo.\n\nRequiere: telefono, nombre, sede (POLANCO o SATELITE), fecha (YYYY-MM-DD), hora (HH:MM), motivo.",
         "workflowId": {
           "__rl": true,
           "value": "xrycvZgtHqlz9Wh3",
@@ -830,10 +836,21 @@
             "hora": "={{ $fromAI('hora', 'Hora HH:MM 24h', 'string') }}",
             "motivo": "={{ $fromAI('motivo', 'Motivo de la consulta', 'string') }}",
             "existingEventId": "={{ $fromAI('existingEventId', '', 'string') }}",
-            "origen": "={{ 'urobot' }}"
+            "origen": "={{ 'urobot' }}",
+            "sede": "={{ $fromAI('sede', 'Sede: POLANCO o SATELITE', 'string') }}"
           },
           "matchingColumns": [],
           "schema": [
+            {
+              "id": "sede",
+              "displayName": "sede",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
             {
               "id": "telefono",
               "displayName": "telefono",
@@ -916,7 +933,8 @@
         4608
       ],
       "id": "c77b5fa5-0479-45cd-9228-34171e897959",
-      "name": "Call 'AGENDAR_CONSULTA'"
+      "name": "Call 'AGENDAR_CONSULTA'",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -968,7 +986,8 @@
         4624
       ],
       "id": "c4921d58-66c3-4c69-9aaf-ee3f1d14039c",
-      "name": "Call 'CANCELAR_CONSULTA'"
+      "name": "Call 'CANCELAR_CONSULTA'",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -1042,11 +1061,12 @@
         4656
       ],
       "id": "974bea00-ed21-45ae-afe1-5b7f6968c029",
-      "name": "Call 'REAGENDAR_CONSULTA'"
+      "name": "Call 'REAGENDAR_CONSULTA'",
+      "continueOnFail": true
     },
     {
       "parameters": {
-        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🧹 LIMPIAR RESPUESTA (UROBOT V2)\n// ═══════════════════════════════════════════════════════════════════\n\nconst output = $input.first()?.json?.output || $input.first()?.json?.text || '';\nlet text = output;\n\n// Remover tags internos\ntext = text.replace(/\\[ANÁLISIS\\][\\s\\S]*?\\[\\/ANÁLISIS\\]/gi, '');\ntext = text.replace(/\\[INTERNO\\][\\s\\S]*?\\[\\/INTERNO\\]/gi, '');\ntext = text.replace(/\\[SISTEMA\\][\\s\\S]*?\\[\\/SISTEMA\\]/gi, '');\ntext = text.replace(/\\[CONTEXT\\][\\s\\S]*?\\[\\/CONTEXT\\]/gi, '');\n\n// Remover secciones de análisis\ntext = text.replace(/Fase Actual[^:]*:[\\s\\S]*?(?=\\n\\n[A-Z]|$)/gi, '');\ntext = text.replace(/Estrategia[^:]*:[\\s\\S]*?(?=\\n\\n[^\\n]|$)/gi, '');\ntext = text.replace(/Análisis[^:]*:[\\s\\S]*?(?=\\n\\n[A-Z]|$)/gi, '');\n\n// Limpiar formato markdown → WhatsApp\ntext = text.replace(/\\*\\*(.*?)\\*\\*/g, '*$1*');\ntext = text.replace(/^#{1,3}\\s+/gm, '*');\n\n// Limpiar saltos excesivos\ntext = text.replace(/\\n{3,}/g, '\\n\\n');\ntext = text.trim();\n\n// Max 4000 chars\nif (text.length > 4000) text = text.substring(0, 3997) + '...';\n\n// Fallback\nif (!text || text.length < 5) {\n  text = 'Disculpe, tuve un problema procesando su mensaje. ¿Podría repetirlo por favor?';\n}\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\n\nreturn [{\n  json: {\n    text,\n    conversacion_id: ctx.conversacion_id,\n    telefono: ctx.telefono,\n    original_output: output,\n    was_cleaned: text !== output\n  }\n}];"
+        "jsCode": "// ═══════════════════════════════════════════════════════════════\n// 🧹 LIMPIAR RESPUESTA + FALLBACK ante falla del AI Agent\n// ═══════════════════════════════════════════════════════════════\n\n// Detectar si el AI Agent falló (continueOnFail propagates error)\nconst aiOutput = $input.first();\nconst hasError = aiOutput?.json?.error || !aiOutput?.json?.output;\n\nif (hasError) {\n  const errorMsg = aiOutput?.json?.error?.message || aiOutput?.json?.errorMessage || 'AI Agent failed';\n  console.log(`🚨 AI Agent ERROR: ${errorMsg}`);\n  \n  // Fallback: send a safe generic message\n  const ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\n  const nombre = (ctx.nombreUsuario || '').split(' ')[0];\n  const saludo = nombre ? `${nombre}, gracias` : 'Gracias';\n  \n  return [{\n    json: {\n      text: `${saludo} por escribirnos. En este momento estoy teniendo dificultades técnicas. Un momento por favor, le atenderé en breve.`,\n      is_fallback: true,\n      ai_error: errorMsg\n    }\n  }];\n}\n\n// ── Normal flow: clean the AI response ──\nconst raw = (aiOutput.json.output || aiOutput.json.text || aiOutput.json.response || '').trim();\n\nif (!raw) {\n  console.log('🚨 AI Agent returned empty response');\n  return [{\n    json: {\n      text: 'Gracias por escribirnos. Un momento por favor, le atenderé en breve.',\n      is_fallback: true,\n      ai_error: 'empty_response'\n    }\n  }];\n}\n\n// Clean WhatsApp formatting artifacts\nlet cleaned = raw\n  .replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*')  // **bold** → *bold*\n  .replace(/^#+\\s*/gm, '')                 // Remove markdown headers\n  .replace(/```[\\s\\S]*?```/g, '')          // Remove code blocks\n  .replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, '$1') // [text](url) → text\n  .replace(/\\n{3,}/g, '\\n\\n')              // Max 2 newlines\n  .trim();\n\n// Truncate if too long for WhatsApp\nif (cleaned.length > 4000) {\n  cleaned = cleaned.substring(0, 3900) + '\\n\\n_Le envío el resto en un momento..._';\n}\n\nreturn [{ json: { text: cleaned, is_fallback: false } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1055,7 +1075,8 @@
         4176
       ],
       "id": "6287ff34-1f87-419c-bd15-5beecc348230",
-      "name": "🧹 Limpiar Respuesta"
+      "name": "🧹 Limpiar Respuesta",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -1255,7 +1276,11 @@
         4176
       ],
       "id": "51f3e0a9-c7bd-4fd5-a8b6-a3565d5b3340",
-      "name": "6️⃣ Analizar Gemini"
+      "name": "6️⃣ Analizar Gemini",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000
     },
     {
       "parameters": {
@@ -1294,7 +1319,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM upsert_lead_v12(\n  $1::text,     -- telefono\n  $2::text,     -- nombre\n  $3::text,     -- fuente\n  $4::text,     -- canal\n  $5::text,     -- mensaje\n  $6::text,     -- intencion\n  $7::text,     -- urgencia\n  $8::text[],   -- sintomas_nuevos\n  $9::text[],   -- banderas_rojas\n  $10::boolean, -- pregunto_precio\n  $11::text,    -- sentimiento\n  $12::text,    -- tiempo_evolucion\n  $13::text,    -- fit_servicio\n  $14::text,    -- para_quien\n  $15::text[],  -- objeciones\n  $16::text,    -- campana_id\n  $17::text,    -- campana_headline\n  $18::text,    -- campana_url\n  $19::text,    -- ctwa_clid\n  $20::jsonb,   -- referral_data\n  $21::jsonb    -- signals\n)",
+        "query": "SELECT * FROM upsert_lead_v13(\n  $1::text,     -- telefono\n  $2::text,     -- nombre\n  $3::text,     -- fuente\n  $4::text,     -- canal\n  $5::text,     -- mensaje\n  $6::text,     -- intencion\n  $7::text,     -- urgencia\n  $8::text[],   -- sintomas_nuevos\n  $9::text[],   -- banderas_rojas\n  $10::boolean, -- pregunto_precio\n  $11::text,    -- sentimiento\n  $12::text,    -- tiempo_evolucion\n  $13::text,    -- fit_servicio\n  $14::text,    -- para_quien\n  $15::text[],  -- objeciones\n  $16::text,    -- campana_id\n  $17::text,    -- campana_headline\n  $18::text,    -- campana_url\n  $19::text,    -- ctwa_clid\n  $20::jsonb,   -- referral_data\n  $21::jsonb    -- signals\n)",
         "options": {
           "queryReplacement": "={{ [\n  $json.telefono || '',\n  $json.nombre_detectado || $json.nombreUsuario || $json.nombre_confirmado || 'Usuario',\n  $json.es_meta_ads ? 'meta_ads' : ($json.fuente || 'whatsapp_directo'),\n  $json.es_meta_ads ? 'meta_ads' : 'organico',\n  ($json.mensajeUsuario || '').substring(0, 5000),\n  $json.intencion_principal || $json.intencion || 'otro',\n  $json.urgencia_percibida || 'bajo',\n  ($json.sintomas_merged || []).slice(0, 10),\n  $json.banderas_rojas || [],\n  $json.pregunto_precio === true,\n  $json.sentimiento || 'neutro',\n  $json.tiempo_evolucion || null,\n  $json.prediccion_conversion === 'alta' ? 'alto' : ($json.prediccion_conversion === 'media' ? 'medio' : 'bajo'),\n  $json.para_quien === 'para_si_mismo' ? 'mismo' : 'otro',\n  $json.barrera_principal && $json.barrera_principal !== 'ninguna' ? [$json.barrera_principal] : [],\n  $json.meta_campana_id || null,\n  $json.meta_headline || null,\n  $json.meta_source_url || null,\n  $json.meta_ctwa_clid || null,\n  null,\n  JSON.stringify({\n    perfil_paciente: $json.perfil_paciente || null,\n    emociones: $json.emociones_detectadas || [],\n    nivel_compromiso: $json.nivel_compromiso || null,\n    prediccion_conversion: $json.prediccion_conversion || null,\n    incentivo_sugerido: $json.incentivo_sugerido || null,\n    barrera_principal: $json.barrera_principal || null,\n    pregunto_precio: $json.pregunto_precio === true,\n    sintomas_estructurados: $json.sintomas_estructurados || [],\n    senales_precio: $json.senales_precio || null\n  })\n] }}"
         }
@@ -1312,7 +1337,8 @@
           "id": "LZyK5sbzVT7Dy3RU",
           "name": "Postgres urobot"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -1372,7 +1398,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🏷️ CLASIFICADOR HÍBRIDO UROBOT - Analiza INTENCIÓN FINAL del mensaje bot\n// ═══════════════════════════════════════════════════════════════════\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\nconst limpioData = $('🧹 Limpiar Respuesta').first()?.json || {};\nconst texto = limpioData.text || '';\nconst t = texto.toLowerCase();\nconst parrafos = texto.split(/\\n\\n+/).filter(p => p.trim());\nconst ultimoParrafo = (parrafos[parrafos.length - 1] || texto).toLowerCase();\n\nfunction clasificarHibrido() {\n  // PASO 1: Estados FINALES de alta prioridad\n  if (/qued(ó|a)? (agendad|reservad|formalmente)|ya quedó|tu cita.*confirm|listo.*reserv|queda reservado/i.test(t)) return 'confirmacion';\n  \n  // PASO 2: Analizar INTENCIÓN FINAL (último párrafo)\n  if (/confirm(a|e)me tu nombre|tu nombre completo|para (generar|abrir).*expediente/i.test(ultimoParrafo)) return 'confirmacion';\n  if (/te (queda|funciona|parece).*horario|\\d{1,2}:\\d{2}\\s*(pm|am)?.*\\?|apartarlo/i.test(ultimoParrafo)) return 'horarios_dados';\n  if (/te (gustaría|interesa).*agendar|te ofrezca.*espacio|quieres.*cita/i.test(ultimoParrafo)) return 'oferta_cita';\n  if (/\\?/.test(ultimoParrafo) && /síntoma|siente|cuándo|molest|orin|dolor|ard|sangr|próstat/i.test(ultimoParrafo)) return 'descubrimiento';\n  \n  // PASO 3: Contenido principal (fallback)\n  if (/recuerda.*cita|no olvides|te esperamos|cualquier.*duda.*aquí/i.test(t)) return 'seguimiento';\n  if (/(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado).*\\d{1,2}.*\\?/i.test(t) || /\\d{1,2}:\\d{2}\\s*(pm|am).*\\?/i.test(t)) return 'horarios_dados';\n  if (/\\$|precio|costo|consult.*incluye|honorario/i.test(t)) {\n    if (/disponible|espacio|lunes|martes|miércoles|jueves|viernes|sábado/i.test(t)) return 'horarios_dados';\n    return 'precio_dado';\n  }\n  if (/ubicaci|direcci|blvd|colonia|consultorio/i.test(t)) return 'ubicacion_dada';\n  if (/urgencia|emergencia|acudir.*inmediatamente|urolog.*guardia/i.test(t)) return 'escalamiento';\n  if (/bienvenid|encantado|mucho gusto|soy.*dr|asistente.*dr/i.test(t)) return 'bienvenida';\n  \n  return 'conversacion';\n}\n\nconst faseConversacion = clasificarHibrido();\n\n// Determinar si el bot espera respuesta\nconst esperaRespuesta = /\\?/.test(ultimoParrafo) || \n  ['descubrimiento', 'horarios_dados', 'oferta_cita', 'confirmacion'].includes(faseConversacion);\n\n// Acción del bot\nconst accionesMap = {\n  'confirmacion': 'confirmar_cita',\n  'horarios_dados': 'ofrecer_horarios',\n  'oferta_cita': 'proponer_agendar',\n  'descubrimiento': 'evaluar_sintomas',\n  'precio_dado': 'informar_precio',\n  'ubicacion_dada': 'informar_ubicacion',\n  'escalamiento': 'escalar_urgente',\n  'seguimiento': 'recordar_cita',\n  'bienvenida': 'presentarse',\n  'conversacion': 'continuar'\n};\nconst accionBot = accionesMap[faseConversacion] || 'continuar';\n\nreturn [{\n  json: {\n    ...ctx,\n    text: limpioData.text || '',\n    fase_conversacion: faseConversacion,\n    accion_bot: accionBot,\n    espera_respuesta: esperaRespuesta,\n    conversacion_id: ctx.conversacion_id || null\n  }\n}];"
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🏷️ CLASIFICADOR HÍBRIDO UROBOT - Analiza INTENCIÓN FINAL del mensaje bot\n// ═══════════════════════════════════════════════════════════════════\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\nconst limpioData = $('🧹 Limpiar Respuesta').first()?.json || {};\nconst texto = limpioData.text || '';\nconst t = texto.toLowerCase();\nconst parrafos = texto.split(/\\n\\n+/).filter(p => p.trim());\nconst ultimoParrafo = (parrafos[parrafos.length - 1] || texto).toLowerCase();\n\nfunction clasificarHibrido() {\n  // PASO 1: Estados FINALES de alta prioridad\n  if (/qued(ó|a)? (agendad|reservad|formalmente)|ya quedó|tu cita.*confirm|listo.*reserv|queda reservado/i.test(t)) return 'confirmacion';\n  \n  // PASO 2: Analizar INTENCIÓN FINAL (último párrafo)\n  if (/confirm(a|e)me tu nombre|tu nombre completo|para (generar|abrir).*expediente/i.test(ultimoParrafo)) return 'confirmacion';\n  if (/te (queda|funciona|parece).*horario|\\d{1,2}:\\d{2}\\s*(pm|am)?.*\\?|apartarlo/i.test(ultimoParrafo)) return 'horarios_dados';\n  if (/te (gustaría|interesa).*agendar|te ofrezca.*espacio|quieres.*cita/i.test(ultimoParrafo)) return 'oferta_cita';\n  if (/\\?/.test(ultimoParrafo) && /síntoma|siente|cuándo|molest|orin|dolor|ard|sangr|próstat/i.test(ultimoParrafo)) return 'descubrimiento';\n  \n  // PASO 3: Contenido principal (fallback)\n  if (/recuerda.*cita|no olvides|te esperamos|cualquier.*duda.*aquí/i.test(t)) return 'seguimiento';\n  if (/(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado).*\\d{1,2}.*\\?/i.test(t) || /\\d{1,2}:\\d{2}\\s*(pm|am).*\\?/i.test(t)) return 'horarios_dados';\n  if (/\\$|precio|costo|consult.*incluye|honorario/i.test(t)) {\n    if (/disponible|espacio|lunes|martes|miércoles|jueves|viernes|sábado/i.test(t)) return 'horarios_dados';\n    return 'precio_dado';\n  }\n  if (/ubicaci|direcci|blvd|colonia|consultorio/i.test(t)) return 'ubicacion_dada';\n  if (/urgencia|emergencia|acudir.*inmediatamente|urolog.*guardia/i.test(t)) return 'escalamiento';\n  if (/bienvenid|encantado|mucho gusto|soy.*dr|asistente.*dr/i.test(t)) return 'bienvenida';\n  \n  return 'conversacion';\n}\n\nconst faseConversacion = clasificarHibrido();\n\n// Determinar si el bot espera respuesta\nconst esperaRespuesta = /\\?/.test(ultimoParrafo) || \n  ['descubrimiento', 'horarios_dados', 'oferta_cita', 'confirmacion'].includes(faseConversacion);\n\n// Acción del bot\nconst accionesMap = {\n  'confirmacion': 'confirmar_cita',\n  'horarios_dados': 'mostrar_horarios',\n  'oferta_cita': 'ofrecer_cita',\n  'descubrimiento': 'evaluar_sintomas',\n  'precio_dado': 'informar_precio',\n  'ubicacion_dada': 'informar_ubicacion',\n  'escalamiento': 'escalar_urgente',\n  'seguimiento': 'recordar_cita',\n  'bienvenida': 'presentarse',\n  'conversacion': 'continuar'\n};\nconst accionBot = accionesMap[faseConversacion] || 'continuar';\n\nreturn [{\n  json: {\n    ...ctx,\n    text: limpioData.text || '',\n    fase_conversacion: faseConversacion,\n    accion_bot: accionBot,\n    espera_respuesta: esperaRespuesta,\n    conversacion_id: ctx.conversacion_id || null\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1479,6 +1505,44 @@
       ],
       "id": "b1a2c3d4-e5f6-7890-abcd-222222222222",
       "name": "🛑 ¿Bloqueado?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT CASE\n  WHEN $2 IN ('confirmar_cita', 'agendar_cita', 'cita_agendada', 'cita_confirmada', 'crear_cita') THEN\n    transition_lead_estado($1::uuid, 'cita_agendada', 'bot', $2)\n  WHEN $2 IN ('ofrecer_cita', 'mostrar_disponibilidad', 'consultar_calendario', 'mostrar_horarios', 'enviar_disponibilidad') THEN\n    transition_lead_estado($1::uuid, 'cita_propuesta', 'bot', $2)\n  ELSE\n    jsonb_build_object('success', true, 'changed', false, 'reason', 'no transition for ' || $2)\nEND as result",
+        "options": {
+          "queryReplacement": "={{ [$('8️⃣ Guardar Lead').first().json.out_lead_id, $('🏷️ Procesar Clasificación').first().json.accion_bot || 'continuar'] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -976,
+        4176
+      ],
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "🔄 Actualizar Estado Lead",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('9️⃣ Formatear Contexto').first()?.json || $('5️⃣ Procesar Contexto').first()?.json || {};\nconsole.log(`⏸️ Anti-Baneo SKIP: ${ctx.telefono || 'desconocido'} - mensaje no enviado por rate limit`);\nreturn [{ json: { skipped: true, reason: 'anti_baneo', telefono: ctx.telefono || '' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        4368
+      ],
+      "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+      "name": "⏸️ Skip Anti-Baneo",
+      "continueOnFail": true
     }
   ],
   "pinData": {
@@ -1902,7 +1966,7 @@
       "main": [
         [
           {
-            "node": "📊 Registrar Rate",
+            "node": "🔄 Actualizar Estado Lead",
             "type": "main",
             "index": 0
           }
@@ -1915,6 +1979,17 @@
           {
             "node": "🤖 AI Agent",
             "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔄 Actualizar Estado Lead": {
+      "main": [
+        [
+          {
+            "node": "📊 Registrar Rate",
+            "type": "main",
             "index": 0
           }
         ]
@@ -2057,6 +2132,13 @@
         [
           {
             "node": "9️⃣ Formatear Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏸️ Skip Anti-Baneo",
             "type": "main",
             "index": 0
           }

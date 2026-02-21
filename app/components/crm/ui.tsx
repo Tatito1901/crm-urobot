@@ -122,7 +122,7 @@ export function DataTable({
 
   return (
     <div className="space-y-4">
-      <div className="hidden w-full overflow-x-auto rounded-xl border border-border bg-card md:block">
+      <div className="hidden w-full overflow-x-auto rounded-xl border border-border bg-card md:block scrollbar-hide">
         <table className="min-w-full divide-y divide-border text-left text-sm text-foreground" role="grid">
           <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground font-medium">
             <tr>
@@ -174,7 +174,7 @@ export function DataTable({
       </div>
 
       {/* Mobile: Card-based layout optimizado */}
-      <div className="space-y-2 md:hidden px-3 sm:px-4 py-2 momentum-scroll">
+      <div className="space-y-2 md:hidden px-1 py-2 momentum-scroll">
         {rows.map((row, index) => {
           const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
           const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
@@ -202,7 +202,7 @@ export function DataTable({
               tabIndex={onRowClick ? index === 0 ? 0 : -1 : undefined}
               role={onRowClick ? "button" : undefined}
               className={cn(
-                "rounded-xl border border-border bg-card p-3.5 sm:p-4 min-h-[76px] flex flex-col justify-center shadow-sm",
+                "rounded-xl border border-border bg-card p-3 sm:p-4 min-h-[72px] flex flex-col justify-center shadow-sm",
                 onRowClick && "cursor-pointer active:scale-[0.98] transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 press-feedback"
               )}
             >
@@ -214,9 +214,9 @@ export function DataTable({
               </div>
               
               {metadata.length > 0 && (
-                <div className="mt-2.5 pt-2 border-t border-border/30 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+                <div className="mt-2 pt-2 border-t border-border/30 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs">
                   {metadata.map((key) => (
-                    <div key={key} className="flex items-center gap-1.5">
+                    <div key={key} className="flex items-center gap-1.5 shrink-0">
                       <div className="text-foreground">{row[key]}</div>
                     </div>
                   ))}
