@@ -1,0 +1,451 @@
+{
+  "name": "AGENDAR_CONSULTA",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"slotId\": \"slot_12345\",\n  \"sede\": \"POLANCO\",\n  \"start\": \"2025-11-23T16:00:00.000Z\",\n  \"end\": \"2025-11-23T16:30:00.000Z\",\n  \"paciente\": \"Fausto Medina\",\n  \"tipoCita\": \"primera_vez\",\n  \"motivoConsulta\": \"Dolor de ingle\",\n  \"lead_telefono\": \"526673184624\",\n  \"email\": \"fausto@example.com\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-1200, 300],
+      "id": "trigger-01",
+      "name": "When executed by another workflow",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════\n// 1️⃣ INIT + VALIDATE v6.1 — Single node: normalize + validate\n// Handles both: sub-workflow trigger (fields at top) and chat trigger (chatInput string)\n// ═══════════════════════════════════════════════════════════════\nlet input = $input.first()?.json || {};\nif (input.chatInput && typeof input.chatInput === 'string') {\n  try { input = JSON.parse(input.chatInput); } catch { input = {}; }\n}\nconst now = Date.now();\nconst trace = `agendar-${now}-${Math.random().toString(36).slice(2,10)}`;\n\nfunction toMexicoISO(d) {\n  if (!d) return null;\n  try {\n    const date = new Date(d);\n    if (isNaN(date.getTime())) return null;\n    const f = new Intl.DateTimeFormat('sv-SE', {\n      timeZone: 'America/Mexico_City',\n      year:'numeric',month:'2-digit',day:'2-digit',\n      hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false\n    });\n    return f.format(date).replace(' ','T') + '.000-06:00';\n  } catch { return null; }\n}\n\n// Extract phone\nlet phoneRaw = input.lead_telefono || (typeof input.paciente === 'object' ? input.paciente?.telefono : '') || input.phone || input.wa_id || input.telefono || '';\nconst phone = phoneRaw.toString().replace(/\\D/g, '').slice(-10);\n\n// Extract name\nlet name = 'Paciente';\nif (input.paciente && typeof input.paciente === 'object' && input.paciente.nombre) name = input.paciente.nombre;\nelse if (typeof input.paciente === 'string' && input.paciente.trim()) name = input.paciente.trim();\nelse if (input.pacienteNombre) name = input.pacienteNombre;\nelse if (input.patientName) name = input.patientName;\nelse if (input.nombre) name = input.nombre;\nname = name.replace(/[\"{}]/g, '').trim() || 'Paciente';\n\nlet email = (typeof input.paciente === 'object' ? input.paciente?.email : null) || input.email || null;\n\n// Dates\nconst rawStart = input.start || input.startTime || '';\nconst rawEnd = input.end || input.endTime || '';\nconst startTime = toMexicoISO(rawStart);\nlet endTime = toMexicoISO(rawEnd);\nif (!endTime && rawStart) {\n  try { endTime = toMexicoISO(new Date(new Date(rawStart).getTime() + 30*60000).toISOString()); } catch {}\n}\n\n// Sede\nlet sede = (input.sede || '').toString().toUpperCase().trim().replace(/[^A-Z]/g, '');\nif (sede.includes('SATELLITE')) sede = 'SATELITE';\nif (sede.includes('POLNACO')) sede = 'POLANCO';\n\n// Validate\nconst problems = [];\nif (!phone || phone.length < 10) problems.push({field:'phone',hint:'Pregunta el número de WhatsApp (10 dígitos).'});\nif (!sede || sede.length < 3) problems.push({field:'sede',hint:'Pregunta sede: Polanco o Satélite.'});\nif (!startTime) problems.push({field:'startTime',hint:'Usa DISPONIBILIDAD_CALENDARIO para obtener horario válido.'});\nelse {\n  const d = new Date(rawStart);\n  if (isNaN(d.getTime())) problems.push({field:'startTime',hint:'Formato de fecha inválido.'});\n  else {\n    const nowMx = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Mexico_City'}));\n    if (d.getTime() < nowMx.getTime() - 5*60000) problems.push({field:'startTime',hint:'La fecha ya pasó. Usa DISPONIBILIDAD_CALENDARIO.'});\n  }\n}\n\nif (problems.length > 0) {\n  return {json:{success:false, error:'VALIDATION_FAILED', problems, message:'Datos incompletos.', meta:{trace}}};\n}\n\nconst dateStr = startTime.replace(/[-:]/g,'').substring(0,15);\nreturn {json:{\n  phone, phoneRaw, phoneForWhatsApp: phone.startsWith('52') ? phone : `52${phone}`,\n  patientName: name, patientEmail: email, sede, startTime, endTime,\n  tipoCita: input.tipoCita || 'primera_vez',\n  motivo: input.motivoConsulta || input.motivo || 'Consulta urológica',\n  slotId: input.slotId || '',\n  _trace: trace, _consulta_id: `${sede}_${phone}_${dateStr}`,\n  _ok: true\n}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-960, 300],
+      "id": "init-validate-01",
+      "name": "1️⃣ Init + Validate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{"id": "ok", "leftValue": "={{ $json._ok }}", "rightValue": true, "operator": {"type": "boolean", "operation": "equals"}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-720, 300],
+      "id": "valid-check-01",
+      "name": "Valid?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.id, s.sede, s.display_name, s.direccion, s.maps_url, s.calendar_id, s.timezone, s.horario_json, s.calendarios_bloqueo, (SELECT calendar_id FROM sedes WHERE sede != $1 LIMIT 1) as otra_sede_calendar_id FROM sedes s WHERE s.sede = $1 LIMIT 1",
+        "options": {"queryReplacement": "={{ $json.sede }}"}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [-480, 240],
+      "id": "get-sede-01",
+      "name": "2️⃣ Get Sede + Horario",
+      "credentials": {"postgres": {"id": "LZyK5sbzVT7Dy3RU", "name": "Postgres urobot"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════\n// 3️⃣ VALIDATE SEDE + SCHEDULE v2 — with multi-calendar support\n// ═══════════════════════════════════════════════════════════════\nconst ctx = $('1️⃣ Init + Validate').first()?.json || {};\nconst sedeRow = $input.first()?.json;\nconst trace = ctx._trace;\n\nif (!sedeRow || !sedeRow.calendar_id) {\n  return {json:{success:false, error:'SEDE_NOT_FOUND', message:`Sede '${ctx.sede}' no configurada.`, meta:{trace}}};\n}\n\nconst PERSONAL_CAL = 'mmartinezuro@gmail.com';\nconst otraSedeCalId = sedeRow.otra_sede_calendar_id || '';\n\nconst enriched = {\n  ...ctx,\n  sede_id: sedeRow.id,\n  calendar_id: sedeRow.calendar_id,\n  personal_calendar_id: PERSONAL_CAL,\n  otra_sede_calendar_id: otraSedeCalId,\n  sedeDisplayName: sedeRow.display_name,\n  sedeDireccion: sedeRow.direccion,\n  sedeMapsUrl: sedeRow.maps_url,\n  timezone: sedeRow.timezone || 'America/Mexico_City'\n};\n\nconst horario = sedeRow.horario_json;\nif (horario && ctx.startTime) {\n  const DAY_NAMES = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];\n  try {\n    const d = new Date(ctx.startTime);\n    const dayF = new Intl.DateTimeFormat('en-US',{timeZone:'America/Mexico_City',weekday:'short'});\n    const hourF = new Intl.DateTimeFormat('en-US',{timeZone:'America/Mexico_City',hour:'2-digit',minute:'2-digit',hour12:false});\n    const dayMap = {Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};\n    const dow = dayMap[dayF.format(d)];\n    const [h,m] = hourF.format(d).split(':').map(Number);\n    const reqTime = h*60+m;\n    const dayName = DAY_NAMES[dow];\n    let valid = false;\n    for (const wk of ['weekA','weekB']) {\n      const week = horario[wk];\n      if (!week || !week[dayName]) continue;\n      for (const shift of week[dayName]) {\n        if (!Array.isArray(shift) || shift.length < 2) continue;\n        const [sh,sm] = shift[0].split(':').map(Number);\n        const [eh,em] = shift[1].split(':').map(Number);\n        if (reqTime >= sh*60+sm && reqTime < eh*60+em) { valid = true; break; }\n      }\n      if (valid) break;\n    }\n    if (!valid) {\n      const dayDisplay = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][dow];\n      return {json:{success:false, error:'OUTSIDE_WORKING_HOURS',\n        message:`Ese horario no está disponible el ${dayDisplay}. Usa DISPONIBILIDAD_CALENDARIO.`,\n        instruction:'Usa DISPONIBILIDAD_CALENDARIO para obtener horarios válidos.', meta:{trace}}};\n    }\n  } catch(e) { /* fail-open if parse error */ }\n}\n\nreturn {json:{...enriched, _ok: true}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-240, 240],
+      "id": "gate-sede-01",
+      "name": "3️⃣ Gate: Sede + Schedule",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{"id": "ok", "leftValue": "={{ $json._ok }}", "rightValue": true, "operator": {"type": "boolean", "operation": "equals"}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [0, 240],
+      "id": "sede-ok-01",
+      "name": "Sede OK?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT c.id, c.consulta_id FROM consultas c JOIN pacientes p ON c.paciente_id = p.id WHERE p.telefono = $1 AND c.estado_cita NOT IN ('Cancelada','No Asistió') AND c.fecha_hora_inicio < $3::timestamptz AND c.fecha_hora_fin > $2::timestamptz LIMIT 1",
+        "options": {"queryReplacement": "={{ $json.phone }}, {{ $json.startTime }}, {{ $json.endTime }}"}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [240, 180],
+      "id": "check-dup-01",
+      "name": "4️⃣ Check Duplicate",
+      "alwaysOutputData": true,
+      "credentials": {"postgres": {"id": "LZyK5sbzVT7Dy3RU", "name": "Postgres urobot"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {"__rl": true, "mode": "id", "value": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.calendar_id }}"},
+        "timeMin": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.startTime }}",
+        "timeMax": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.endTime }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [480, 60],
+      "id": "check-freebusy-sede",
+      "name": "5️⃣a FreeBusy Sede",
+      "credentials": {"googleCalendarOAuth2Api": {"id": "RzMlWUma86JGl9rZ", "name": "Google Calendar account"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {"__rl": true, "mode": "id", "value": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.personal_calendar_id }}"},
+        "timeMin": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.startTime }}",
+        "timeMax": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.endTime }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [480, 180],
+      "id": "check-freebusy-personal",
+      "name": "5️⃣b FreeBusy Personal",
+      "credentials": {"googleCalendarOAuth2Api": {"id": "RzMlWUma86JGl9rZ", "name": "Google Calendar account"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {"__rl": true, "mode": "id", "value": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.otra_sede_calendar_id }}"},
+        "timeMin": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.startTime }}",
+        "timeMax": "={{ $('3️⃣ Gate: Sede + Schedule').first().json.endTime }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [480, 300],
+      "id": "check-freebusy-otra",
+      "name": "5️⃣c FreeBusy Otra Sede",
+      "credentials": {"googleCalendarOAuth2Api": {"id": "RzMlWUma86JGl9rZ", "name": "Google Calendar account"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [720, 180],
+      "id": "merge-freebusy-01",
+      "name": "5️⃣ Merge FreeBusy"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════\n// 6️⃣ GATE: Duplicate + FreeBusy (3 calendars) v3\n// Handles both {available:false} and {busy:[...]} response formats\n// ═══════════════════════════════════════════════════════════════\nconst ctx = $('3️⃣ Gate: Sede + Schedule').first()?.json || {};\nconst trace = ctx._trace;\n\n// Check duplicate\nconst dupResult = $('4️⃣ Check Duplicate').first()?.json;\nif (dupResult && dupResult.id) {\n  return {json:{success:false, error:'DUPLICATE_APPOINTMENT',\n    message:'Ya existe una cita en ese horario.', existingId: dupResult.consulta_id, meta:{trace}}};\n}\n\n// Check ALL 3 calendars for busy slots\nconst calNames = ['5️⃣a FreeBusy Sede', '5️⃣b FreeBusy Personal', '5️⃣c FreeBusy Otra Sede'];\nlet busyFound = null;\nfor (let i = 0; i < calNames.length; i++) {\n  try {\n    const fb = $(calNames[i]).first()?.json;\n    if (!fb) continue;\n    // Format 1: n8n Google Calendar node returns {available: true/false}\n    if (fb.available === false) {\n      busyFound = calNames[i];\n      break;\n    }\n    // Format 2: Raw FreeBusy API returns {calendars: {calId: {busy: [...]}}}\n    if (fb.calendars) {\n      for (const cid of Object.keys(fb.calendars)) {\n        if ((fb.calendars[cid].busy || []).length > 0) {\n          busyFound = calNames[i];\n          break;\n        }\n      }\n      if (busyFound) break;\n    }\n    // Format 3: Simple {busy: [...]}\n    if (fb.busy && fb.busy.length > 0) {\n      busyFound = calNames[i];\n      break;\n    }\n  } catch(e) { /* calendar check failed, fail-open */ }\n}\nif (busyFound) {\n  return {json:{success:false, error:'SLOT_NOT_AVAILABLE',\n    message:`El horario ya no está disponible (conflicto en ${busyFound}). Usa DISPONIBILIDAD_CALENDARIO.`, meta:{trace}}};\n}\n\nreturn {json:{...ctx, _ok: true}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 180],
+      "id": "gate-checks-01",
+      "name": "6️⃣ Gate: Dup + FreeBusy",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{"id": "ok", "leftValue": "={{ $json._ok }}", "rightValue": true, "operator": {"type": "boolean", "operation": "equals"}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1200, 180],
+      "id": "checks-ok-01",
+      "name": "Checks OK?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pacientes (telefono, nombre, email, origen_lead, lead_id) VALUES ($1, $2, $3, 'WhatsApp', (SELECT id FROM leads WHERE telefono_normalizado = normalizar_telefono($1) LIMIT 1)) ON CONFLICT (telefono) DO UPDATE SET nombre = CASE WHEN $2 != 'Paciente' THEN $2 ELSE pacientes.nombre END, lead_id = COALESCE(pacientes.lead_id, (SELECT id FROM leads WHERE telefono_normalizado = normalizar_telefono($1) LIMIT 1)), updated_at = NOW() RETURNING id, telefono, nombre, lead_id",
+        "options": {"queryReplacement": "={{ $json.phone }}, {{ $json.patientName }}, {{ $json.patientEmail || null }}"}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1440, 120],
+      "id": "upsert-paciente-01",
+      "name": "7️⃣ Upsert Paciente",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "credentials": {"postgres": {"id": "LZyK5sbzVT7Dy3RU", "name": "Postgres urobot"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════\n// 8️⃣ GATE: Paciente — extract IDs\n// ═══════════════════════════════════════════════════════════════\nconst ctx = $('6️⃣ Gate: Dup + FreeBusy').first()?.json || {};\nconst trace = ctx._trace;\nconst dbResult = $input.first()?.json;\nconst rows = Array.isArray(dbResult) ? dbResult : (dbResult?.id ? [dbResult] : []);\n\nif (!rows.length || !rows[0]?.id) {\n  return {json:{success:false, error:'PACIENTE_ERROR', message:'Error al registrar paciente.', meta:{trace}}};\n}\n\nreturn {json:{\n  ...ctx,\n  paciente_id: rows[0].id,\n  lead_id: rows[0].lead_id || null,\n  _ok: true\n}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1680, 120],
+      "id": "gate-paciente-01",
+      "name": "8️⃣ Gate: Paciente",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{"id": "ok", "leftValue": "={{ $json._ok }}", "rightValue": true, "operator": {"type": "boolean", "operation": "equals"}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1920, 120],
+      "id": "paciente-ok-01",
+      "name": "Paciente OK?"
+    },
+    {
+      "parameters": {
+        "calendar": {"__rl": true, "mode": "id", "value": "={{ $json.calendar_id }}"},
+        "start": "={{ $json.startTime }}",
+        "end": "={{ $json.endTime }}",
+        "additionalFields": {
+          "description": "={{ '👤 PACIENTE: ' + $json.patientName + '\\n📱 WhatsApp: https://wa.me/' + $json.phoneForWhatsApp + '\\n\\n📋 Tipo: ' + $json.tipoCita + '\\nMotivo: ' + $json.motivo + '\\n\\n📍 ' + $json.sedeDisplayName + '\\n' + ($json.sedeMapsUrl || '') + '\\n---\\nID: ' + $json._consulta_id }}",
+          "guestsCanModify": false,
+          "location": "={{ $json.sedeDireccion }}",
+          "sendUpdates": "none",
+          "summary": "={{ 'Consulta: ' + $json.patientName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [2160, 60],
+      "id": "create-event-01",
+      "name": "9️⃣ Create Calendar Event",
+      "credentials": {"googleCalendarOAuth2Api": {"id": "RzMlWUma86JGl9rZ", "name": "Google Calendar account"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════\n// 🔟 GATE: Event — check calendar event created\n// ═══════════════════════════════════════════════════════════════\nconst ctx = $('8️⃣ Gate: Paciente').first()?.json || {};\nconst trace = ctx._trace;\nconst eventResult = $input.first()?.json;\n\nif (!eventResult || eventResult.error || !eventResult.id) {\n  return {json:{success:false, error:'EVENT_CREATION_FAILED',\n    message:'Error al crear evento en calendario.', meta:{trace}}};\n}\n\nreturn {json:{\n  ...ctx,\n  event_id: eventResult.id,\n  event_link: eventResult.htmlLink || '',\n  _ok: true\n}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2400, 60],
+      "id": "gate-event-01",
+      "name": "🔟 Gate: Event",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{"id": "ok", "leftValue": "={{ $json._ok }}", "rightValue": true, "operator": {"type": "boolean", "operation": "equals"}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2640, 60],
+      "id": "event-ok-01",
+      "name": "Event OK?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ins AS (\n  INSERT INTO consultas (consulta_id, paciente_id, sede_id, lead_id, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita, origen)\n  VALUES ($1, $2::uuid, $3::uuid, NULLIF($4,'null')::uuid, $5::timestamptz, $6::timestamptz, 'Programada', $7, $8, $9, $10, 'urobot')\n  ON CONFLICT (consulta_id) DO UPDATE SET\n    calendar_event_id = EXCLUDED.calendar_event_id,\n    calendar_link = EXCLUDED.calendar_link,\n    lead_id = COALESCE(consultas.lead_id, EXCLUDED.lead_id),\n    updated_at = NOW()\n  RETURNING id, consulta_id, lead_id\n),\ntransition AS (\n  SELECT transition_lead_estado(ins.lead_id, 'cita_agendada', 'bot', 'agendar_cita') as result\n  FROM ins WHERE ins.lead_id IS NOT NULL\n)\nSELECT ins.*, transition.result as lead_transition FROM ins LEFT JOIN transition ON true",
+        "options": {"queryReplacement": "={{ $json._consulta_id }}, {{ $json.paciente_id }}, {{ $json.sede_id }}, {{ $json.lead_id || null }}, {{ $json.startTime }}, {{ $json.endTime }}, {{ $json.event_id }}, {{ $json.event_link }}, {{ $json.motivo }}, {{ $json.tipoCita }}"}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2880, 0],
+      "id": "insert-consulta-01",
+      "name": "⬆️ Insert Consulta + Transition",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {"postgres": {"id": "LZyK5sbzVT7Dy3RU", "name": "Postgres urobot"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "loose"},
+          "conditions": [{"id": "db-ok", "leftValue": "={{ $json[0]?.id || $json.id || '' }}", "rightValue": "", "operator": {"type": "string", "operation": "notEquals"}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [3120, 0],
+      "id": "db-ok-01",
+      "name": "DB OK?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════\n// ✅ RETURN SUCCESS — Format response for AI Agent\n// ═══════════════════════════════════════════════════════════════\nconst ctx = $('🔟 Gate: Event').first()?.json || {};\nconst trace = ctx._trace;\n\nlet fechaFormateada = ctx.startTime;\ntry {\n  const f = new Intl.DateTimeFormat('es-MX', {\n    weekday:'long',year:'numeric',month:'long',day:'numeric',\n    hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'America/Mexico_City'\n  });\n  fechaFormateada = f.format(new Date(ctx.startTime));\n} catch {}\n\nreturn {json:{\n  success: true,\n  message: 'Cita agendada exitosamente.',\n  data: {\n    paciente: ctx.patientName,\n    sede: ctx.sedeDisplayName,\n    sedeDireccion: ctx.sedeDireccion,\n    fecha: fechaFormateada,\n    tipoCita: ctx.tipoCita,\n    motivo: ctx.motivo\n  },\n  meta: {\n    trace,\n    consulta_id: ctx._consulta_id,\n    lead_id: ctx.lead_id,\n    paciente_id: ctx.paciente_id\n  }\n}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3360, -60],
+      "id": "return-success-01",
+      "name": "✅ Return Success",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {"__rl": true, "mode": "id", "value": "={{ $('🔟 Gate: Event').first().json.calendar_id }}"},
+        "eventId": "={{ $('🔟 Gate: Event').first().json.event_id }}",
+        "options": {"sendUpdates": "none"}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [3360, 120],
+      "id": "rollback-event-01",
+      "name": "🔙 Rollback Event",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {"googleCalendarOAuth2Api": {"id": "RzMlWUma86JGl9rZ", "name": "Google Calendar account"}},
+      "onError": "continueErrorOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('🔟 Gate: Event').first()?.json || {};\nreturn {json:{success:false, error:'DB_SAVE_FAILED',\n  message:'Error al guardar cita. Horario liberado.',\n  rollback:{attempted:true, event_id:ctx.event_id},\n  meta:{trace:ctx._trace}}};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3600, 120],
+      "id": "rollback-return-01",
+      "name": "🔙 Return Rollback Error",
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "When executed by another workflow": {
+      "main": [[{"node": "1️⃣ Init + Validate", "type": "main", "index": 0}]]
+    },
+    "1️⃣ Init + Validate": {
+      "main": [[{"node": "Valid?", "type": "main", "index": 0}]]
+    },
+    "Valid?": {
+      "main": [
+        [{"node": "2️⃣ Get Sede + Horario", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "2️⃣ Get Sede + Horario": {
+      "main": [[{"node": "3️⃣ Gate: Sede + Schedule", "type": "main", "index": 0}]]
+    },
+    "3️⃣ Gate: Sede + Schedule": {
+      "main": [[{"node": "Sede OK?", "type": "main", "index": 0}]]
+    },
+    "Sede OK?": {
+      "main": [
+        [
+          {"node": "4️⃣ Check Duplicate", "type": "main", "index": 0},
+          {"node": "5️⃣a FreeBusy Sede", "type": "main", "index": 0},
+          {"node": "5️⃣b FreeBusy Personal", "type": "main", "index": 0},
+          {"node": "5️⃣c FreeBusy Otra Sede", "type": "main", "index": 0}
+        ],
+        []
+      ]
+    },
+    "5️⃣a FreeBusy Sede": {
+      "main": [[{"node": "5️⃣ Merge FreeBusy", "type": "main", "index": 0}]]
+    },
+    "5️⃣b FreeBusy Personal": {
+      "main": [[{"node": "5️⃣ Merge FreeBusy", "type": "main", "index": 1}]]
+    },
+    "5️⃣c FreeBusy Otra Sede": {
+      "main": [[{"node": "5️⃣ Merge FreeBusy", "type": "main", "index": 2}]]
+    },
+    "5️⃣ Merge FreeBusy": {
+      "main": [[{"node": "6️⃣ Gate: Dup + FreeBusy", "type": "main", "index": 0}]]
+    },
+    "6️⃣ Gate: Dup + FreeBusy": {
+      "main": [[{"node": "Checks OK?", "type": "main", "index": 0}]]
+    },
+    "Checks OK?": {
+      "main": [
+        [{"node": "7️⃣ Upsert Paciente", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "7️⃣ Upsert Paciente": {
+      "main": [[{"node": "8️⃣ Gate: Paciente", "type": "main", "index": 0}]]
+    },
+    "8️⃣ Gate: Paciente": {
+      "main": [[{"node": "Paciente OK?", "type": "main", "index": 0}]]
+    },
+    "Paciente OK?": {
+      "main": [
+        [{"node": "9️⃣ Create Calendar Event", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "9️⃣ Create Calendar Event": {
+      "main": [[{"node": "🔟 Gate: Event", "type": "main", "index": 0}]]
+    },
+    "🔟 Gate: Event": {
+      "main": [[{"node": "Event OK?", "type": "main", "index": 0}]]
+    },
+    "Event OK?": {
+      "main": [
+        [{"node": "⬆️ Insert Consulta + Transition", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "⬆️ Insert Consulta + Transition": {
+      "main": [[{"node": "DB OK?", "type": "main", "index": 0}]]
+    },
+    "DB OK?": {
+      "main": [
+        [{"node": "✅ Return Success", "type": "main", "index": 0}],
+        [{"node": "🔙 Rollback Event", "type": "main", "index": 0}]
+      ]
+    },
+    "🔙 Rollback Event": {
+      "main": [[{"node": "🔙 Return Rollback Error", "type": "main", "index": 0}]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Mexico_City",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {"templateCredsSetupCompleted": true},
+  "id": "xrycvZgtHqlz9Wh3",
+  "tags": []
+}

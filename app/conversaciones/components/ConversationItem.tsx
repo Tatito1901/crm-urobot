@@ -79,7 +79,7 @@ export const ConversationItem = memo(function ConversationItem({
   const tipoBadge = tipoContacto === 'paciente' 
     ? { label: 'Paciente', cls: 'text-emerald-400' }
     : estadoLead 
-      ? { label: ESTADO_LABEL[estadoLead] || estadoLead, cls: 'text-muted-foreground' }
+      ? { label: ESTADO_LABEL[estadoLead] || estadoLead, cls: 'text-slate-400' }
       : null;
 
   return (
@@ -109,14 +109,14 @@ export const ConversationItem = memo(function ConversationItem({
           <span className={`text-sm font-medium truncate transition-colors ${isActive ? 'text-primary' : 'group-hover:text-foreground'}`}>
             {nombreContacto || telefono}
           </span>
-          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums" suppressHydrationWarning>
+          <span className="text-[10px] text-slate-400 shrink-0 tabular-nums" suppressHydrationWarning>
             {formatTimeCompact(ultimaFecha)}
           </span>
         </div>
         
         {/* Row 2: Preview + optional tipo */}
         <div className="flex items-center gap-1.5 mt-0.5">
-          <p className="text-xs text-muted-foreground truncate flex-1 leading-relaxed">
+          <p className="text-xs text-slate-400 truncate flex-1 leading-relaxed">
             {cleanPreview(ultimoMensaje)}
           </p>
           {isBloqueado ? (

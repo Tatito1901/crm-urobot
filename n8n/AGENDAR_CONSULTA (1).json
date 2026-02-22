@@ -9,79 +9,24 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -15776,
-        2576
+        -19136,
+        4608
       ],
-      "id": "f03d2a76-26af-4d3b-93b5-4928353d083e",
+      "id": "d478bafa-1a6e-404e-a06e-ef50980164a1",
       "name": "When executed by another workflow",
       "alwaysOutputData": true
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PREPARE NOTIFICATION FOR DR. MARIO — safe access pattern\n// ========================================\ntry {\n  const ctx = $input.first()?.json || {};\n\n  let fechaFormateada = 'Fecha pendiente';\n  try {\n    const fechaObj = new Date(ctx.startTime);\n    const formatter = new Intl.DateTimeFormat('es-MX', {\n      weekday: 'long',\n      year: 'numeric',\n      month: 'long',\n      day: 'numeric',\n      hour: '2-digit',\n      minute: '2-digit',\n      hour12: true,\n      timeZone: 'America/Mexico_City'\n    });\n    fechaFormateada = formatter.format(fechaObj);\n  } catch (e) {\n    fechaFormateada = ctx.startTime || 'Fecha pendiente';\n  }\n\n  const mensajeDoctor = `📅 *NUEVA CITA AGENDADA*\\n\\n` +\n    `👤 *Paciente:* ${ctx.patientName || 'Sin nombre'}\\n` +\n    `📱 *WhatsApp:* https://wa.me/${ctx.phoneForWhatsApp || ''}\\n\\n` +\n    `📍 *Sede:* ${ctx.sedeDisplayName || ctx.sede || ''}\\n` +\n    `🗓️ *Fecha:* ${fechaFormateada}\\n\\n` +\n    `📋 *Tipo:* ${ctx.tipoCita || 'primera_vez'}\\n` +\n    `📝 *Motivo:* ${ctx.motivo || 'Consulta urológica'}\\n\\n` +\n    `🔗 Ver en calendario: ${ctx.event_link || ''}`;\n\n  return {\n    json: {\n      ...ctx,\n      doctorNotification: {\n        message: mensajeDoctor,\n        phone: '+526674492872',\n        fechaFormateada\n      }\n    }\n  };\n} catch (err) {\n  console.log(`[PREPARE_NOTIFICATION] Exception: ${err.message}`);\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      ...ctx,\n      doctorNotification: {\n        message: '📅 Nueva cita agendada (error al formatear detalles)',\n        phone: '+526674492872',\n        fechaFormateada: 'Error'\n      }\n    }\n  };\n}"
-      },
-      "id": "63ec07d3-2c06-4e81-a52c-cc110a7c4bf8",
-      "name": "Prepare Doctor Notification",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -10848,
-        1904
-      ],
-      "continueOnFail": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://wasenderapi.com/api/send-message",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "content-type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": \"+526674492872\",\n  \"text\": {{ JSON.stringify($json.doctorNotification.message) }}\n}",
-        "options": {
-          "timeout": 10000
-        }
-      },
-      "id": "3905ae71-1504-4c3c-ad1f-fd1081fb4e05",
-      "name": "Notify Dr. Mario",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        -10320,
-        1840
-      ],
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 3000,
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "BracTxTCVOWFfFBZ",
-          "name": "Header Auth account"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
         "jsCode": "// ================================================================\n// INIT & NORMALIZE v5.0 — No silent defaults, no hardcoded sedes\n// ================================================================\n\nconst input = $input.first()?.json || {};\nconst now = Date.now();\nconst randomId = Math.random().toString(36).substring(2, 10);\nconst trace_id = `agendar-${now}-${randomId}`;\n\n// ----------------------------------------------------------------\n// 1. FUNCIÓN MAESTRA DE TIEMPO (CDMX)\n// ----------------------------------------------------------------\nfunction getMexicoTimeISO(dateInput) {\n  if (!dateInput) return null;\n  try {\n    const date = new Date(dateInput);\n    if (isNaN(date.getTime())) return null;\n    const formatter = new Intl.DateTimeFormat('sv-SE', {\n      timeZone: 'America/Mexico_City',\n      year: 'numeric', month: '2-digit', day: '2-digit',\n      hour: '2-digit', minute: '2-digit', second: '2-digit',\n      hour12: false\n    });\n    const localString = formatter.format(date);\n    return localString.replace(' ', 'T') + '.000-06:00';\n  } catch (e) {\n    console.log(`Error convirtiendo fecha: ${dateInput}`, e);\n    return null;\n  }\n}\n\n// ----------------------------------------------------------------\n// 2. EXTRAER Y LIMPIAR TELÉFONO\n// ----------------------------------------------------------------\nlet phoneRaw = '';\nif (input.lead_telefono) {\n  phoneRaw = input.lead_telefono;\n} else if (input.paciente && typeof input.paciente === 'object' && input.paciente.telefono) {\n  phoneRaw = input.paciente.telefono;\n} else {\n  phoneRaw = input.phone || input.wa_id || input.telefono || '';\n}\nconst phone = (phoneRaw || '').toString().replace(/\\D/g, '').slice(-10);\n\n// ----------------------------------------------------------------\n// 3. EXTRAER Y LIMPIAR NOMBRE\n// ----------------------------------------------------------------\nlet patientName = 'Paciente';\nif (input.paciente && typeof input.paciente === 'object' && input.paciente.nombre) {\n  patientName = input.paciente.nombre;\n} else if (input.paciente && typeof input.paciente === 'string' && input.paciente.trim()) {\n  patientName = input.paciente.trim();\n} else if (input.pacienteNombre && typeof input.pacienteNombre === 'string') {\n  patientName = input.pacienteNombre;\n} else if (input.patientName) {\n  patientName = input.patientName;\n} else if (input.nombre) {\n  patientName = input.nombre;\n}\npatientName = patientName.replace(/[\"{}]/g, '').trim() || 'Paciente';\n\nlet patientEmail = null;\nif (input.paciente && typeof input.paciente === 'object' && input.paciente.email) {\n  patientEmail = input.paciente.email;\n} else if (input.email) {\n  patientEmail = input.email;\n}\n\n// ----------------------------------------------------------------\n// 4. PROCESAMIENTO DE FECHAS\n// ----------------------------------------------------------------\nlet startTimeISO = '';\nlet endTimeISO = '';\n\nconst rawStart = input.start || input.startTime || '';\nconst rawEnd = input.end || input.endTime || '';\n\nstartTimeISO = getMexicoTimeISO(rawStart);\n\nif (rawEnd) {\n  endTimeISO = getMexicoTimeISO(rawEnd);\n} else if (startTimeISO && rawStart) {\n  try {\n    const startDateObj = new Date(rawStart);\n    const endDateObj = new Date(startDateObj.getTime() + 30 * 60000);\n    endTimeISO = getMexicoTimeISO(endDateObj.toISOString());\n  } catch (e) {\n    console.log('Error calculando fecha fin automática');\n  }\n}\n\n// ----------------------------------------------------------------\n// 5. NORMALIZAR SEDE — Solo limpiar, NO defaultear\n// ----------------------------------------------------------------\nlet sede = (input.sede || '').toString().toUpperCase().trim();\nsede = sede.replace(/[^A-Z]/g, '');\n\n// Corrección de typos comunes de la IA\nif (sede.includes('SATELLITE')) sede = 'SATELITE';\nif (sede.includes('POLNACO')) sede = 'POLANCO';\n\n// NO defaultear a POLANCO — si es inválido, Validate Input lo rechaza\n\n// ----------------------------------------------------------------\n// 6. GENERAR IDs ÚNICOS\n// ----------------------------------------------------------------\nconst dateStr = startTimeISO ? startTimeISO.replace(/[-:]/g, '').substring(0, 15) : Date.now();\nconst consulta_id = `${sede}_${phone}_${dateStr}`;\n\n// ----------------------------------------------------------------\n// 7. SALIDA FINAL\n// ----------------------------------------------------------------\nconsole.log(`[${trace_id}] INIT v5.0 — sede: ${sede || 'EMPTY'}, start: ${rawStart} -> ${startTimeISO}`);\n\nreturn {\n  json: {\n    phone,\n    phoneOriginal: phoneRaw,\n    phoneForWhatsApp: phone.startsWith('52') ? phone : `52${phone}`,\n    patientName,\n    patientEmail,\n    sede,\n    startTime: startTimeISO,\n    endTime: endTimeISO,\n    tipoCita: input.tipoCita || 'primera_vez',\n    motivo: input.motivoConsulta || input.motivo || 'Consulta urológica',\n    slotId: input.slotId || '',\n    _trace_id: trace_id,\n    _consulta_id: consulta_id,\n    _started_at: new Date().toISOString(),\n    _version: '5.0'\n  }\n};"
       },
-      "id": "4a004072-ff89-4706-b750-dd84272e545c",
+      "id": "fdfe6001-5097-4f55-8c76-b46fb7dd9a93",
       "name": "Init & Normalize1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -15552,
-        2576
+        -18912,
+        4608
       ],
       "continueOnFail": true
     },
@@ -89,13 +34,13 @@
       "parameters": {
         "jsCode": "// ========================================\n// VALIDATE INPUT v4.0 — No hardcoded sedes, schedule-aware\n// ========================================\nconst input = $input.first()?.json || {};\ntry {\nconst trace_id = input._trace_id;\nconst problems = [];\nconst warnings = [];\n\n// ================================================================\n// 1. VALIDAR TELÉFONO\n// ================================================================\nif (!input.phone || input.phone.length < 10) {\n  problems.push({\n    field: 'phone',\n    error: 'MISSING_OR_INVALID',\n    value: input.phone,\n    aiHint: 'Pregunta el número de WhatsApp del paciente (10 dígitos).'\n  });\n}\n\n// ================================================================\n// 2. VALIDAR SEDE — ya no hardcodeamos, solo que no esté vacía\n// ================================================================\nif (!input.sede || input.sede.length < 3) {\n  problems.push({\n    field: 'sede',\n    error: 'MISSING_SEDE',\n    value: input.sede,\n    aiHint: 'Pregunta en qué sede prefiere: Polanco o Satélite.'\n  });\n}\n\n// ================================================================\n// 3. VALIDAR FECHA/HORA\n// ================================================================\nif (!input.startTime) {\n  problems.push({\n    field: 'startTime',\n    error: 'MISSING',\n    aiHint: 'Usa DISPONIBILIDAD_CALENDARIO para obtener un horario válido.'\n  });\n} else {\n  const d = new Date(input.startTime);\n\n  if (isNaN(d.getTime())) {\n    problems.push({\n      field: 'startTime',\n      error: 'INVALID_FORMAT',\n      value: input.startTime,\n      aiHint: 'El formato de fecha es inválido. Usa DISPONIBILIDAD_CALENDARIO.'\n    });\n  } else {\n    const nowMexico = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));\n    const marginMs = 5 * 60 * 1000;\n\n    if (d.getTime() < (nowMexico.getTime() - marginMs)) {\n      problems.push({\n        field: 'startTime',\n        error: 'DATE_IN_PAST',\n        value: input.startTime,\n        aiHint: 'Esa fecha ya pasó. Usa DISPONIBILIDAD_CALENDARIO para ver horarios futuros.'\n      });\n    }\n  }\n}\n\nif (!input.endTime) {\n  warnings.push({ field: 'endTime', warning: 'MISSING_WILL_CALCULATE' });\n}\n\n// ================================================================\n// 4. VALIDAR NOMBRE — WARNING, NO ERROR\n// ================================================================\nif (!input.patientName ||\n    input.patientName === 'Paciente' ||\n    input.patientName.trim().length < 2) {\n  warnings.push({\n    field: 'patientName',\n    warning: 'NAME_GENERIC_OR_SHORT',\n    value: input.patientName,\n    aiHint: 'Sería ideal tener el nombre completo del paciente.'\n  });\n}\n\n// ================================================================\n// 5. VALIDAR MOTIVO (OPCIONAL)\n// ================================================================\nif (!input.motivo || input.motivo.length < 3) {\n  warnings.push({\n    field: 'motivo',\n    warning: 'MISSING_OR_SHORT',\n    aiHint: 'Sería útil saber el motivo de la consulta.'\n  });\n}\n\n// ================================================================\n// RESULTADO\n// ================================================================\nconsole.log(`[${trace_id}] VALIDATE v4.0 — Problems: ${problems.length}, Warnings: ${warnings.length}`);\n\nif (problems.length > 0) {\n  return {\n    json: {\n      ...input,\n      success: false,\n      error: 'VALIDATION_FAILED',\n      problems,\n      warnings,\n      _stage: 'validation_failed',\n      aiMessage: `No se puede agendar: ${problems.map(p => p.aiHint || p.error).join(' ')}`,\n      suggestion: 'Revisa los datos faltantes y vuelve a intentar.'\n    }\n  };\n}\n\nreturn {\n  json: {\n    ...input,\n    success: true,\n    warnings: warnings.length > 0 ? warnings : undefined,\n    _validated_at: new Date().toISOString(),\n    _stage: 'validated'\n  }\n};\n}\n} catch (err) {\n  console.log(`[VALIDATE_INPUT] Exception: ${err.message}`);\n  return {\n    json: {\n      success: false,\n      error: 'VALIDATION_EXCEPTION',\n      problems: [{ field: 'system', error: err.message, aiHint: 'Error interno de validación. Intenta de nuevo.' }],\n      _stage: 'validation_exception'\n    }\n  };\n}"
       },
-      "id": "3387c54f-a666-4521-9ed8-87a6d47ef116",
+      "id": "6b0383f7-dcbe-4f9d-8510-90f591bed9a9",
       "name": "Validate Input1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -15328,
-        2576
+        -18688,
+        4608
       ],
       "continueOnFail": true
     },
@@ -122,13 +67,13 @@
         },
         "options": {}
       },
-      "id": "7d9ed802-34d9-461a-a93f-6cddac4fccce",
+      "id": "7b7a2724-ebd9-4211-b8c0-3a685c5d037f",
       "name": "Valid?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -15104,
-        2576
+        -18464,
+        4608
       ]
     },
     {
@@ -139,13 +84,13 @@
           "queryReplacement": "={{ $json.sede }}"
         }
       },
-      "id": "9aeef12d-a382-4552-9c90-80fa31dd5e8e",
+      "id": "defff243-b90a-47e0-bb4b-1640b5f41d90",
       "name": "Get Sede Config1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -14880,
-        2480
+        -18240,
+        4512
       ],
       "credentials": {
         "postgres": {
@@ -159,13 +104,13 @@
       "parameters": {
         "jsCode": "// ========================================\n// PROCESS SEDE — safe access pattern\n// ========================================\ntry {\n  const context = $('Validate Input1').first()?.json || {};\n  const sedeResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(sedeResult) ? sedeResult : [sedeResult];\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].calendar_id) {\n    console.log(`[${trace_id}] SEDE - NOT FOUND`);\n    return {\n      json: {\n        ...context,\n        error: 'SEDE_NOT_FOUND',\n        _stage: 'sede_error'\n      }\n    };\n  }\n\n  const sede = rows[0];\n  console.log(`[${trace_id}] SEDE - Found: ${sede.display_name} (id: ${sede.id})`);\n\n  return {\n    json: {\n      ...context,\n      sede_id: sede.id,\n      calendar_id: sede.calendar_id,\n      sedeDisplayName: sede.display_name,\n      sedeDireccion: sede.direccion,\n      sedeMapsUrl: sede.maps_url,\n      timezone: sede.timezone || 'America/Mexico_City',\n      _stage: 'sede_ok'\n    }\n  };\n} catch (err) {\n  console.log(`[PROCESS_SEDE] Exception: ${err.message}`);\n  return { json: { error: 'SEDE_PROCESSING_ERROR', errorDetails: err.message, _stage: 'sede_error' } };\n}"
       },
-      "id": "99ea5f95-472a-497e-8898-8390c3329d1c",
+      "id": "1e56c20c-43da-4a84-bd78-07607c395078",
       "name": "Process Sede1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -14656,
-        2480
+        -18016,
+        4512
       ],
       "continueOnFail": true
     },
@@ -192,13 +137,13 @@
         },
         "options": {}
       },
-      "id": "dee55dde-31dc-47c0-892d-5d96501ebc8e",
+      "id": "328e2718-f445-4d2b-86f3-4d432e447fd1",
       "name": "Sede OK?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -14432,
-        2480
+        -17792,
+        4512
       ]
     },
     {
@@ -209,13 +154,13 @@
           "queryReplacement": "={{ $json.phone }}, {{ $json.startTime }}, {{ $json.endTime }}"
         }
       },
-      "id": "91d5705e-8423-4c64-b469-47be7ad6db52",
+      "id": "99058c8b-3d8b-4a1b-a6a7-a2523972be4d",
       "name": "Check Duplicate1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -14208,
-        2384
+        -16896,
+        4320
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -230,13 +175,13 @@
       "parameters": {
         "jsCode": "// ========================================\n// PROCESS DUPLICATE CHECK — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Sede1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n  const isDuplicate = rows.length > 0 && rows[0] && rows[0].id;\n\n  if (isDuplicate) {\n    console.log(`[${trace_id}] DUPLICATE - FOUND: ${rows[0].consulta_id}`);\n    return {\n      json: {\n        ...context,\n        isDuplicate: true,\n        existingConsultaId: rows[0].consulta_id,\n        existingEventId: rows[0].calendar_event_id,\n        error: 'DUPLICATE_APPOINTMENT',\n        _stage: 'duplicate_found'\n      }\n    };\n  }\n\n  console.log(`[${trace_id}] DUPLICATE - None found`);\n  return { json: { ...context, isDuplicate: false, _stage: 'no_duplicate' } };\n} catch (err) {\n  console.log(`[PROCESS_DUPLICATE] Exception: ${err.message}`);\n  return { json: { error: 'DUPLICATE_CHECK_ERROR', errorDetails: err.message, _stage: 'duplicate_error' } };\n}"
       },
-      "id": "5192ad16-a0dc-462a-a925-e2dae2a53eb9",
+      "id": "cb63398f-fbcf-4905-8df3-d80112b74aa7",
       "name": "Process Duplicate1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13984,
-        2384
+        -16672,
+        4320
       ],
       "continueOnFail": true
     },
@@ -263,13 +208,13 @@
         },
         "options": {}
       },
-      "id": "fa73c360-2050-4049-a04c-d33abed6a743",
+      "id": "13a799f5-d27d-4999-a5d5-961c432a9e8d",
       "name": "Not Duplicate?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -13760,
-        2384
+        -16448,
+        4320
       ]
     },
     {
@@ -284,13 +229,13 @@
         "timeMax": "={{ $json.endTime }}",
         "options": {}
       },
-      "id": "dcf79f4f-8d0e-4ffb-aa3c-97e0d58a07c0",
+      "id": "ef1f4666-1e4c-454b-a2d7-c00f409fb76d",
       "name": "Check FreeBusy1",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -13536,
-        2288
+        -16224,
+        4224
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
@@ -304,13 +249,13 @@
       "parameters": {
         "jsCode": "// ========================================\n// PROCESS FREEBUSY — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Duplicate1').first()?.json || {};\n  const freebusyResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  console.log(`[${trace_id}] FREEBUSY - Processing`);\n\n  if (freebusyResult?.error || freebusyResult?.message) {\n    console.log(`[${trace_id}] FREEBUSY - API Error`);\n    return {\n      json: {\n        ...context,\n        isFree: false,\n        error: 'CALENDAR_API_ERROR',\n        errorDetails: freebusyResult.error || freebusyResult.message,\n        _stage: 'freebusy_error'\n      }\n    };\n  }\n\n  let busyPeriods = [];\n  if (freebusyResult?.calendars && freebusyResult.calendars[context.calendar_id]) {\n    busyPeriods = freebusyResult.calendars[context.calendar_id].busy || [];\n  } else if (freebusyResult?.busy) {\n    busyPeriods = freebusyResult.busy;\n  }\n\n  const isFree = busyPeriods.length === 0;\n  console.log(`[${trace_id}] FREEBUSY - isFree: ${isFree}`);\n\n  return { json: { ...context, isFree, _stage: isFree ? 'slot_free' : 'slot_taken' } };\n} catch (err) {\n  console.log(`[PROCESS_FREEBUSY] Exception: ${err.message}`);\n  return { json: { error: 'FREEBUSY_ERROR', errorDetails: err.message, isFree: false, _stage: 'freebusy_error' } };\n}"
       },
-      "id": "3243da43-8309-4145-8f2c-67b63e920ec1",
+      "id": "273d48d2-59bc-403d-8c4c-f04b71def060",
       "name": "Process FreeBusy1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13312,
-        2288
+        -16000,
+        4224
       ],
       "continueOnFail": true
     },
@@ -337,30 +282,30 @@
         },
         "options": {}
       },
-      "id": "bebaade3-1c1d-4d91-b63b-1e0df3ce4fe0",
+      "id": "ece49795-7014-41c2-9dd4-5f431b057833",
       "name": "Slot Free?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -13088,
-        2288
+        -15776,
+        4224
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO pacientes (telefono, nombre, email, origen_lead) VALUES ($1, $2, $3, 'WhatsApp') ON CONFLICT (telefono) DO UPDATE SET nombre = CASE WHEN $2 != 'Paciente' THEN $2 ELSE pacientes.nombre END, updated_at = NOW() RETURNING id, telefono, nombre",
+        "query": "INSERT INTO pacientes (telefono, nombre, email, origen_lead, lead_id) VALUES ($1, $2, $3, 'WhatsApp', (SELECT id FROM leads WHERE telefono_normalizado = normalizar_telefono($1) LIMIT 1)) ON CONFLICT (telefono) DO UPDATE SET nombre = CASE WHEN $2 != 'Paciente' THEN $2 ELSE pacientes.nombre END, lead_id = COALESCE(pacientes.lead_id, (SELECT id FROM leads WHERE telefono_normalizado = normalizar_telefono($1) LIMIT 1)), updated_at = NOW() RETURNING id, telefono, nombre, lead_id",
         "options": {
           "queryReplacement": "={{ $json.phone }}, {{ $json.patientName }}, {{ $json.patientEmail || null }}"
         }
       },
-      "id": "18aa2a68-54c6-4a9c-9c4b-bfa46fd346e4",
+      "id": "4c3cf690-785e-470e-9f14-89668025c766",
       "name": "Upsert Paciente1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -12864,
-        2192
+        -15552,
+        4128
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -375,15 +320,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// PROCESS PACIENTE — safe access pattern\n// ========================================\ntry {\n  const context = $('Process FreeBusy1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n    console.log(`[${trace_id}] PACIENTE - FAILED`);\n    return { json: { ...context, error: 'PACIENTE_UPSERT_FAILED', _stage: 'paciente_error' } };\n  }\n\n  const paciente = rows[0];\n  console.log(`[${trace_id}] PACIENTE - OK: ${paciente.id}`);\n\n  return { json: { ...context, paciente_id: paciente.id, _stage: 'paciente_ok' } };\n} catch (err) {\n  console.log(`[PROCESS_PACIENTE] Exception: ${err.message}`);\n  return { json: { error: 'PACIENTE_ERROR', errorDetails: err.message, _stage: 'paciente_error' } };\n}"
+        "jsCode": "// ========================================\n// PROCESS PACIENTE v2.0 — with lead_id traceability\n// ========================================\ntry {\n  const context = $('Process FreeBusy1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n    console.log(`[${trace_id}] PACIENTE - FAILED`);\n    return { json: { ...context, error: 'PACIENTE_UPSERT_FAILED', _stage: 'paciente_error' } };\n  }\n\n  const paciente = rows[0];\n  console.log(`[${trace_id}] PACIENTE - OK: ${paciente.id}, lead_id: ${paciente.lead_id || 'null'}`);\n\n  return { json: { ...context, paciente_id: paciente.id, lead_id: paciente.lead_id || null, _stage: 'paciente_ok' } };\n} catch (err) {\n  console.log(`[PROCESS_PACIENTE] Exception: ${err.message}`);\n  return { json: { error: 'PACIENTE_ERROR', errorDetails: err.message, _stage: 'paciente_error' } };\n}"
       },
-      "id": "ba7fca5c-93bf-4d75-8909-718269fb159c",
+      "id": "fe9b20e2-1f58-45ae-a78f-ba21df64fb18",
       "name": "Process Paciente1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12640,
-        2192
+        -15328,
+        4128
       ],
       "continueOnFail": true
     },
@@ -410,13 +355,13 @@
         },
         "options": {}
       },
-      "id": "7a2498e4-ce76-4b92-a13c-295a05451458",
+      "id": "1f4399dd-2a2b-4590-9c52-91b8388dead9",
       "name": "Paciente OK?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -12416,
-        2192
+        -15104,
+        4128
       ]
     },
     {
@@ -436,13 +381,13 @@
           "summary": "={{ 'Consulta: ' + $json.patientName }}"
         }
       },
-      "id": "daa0b2d0-23ef-4076-b744-ad8b9684d848",
+      "id": "968333bc-538c-47d2-9fce-b660317ad5a5",
       "name": "Create Calendar Event1",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -12192,
-        2096
+        -14880,
+        4032
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
@@ -456,13 +401,13 @@
       "parameters": {
         "jsCode": "// ========================================\n// PROCESS EVENT CREATION — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Paciente1').first()?.json || {};\n  const eventResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  if (!eventResult || eventResult.error || !eventResult.id) {\n    console.log(`[${trace_id}] EVENT - FAILED`);\n    return {\n      json: {\n        ...context,\n        eventCreated: false,\n        error: 'EVENT_CREATION_FAILED',\n        errorDetails: eventResult?.error || 'No event ID',\n        _stage: 'event_failed'\n      }\n    };\n  }\n\n  console.log(`[${trace_id}] EVENT - Created: ${eventResult.id}`);\n\n  return {\n    json: {\n      ...context,\n      eventCreated: true,\n      event_id: eventResult.id,\n      event_link: eventResult.htmlLink || '',\n      _stage: 'event_ok'\n    }\n  };\n} catch (err) {\n  console.log(`[PROCESS_EVENT] Exception: ${err.message}`);\n  return { json: { error: 'EVENT_ERROR', eventCreated: false, errorDetails: err.message, _stage: 'event_failed' } };\n}"
       },
-      "id": "be39c047-c5ee-4d75-9498-2350e44da464",
+      "id": "6c764cd7-229a-4106-951e-95a3da018c9a",
       "name": "Process Event1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -11968,
-        2096
+        -14656,
+        4032
       ],
       "continueOnFail": true
     },
@@ -489,30 +434,30 @@
         },
         "options": {}
       },
-      "id": "efeb8aeb-6a7a-43ae-9282-2f03b0cc5c04",
+      "id": "6f80f038-3ba7-440a-9a94-2f8588a02d65",
       "name": "Event OK?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -11744,
-        2096
+        -14432,
+        4032
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO consultas (consulta_id, paciente_id, sede_id, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita, origen) VALUES ($1, $2::uuid, $3::uuid, $4::timestamptz, $5::timestamptz, 'Programada', $6, $7, $8, $9, $10) ON CONFLICT (consulta_id) DO UPDATE SET calendar_event_id = EXCLUDED.calendar_event_id, calendar_link = EXCLUDED.calendar_link, updated_at = NOW() RETURNING id, consulta_id, calendar_event_id",
+        "query": "INSERT INTO consultas (consulta_id, paciente_id, sede_id, lead_id, fecha_hora_inicio, fecha_hora_fin, estado_cita, calendar_event_id, calendar_link, motivo_consulta, tipo_cita, origen) VALUES ($1, $2::uuid, $3::uuid, $4::uuid, $5::timestamptz, $6::timestamptz, 'Programada', $7, $8, $9, $10, $11) ON CONFLICT (consulta_id) DO UPDATE SET calendar_event_id = EXCLUDED.calendar_event_id, calendar_link = EXCLUDED.calendar_link, lead_id = COALESCE(consultas.lead_id, EXCLUDED.lead_id), updated_at = NOW() RETURNING id, consulta_id, calendar_event_id, lead_id",
         "options": {
-          "queryReplacement": "={{ $json._consulta_id }}, {{ $json.paciente_id }}, {{ $json.sede_id }}, {{ $json.startTime }}, {{ $json.endTime }}, {{ $json.event_id }}, {{ $json.event_link }}, {{ $json.motivo }}, {{ $json.tipoCita }}, {{ $json.origen || 'urobot' }}"
+          "queryReplacement": "={{ $json._consulta_id }}, {{ $json.paciente_id }}, {{ $json.sede_id }}, {{ $json.lead_id || null }}, {{ $json.startTime }}, {{ $json.endTime }}, {{ $json.event_id }}, {{ $json.event_link }}, {{ $json.motivo }}, {{ $json.tipoCita }}, {{ $json.origen || 'urobot' }}"
         }
       },
-      "id": "b8080793-6067-4daa-811e-4e758bdf45d8",
+      "id": "bd452d4e-09df-430c-99e5-d30d95be7a84",
       "name": "Insert Consulta1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -11520,
-        2000
+        -14208,
+        3936
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -527,15 +472,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// ========================================\n// VALIDATE DB SAVE — safe access pattern\n// ========================================\ntry {\n  const context = $('Process Event1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n    console.log(`[${trace_id}] DB - FAILED`);\n    return {\n      json: {\n        ...context,\n        dbSaved: false,\n        error: 'DB_SAVE_FAILED',\n        _stage: 'db_failed',\n        _needs_rollback: true\n      }\n    };\n  }\n\n  console.log(`[${trace_id}] DB - OK: ${rows[0].id}`);\n\n  return {\n    json: {\n      ...context,\n      dbSaved: true,\n      db_id: rows[0].id,\n      db_consulta_id: rows[0].consulta_id,\n      _stage: 'db_ok'\n    }\n  };\n} catch (err) {\n  console.log(`[VALIDATE_DB] Exception: ${err.message}`);\n  return { json: { dbSaved: false, error: 'DB_VALIDATION_ERROR', errorDetails: err.message, _stage: 'db_failed', _needs_rollback: true } };\n}"
+        "jsCode": "// ========================================\n// VALIDATE DB SAVE v2.0 — with lead_id traceability\n// ========================================\ntry {\n  const context = $('Process Event1').first()?.json || {};\n  const dbResult = $input.first()?.json;\n  const trace_id = context._trace_id || 'unknown';\n\n  const rows = Array.isArray(dbResult) ? dbResult : (dbResult && dbResult.id ? [dbResult] : []);\n\n  if (!rows || rows.length === 0 || !rows[0] || !rows[0].id) {\n    console.log(`[${trace_id}] DB - FAILED`);\n    return {\n      json: {\n        ...context,\n        dbSaved: false,\n        error: 'DB_SAVE_FAILED',\n        _stage: 'db_failed',\n        _needs_rollback: true\n      }\n    };\n  }\n\n  const row = rows[0];\n  console.log(`[${trace_id}] DB - OK: ${row.id}, lead_id: ${row.lead_id || context.lead_id || 'null'}`);\n\n  return {\n    json: {\n      ...context,\n      dbSaved: true,\n      db_id: row.id,\n      db_consulta_id: row.consulta_id,\n      lead_id: row.lead_id || context.lead_id || null,\n      _stage: 'db_ok'\n    }\n  };\n} catch (err) {\n  console.log(`[VALIDATE_DB] Exception: ${err.message}`);\n  return { json: { dbSaved: false, error: 'DB_VALIDATION_ERROR', errorDetails: err.message, _stage: 'db_failed', _needs_rollback: true } };\n}"
       },
-      "id": "83691e63-9d90-42bb-b1c5-97aadd7e5152",
+      "id": "b91d41b7-1601-4547-8470-f42ea07bdb0e",
       "name": "Validate DB Save1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -11296,
-        2000
+        -13984,
+        3936
       ],
       "continueOnFail": true
     },
@@ -562,28 +507,14 @@
         },
         "options": {}
       },
-      "id": "b6e45791-7151-4727-9222-0e460df9aa65",
+      "id": "bace5fa7-4023-467f-80e5-b7f67cb0e54a",
       "name": "DB OK?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -11072,
-        2000
+        -13760,
+        3936
       ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// ========================================\n// RETURN SUCCESS v3.0 — Compact output for LLM\n// ========================================\ntry {\n  const ctx = $('Prepare Doctor Notification').first()?.json || {};\n  const notifyResult = $input.first()?.json || {};\n\n  const notificationSent = !(notifyResult?.error);\n  console.log(`[${ctx._trace_id || 'unknown'}] SUCCESS — Notify: ${notificationSent}`);\n\n  return {\n    json: {\n      success: true,\n      message: 'Cita agendada exitosamente.',\n      data: {\n        paciente: ctx.patientName,\n        sede: ctx.sedeDisplayName,\n        sedeDireccion: ctx.sedeDireccion,\n        fecha: ctx.doctorNotification?.fechaFormateada || ctx.startTime,\n        tipoCita: ctx.tipoCita,\n        motivo: ctx.motivo\n      },\n      meta: {\n        trace_id: ctx._trace_id,\n        consulta_id: ctx._consulta_id\n      }\n    }\n  };\n} catch (err) {\n  console.log(`[RETURN_SUCCESS] Exception: ${err.message}`);\n  return { json: { success: true, message: 'Cita agendada (error al formatear respuesta).', meta: { error: err.message } } };\n}"
-      },
-      "id": "5c106e05-8d7b-44c6-9917-1a6326124146",
-      "name": "Return Success1",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -10096,
-        1840
-      ],
-      "continueOnFail": true
     },
     {
       "parameters": {
@@ -598,13 +529,13 @@
           "sendUpdates": "none"
         }
       },
-      "id": "1f12d253-b5e3-42c7-83bc-c6ecf4804783",
+      "id": "5b0ed219-4d09-490e-8cf4-4d3fc5c7022c",
       "name": "ROLLBACK Delete Event1",
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -10848,
-        2096
+        -13536,
+        4032
       ],
       "retryOnFail": true,
       "maxTries": 3,
@@ -620,13 +551,13 @@
       "parameters": {
         "jsCode": "try {\n  const ctx = $('Validate DB Save1').first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'DB_SAVE_FAILED',\n      message: 'Error al guardar. Horario liberado.',\n      rollback: { attempted: true, event_id: ctx.event_id },\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'DB_SAVE_FAILED', message: err.message } };\n}"
       },
-      "id": "0304c410-837a-40c1-a60e-bca5cf316c93",
+      "id": "d771d108-d2af-48b6-9c42-8f3bbab0f45f",
       "name": "Return Rollback Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -10528,
-        2096
+        -13312,
+        4032
       ],
       "continueOnFail": true
     },
@@ -634,13 +565,13 @@
       "parameters": {
         "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'VALIDATION_FAILED',\n      problems: ctx.problems || [],\n      message: 'Datos incompletos para agendar.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'VALIDATION_FAILED', message: err.message } };\n}"
       },
-      "id": "275925c7-8c5f-4846-8d25-8ae406a8bd59",
+      "id": "e6c7892f-92d9-42b4-bec7-4902bf3a7e15",
       "name": "Return Validation Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -14880,
-        2672
+        -18240,
+        4704
       ],
       "continueOnFail": true
     },
@@ -648,13 +579,13 @@
       "parameters": {
         "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'SEDE_NOT_FOUND',\n      message: `Sede '${ctx.sede || 'desconocida'}' no configurada.`,\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'SEDE_NOT_FOUND', message: err.message } };\n}"
       },
-      "id": "af8915f5-0dbb-4a51-88de-0e5a0de46a1f",
+      "id": "616889aa-9537-41e1-8cff-e08cef6f9684",
       "name": "Return Sede Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -14208,
-        2576
+        -17568,
+        4608
       ],
       "continueOnFail": true
     },
@@ -662,13 +593,13 @@
       "parameters": {
         "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'DUPLICATE_APPOINTMENT',\n      message: 'Ya existe una cita en ese horario.',\n      existingId: ctx.existingConsultaId,\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'DUPLICATE_APPOINTMENT', message: err.message } };\n}"
       },
-      "id": "e9282c0c-7971-4383-9f22-ce5ad022826a",
+      "id": "0411348a-4c2b-4e9c-a02e-1030943f15da",
       "name": "Return Duplicate Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13536,
-        2480
+        -16224,
+        4416
       ],
       "continueOnFail": true
     },
@@ -676,13 +607,13 @@
       "parameters": {
         "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'SLOT_NOT_AVAILABLE',\n      message: 'El horario ya no está disponible. Usa DISPONIBILIDAD_CALENDARIO para ver horarios actualizados.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'SLOT_NOT_AVAILABLE', message: err.message } };\n}"
       },
-      "id": "bbf661d8-3083-4b85-8342-e8b6660e0606",
+      "id": "a547e873-0a56-446b-bb2c-281f65184429",
       "name": "Return Slot Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12864,
-        2384
+        -15552,
+        4320
       ],
       "continueOnFail": true
     },
@@ -690,13 +621,13 @@
       "parameters": {
         "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'PACIENTE_ERROR',\n      message: 'Error al registrar paciente.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'PACIENTE_ERROR', message: err.message } };\n}"
       },
-      "id": "5ccd8dc6-fd07-4ee3-a610-10d4584d9324",
+      "id": "caf9a7ca-28e7-42b4-b9b9-2849de2788b2",
       "name": "Return Paciente Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12192,
-        2288
+        -14880,
+        4224
       ],
       "continueOnFail": true
     },
@@ -704,48 +635,15 @@
       "parameters": {
         "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'EVENT_CREATION_FAILED',\n      message: 'Error al crear evento en calendario.',\n      errorDetails: ctx.errorDetails,\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'EVENT_CREATION_FAILED', message: err.message } };\n}"
       },
-      "id": "ffcb5d6c-1b3d-44c7-a848-54135018a57a",
+      "id": "643885e3-f741-4d37-a4b9-6b85ca9e2199",
       "name": "Return Event Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -11520,
-        2192
+        -14208,
+        4128
       ],
       "continueOnFail": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "cbfa372a-5f87-46de-88ae-dc0f414c6161",
-              "leftValue": "={{ $json.patientName }}",
-              "rightValue": "ROBOT",
-              "operator": {
-                "type": "string",
-                "operation": "notContains"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -10624,
-        1920
-      ],
-      "id": "45ff7da6-30c1-4d8b-ae48-bb92ba9fcf72",
-      "name": "If"
     },
     {
       "parameters": {
@@ -755,13 +653,13 @@
           "queryReplacement": "={{ $json.sede }}"
         }
       },
-      "id": "a1b2c3d4-schedule-get-horario",
+      "id": "6c7d1bd3-4e56-44e0-a532-4468b72e7c91",
       "name": "Get Horario1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -14400,
-        2280
+        -17568,
+        4416
       ],
       "credentials": {
         "postgres": {
@@ -775,13 +673,13 @@
       "parameters": {
         "jsCode": "// ========================================\n// VALIDATE SCHEDULE v1.0 — Verify slot is within doctor's hours\n// ========================================\nconst context = $('Process Sede1').first()?.json || {};\nconst sedeData = $input.first()?.json;\nconst trace_id = context._trace_id;\n\n// sedeData comes from a new Postgres query that fetches horario_json\nconst rows = Array.isArray(sedeData) ? sedeData : [sedeData];\nconst horario = rows[0]?.horario_json;\n\nif (!horario) {\n  console.log(`[${trace_id}] SCHEDULE_CHECK — No horario_json found, allowing (fail-open)`);\n  return { json: { ...context, scheduleValid: true, _stage: 'schedule_ok_no_data' } };\n}\n\n// Parse the requested start time\nconst startISO = context.startTime;\nif (!startISO) {\n  return { json: { ...context, scheduleValid: false, scheduleError: 'No startTime', _stage: 'schedule_fail' } };\n}\n\n// Get day of week and time in CDMX\nconst DAY_NAMES = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];\n\nlet requestedDOW, requestedHour, requestedMinute;\ntry {\n  const d = new Date(startISO);\n  // Get CDMX day/time using Intl\n  const dayFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Mexico_City', weekday: 'short' });\n  const hourFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false });\n\n  const dayStr = dayFormatter.format(d);\n  const dayMap = { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 };\n  requestedDOW = dayMap[dayStr];\n\n  const timeStr = hourFormatter.format(d); // \"15:00\"\n  const parts = timeStr.split(':');\n  requestedHour = parseInt(parts[0]);\n  requestedMinute = parseInt(parts[1]);\n} catch (e) {\n  console.log(`[${trace_id}] SCHEDULE_CHECK — Error parsing date: ${e.message}`);\n  return { json: { ...context, scheduleValid: true, _stage: 'schedule_ok_parse_error' } };\n}\n\nconst dayName = DAY_NAMES[requestedDOW];\nconst requestedTime = requestedHour * 60 + requestedMinute; // minutes since midnight\n\nconsole.log(`[${trace_id}] SCHEDULE_CHECK — DOW: ${requestedDOW} (${dayName}), time: ${requestedHour}:${String(requestedMinute).padStart(2,'0')}`);\n\n// Check both weekA and weekB — if the slot fits in EITHER week, it's valid\n// (We don't know which week it is at booking time, and the doctor could be there)\nlet isValid = false;\nconst checkedShifts = [];\n\nfor (const weekKey of ['weekA', 'weekB']) {\n  const week = horario[weekKey];\n  if (!week || !week[dayName]) continue;\n\n  const shifts = week[dayName];\n  if (!Array.isArray(shifts)) continue;\n\n  for (const shift of shifts) {\n    if (!Array.isArray(shift) || shift.length < 2) continue;\n\n    const [startStr, endStr] = shift;\n    const [sh, sm] = startStr.split(':').map(Number);\n    const [eh, em] = endStr.split(':').map(Number);\n    const shiftStart = sh * 60 + sm;\n    const shiftEnd = eh * 60 + em;\n\n    checkedShifts.push(`${weekKey}.${dayName}: ${startStr}-${endStr}`);\n\n    // Slot start must be >= shift start AND < shift end (can't start at closing time)\n    if (requestedTime >= shiftStart && requestedTime < shiftEnd) {\n      isValid = true;\n      break;\n    }\n  }\n  if (isValid) break;\n}\n\nif (!isValid) {\n  const dayNameDisplay = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][requestedDOW];\n  console.log(`[${trace_id}] SCHEDULE_CHECK — REJECTED: ${dayNameDisplay} ${requestedHour}:${String(requestedMinute).padStart(2,'0')} not in shifts: ${checkedShifts.join(', ')}`);\n  return {\n    json: {\n      ...context,\n      scheduleValid: false,\n      scheduleError: 'OUTSIDE_WORKING_HOURS',\n      _stage: 'schedule_fail',\n      aiHint: `Ese horario no está dentro del horario de consulta de ${context.sedeDisplayName || context.sede} el ${dayNameDisplay}. Usa DISPONIBILIDAD_CALENDARIO para obtener horarios válidos.`\n    }\n  };\n}\n\nconsole.log(`[${trace_id}] SCHEDULE_CHECK — VALID`);\nreturn { json: { ...context, scheduleValid: true, _stage: 'schedule_ok' } };"
       },
-      "id": "a1b2c3d4-schedule-validate",
+      "id": "2750e0d3-e2ca-46ad-98b8-a7baeacd1d47",
       "name": "Validate Schedule1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -14176,
-        2280
+        -17344,
+        4416
       ],
       "continueOnFail": true
     },
@@ -808,28 +706,66 @@
         },
         "options": {}
       },
-      "id": "a1b2c3d4-schedule-ok-if",
+      "id": "ff55aa5e-fd50-4bc4-815e-d5dfeb649582",
       "name": "Schedule OK?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -13952,
-        2280
+        -17120,
+        4416
       ]
     },
     {
       "parameters": {
         "jsCode": "try {\n  const ctx = $input.first()?.json || {};\n  return {\n    json: {\n      success: false,\n      error: 'OUTSIDE_WORKING_HOURS',\n      message: ctx.aiHint || 'El horario solicitado está fuera del horario de consulta.',\n      instruction: 'Usa DISPONIBILIDAD_CALENDARIO para obtener horarios válidos.',\n      meta: { trace_id: ctx._trace_id }\n    }\n  };\n} catch (err) {\n  return { json: { success: false, error: 'OUTSIDE_WORKING_HOURS', message: err.message } };\n}"
       },
-      "id": "a1b2c3d4-schedule-error",
+      "id": "a12f70eb-0083-442c-ac79-5c04208a0ce7",
       "name": "Return Schedule Error1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13728,
-        2384
+        -16896,
+        4512
       ],
       "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT CASE WHEN $1::uuid IS NOT NULL THEN (SELECT transition_lead_estado($1::uuid, 'cita_agendada', 'bot', 'agendar_cita')) ELSE jsonb_build_object('success', true, 'changed', false, 'reason', 'no_lead_id') END as result",
+        "options": {
+          "queryReplacement": "={{ $json.lead_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -13536,
+        3840
+      ],
+      "id": "f92d3064-75ec-41d8-8695-090a094f74fa",
+      "name": "🔗 Transition Lead Estado",
+      "credentials": {
+        "postgres": {
+          "id": "LZyK5sbzVT7Dy3RU",
+          "name": "Postgres urobot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -19264,
+        4960
+      ],
+      "id": "0d1d4602-1629-4564-88b9-bb18fb2cd5a7",
+      "name": "When chat message received",
+      "webhookId": "08ed281d-aedf-4831-94e8-484386bd3eb6"
     }
   ],
   "pinData": {
@@ -855,28 +791,6 @@
         [
           {
             "node": "Init & Normalize1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare Doctor Notification": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Notify Dr. Mario": {
-      "main": [
-        [
-          {
-            "node": "Return Success1",
             "type": "main",
             "index": 0
           }
@@ -1149,7 +1063,7 @@
       "main": [
         [
           {
-            "node": "Prepare Doctor Notification",
+            "node": "🔗 Transition Lead Estado",
             "type": "main",
             "index": 0
           }
@@ -1168,17 +1082,6 @@
         [
           {
             "node": "Return Rollback Error1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Notify Dr. Mario",
             "type": "main",
             "index": 0
           }
@@ -1224,6 +1127,22 @@
           }
         ]
       ]
+    },
+    "🔗 Transition Lead Estado": {
+      "main": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Init & Normalize1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1231,9 +1150,12 @@
     "executionOrder": "v1",
     "timezone": "America/Mexico_City",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "executionTimeout": -1,
+    "binaryMode": "separate"
   },
-  "versionId": "6e582182-aa40-4343-a9e7-84ea841c66c8",
+  "versionId": "7d076670-06f5-49f8-be34-748058d4b119",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"

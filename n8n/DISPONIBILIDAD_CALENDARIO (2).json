@@ -57,7 +57,8 @@
           "name": "Google Calendar account"
         }
       },
-      "notes": "v2.0: continueOnFail activo pero Normalize detecta errores"
+      "notes": "v2.0: continueOnFail activo pero Normalize detecta errores",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -99,7 +100,8 @@
           "name": "Google Calendar account"
         }
       },
-      "notes": "v2.0: continueOnFail activo pero Normalize detecta errores"
+      "notes": "v2.0: continueOnFail activo pero Normalize detecta errores",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -246,9 +248,9 @@
         "resource": "calendar",
         "calendar": {
           "__rl": true,
-          "value": "9d46a1bfb10a8ffd429f8e8671c16bdb57104073ccccea2a31117354df51ff67@group.calendar.google.com",
-          "mode": "list",
-          "cachedResultName": "Agenda Dr. Mario Martinez Thomas"
+          "value": "mmartinezuro@gmail.com",
+          "mode": "id",
+          "cachedResultName": "Dr. Mario Personal"
         },
         "timeMin": "={{$('SET_DEFAULTS1').first().json.windowStart}}",
         "timeMax": "={{$('SET_DEFAULTS1').first().json.windowEnd}}",
@@ -281,7 +283,8 @@
           "name": "Google Calendar account"
         }
       },
-      "notes": "v2.0: continueOnFail activo pero Normalize detecta errores"
+      "notes": "v2.0: continueOnFail activo pero Normalize detecta errores",
+      "continueOnFail": true
     },
     {
       "parameters": {

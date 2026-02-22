@@ -124,7 +124,7 @@ export function ChatArea({
               <h3 className="font-semibold text-foreground text-sm truncate">
                 {contactoActivo.nombreContacto || contactoActivo.telefono}
               </h3>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-slate-400 truncate">
                 {contactoActivo.telefono} · {tipoLabel}
               </p>
             </div>
@@ -200,7 +200,7 @@ export function ChatArea({
                   <div key={grupo.fecha}>
                     {/* Date separator */}
                     <div className="sticky top-0 flex items-center justify-center py-2 z-10 pointer-events-none">
-                      <div className="px-3 py-1 bg-card/90 backdrop-blur-sm border border-border rounded-full text-[11px] font-medium text-muted-foreground">
+                      <div className="px-3 py-1 bg-card/90 backdrop-blur-sm border border-border rounded-full text-[11px] font-medium text-slate-400">
                         {format(new Date(grupo.fecha), "d MMM yyyy", { locale: es })}
                       </div>
                     </div>
@@ -238,7 +238,7 @@ export function ChatArea({
 
           {/* Minimal footer — read-only indicator */}
           <div className="shrink-0 py-2 px-3 sm:px-4 border-t border-border flex items-center justify-between safe-area-bottom bg-card/50 backdrop-blur-sm">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs text-slate-400">
               <div className={`w-1.5 h-1.5 rounded-full ${estaBloqueado ? 'bg-red-500' : 'bg-emerald-500'}`} />
               <span>{estaBloqueado ? 'Bloqueado' : 'Solo lectura'}</span>
             </div>

@@ -70,7 +70,7 @@ export function ConversationsSidebar({
         <div className="flex items-center justify-between px-5 py-4">
           <div>
             <h2 className="font-semibold text-foreground text-base font-jakarta">Conversaciones</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
+            <p className="text-xs text-slate-400 mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
           </div>
           <button 
             onClick={onRefetch} 
@@ -111,7 +111,7 @@ export function ConversationsSidebar({
             >
               {label}
               {mounted && conteosPorTipo[id] > 0 && (
-                <span className={`ml-1.5 ${filtroActivo === id ? 'text-primary-foreground/70' : 'text-muted-foreground/60'}`}>
+                <span className={`ml-1.5 ${filtroActivo === id ? 'text-primary-foreground/80' : 'text-slate-400'}`}>
                   {conteosPorTipo[id]}
                 </span>
               )}

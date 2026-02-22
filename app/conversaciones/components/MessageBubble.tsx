@@ -488,7 +488,7 @@ export const MessageBubble = memo(function MessageBubble({
           )}
 
           {/* Footer: hora + indicadores */}
-          <div className={`flex items-center justify-end gap-1.5 px-3.5 pb-2 select-none ${isBot ? 'text-muted-foreground' : 'text-primary-foreground/50'}`}>
+          <div className={`flex items-center justify-end gap-1.5 px-3.5 pb-2 select-none ${isBot ? 'text-slate-400' : 'text-primary-foreground/60'}`}>
             {tipoMensaje !== 'text' && (
               <>
                 {tipoMensaje === 'image' && <ImageIcon className="w-3 h-3" />}
