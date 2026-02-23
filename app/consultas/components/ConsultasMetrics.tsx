@@ -25,7 +25,7 @@ interface ConsultasMetricsProps {
 export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, loading }: ConsultasMetricsProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
+      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
         {[...Array(5)].map((_, i) => (
           <div key={i} className={`h-20 sm:h-24 bg-muted/50 rounded-lg animate-pulse ${i === 4 ? 'col-span-2 sm:col-span-1' : ''}`} />
         ))}
@@ -39,7 +39,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
   const hintClass = "text-[10px] text-muted-foreground mt-1";
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
+    <div className="grid grid-cols-2 min-[480px]:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
       {/* Total */}
       <div className="bg-card border border-border rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">

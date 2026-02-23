@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye, Bot, Check, CheckCheck } from 'lucide-react';
+import { FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye, CheckCheck } from 'lucide-react';
 import type { TipoMensaje } from '@/types/chat';
 import { FASE_DISPLAY } from '@/types/chat';
 
@@ -121,7 +121,7 @@ const DocumentContent = memo(function DocumentContent({
   return (
     <div className="space-y-2">
       {/* Card de documento con preview para PDFs */}
-      <div className="rounded-xl overflow-hidden border border-slate-700 bg-slate-800/50">
+      <div className="rounded-xl overflow-hidden border border-border bg-muted/60">
         {/* Header con info del archivo */}
         <div className="flex items-center gap-3 p-3">
           <div className={`w-12 h-12 rounded-lg ${styles.bg} flex items-center justify-center shrink-0`}>
@@ -135,10 +135,10 @@ const DocumentContent = memo(function DocumentContent({
         
         {/* Preview de PDF (si está habilitado) */}
         {isPdf && showPdfViewer && !iframeError && (
-          <div className="relative border-t border-slate-700">
+          <div className="relative border-t border-border">
             <iframe 
               src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
-              className="w-full h-64 border-0 bg-slate-900"
+              className="w-full h-64 border-0 bg-background"
               title={displayName}
               onError={() => setIframeError(true)}
             />
@@ -152,11 +152,11 @@ const DocumentContent = memo(function DocumentContent({
         )}
         
         {/* Botones de acción */}
-        <div className="flex border-t border-slate-700">
+        <div className="flex border-t border-border">
           {isPdf && !showPdfViewer && (
             <button
               onClick={() => setShowPdfViewer(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-blue-400 hover:bg-blue-500/10 transition-colors border-r border-slate-700"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-blue-400 hover:bg-blue-500/10 transition-colors border-r border-border"
             >
               <Eye className="w-4 h-4" />
               Vista previa
@@ -166,7 +166,7 @@ const DocumentContent = memo(function DocumentContent({
             href={url} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-slate-400 hover:bg-slate-700/50 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
           >
             <Download className="w-4 h-4" />
             {isPdf ? 'Abrir PDF' : 'Descargar'}
@@ -211,7 +211,7 @@ const AudioContent = memo(function AudioContent({
   
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-3 p-2 bg-slate-800 rounded-full">
+      <div className="flex items-center gap-3 p-2 bg-muted/70 rounded-full">
         <button 
           onClick={togglePlay}
           className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors"
@@ -223,7 +223,7 @@ const AudioContent = memo(function AudioContent({
           )}
         </button>
         <div className="flex-1">
-          <div className="h-1 bg-slate-600 rounded-full">
+          <div className="h-1 bg-border rounded-full">
             <div className="h-full w-0 bg-green-500 rounded-full" />
           </div>
         </div>
@@ -283,7 +283,7 @@ const LocationContent = memo(function LocationContent({
         href={mapUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors group"
+        className="flex items-center gap-3 p-3 bg-muted/60 rounded-lg hover:bg-muted transition-colors group"
       >
         <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
           <MapPin className="w-5 h-5 text-blue-500" />
@@ -321,7 +321,7 @@ const RichText = memo(function RichText({ content, className, isBot }: { content
         const [, bullet, content] = listMatch;
         elements.push(
           <div key={i} className="flex gap-2 py-0.5">
-            <span className={`shrink-0 ${isBot ? 'text-slate-500' : 'text-white/70'}`}>{bullet.trim()}</span>
+            <span className="shrink-0 opacity-60">{bullet.trim()}</span>
             <span>{parseInlineFormatting(content)}</span>
           </div>
         );
@@ -351,7 +351,7 @@ const RichText = memo(function RichText({ content, className, isBot }: { content
     return parts.map((part, j) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <strong key={j} className={`font-semibold ${isBot ? 'text-white' : ''}`}>
+          <strong key={j} className="font-semibold">
             {part.slice(2, -2)}
           </strong>
         );
@@ -451,57 +451,34 @@ export const MessageBubble = memo(function MessageBubble({
     : 'rounded-2xl rounded-tr-sm';
 
   return (
-    <div className={`flex w-full ${isBot ? 'justify-start' : 'justify-end'} ${isConsecutive ? 'mt-0.5' : 'mt-3 first:mt-0'}`}>
-      {/* Bot avatar — only on first message of a group */}
-      {isBot && (
-        <div className={`shrink-0 mr-2 self-end ${isConsecutive ? 'w-6' : ''}`}>
-          {!isConsecutive && (
-            <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-              <Bot className="w-3 h-3 text-muted-foreground" />
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className={`flex flex-col max-w-[80%] sm:max-w-[68%] lg:max-w-[58%] ${isBot ? 'items-start' : 'items-end'}`}>
+    <div className={`flex w-full ${isBot ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-0.5' : 'mt-3 first:mt-0'}`}>
+      <div className={`flex flex-col max-w-[85%] sm:max-w-[65%] ${isBot ? 'items-end' : 'items-start'}`}>
         <div className={`
           relative group
           ${isBot 
-            ? `bg-card text-foreground
-               ${botRadius}
-               border border-border` 
-            : `bg-primary text-primary-foreground
-               ${userRadius}`}
+            ? `wa-bubble-out ${botRadius} shadow-sm` 
+            : `wa-bubble-in ${userRadius} shadow-sm`}
         `}>
           {/* Contenido principal */}
-          <div className="px-3.5 sm:px-4 pt-2.5 pb-1.5">
+          <div className="px-3 sm:px-3.5 pt-2 pb-1">
             {renderContent()}
           </div>
           
           {/* Fase badge for bot messages */}
           {isBot && faseConversacion && FASE_DISPLAY[faseConversacion] && (
-            <div className="px-3.5 sm:px-4 pb-1">
+            <div className="px-3 sm:px-3.5 pb-1">
               <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${FASE_BADGE_COLORS[FASE_DISPLAY[faseConversacion].color] || FASE_BADGE_COLORS.gray}`}>
                 {FASE_DISPLAY[faseConversacion].label}
               </span>
             </div>
           )}
 
-          {/* Footer: hora + indicadores */}
-          <div className={`flex items-center justify-end gap-1.5 px-3.5 pb-2 select-none ${isBot ? 'text-slate-400' : 'text-primary-foreground/60'}`}>
-            {tipoMensaje !== 'text' && (
-              <>
-                {tipoMensaje === 'image' && <ImageIcon className="w-3 h-3" />}
-                {tipoMensaje === 'document' && <FileText className="w-3 h-3" />}
-                {tipoMensaje === 'audio' && <Mic className="w-3 h-3" />}
-                {tipoMensaje === 'video' && <Film className="w-3 h-3" />}
-                {tipoMensaje === 'location' && <MapPin className="w-3 h-3" />}
-              </>
-            )}
-            <span className="text-[10px] tabular-nums">
+          {/* Footer: hora + check marks (WhatsApp style) */}
+          <div className="wa-timestamp flex items-center justify-end gap-1 px-3 pb-1.5 select-none">
+            <span className="text-[11px] tabular-nums">
               {format(createdAt, 'HH:mm')}
             </span>
-            {!isBot && <CheckCheck className="w-3.5 h-3.5 text-primary-foreground/40" />}
+            {isBot && <CheckCheck className="w-3.5 h-3.5" style={{ color: 'rgba(83, 189, 235, 0.7)' }} />}
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef, type ElementType } from 'react';
+import { useHasMounted } from '@/hooks/common/useHasMounted';
 import { metricColors, type MetricColor } from '@/app/lib/design-system';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -30,8 +31,6 @@ interface MetricCardProps {
     value: number;
     isPositive: boolean;
   } | string;
-  showProgress?: boolean;
-  maxValue?: number;
   loading?: boolean;
   /** Animar el valor numérico (solo si es número) */
   animate?: boolean;
@@ -101,16 +100,11 @@ export const MetricCard = React.memo(({
   subtitle,
   trend,
   loading = false,
-  maxValue = 100,
   animate = true,
   tooltip,
   variant = 'default',
 }: MetricCardProps) => {
-  // Evitar hydration mismatch: siempre renderizar skeleton en SSR y primer render del cliente
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHasMounted();
 
   const finalDescription = description || subtitle;
   const colors = metricColors[color];
@@ -150,7 +144,7 @@ export const MetricCard = React.memo(({
   if (variant === 'compact') {
     return (
       <div
-        className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 hover:shadow-sm min-h-[72px] cursor-pointer relative overflow-hidden group"
+        className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 hover:shadow-sm min-h-[64px] sm:min-h-[72px] cursor-pointer relative overflow-hidden group"
         title={tooltip}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:animate-shimmer pointer-events-none" />

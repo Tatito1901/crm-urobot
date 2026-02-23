@@ -75,13 +75,15 @@ const ESTADO_CITA_COLORS: Record<string, string> = {
 const LEAD_ESTADO_LABELS: Record<string, string> = {
   nuevo: 'Nuevo',
   contactado: 'Contactado',
-  interesado: 'Interesado',
-  calificado: 'Calificado',
-  escalado: 'Escalado',
+  interactuando: 'Interactuando',
+  cita_propuesta: 'Cita propuesta',
   cita_agendada: 'Cita agendada',
+  en_seguimiento: 'En seguimiento',
   convertido: 'Convertido',
+  perdido: 'Perdido',
   no_interesado: 'No interesado',
   descartado: 'Descartado',
+  no_show: 'No acudió',
 };
 
 /**
@@ -311,7 +313,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+          <section className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5">
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
@@ -333,7 +335,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
                   {/* Big number */}
                   <div className="flex-1 flex items-end">
-                    <div className={`text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
+                    <div className={`text-2xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
                       {loading ? '—' : m.value}
                     </div>
                   </div>
@@ -640,16 +642,16 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 <h2 className="text-sm font-bold text-foreground font-jakarta">Rendimiento del Bot</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px sm:gap-0 sm:divide-x divide-border">
               {[
                 { label: 'Resolución', value: `${bot.tasaResolucion}%`, color: 'text-emerald-400' },
                 { label: 'Escalamiento', value: `${bot.tasaEscalamiento}%`, color: 'text-amber-400' },
                 { label: 'Citas bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
                 { label: 'Resp. prom.', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
               ].map(stat => (
-                <div key={stat.label} className="px-3 sm:px-6 py-2.5 sm:py-4 text-center">
-                  <p className="text-[9px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">{stat.label}</p>
-                  <p className={`text-base sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
+                <div key={stat.label} className="px-3 sm:px-6 py-3 sm:py-4 text-center border-b sm:border-b-0 border-border last:border-b-0">
+                  <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">{stat.label}</p>
+                  <p className={`text-lg sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}
                   </p>
                 </div>
@@ -663,5 +665,3 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   );
 }
 
-// ── Sub-components (extracted to dashboard/components/) ─────
-export { SectionHeader, StatPill, TemperatureDot } from './components/DashboardSubComponents';

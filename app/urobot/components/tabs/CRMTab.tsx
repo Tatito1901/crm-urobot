@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUrobotMetricasCRM } from '@/hooks/urobot/useUrobotMetricasCRM';
@@ -36,7 +36,7 @@ interface CRMTabProps {
   evolucionHoras: TimeSeriesData[];
 }
 
-export function CRMTab({ dias, evolucionHoras }: CRMTabProps) {
+export const CRMTab = memo(function CRMTab({ dias, evolucionHoras }: CRMTabProps) {
   const { data: crmData, resumen: crmResumen } = useUrobotMetricasCRM(dias);
 
   return (
@@ -99,4 +99,4 @@ export function CRMTab({ dias, evolucionHoras }: CRMTabProps) {
       </div>
     </>
   );
-}
+});

@@ -40,7 +40,7 @@ export default function MensajeriaPage() {
       title="Mensajería"
       description="Métricas de interacción conversacional entre el bot, agentes y pacientes."
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
         <Card className={cards.base}>
           <CardHeader className={spacing.cardHeader}>
             <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">

@@ -116,7 +116,7 @@ export default function ClinicoPage() {
       </section>
 
       {/* Fila 1: Diagnósticos y Procedimientos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mb-3 sm:mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-6">
         
         {/* Top Diagnósticos */}
         <Card className={cards.base}>
@@ -153,7 +153,7 @@ export default function ClinicoPage() {
       </div>
 
       {/* Fila 2: Tendencia por Sedes y Rendimiento Detallado */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 mb-3 sm:mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-6">
         
         {/* Tendencia Mensual por Sede */}
         <Card className={`${cards.base} lg:col-span-2`}>
@@ -190,7 +190,7 @@ export default function ClinicoPage() {
       </div>
 
       {/* Fila 3: Demanda por Día y Pacientes Fieles */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         
         {/* Demanda por Día */}
         <Card className={cards.base}>

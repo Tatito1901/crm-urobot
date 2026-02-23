@@ -51,7 +51,7 @@ export default function FunnelPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <FunnelChart data={funnelLeads} height={500} barSize={40} />
+          <FunnelChart data={funnelLeads} height={typeof window !== 'undefined' && window.innerWidth < 640 ? 320 : 500} barSize={typeof window !== 'undefined' && window.innerWidth < 640 ? 28 : 40} />
         </CardContent>
       </Card>
     </PageShell>

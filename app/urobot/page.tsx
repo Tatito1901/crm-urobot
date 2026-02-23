@@ -9,9 +9,33 @@ import { TabBar } from '@/app/components/common/TabBar';
 import { buttons } from '@/app/lib/design-system';
 import { invalidateDomain } from '@/lib/swr-config';
 
-import { CRMTab } from './components/tabs/CRMTab';
-import { MensajesTab } from './components/tabs/MensajesTab';
-import { MonitoreoTab } from './components/tabs/MonitoreoTab';
+import dynamic from 'next/dynamic';
+
+const CRMTab = dynamic(
+  () => import('./components/tabs/CRMTab').then(mod => ({ default: mod.CRMTab })),
+  { loading: () => <TabSkeleton />, ssr: false }
+);
+const MensajesTab = dynamic(
+  () => import('./components/tabs/MensajesTab').then(mod => ({ default: mod.MensajesTab })),
+  { loading: () => <TabSkeleton />, ssr: false }
+);
+const MonitoreoTab = dynamic(
+  () => import('./components/tabs/MonitoreoTab').then(mod => ({ default: mod.MonitoreoTab })),
+  { loading: () => <TabSkeleton />, ssr: false }
+);
+
+function TabSkeleton() {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 rounded-xl bg-muted/30 border border-border" />
+        ))}
+      </div>
+      <div className="h-64 rounded-xl bg-muted/30 border border-border" />
+    </div>
+  );
+}
 
 // ============================================================
 // HELPERS

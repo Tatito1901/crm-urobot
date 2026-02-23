@@ -67,7 +67,7 @@ export function PageShell({
             <h1 className={cn(
               "font-bold tracking-tight",
               "text-foreground",
-              compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
+              compact ? "text-xl sm:text-2xl" : "text-xl sm:text-2xl md:text-3xl"
             )}>{title}</h1>
             {description && <p className={cn(
               "font-medium",

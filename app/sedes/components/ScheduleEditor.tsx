@@ -54,14 +54,14 @@ function TimeRangePill({
           type="time"
           value={turno[0]}
           onChange={(e) => onUpdate(dia, index, 0, e.target.value)}
-          className="w-[76px] bg-transparent text-[13px] font-mono font-medium text-teal-400 outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute"
+          className="w-[68px] sm:w-[76px] bg-transparent text-[12px] sm:text-[13px] font-mono font-medium text-teal-400 outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute"
         />
         <span className="text-muted-foreground text-[11px] font-medium mx-0.5">→</span>
         <input
           type="time"
           value={turno[1]}
           onChange={(e) => onUpdate(dia, index, 1, e.target.value)}
-          className="w-[76px] bg-transparent text-[13px] font-mono font-medium text-teal-400 outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute"
+          className="w-[68px] sm:w-[76px] bg-transparent text-[12px] sm:text-[13px] font-mono font-medium text-teal-400 outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute"
         />
       </div>
       <button
@@ -69,7 +69,7 @@ function TimeRangePill({
         aria-label="Eliminar turno"
         className={cn(
           'h-7 w-7 flex items-center justify-center rounded-md transition-all duration-150 cursor-pointer',
-          'text-muted-foreground/40 opacity-0 group-hover/pill:opacity-100',
+          'text-muted-foreground/40 sm:opacity-0 sm:group-hover/pill:opacity-100',
           'hover:text-rose-400 hover:bg-rose-500/10',
         )}
       >
@@ -90,7 +90,7 @@ function DayRow({
   const active = turnos.length > 0;
   return (
     <div className={cn(
-      'group grid grid-cols-[72px_1fr_36px] items-start gap-3 rounded-xl px-3 py-2.5 transition-all duration-200',
+      'group grid grid-cols-[56px_1fr_32px] sm:grid-cols-[72px_1fr_36px] items-start gap-2 sm:gap-3 rounded-xl px-2 sm:px-3 py-2.5 transition-all duration-200',
       active
         ? 'bg-muted/30 border border-border'
         : 'border border-transparent hover:bg-muted/15 hover:border-border/50',
@@ -139,7 +139,7 @@ function DayRow({
           'mt-1 h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-150 cursor-pointer',
           'border border-dashed border-border/60 text-muted-foreground/30',
           'hover:border-teal-500/50 hover:text-teal-400 hover:bg-teal-500/10',
-          'opacity-0 group-hover:opacity-100',
+          'sm:opacity-0 sm:group-hover:opacity-100',
           !active && 'opacity-60',
         )}
       >

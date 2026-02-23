@@ -36,15 +36,15 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { name
 
 export const DashboardMensajeriaChart = memo(function DashboardMensajeriaChart({ data, height = 400 }: { data: MetricData[], height?: number }) {
   return (
-    <div className="w-full" style={{ height: `${height}px` }}>
+    <div className="w-full h-[280px] sm:h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={80}
-            outerRadius={120}
+            innerRadius="40%"
+            outerRadius="70%"
             paddingAngle={5}
             dataKey="value"
           >
@@ -53,7 +53,7 @@ export const DashboardMensajeriaChart = memo(function DashboardMensajeriaChart({
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: 'var(--chart-slate)' }} />
+          <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '12px', color: 'var(--chart-slate)' }} />
         </PieChart>
       </ResponsiveContainer>
     </div>

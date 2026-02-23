@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode, type ComponentType } from "react";
+import { useHasMounted } from "@/hooks/common/useHasMounted";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -8,12 +9,10 @@ import {
   Target,
   MessageCircle,
   MoreHorizontal,
-  Calendar,
   BarChart3,
   Bot,
   Stethoscope,
   Clock,
-  X,
   type LucideProps,
 } from "lucide-react";
 import {
@@ -23,7 +22,6 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-  DrawerClose,
 } from "@/components/ui/drawer";
 
 import { cn } from "@/lib/utils";
@@ -207,12 +205,7 @@ const SECONDARY_NAV_ITEMS: readonly { label: string; href: string; icon: Compone
 export function BottomNav() {
   const pathname = usePathname();
   const [showMore, setShowMore] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // ✅ Prevenir hydration mismatch - renderizar solo en cliente
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHasMounted();
 
   // Cerrar menú al cambiar de ruta
   useEffect(() => {

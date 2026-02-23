@@ -213,7 +213,7 @@ export default function EstadisticasPage() {
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Histórico de consultas estilo GitHub</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-x-auto scrollbar-hide">
               <DashboardHeatmap monthsToShow={6} />
             </CardContent>
           </Card>

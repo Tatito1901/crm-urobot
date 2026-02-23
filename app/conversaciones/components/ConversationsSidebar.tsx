@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { MessageCircle, Search, RefreshCw, Users, UserCheck, Clock } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
 
@@ -41,7 +42,7 @@ interface ConversationsSidebarProps {
   estaBloqueado?: (telefono: string) => boolean
 }
 
-export function ConversationsSidebar({
+export const ConversationsSidebar = memo(function ConversationsSidebar({
   filteredConversaciones,
   conteosPorTipo,
   telefonoActivo,
@@ -70,7 +71,7 @@ export function ConversationsSidebar({
         <div className="flex items-center justify-between px-5 py-4">
           <div>
             <h2 className="font-semibold text-foreground text-base font-jakarta">Conversaciones</h2>
-            <p className="text-xs text-slate-400 mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
           </div>
           <button 
             onClick={onRefetch} 
@@ -84,7 +85,7 @@ export function ConversationsSidebar({
       </div>
 
       {/* Search + Filters */}
-      <div className="px-4 pt-3 pb-2 space-y-3 shrink-0">
+      <div className="px-4 pt-3 pb-3 space-y-3 shrink-0">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
@@ -92,26 +93,26 @@ export function ConversationsSidebar({
             placeholder="Buscar por nombre o teléfono..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 text-sm bg-muted/40 border border-border rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40
-                     placeholder:text-muted-foreground/50 transition-all hover:bg-muted/60"
+            className="w-full pl-9 pr-3 py-2.5 sm:py-2.5 text-sm bg-muted/50 border border-border rounded-xl
+                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50
+                     placeholder:text-muted-foreground/60 text-foreground transition-all hover:bg-muted/70"
           />
         </div>
         
         {/* Filter tabs — minimal pill style with touch-friendly targets */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
           {FILTER_OPTIONS.map(({ id, label }) => (
             <button
               key={id}
               onClick={() => onFiltroChange(id)}
-              className={`px-3 py-2 min-h-[36px] rounded-full text-xs font-medium whitespace-nowrap transition-all no-select
+              className={`px-3.5 py-2 min-h-[36px] rounded-full text-xs font-semibold whitespace-nowrap transition-all no-select
                 ${filtroActivo === id 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/70'}`}
+                  ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20' 
+                  : 'text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted active:bg-muted/70'}`}
             >
               {label}
               {mounted && conteosPorTipo[id] > 0 && (
-                <span className={`ml-1.5 ${filtroActivo === id ? 'text-primary-foreground/80' : 'text-slate-400'}`}>
+                <span className={`ml-1.5 ${filtroActivo === id ? 'text-primary-foreground/80' : 'text-muted-foreground/70'}`}>
                   {conteosPorTipo[id]}
                 </span>
               )}
@@ -139,11 +140,11 @@ export function ConversationsSidebar({
         ) : !mounted || isLoading ? (
           <div className="px-4 py-2">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-2 py-3 animate-pulse">
-                <div className="w-10 h-10 rounded-full bg-muted shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3.5 bg-muted rounded w-2/3" />
-                  <div className="h-3 bg-muted rounded w-4/5" />
+              <div key={i} className="flex items-center gap-3 px-3 py-3 animate-pulse">
+                <div className="w-10 h-10 rounded-full bg-muted/70 shrink-0" />
+                <div className="flex-1 space-y-2.5">
+                  <div className="h-3.5 bg-muted/70 rounded-md w-2/3" />
+                  <div className="h-3 bg-muted/50 rounded-md w-4/5" />
                 </div>
               </div>
             ))}
@@ -196,4 +197,4 @@ export function ConversationsSidebar({
       </div>
     </aside>
   )
-}
+});

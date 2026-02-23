@@ -56,12 +56,12 @@ export function ChannelBarChart({ data }: ChannelBarChartProps) {
     .slice(0, 6);
 
   return (
-    <div className="h-[300px] w-full">
+    <div className="h-[260px] sm:h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart 
           data={chartData} 
           layout="vertical"
-          margin={{ top: 5, right: 40, left: 10, bottom: 5 }}
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-slate)" strokeOpacity={0.15} horizontal={true} vertical={false} />
           <XAxis 
@@ -80,7 +80,7 @@ export function ChannelBarChart({ data }: ChannelBarChartProps) {
             tickLine={false} 
             axisLine={false}
             tick={{ fill: 'var(--chart-slate)' }}
-            width={100}
+            width={80}
           />
           <Tooltip 
             contentStyle={{

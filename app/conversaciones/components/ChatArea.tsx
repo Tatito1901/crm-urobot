@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import { useRef, useEffect, useMemo, useCallback, useState, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { MessageCircle, ArrowLeft, Loader2, ExternalLink, MessageSquare, PanelRight, Phone, ShieldBan } from 'lucide-react'
 import type { TipoMensaje } from '@/types/chat'
@@ -43,7 +43,7 @@ interface ChatAreaProps {
   onRefreshBloqueados?: () => void
 }
 
-export function ChatArea({
+export const ChatArea = memo(function ChatArea({
   telefonoActivo,
   contactoActivo,
   mensajesActivos,
@@ -105,13 +105,13 @@ export function ChatArea({
       flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
-      bg-background
+      bg-[#0b141a]
       ${isMobileViewingChat ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}
     `}>
       {telefonoActivo && contactoActivo ? (
         <>
           {/* Header — clean, single row */}
-          <header className="shrink-0 h-14 sm:h-14 px-2 sm:px-4 flex items-center gap-2 sm:gap-3 border-b border-border bg-card z-10">
+          <header className="shrink-0 h-14 sm:h-14 px-2 sm:px-4 flex items-center gap-2 sm:gap-3 border-b wa-header z-10">
             <button
               onClick={onBackToList}
               className="sm:hidden p-2.5 -ml-1 hover:bg-muted rounded-lg transition-colors touch-target"
@@ -124,7 +124,7 @@ export function ChatArea({
               <h3 className="font-semibold text-foreground text-sm truncate">
                 {contactoActivo.nombreContacto || contactoActivo.telefono}
               </h3>
-              <p className="text-xs text-slate-400 truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 {contactoActivo.telefono} · {tipoLabel}
               </p>
             </div>
@@ -200,7 +200,7 @@ export function ChatArea({
                   <div key={grupo.fecha}>
                     {/* Date separator */}
                     <div className="sticky top-0 flex items-center justify-center py-2 z-10 pointer-events-none">
-                      <div className="px-3 py-1 bg-card/90 backdrop-blur-sm border border-border rounded-full text-[11px] font-medium text-slate-400">
+                      <div className="px-3 py-1.5 wa-date-pill rounded-lg text-[11px] font-medium shadow-sm">
                         {format(new Date(grupo.fecha), "d MMM yyyy", { locale: es })}
                       </div>
                     </div>
@@ -237,8 +237,8 @@ export function ChatArea({
           </div>
 
           {/* Minimal footer — read-only indicator */}
-          <div className="shrink-0 py-2 px-3 sm:px-4 border-t border-border flex items-center justify-between safe-area-bottom bg-card/50 backdrop-blur-sm">
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="shrink-0 py-2.5 px-3 sm:px-4 border-t wa-footer flex items-center justify-between safe-area-bottom">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <div className={`w-1.5 h-1.5 rounded-full ${estaBloqueado ? 'bg-red-500' : 'bg-emerald-500'}`} />
               <span>{estaBloqueado ? 'Bloqueado' : 'Solo lectura'}</span>
             </div>
@@ -265,4 +265,4 @@ export function ChatArea({
       )}
     </main>
   )
-}
+});

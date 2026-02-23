@@ -31,18 +31,18 @@ export default function HorariosPage() {
   return (
     <div className={cn(spacing.container, spacing.containerY, 'max-w-4xl mx-auto')}>
       {/* ── Header ── */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="min-w-0">
           <h1 className={typography.pageTitle}>Horarios del Doctor</h1>
-          <p className={typography.pageSubtitle}>
-            Configura los horarios de consulta por sede. Los cambios se reflejan en el bot de WhatsApp.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Configura los horarios de consulta por sede. Los cambios se reflejan en el bot.
           </p>
         </div>
         <Button
           variant="outline"
           size="sm"
           onClick={() => refetch()}
-          className="shrink-0"
+          className="shrink-0 self-start sm:self-auto"
         >
           <RefreshCw className="h-4 w-4 mr-1.5" />
           Recargar

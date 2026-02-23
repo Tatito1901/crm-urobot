@@ -97,8 +97,8 @@ export default function ConsultasPage() {
             </div>
 
             {/* Filtros de sede + refresh */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="inline-flex p-0.5 sm:p-1 bg-muted/50 rounded-lg border border-border flex-1 sm:flex-none">
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <div className="inline-flex p-0.5 sm:p-1 bg-muted/50 rounded-lg border border-border flex-1 sm:flex-none overflow-x-auto scrollbar-hide">
                 {[
                   { key: 'all' as const, label: 'Todas', icon: <Building2 className="h-3.5 w-3.5" /> },
                   { key: 'POLANCO' as const, label: 'Polanco', icon: <MapPin className="h-3.5 w-3.5" /> },

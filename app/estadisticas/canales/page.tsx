@@ -20,11 +20,14 @@ const RechartsPieChart = dynamic(
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={100}
-            outerRadius={160}
+            innerRadius="45%"
+            outerRadius="75%"
             paddingAngle={2}
             dataKey="value"
-            label={({ name, percent }: { name?: string; percent?: number }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
+            label={({ name, percent, cx, cy, midAngle, outerRadius: or }: { name?: string; percent?: number; cx?: number; cy?: number; midAngle?: number; outerRadius?: number }) => {
+              if (typeof window !== 'undefined' && window.innerWidth < 640) return null;
+              return `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`;
+            }}
           >
             {data.map((entry: { fill?: string }, index: number) => (
               <Cell key={`cell-${index}`} fill={entry.fill || 'var(--chart-slate)'} stroke="transparent" />
@@ -48,7 +51,7 @@ const RechartsPieChart = dynamic(
               return null;
             }}
           />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px', color: 'var(--chart-slate)' }} />
+          <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '12px', color: 'var(--chart-slate)' }} />
         </PieChart>
       </ResponsiveContainer>
     )};
@@ -94,7 +97,7 @@ export default function CanalesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[350px] sm:h-[500px] w-full flex items-center justify-center">
+          <div className="h-[300px] sm:h-[500px] w-full flex items-center justify-center">
             <RechartsPieChart data={fuentesCaptacion} />
           </div>
         </CardContent>

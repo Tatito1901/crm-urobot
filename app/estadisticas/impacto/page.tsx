@@ -156,15 +156,15 @@ function CanalRow({ canal }: { canal: CanalRendimiento }) {
           {canal.leads_total} leads → {canal.leads_convertidos} convertidos
         </div>
       </div>
-      <div className="flex items-center gap-4 shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
         <div className="text-right">
-          <div className="text-sm font-bold text-emerald-400">
+          <div className="text-xs sm:text-sm font-bold text-emerald-400">
             {canal.tasa_conversion}%
           </div>
           <div className="text-[10px] text-muted-foreground">conversión</div>
         </div>
         <div className="text-right">
-          <div className="text-sm font-bold text-foreground">
+          <div className="text-xs sm:text-sm font-bold text-foreground">
             {canal.consultas_completadas}
           </div>
           <div className="text-[10px] text-muted-foreground">consultas</div>
@@ -273,7 +273,7 @@ export default function ImpactoPage() {
           <Bot className="w-4 h-4 text-cyan-500" />
           Impacto de Urobot este mes
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
           <ImpactoUrobotCard
             titulo="Usuarios Atendidos"
             valor={impactoUrobot.usuariosUnicos}
@@ -436,7 +436,7 @@ export default function ImpactoPage() {
           <Bot className="w-5 h-5 text-cyan-400" />
           Resumen de Valor - Urobot
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
           <div>
             <div className="text-2xl sm:text-3xl font-bold text-cyan-300">
               {impactoUrobot.mensajesFueraHorario}

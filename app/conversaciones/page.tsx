@@ -8,7 +8,12 @@ import { RefreshCw } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { ConversationsSidebar, type FiltroTipo } from './components/ConversationsSidebar'
 import { ChatArea } from './components/ChatArea'
-import { ConversationActionsPanel } from './components/ConversationActionsPanel'
+import dynamic from 'next/dynamic'
+
+const ConversationActionsPanel = dynamic(
+  () => import('./components/ConversationActionsPanel').then(mod => ({ default: mod.ConversationActionsPanel })),
+  { ssr: false }
+)
 
 function ConversacionesContent() {
   const searchParams = useSearchParams()

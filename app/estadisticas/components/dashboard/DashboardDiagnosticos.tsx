@@ -42,27 +42,27 @@ export function DashboardDiagnosticos({ data }: Props) {
   }
 
   return (
-    <div className="h-[300px] w-full">
+    <div className="h-[260px] sm:h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+          margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" horizontal={true} vertical={false} />
           <XAxis 
             type="number" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: 'var(--chart-slate)', fontSize: 11 }}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 10 }}
           />
           <YAxis 
             dataKey="name" 
             type="category" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fill: 'var(--chart-slate)', fontSize: 11 }}
-            width={95}
+            tick={{ fill: 'var(--chart-slate)', fontSize: 10 }}
+            width={80}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }} />
           <Bar 

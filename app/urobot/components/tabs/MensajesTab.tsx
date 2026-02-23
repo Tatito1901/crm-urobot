@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import dynamic from 'next/dynamic';
 import { useConversacionesStats } from '@/hooks/conversaciones/useConversacionesStats';
 import { spacing, layouts } from '@/app/lib/design-system';
@@ -24,7 +24,7 @@ interface MensajesTabProps {
   evolucionHoras: TimeSeriesData[];
 }
 
-export function MensajesTab({ dias, evolucionHoras }: MensajesTabProps) {
+export const MensajesTab = memo(function MensajesTab({ dias, evolucionHoras }: MensajesTabProps) {
   const { stats: convStats, kpi: convKpi } = useConversacionesStats(dias);
 
   return (
@@ -56,4 +56,4 @@ export function MensajesTab({ dias, evolucionHoras }: MensajesTabProps) {
       </div>
     </>
   );
-}
+});

@@ -74,8 +74,7 @@ export function TabBar(props: TabBarProps) {
                 )}
               >
                 {tab.icon}
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden text-xs">{tab.label}</span>
+                <span className="text-xs sm:text-sm whitespace-nowrap">{tab.label}</span>
                 {tab.badge !== undefined && tab.badge !== 0 && (
                   <span className={
                     tab.badgeColor

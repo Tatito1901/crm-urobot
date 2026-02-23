@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { XCircle, AlertTriangle } from 'lucide-react';
@@ -38,7 +38,7 @@ interface MonitoreoTabProps {
   onRevisarAlerta: (id: string) => void;
 }
 
-export function MonitoreoTab({
+export const MonitoreoTab = memo(function MonitoreoTab({
   kpi,
   evolucionHoras,
   interaccionesPorTipo,
@@ -109,4 +109,4 @@ export function MonitoreoTab({
       </div>
     </>
   );
-}
+});

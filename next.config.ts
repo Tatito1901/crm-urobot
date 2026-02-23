@@ -25,7 +25,18 @@ const nextConfig: NextConfig = {
       'date-fns',
       'recharts',
       'swr',
+      'zustand',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tooltip',
     ],
+    // ✅ Client-side router cache: evita refetch al navegar entre páginas
+    staleTimes: {
+      dynamic: 300,  // 5 min para páginas dinámicas
+      static: 600,   // 10 min para páginas estáticas
+    },
+    // ✅ Scroll restoration nativa del navegador
+    scrollRestoration: true,
   },
 
   // ✅ Turbopack config (reemplaza webpack para dev)

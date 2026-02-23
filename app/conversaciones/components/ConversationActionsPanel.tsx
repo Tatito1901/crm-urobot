@@ -52,7 +52,7 @@ const ESTADOS_CONFIG: { estado: LeadEstado; icon: React.ReactNode; label: string
   { estado: 'cita_propuesta', icon: <Calendar className="w-3.5 h-3.5" />, label: 'Cita propuesta', color: 'text-purple-500' },
   { estado: 'cita_agendada', icon: <Calendar className="w-3.5 h-3.5" />, label: 'Cita agendada', color: 'text-emerald-500' },
   { estado: 'convertido', icon: <Zap className="w-3.5 h-3.5" />, label: 'Paciente', color: 'text-blue-500' },
-  { estado: 'no_interesado', icon: <XCircle className="w-3.5 h-3.5" />, label: 'No interesa', color: 'text-slate-400' },
+  { estado: 'no_interesado', icon: <XCircle className="w-3.5 h-3.5" />, label: 'No interesa', color: 'text-muted-foreground' },
 ];
 
 // ============================================================
@@ -266,37 +266,37 @@ export function ConversationActionsPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {lead.signals?.perfil_paciente && (
-                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
-                      <p className="text-[9px] text-muted-foreground uppercase">Perfil</p>
-                      <p className="text-[11px] font-semibold text-foreground capitalize">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</p>
+                    <div className="px-2.5 py-2 bg-muted/50 rounded-md">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Perfil</p>
+                      <p className="text-xs font-semibold text-foreground capitalize mt-0.5">{lead.signals.perfil_paciente.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {lead.signals?.prediccion_conversion && (
-                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
-                      <p className="text-[9px] text-muted-foreground uppercase">Conversión</p>
-                      <p className={`text-[11px] font-semibold capitalize ${
+                    <div className="px-2.5 py-2 bg-muted/50 rounded-md">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Conversión</p>
+                      <p className={`text-xs font-semibold capitalize mt-0.5 ${
                         lead.signals.prediccion_conversion === 'alta' ? 'text-emerald-400' :
                         lead.signals.prediccion_conversion === 'media' ? 'text-amber-400' : 'text-muted-foreground'
                       }`}>{lead.signals.prediccion_conversion}</p>
                     </div>
                   )}
                   {lead.signals?.barrera_principal && (
-                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
-                      <p className="text-[9px] text-muted-foreground uppercase">Barrera</p>
-                      <p className="text-[11px] font-semibold text-amber-400 capitalize">{lead.signals.barrera_principal.replace(/_/g, ' ')}</p>
+                    <div className="px-2.5 py-2 bg-muted/50 rounded-md">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Barrera</p>
+                      <p className="text-xs font-semibold text-amber-400 capitalize mt-0.5">{lead.signals.barrera_principal.replace(/_/g, ' ')}</p>
                     </div>
                   )}
                   {lead.signals?.nivel_compromiso != null && (
-                    <div className="px-2 py-1.5 bg-muted/50 rounded-md">
-                      <p className="text-[9px] text-muted-foreground uppercase">Compromiso</p>
-                      <p className="text-[11px] font-semibold text-violet-400">{lead.signals.nivel_compromiso}/10</p>
+                    <div className="px-2.5 py-2 bg-muted/50 rounded-md">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Compromiso</p>
+                      <p className="text-xs font-semibold text-violet-400 mt-0.5">{lead.signals.nivel_compromiso}/10</p>
                     </div>
                   )}
                 </div>
                 {lead.signals?.incentivo_sugerido && (
                   <div className="flex items-center gap-1.5 px-2 py-1.5 bg-emerald-500/10 rounded-md">
                     <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
-                    <span className="text-[10px] text-emerald-400">Incentivo: <strong className="capitalize">{lead.signals.incentivo_sugerido.replace(/_/g, ' ')}</strong></span>
+                    <span className="text-[11px] text-emerald-400">Incentivo: <strong className="capitalize">{lead.signals.incentivo_sugerido.replace(/_/g, ' ')}</strong></span>
                   </div>
                 )}
               </div>
