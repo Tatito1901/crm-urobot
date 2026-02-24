@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo, useCallback, Suspense } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useHasMounted } from '@/hooks/common/useHasMounted'
 import { useConversaciones } from '@/hooks/conversaciones/useConversaciones'
 import { useNumerosBloqueados } from '@/hooks/leads/useNumerosBloqueados'
@@ -96,7 +96,7 @@ function ConversacionesContent() {
   )
 
   return (
-    <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex flex-col bg-background overflow-hidden">
+    <div className="h-[calc(100dvh-4rem-env(safe-area-inset-bottom))] lg:h-[calc(100dvh)] flex flex-col bg-background overflow-hidden">
       {/* Header Mobile */}
       {!isMobileViewingChat && (
         <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border bg-card flex items-center justify-between">
@@ -183,17 +183,6 @@ function ConversacionesContent() {
 }
 
 export default function ConversacionesPage() {
-  return (
-    <Suspense fallback={
-      <div className="h-[calc(100dvh-4rem)] lg:min-h-full flex flex-col items-center justify-center gap-3 animate-float-in">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center">
-          <RefreshCw className="w-5 h-5 animate-spin text-primary/60" />
-        </div>
-        <p className="text-xs text-muted-foreground font-medium">Cargando conversaciones...</p>
-      </div>
-    }>
-      <ConversacionesContent />
-    </Suspense>
-  )
+  return <ConversacionesContent />
 }
 

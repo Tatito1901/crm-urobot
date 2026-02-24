@@ -145,7 +145,7 @@ export function DataTable({
       </div>
 
       {/* Mobile: Card-based layout optimizado */}
-      <div className="space-y-2 md:hidden px-0.5 py-1.5 momentum-scroll">
+      <div className="space-y-2.5 md:hidden px-1 py-2 momentum-scroll">
         {rows.map((row, index) => {
           const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
           const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
@@ -173,8 +173,8 @@ export function DataTable({
               tabIndex={onRowClick ? index === 0 ? 0 : -1 : undefined}
               role={onRowClick ? "button" : undefined}
               className={cn(
-                "rounded-xl border border-border bg-card p-3 min-h-[68px] flex flex-col justify-center shadow-sm",
-                onRowClick && "cursor-pointer active:scale-[0.98] transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 press-feedback"
+                "rounded-xl border border-border bg-card p-3.5 min-h-[72px] flex flex-col justify-center shadow-sm",
+                onRowClick && "cursor-pointer active:scale-[0.97] active:bg-muted/40 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
               )}
             >
               <div className="flex justify-between items-start gap-3">
@@ -185,7 +185,7 @@ export function DataTable({
               </div>
               
               {metadata.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-border/30 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs">
+                <div className="mt-2.5 pt-2.5 border-t border-border/40 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
                   {metadata.map((key) => (
                     <div key={key} className="flex items-center gap-1.5 shrink-0">
                       <div className="text-foreground">{row[key]}</div>

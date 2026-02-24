@@ -63,7 +63,12 @@ export const ChatArea = memo(function ChatArea({
   // Auto-scroll al final cuando cambian los mensajes
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+      requestAnimationFrame(() => {
+        chatContainerRef.current?.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: mensajesActivos.length <= 20 ? 'smooth' : 'instant'
+        })
+      })
     }
   }, [mensajesActivos])
 
@@ -177,7 +182,7 @@ export const ChatArea = memo(function ChatArea({
           {/* Messages area */}
           <div 
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 scroll-smooth overscroll-contain momentum-scroll chat-pattern"
+            className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 py-4 overscroll-contain momentum-scroll chat-pattern"
           >
             {isLoadingMensajes ? (
               <div className="flex items-center justify-center h-full">
@@ -195,18 +200,18 @@ export const ChatArea = memo(function ChatArea({
                 <p className="text-xs text-muted-foreground mt-1.5">Esta conversación está vacía</p>
               </div>
             ) : (
-              <div className="space-y-4 pb-4 max-w-3xl mx-auto">
+              <div className="pb-4 max-w-3xl mx-auto">
                 {mensajesAgrupados.map((grupo) => (
                   <div key={grupo.fecha}>
                     {/* Date separator */}
-                    <div className="sticky top-0 flex items-center justify-center py-2 z-10 pointer-events-none">
-                      <div className="px-3 py-1.5 wa-date-pill rounded-lg text-[11px] font-medium shadow-sm">
-                        {format(new Date(grupo.fecha), "d MMM yyyy", { locale: es })}
+                    <div className="sticky top-0 flex items-center justify-center py-3 z-10 pointer-events-none">
+                      <div className="px-4 py-1.5 wa-date-pill rounded-lg text-[11px] font-semibold tracking-wide">
+                        {format(new Date(grupo.fecha), "d 'de' MMMM, yyyy", { locale: es })}
                       </div>
                     </div>
                     
                     {/* Day messages */}
-                    <div className="space-y-0">
+                    <div>
                       {grupo.mensajes.map((msg, idx) => {
                         const prevMsg = grupo.mensajes[idx - 1];
                         const isConsecutive = prevMsg && prevMsg.remitente === msg.remitente;

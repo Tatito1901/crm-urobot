@@ -3,11 +3,11 @@
  * HOOK: useConversaciones
  * ============================================================
  * Hook para gestionar conversaciones usando tabla 'conversaciones'
- * ✅ SWR: Caché y revalidación
- * ❌ Realtime: DESHABILITADO (optimización de rendimiento BD)
+ * ✅ SWR: Caché y revalidación (revalidateOnMount + polling 30s)
+ * ✅ Realtime: LIGERO (solo trigger SWR refetch, no procesa datos)
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { SWR_CONFIG_REALTIME, CACHE_KEYS, invalidateDomain } from '@/lib/swr-config'
@@ -151,11 +151,31 @@ export function useConversaciones(): UseConversacionesReturn {
     SWR_CONFIG_REALTIME
   )
 
-  // ❌ Realtime DESHABILITADO - Consumía demasiados recursos
-  // Los datos se actualizan vía SWR:
-  // - revalidateOnFocus: al volver a la pestaña
-  // - revalidateOnReconnect: al reconectar internet
-  // - refreshInterval en SWR_CONFIG_REALTIME: polling cada 30s
+  // ✅ Realtime LIGERO: solo escucha cambios en conversaciones para trigger SWR refetch
+  // No procesa datos — solo llama mutate() para que SWR re-fetch via fetcher normal
+  const telefonoActivoRef = useRef(telefonoActivo)
+  telefonoActivoRef.current = telefonoActivo
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('conv-updates')
+      .on(
+        'postgres_changes' as never,
+        { event: '*', schema: 'public', table: 'conversaciones' },
+        () => { mutateConversaciones() }
+      )
+      .on(
+        'postgres_changes' as never,
+        { event: 'INSERT', schema: 'public', table: 'mensajes' },
+        () => {
+          mutateConversaciones()
+          if (telefonoActivoRef.current) mutateMensajes()
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [mutateConversaciones, mutateMensajes])
 
   // Marcar como leído (no-op por ahora, la tabla no tiene ese campo)
   const marcarComoLeido = useCallback(async (_telefono: string) => {

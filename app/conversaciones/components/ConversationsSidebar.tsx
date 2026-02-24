@@ -93,9 +93,10 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
             placeholder="Buscar por nombre o teléfono..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 sm:py-2.5 text-sm bg-muted/50 border border-border rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50
-                     placeholder:text-muted-foreground/60 text-foreground transition-all hover:bg-muted/70"
+            className="w-full pl-9 pr-3 py-2.5 sm:py-2.5 text-sm bg-muted/40 border border-border/60 rounded-xl
+                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40
+                     placeholder:text-muted-foreground/50 text-foreground transition-all
+                     hover:bg-muted/60 hover:border-border"
           />
         </div>
         
@@ -122,7 +123,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
       </div>
 
       {/* Conversation list */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 conv-list-scroll">
         {error ? (
           <div className="p-8 text-center">
             <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center mx-auto mb-3">

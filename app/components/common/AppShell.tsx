@@ -45,7 +45,20 @@ export function AppShell({ children }: PropsWithChildren) {
   }
 
   if (!authChecked) {
-    return null
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="relative text-center space-y-4">
+          <div className="relative mx-auto h-12 w-12">
+            <div className="absolute inset-0 rounded-full border border-teal-400/20 animate-ping" style={{ animationDuration: '2s' }} />
+            <div className="absolute inset-2 rounded-full border border-teal-400/30" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-2 w-2 rounded-full bg-teal-400 shadow-[0_0_12px_2px] shadow-teal-400/40" />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground/60 uppercase tracking-[0.2em]">Verificando sesión</p>
+        </div>
+      </div>
+    )
   }
 
   return (

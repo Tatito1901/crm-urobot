@@ -25,8 +25,8 @@ const swrConfig = {
   // ✅ Deduplicación agresiva: 15 minutos
   dedupingInterval: 15 * 60 * 1000,
   
-  // ✅ Throttle al volver al tab: 5 minutos mínimo
-  focusThrottleInterval: 5 * 60 * 1000,
+  // ✅ Throttle al volver al tab: 30 segundos mínimo
+  focusThrottleInterval: 30 * 1000,
   
   // ❌ NO revalidar automáticamente (ahorro masivo)
   revalidateOnFocus: false,
@@ -81,7 +81,7 @@ export function Providers({ children }: ProvidersProps) {
         <SWRCacheRegistrar>
           <TooltipProvider delayDuration={200}>
             {children}
-            <Toaster position="top-right" richColors closeButton />
+            <Toaster position="bottom-center" richColors closeButton toastOptions={{ className: 'mb-16 lg:mb-0' }} />
           </TooltipProvider>
         </SWRCacheRegistrar>
       </SWRConfig>

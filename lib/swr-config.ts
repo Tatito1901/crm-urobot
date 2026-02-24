@@ -142,11 +142,12 @@ export const SWR_CONFIG_DASHBOARD: SWRConfiguration = {
  * - Cache de 30 segundos para datos frescos
  */
 export const SWR_CONFIG_REALTIME: SWRConfiguration = {
+  revalidateOnMount: true,         // ✅ SIEMPRE fetch fresco al montar (fix: hard-refresh needed)
   revalidateOnFocus: true,         // ✅ Actualizar al volver a la pestaña
   revalidateOnReconnect: true,     // ✅ Actualizar al reconectar
   revalidateIfStale: true,         // ✅ Auto-revalidar datos antiguos
-  dedupingInterval: 60 * 1000,     // 60 segundos de deduplicación (antes 30s)
-  refreshInterval: 60 * 1000,      // ✅ Polling cada 60 segundos (antes 30s — reduce API calls 50%)
+  dedupingInterval: 10 * 1000,     // 10 segundos (antes 60s — permite refetch rápido al navegar)
+  refreshInterval: 30 * 1000,      // ✅ Polling cada 30 segundos (mejor UX para conversaciones)
   keepPreviousData: true,
   shouldRetryOnError: true,
   errorRetryCount: 2,

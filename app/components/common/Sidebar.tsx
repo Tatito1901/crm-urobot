@@ -254,7 +254,7 @@ export function BottomNav() {
         aria-label="Navegación inferior"
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-lg lg:hidden"
       >
-        <div className="flex items-center justify-around px-1 py-1">
+        <div className="flex items-center justify-around px-2 py-1.5">
           {BOTTOM_NAV_ITEMS.map((item) => {
             const isMoreButton = item.href === "#more";
             const isActive = isMoreButton 
@@ -267,8 +267,8 @@ export function BottomNav() {
                   <DrawerTrigger asChild>
                     <button
                       className={cn(
-                        "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[48px] min-w-[56px] transition-all duration-150 no-select",
-                        "active:scale-95 focus-visible:outline-2 focus-visible:outline-teal-400",
+                        "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-200 no-select",
+                        "active:scale-[0.92] focus-visible:outline-2 focus-visible:outline-teal-400",
                         isActive
                           ? "text-teal-400"
                           : "text-muted-foreground"
@@ -323,15 +323,15 @@ export function BottomNav() {
                 prefetch={true}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[48px] min-w-[56px] transition-all duration-150 no-select",
-                  "active:scale-95 focus-visible:outline-2 focus-visible:outline-teal-400",
+                  "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 min-h-[52px] min-w-[60px] transition-all duration-200 no-select",
+                  "active:scale-[0.92] focus-visible:outline-2 focus-visible:outline-teal-400",
                   isActive 
                     ? "text-teal-400 font-semibold" 
                     : "text-muted-foreground"
                 )}
               >
                 {isActive && (
-                  <span className="absolute top-0.5 left-1/2 -translate-x-1/2 h-0.5 w-5 rounded-full bg-teal-400" aria-hidden />
+                  <span className="absolute top-1 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-teal-400 transition-all duration-300" aria-hidden />
                 )}
                 {item.icon}
                 <span className="text-[10px] font-medium">{item.label}</span>

@@ -370,18 +370,18 @@ const RichText = memo(function RichText({ content, className, isBot }: { content
   );
 });
 
-// Color map for fase badges
+// Color map for fase badges — higher contrast
 const FASE_BADGE_COLORS: Record<string, string> = {
-  slate: 'bg-slate-700/50 text-slate-300',
-  blue: 'bg-blue-500/10 text-blue-400',
-  cyan: 'bg-cyan-500/10 text-cyan-400',
-  violet: 'bg-violet-500/10 text-violet-400',
-  emerald: 'bg-emerald-500/10 text-emerald-400',
-  amber: 'bg-amber-500/10 text-amber-400',
-  teal: 'bg-teal-500/10 text-teal-400',
-  red: 'bg-red-500/10 text-red-400',
-  indigo: 'bg-indigo-500/10 text-indigo-400',
-  gray: 'bg-gray-700/50 text-gray-300',
+  slate: 'bg-slate-600/30 text-slate-200 border border-slate-500/20',
+  blue: 'bg-blue-500/15 text-blue-300 border border-blue-400/20',
+  cyan: 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/20',
+  violet: 'bg-violet-500/15 text-violet-300 border border-violet-400/20',
+  emerald: 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/20',
+  amber: 'bg-amber-500/15 text-amber-300 border border-amber-400/20',
+  teal: 'bg-teal-500/15 text-teal-300 border border-teal-400/20',
+  red: 'bg-red-500/15 text-red-300 border border-red-400/20',
+  indigo: 'bg-indigo-500/15 text-indigo-300 border border-indigo-400/20',
+  gray: 'bg-gray-600/30 text-gray-200 border border-gray-500/20',
 };
 
 export const MessageBubble = memo(function MessageBubble({
@@ -451,13 +451,21 @@ export const MessageBubble = memo(function MessageBubble({
     : 'rounded-2xl rounded-tr-sm';
 
   return (
-    <div className={`flex w-full ${isBot ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-0.5' : 'mt-3 first:mt-0'}`}>
-      <div className={`flex flex-col max-w-[85%] sm:max-w-[65%] ${isBot ? 'items-end' : 'items-start'}`}>
+    <div className={`wa-msg-enter flex w-full ${isBot ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-0.5' : 'mt-3 first:mt-0'}`}>
+      <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] lg:max-w-[60%] ${isBot ? 'items-end' : 'items-start'}`}>
+        {/* Sender label for first message in a group */}
+        {!isConsecutive && (
+          <span className={`text-[11px] font-semibold mb-1 px-1 ${
+            isBot ? 'text-emerald-400/70' : 'text-sky-400/70'
+          }`}>
+            {isBot ? 'Dr. Fausto (Bot)' : 'Paciente'}
+          </span>
+        )}
         <div className={`
           relative group
           ${isBot 
-            ? `wa-bubble-out ${botRadius} shadow-sm` 
-            : `wa-bubble-in ${userRadius} shadow-sm`}
+            ? `wa-bubble-out ${botRadius}` 
+            : `wa-bubble-in ${userRadius}`}
         `}>
           {/* Contenido principal */}
           <div className="px-3 sm:px-3.5 pt-2 pb-1">
@@ -478,7 +486,7 @@ export const MessageBubble = memo(function MessageBubble({
             <span className="text-[11px] tabular-nums">
               {format(createdAt, 'HH:mm')}
             </span>
-            {isBot && <CheckCheck className="w-3.5 h-3.5" style={{ color: 'rgba(83, 189, 235, 0.7)' }} />}
+            {isBot && <CheckCheck className="w-3.5 h-3.5" style={{ color: 'rgba(83, 189, 235, 0.8)' }} />}
           </div>
         </div>
       </div>

@@ -25,19 +25,18 @@ const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart
   ssr: false,
 });
 
+const GREETING_CACHE = { value: '', hour: -1 };
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Buenos días';
-  if (hour < 19) return 'Buenas tardes';
-  return 'Buenas noches';
+  if (GREETING_CACHE.hour === hour) return GREETING_CACHE.value;
+  GREETING_CACHE.hour = hour;
+  GREETING_CACHE.value = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+  return GREETING_CACHE.value;
 }
 
+const DATE_FMT = new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
 function getFormattedDate(): string {
-  return new Date().toLocaleDateString('es-MX', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
+  return DATE_FMT.format(new Date());
 }
 
 function timeAgo(dateStr: string): string {
@@ -231,7 +230,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           }}
         />
 
-        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6 px-3 py-4 sm:px-6 sm:py-10 lg:px-8">
+        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6 px-4 py-5 sm:px-6 sm:py-10 lg:px-8">
 
           {/* ═══════════════════════════════════════════
               HEADER — Greeting + date + live indicator
@@ -245,7 +244,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     Centro de Comando
                   </p>
                 </div>
-                <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-gradient-teal">
+                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-gradient-teal">
                   {getGreeting()}
                 </h1>
                 <p className="text-sm text-muted-foreground capitalize">
@@ -313,13 +312,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5">
+          <section className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-5">
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
                 <div
                   key={m.title}
-                  className={`kpi-card ${m.glowClass} grain-overlay shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-4 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default transition-transform duration-200 hover:scale-[1.01]`}
+                  className={`kpi-card ${m.glowClass} shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-4 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default transition-transform duration-200 hover:scale-[1.01]`}
                 >
                   {/* Top row: icon + label */}
                   <div className="flex items-center justify-between mb-4">
@@ -335,7 +334,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
                   {/* Big number */}
                   <div className="flex-1 flex items-end">
-                    <div className={`text-2xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
+                    <div className={`text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
                       {loading ? '—' : m.value}
                     </div>
                   </div>
@@ -360,13 +359,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               SECONDARY METRICS — Compact strip
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 animate-fade-up stagger-6">
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 animate-fade-up stagger-6">
             {secondaryMetrics.map(sm => {
               const Icon = sm.icon;
               return (
                 <div
                   key={sm.label}
-                  className="flex items-center gap-2 sm:gap-3 rounded-xl border border-border bg-card px-2.5 py-2.5 sm:px-4 sm:py-3.5 transition-colors hover:bg-muted/30"
+                  className="flex items-center gap-2.5 sm:gap-3 rounded-xl border border-border bg-card px-3 py-3 sm:px-4 sm:py-3.5 transition-colors hover:bg-muted/30"
                 >
                   <div className={`p-1.5 rounded-lg ${sm.bg} shrink-0`}>
                     <Icon className={`h-3.5 w-3.5 ${sm.color}`} />
