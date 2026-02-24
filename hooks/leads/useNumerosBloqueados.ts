@@ -40,14 +40,18 @@ export function useNumerosBloqueados() {
     }
   );
 
+  // Guard: SWR localStorage cache serializes Set as plain object — rebuild if needed
+  const safeSet: Set<string> = (data && typeof data.has === 'function')
+    ? data
+    : new Set<string>();
+
   return {
-    bloqueados: data ?? new Set<string>(),
+    bloqueados: safeSet,
     isLoading,
     refetch: () => mutate(),
     /** Check if a specific phone is blocked (O(1)) */
     estaBloqueado: (telefono: string) => {
-      if (!data) return false;
-      return data.has(normalizarTelefono(telefono));
+      return safeSet.has(normalizarTelefono(telefono));
     },
   };
 }
