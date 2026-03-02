@@ -179,7 +179,7 @@ export function DashboardHeatmap({ monthsToShow = 6 }: DashboardHeatmapProps) {
                           ${isTodayDate ? 'ring-1 ring-emerald-500' : ''}
                           ${dayCount > 0 ? colors.indicator : 'bg-muted/50 hover:bg-muted'}
                         `}
-                        title={`${date.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}: ${dayCount} citas`}
+                        title={`${date.toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City', weekday: 'short', day: 'numeric', month: 'short' })}: ${dayCount} citas`}
                       />
                     );
                   })}

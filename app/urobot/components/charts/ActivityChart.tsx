@@ -38,7 +38,7 @@ export const ActivityChart = React.memo(function ActivityChart({ data, title = '
   // Preparar datos para el gráfico
   const chartData = React.useMemo(() => {
     return data.map(d => ({
-      hora: d.hora ? new Date(d.hora).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : d.fecha,
+      hora: d.hora ? new Date(d.hora).toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit' }) : d.fecha,
       mensajes: d.mensajes,
       errores: d.errores,
     }));

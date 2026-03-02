@@ -21,7 +21,7 @@ export function DashboardPacientesFieles({ data }: Props) {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-MX', { month: 'short', year: '2-digit' });
+    return date.toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City', month: 'short', year: '2-digit' });
   };
 
   // Colores para el ranking

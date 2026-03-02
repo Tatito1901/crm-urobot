@@ -10,6 +10,7 @@ import {
   ChevronRight, Zap, ShieldAlert,
 } from 'lucide-react';
 import { useDashboardV2 } from '@/hooks/dashboard/useDashboardV2';
+import { TZ, getMexicoHour, formatTimeMX } from '@/lib/date-utils';
 import type { DashboardV2Data } from '@/hooks/dashboard/useDashboardV2';
 import { ErrorBoundary } from '@/app/components/common/ErrorBoundary';
 import { chartColors } from '@/app/lib/design-system';
@@ -27,14 +28,14 @@ const BarChart = dynamicImport(() => import('@/app/components/analytics/BarChart
 
 const GREETING_CACHE = { value: '', hour: -1 };
 function getGreeting(): string {
-  const hour = new Date().getHours();
+  const hour = getMexicoHour();
   if (GREETING_CACHE.hour === hour) return GREETING_CACHE.value;
   GREETING_CACHE.hour = hour;
   GREETING_CACHE.value = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
   return GREETING_CACHE.value;
 }
 
-const DATE_FMT = new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+const DATE_FMT = new Intl.DateTimeFormat('es-MX', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' });
 function getFormattedDate(): string {
   return DATE_FMT.format(new Date());
 }
@@ -55,7 +56,7 @@ function timeAgo(dateStr: string): string {
 
 function formatTime(dateStr: string): string {
   if (!dateStr) return '';
-  return new Date(dateStr).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  return formatTimeMX(dateStr);
 }
 
 function formatCurrency(amount: number): string {
@@ -641,14 +642,14 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 <h2 className="text-sm font-bold text-foreground font-jakarta">Rendimiento del Bot</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px sm:gap-0 sm:divide-x divide-border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border">
               {[
                 { label: 'Resolución', value: `${bot.tasaResolucion}%`, color: 'text-emerald-400' },
                 { label: 'Escalamiento', value: `${bot.tasaEscalamiento}%`, color: 'text-amber-400' },
                 { label: 'Citas bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
                 { label: 'Resp. prom.', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
               ].map(stat => (
-                <div key={stat.label} className="px-3 sm:px-6 py-3 sm:py-4 text-center border-b sm:border-b-0 border-border last:border-b-0">
+                <div key={stat.label} className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">{stat.label}</p>
                   <p className={`text-lg sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}

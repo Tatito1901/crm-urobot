@@ -94,8 +94,8 @@ export const ListView: React.FC<ListViewProps> = ({
         </svg>
         <p className="text-lg text-foreground font-medium">No hay consultas en este rango</p>
         <p className="text-sm text-muted-foreground mt-1">
-          {new Date(dateRange.start).toLocaleDateString('es-MX')} -{' '}
-          {new Date(dateRange.end).toLocaleDateString('es-MX')}
+          {new Date(dateRange.start).toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City' })} -{' '}
+          {new Date(dateRange.end).toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City' })}
         </p>
       </div>
     );

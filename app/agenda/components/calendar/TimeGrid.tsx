@@ -163,7 +163,7 @@ export const TimeGrid = React.memo(function TimeGrid({
                 hasWorkingHours ? 'bg-transparent' : 'bg-muted/30'
               }`}
               role="gridcell"
-              aria-label={`${date.toLocaleDateString('es-MX')}`}
+              aria-label={`${date.toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City' })}`}
             >
               {/* Grid de líneas de tiempo - Solo líneas visibles en horas completas */}
               {timeSlots.map((slot) => {

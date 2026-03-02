@@ -47,6 +47,7 @@ function AlertaCard({ alerta, onRevisar }: { alerta: Alerta; onRevisar: (id: str
           </span>
           <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
             {new Date(alerta.created_at).toLocaleString('es-MX', {
+              timeZone: 'America/Mexico_City',
               day: 'numeric',
               month: 'short',
               hour: '2-digit',

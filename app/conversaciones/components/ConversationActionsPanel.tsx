@@ -482,7 +482,7 @@ export function ConversationActionsPanel({
         <div className="shrink-0 px-4 py-2.5 border-t border-border">
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <Clock className="w-3 h-3" />
-            <span>Último contacto: {new Date(lead.ultimaInteraccion).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>
+            <span>Último contacto: {new Date(lead.ultimaInteraccion).toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City', day: 'numeric', month: 'short' })}</span>
           </div>
         </div>
       )}

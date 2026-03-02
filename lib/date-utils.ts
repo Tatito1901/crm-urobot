@@ -3,7 +3,77 @@
  * UTILIDADES DE FECHAS - Sin dependencias externas
  * ============================================================
  * Funciones puras para manejo de fechas usando Date nativo
+ * Todas las funciones de formateo usan America/Mexico_City
  */
+
+// ========== TIMEZONE CENTRAL ==========
+
+export const TZ = 'America/Mexico_City' as const;
+
+/**
+ * Hora actual en México (0-23)
+ */
+export function getMexicoHour(): number {
+  return parseInt(
+    new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', hour12: false }).format(new Date()),
+    10,
+  );
+}
+
+/**
+ * Formatea fecha en es-MX con timezone México
+ * @example formatDateMX(date) → "15 ene 2025"
+ * @example formatDateMX(date, { weekday: 'long', day: 'numeric', month: 'long' }) → "miércoles, 15 de enero"
+ */
+export function formatDateMX(date: Date | string, options?: Intl.DateTimeFormatOptions): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('es-MX', { timeZone: TZ, ...options });
+}
+
+/**
+ * Formatea hora en es-MX con timezone México
+ * @example formatTimeMX(date) → "09:30"
+ */
+export function formatTimeMX(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleTimeString('es-MX', { timeZone: TZ, hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * Formatea fecha+hora en es-MX con timezone México
+ */
+export function formatDateTimeMX(date: Date | string, options?: Intl.DateTimeFormatOptions): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleString('es-MX', { timeZone: TZ, ...options });
+}
+
+/**
+ * Convierte fecha a clave de día YYYY-MM-DD en timezone México
+ * @example toDayKeyMX(date) → "2025-01-15"
+ */
+export function toDayKeyMX(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
+}
+
+/**
+ * Formatea separador de fecha largo en español
+ * @example formatDateSeparatorMX(date) → "15 de enero, 2025"
+ */
+export function formatDateSeparatorMX(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('es-MX', {
+    timeZone: TZ,
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 
 /**
  * Obtiene el inicio de la semana (lunes) para una fecha dada

@@ -4,8 +4,7 @@ import { useRef, useEffect, useMemo, useCallback, useState, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { MessageCircle, ArrowLeft, Loader2, ExternalLink, MessageSquare, PanelRight, Phone, ShieldBan } from 'lucide-react'
 import type { TipoMensaje } from '@/types/chat'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { toDayKeyMX, formatDateSeparatorMX } from '@/lib/date-utils'
 import { MessageBubble } from './MessageBubble'
 
 interface ContactoActivo {
@@ -78,7 +77,7 @@ export const ChatArea = memo(function ChatArea({
     let fechaActual = ''
     
     for (const msg of mensajesActivos) {
-      const fecha = format(msg.createdAt, 'yyyy-MM-dd')
+      const fecha = toDayKeyMX(msg.createdAt)
       if (fecha !== fechaActual) {
         fechaActual = fecha
         grupos.push({ fecha, mensajes: [] })
@@ -206,7 +205,7 @@ export const ChatArea = memo(function ChatArea({
                     {/* Date separator */}
                     <div className="sticky top-0 flex items-center justify-center py-3 z-10 pointer-events-none">
                       <div className="px-4 py-1.5 wa-date-pill rounded-lg text-[11px] font-semibold tracking-wide">
-                        {format(new Date(grupo.fecha), "d 'de' MMMM, yyyy", { locale: es })}
+                        {formatDateSeparatorMX(grupo.fecha)}
                       </div>
                     </div>
                     

@@ -83,7 +83,7 @@ export const DaysHeader = React.memo(function DaysHeader({ weekStart, mode = 'we
               <div className="absolute top-full mt-2 z-50 w-40 p-2 rounded-lg bg-popover border border-border shadow-2xl">
                 <div className="text-xs space-y-1">
                   <p className="font-semibold text-popover-foreground">
-                    {date.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' })}
+                    {date.toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City', weekday: 'long', day: 'numeric', month: 'short' })}
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Citas:</span>

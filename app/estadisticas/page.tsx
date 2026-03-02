@@ -204,8 +204,8 @@ export default function EstadisticasPage() {
       {/* ═══ Ocupación y Predicciones ═══ */}
       <section>
         <SectionHeader icon={Flame} title="Ocupación y Predicciones" iconColor="text-orange-500" />
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 sm:gap-4">
-          <Card className={`${cards.base} xl:col-span-2 min-w-0`}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+          <Card className={`${cards.base} lg:col-span-2 min-w-0`}>
             <CardHeader className={spacing.cardHeader}>
               <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
                 <Flame className="w-4 h-4 text-orange-500" />

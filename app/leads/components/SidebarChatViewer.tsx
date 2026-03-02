@@ -2,8 +2,7 @@
 
 import React, { useRef, useEffect, useMemo } from 'react';
 import { Loader2, MessageCircle, Bot, CheckCheck, Phone, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { toDayKeyMX, formatDateMX, formatTimeMX } from '@/lib/date-utils';
 import { useLeadConversation } from '@/hooks/leads/useLeadConversation';
 import { FASE_DISPLAY } from '@/types/chat';
 import type { Mensaje } from '@/types/chat';
@@ -43,7 +42,7 @@ export function SidebarChatViewer({ telefono, nombreDisplay }: SidebarChatViewer
     let fechaActual = '';
 
     for (const msg of mensajes) {
-      const fecha = format(msg.createdAt, 'yyyy-MM-dd');
+      const fecha = toDayKeyMX(msg.createdAt);
       if (fecha !== fechaActual) {
         fechaActual = fecha;
         grupos.push({ fecha, mensajes: [] });
@@ -113,7 +112,7 @@ export function SidebarChatViewer({ telefono, nombreDisplay }: SidebarChatViewer
             {/* Date separator */}
             <div className="flex items-center justify-center py-1.5 pointer-events-none">
               <div className="px-2.5 py-0.5 bg-slate-900/80 backdrop-blur rounded-full text-[10px] font-medium text-muted-foreground shadow-sm">
-                {format(new Date(grupo.fecha), "d MMM yyyy", { locale: es })}
+                {formatDateMX(grupo.fecha, { day: 'numeric', month: 'short', year: 'numeric' })}
               </div>
             </div>
 
@@ -227,7 +226,7 @@ const CompactBubble = React.memo(function CompactBubble({
             isBot ? 'text-slate-500' : 'text-white/50'
           }`}>
             <span className="text-[9px] tabular-nums">
-              {format(msg.createdAt, 'HH:mm')}
+              {formatTimeMX(msg.createdAt)}
             </span>
             {!isBot && <CheckCheck className="w-3 h-3 text-white/40" />}
           </div>

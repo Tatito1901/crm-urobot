@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/drawer";
 
 import { cn } from "@/lib/utils";
+import { TZ } from "@/lib/date-utils";
 import { signOutAction } from "@/app/auth/actions";
 import { BotKillSwitch, BotKillSwitchCompact } from "./BotKillSwitch";
 
@@ -66,7 +67,7 @@ const NAV_SECTIONS: readonly NavSection[] = [
 
 const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
 
-const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { dateStyle: "long" });
+const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", { timeZone: TZ, dateStyle: "long" });
 
 export function Sidebar() {
   const pathname = usePathname();

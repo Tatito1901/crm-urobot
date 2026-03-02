@@ -144,7 +144,7 @@ export const MetricCard = React.memo(({
   if (variant === 'compact') {
     return (
       <div
-        className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 hover:shadow-sm min-h-[64px] sm:min-h-[72px] min-w-[150px] sm:min-w-0 shrink-0 sm:shrink cursor-pointer relative overflow-hidden group"
+        className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 hover:shadow-sm min-h-[64px] sm:min-h-[72px] min-w-[140px] sm:min-w-0 shrink-0 sm:shrink cursor-pointer relative overflow-hidden group snap-start"
         title={tooltip}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:animate-shimmer pointer-events-none" />

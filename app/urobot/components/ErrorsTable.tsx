@@ -31,7 +31,7 @@ function ErrorCard({ error }: { error: ErrorLog }) {
       <div className="flex items-center justify-between gap-2">
         <ErrorBadge type={error.tipo_error} />
         <span className="text-xs text-muted-foreground">
-          {new Date(error.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+          {new Date(error.created_at).toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
       <p className="text-xs font-mono text-muted-foreground">{error.telefono}</p>
@@ -78,7 +78,7 @@ export const ErrorsTable = React.memo(function ErrorsTable({ errors }: ErrorsTab
             {errors.slice(0, 10).map((err) => (
               <tr key={err.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                 <td className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(err.created_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(err.created_at).toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit' })}
                 </td>
                 <td className="py-2 px-3 font-mono text-xs truncate">
                   {err.telefono}

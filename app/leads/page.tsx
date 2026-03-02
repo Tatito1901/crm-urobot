@@ -138,7 +138,7 @@ export default function LeadsPage() {
       <div className="relative z-[1] space-y-4">
 
         {/* ── Stats grid ── */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-3 animate-fade-up stagger-1">
+        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-3 animate-fade-up stagger-1">
           <MetricCard
             variant="compact"
             icon={<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />}

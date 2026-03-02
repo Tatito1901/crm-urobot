@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import Image from 'next/image';
-import { format } from 'date-fns';
+import { formatTimeMX } from '@/lib/date-utils';
 import { FileText, Download, Play, Pause, MapPin, Image as ImageIcon, Film, Mic, X, Eye, CheckCheck } from 'lucide-react';
 import type { TipoMensaje } from '@/types/chat';
 import { FASE_DISPLAY } from '@/types/chat';
@@ -484,7 +484,7 @@ export const MessageBubble = memo(function MessageBubble({
           {/* Footer: hora + check marks (WhatsApp style) */}
           <div className="wa-timestamp flex items-center justify-end gap-1 px-3 pb-1.5 select-none">
             <span className="text-[11px] tabular-nums">
-              {format(createdAt, 'HH:mm')}
+              {formatTimeMX(createdAt)}
             </span>
             {isBot && <CheckCheck className="w-3.5 h-3.5" style={{ color: 'rgba(83, 189, 235, 0.8)' }} />}
           </div>

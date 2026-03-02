@@ -298,7 +298,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
                     <p className="text-xs text-muted-foreground mt-1">
                       {selectedPatient.totalConsultas} consultas previas •{' '}
                       {selectedPatient.ultimaConsulta
-                        ? `Última: ${new Date(selectedPatient.ultimaConsulta).toLocaleDateString('es-MX')}`
+                        ? `Última: ${new Date(selectedPatient.ultimaConsulta).toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City' })}`
                         : 'Sin consultas previas'}
                     </p>
                   )}
