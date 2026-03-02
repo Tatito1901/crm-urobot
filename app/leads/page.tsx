@@ -286,7 +286,7 @@ export default function LeadsPage() {
             role="dialog"
             aria-label="Panel clínico del lead"
             aria-modal="true"
-            className="fixed top-0 right-0 z-50 h-full w-full sm:w-[420px] sm:max-w-[90vw] bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 pb-16 lg:pb-0"
+            className="fixed top-0 right-0 z-50 h-full w-full sm:w-[440px] sm:max-w-[90vw] bg-card border-l border-border shadow-2xl shadow-black/20 flex flex-col animate-in slide-in-from-right duration-200 pb-16 lg:pb-0"
           >
             <LeadClinicSidebar
               lead={selectedLead}

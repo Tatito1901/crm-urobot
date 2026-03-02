@@ -119,9 +119,9 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
       <div className="flex flex-col h-full bg-card w-full">
 
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-border">
+        <div className="shrink-0 border-b border-border bg-card">
           {/* Top bar: nav + close */}
-          <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center justify-between px-4 py-2">
             <div className="flex items-center gap-0.5">
               {onNavigate && (
                 <>
@@ -142,7 +142,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
                       <button
                         onClick={() => onNavigate('next')}
                         disabled={!hasNext}
-                        className="p-2.5 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed touch-target"
+                        className="p-2 rounded-lg hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed touch-target"
                       >
                         <ChevronRight className="w-4 h-4 text-muted-foreground" />
                       </button>
@@ -166,10 +166,10 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
           </div>
 
           {/* Profile card */}
-          <div className="px-4 pb-3">
-            <div className="flex items-start gap-3">
+          <div className="px-5 pb-4">
+            <div className="flex items-start gap-3.5">
               {/* Avatar with temperature ring */}
-              <div className={cn('relative shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold ring-2', tempCfg.bg, tempCfg.ring)}>
+              <div className={cn('relative shrink-0 w-13 h-13 rounded-full flex items-center justify-center text-white text-sm font-bold ring-2', tempCfg.bg, tempCfg.ring)}>
                 {getInitials(lead.nombreDisplay)}
                 {/* Score badge */}
                 {lead.scoreTotal > 0 && (
@@ -227,17 +227,17 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
           </div>
 
           {/* Quick stats strip */}
-          <div className="grid grid-cols-4 border-t border-border divide-x divide-border">
+          <div className="grid grid-cols-4 border-t border-border divide-x divide-border bg-muted/30">
             <QuickStat label="Score" value={lead.scoreTotal > 0 ? String(lead.scoreTotal) : '—'} color={lead.scoreTotal >= 70 ? 'text-emerald-400' : lead.scoreTotal >= 40 ? 'text-amber-400' : undefined} />
-            <QuickStat label="Msgs" value={String(lead.totalMensajes)} />
-            <QuickStat label="Días" value={lead.diasDesdeUltimaInteraccion === null ? '—' : lead.diasDesdeUltimaInteraccion === 0 ? 'Hoy' : `${lead.diasDesdeUltimaInteraccion}d`} color={lead.diasDesdeUltimaInteraccion !== null && lead.diasDesdeUltimaInteraccion > 3 ? 'text-amber-400' : undefined} />
+            <QuickStat label="Msgs" value={String(lead.totalMensajes)} color="text-sky-400" />
+            <QuickStat label="Últ. act." value={lead.diasDesdeUltimaInteraccion === null ? '—' : lead.diasDesdeUltimaInteraccion === 0 ? 'Hoy' : `${lead.diasDesdeUltimaInteraccion}d`} color={lead.diasDesdeUltimaInteraccion !== null && lead.diasDesdeUltimaInteraccion > 3 ? 'text-amber-400' : undefined} />
             <QuickStat label="Fuente" value={lead.fuente === 'Meta Ads' ? 'Meta' : lead.fuente === 'WhatsApp Directo' ? 'WA' : lead.fuente === 'Google Ads' ? 'Google' : lead.fuente.slice(0, 6)} />
           </div>
         </div>
 
         {/* ── Tab bar ── */}
-        <div className="shrink-0 px-2 bg-secondary/20 border-b border-border">
-          <div className="flex gap-0.5 py-1">
+        <div className="shrink-0 px-3 bg-muted/30 border-b border-border">
+          <div className="flex gap-1 py-1.5">
             <TabPill active={activeTab === 'resumen'} onClick={() => setActiveTab('resumen')} icon={<Stethoscope className="w-3.5 h-3.5" />} label="Resumen" />
             <TabPill active={activeTab === 'conversacion'} onClick={() => setActiveTab('conversacion')} icon={<MessageCircle className="w-3.5 h-3.5" />} label="Chat" badge={lead.totalMensajes > 0 ? lead.totalMensajes : undefined} />
           </div>
@@ -250,7 +250,7 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
           </div>
         ) : (
           <ScrollArea className="flex-1">
-            <div className="p-3 space-y-2">
+            <div className="p-4 space-y-2.5">
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
                   <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
@@ -519,23 +519,23 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
         )}
 
         {/* ── Footer: Quick actions ── */}
-        <div className="shrink-0 border-t border-border px-3 py-3 bg-secondary/20 safe-area-bottom">
-          <div className="flex items-center gap-2">
+        <div className="shrink-0 border-t border-border px-4 py-3 bg-card safe-area-bottom">
+          <div className="flex items-center gap-2.5">
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] bg-emerald-500/15 text-emerald-400 text-xs font-semibold rounded-lg hover:bg-emerald-500/25 active:bg-emerald-500/30 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] bg-emerald-500/15 text-emerald-400 text-sm font-semibold rounded-xl hover:bg-emerald-500/25 active:bg-emerald-500/30 transition-colors border border-emerald-500/20"
             >
-              <Phone className="w-3.5 h-3.5" />
+              <Phone className="w-4 h-4" />
               WhatsApp
             </a>
             <a
               href={`/conversaciones?search=${lead.telefono}`}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] bg-primary/10 text-primary text-xs font-semibold rounded-lg hover:bg-primary/20 active:bg-primary/25 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] bg-primary/10 text-primary text-sm font-semibold rounded-xl hover:bg-primary/20 active:bg-primary/25 transition-colors border border-primary/20"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Ver completo
+              <ExternalLink className="w-4 h-4" />
+              Ver chat
             </a>
           </div>
         </div>
@@ -548,9 +548,9 @@ export function LeadClinicSidebar({ lead, onClose, onNavigate, hasPrev, hasNext,
 
 function QuickStat({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="flex flex-col items-center py-2 px-1">
-      <span className={cn('text-xs font-bold tabular-nums', color || 'text-foreground')}>{value}</span>
-      <span className="text-[10px] text-muted-foreground">{label}</span>
+    <div className="flex flex-col items-center justify-center py-2.5 px-1 gap-0.5">
+      <span className={cn('text-sm font-bold tabular-nums leading-none', color || 'text-foreground')}>{value}</span>
+      <span className="text-[10px] text-muted-foreground font-medium">{label}</span>
     </div>
   );
 }
