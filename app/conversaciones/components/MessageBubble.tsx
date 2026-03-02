@@ -458,7 +458,7 @@ export const MessageBubble = memo(function MessageBubble({
           <span className={`text-[11px] font-semibold mb-1 px-1 ${
             isBot ? 'text-emerald-400/70' : 'text-sky-400/70'
           }`}>
-            {isBot ? 'Dr. Fausto (Bot)' : 'Paciente'}
+            {isBot ? 'Dr. Mario Martínez Thomas (Bot)' : 'Paciente'}
           </span>
         )}
         <div className={`

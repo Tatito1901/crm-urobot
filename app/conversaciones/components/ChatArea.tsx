@@ -110,7 +110,7 @@ export const ChatArea = memo(function ChatArea({
       flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
-      bg-[#0b141a]
+      bg-[#0b141a] touch-manipulation
       ${isMobileViewingChat ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}
     `}>
       {telefonoActivo && contactoActivo ? (
@@ -202,7 +202,7 @@ export const ChatArea = memo(function ChatArea({
             ) : (
               <div className="pb-4 max-w-3xl mx-auto">
                 {mensajesAgrupados.map((grupo) => (
-                  <div key={grupo.fecha}>
+                  <div key={grupo.fecha} className="wa-date-group">
                     {/* Date separator */}
                     <div className="sticky top-0 flex items-center justify-center py-3 z-10 pointer-events-none">
                       <div className="px-4 py-1.5 wa-date-pill rounded-lg text-[11px] font-semibold tracking-wide">

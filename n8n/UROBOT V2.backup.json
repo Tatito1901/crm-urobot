@@ -11,10 +11,10 @@
       "type": "n8n-nodes-base.whatsAppTrigger",
       "typeVersion": 1,
       "position": [
-        -8896,
-        4080
+        8624,
+        7600
       ],
-      "id": "c6ba038f-743e-4083-b860-f1020a4d6cb0",
+      "id": "42dc3cb0-2323-4b5b-8258-844e8772fcfe",
       "name": "WhatsApp Trigger",
       "webhookId": "urobot-webhook-v2",
       "credentials": {
@@ -31,10 +31,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -8896,
-        4272
+        8624,
+        7792
       ],
-      "id": "1c372013-5581-432a-a45c-5800567d0933",
+      "id": "2ff87052-542a-4cb1-9054-b9097a3185b7",
       "name": "When chat message received",
       "webhookId": "urobot-chat-trigger-v2"
     },
@@ -45,10 +45,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -8672,
-        4176
+        8848,
+        7696
       ],
-      "id": "67551b97-32e4-4995-ab27-c47e45e4987b",
+      "id": "38f46355-42a5-4688-8926-297de162ffbf",
       "name": "🚫 Filtrar Status"
     },
     {
@@ -58,10 +58,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -8448,
-        4176
+        9072,
+        7696
       ],
-      "id": "9f309a58-13c7-4d29-a10c-531888d8ed36",
+      "id": "9cfb8dbb-f6a7-4e7e-92b5-5bea5e257e67",
       "name": "⚡ Rate Limit Check",
       "continueOnFail": true
     },
@@ -91,10 +91,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -8224,
-        4176
+        9296,
+        7696
       ],
-      "id": "ac9904d3-a473-464f-8a12-0206bb9abad8",
+      "id": "021a2eb9-ceb7-432e-954f-8c63e9767c01",
       "name": "🚦 Rate OK?"
     },
     {
@@ -182,10 +182,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -8000,
-        4144
+        9520,
+        7664
       ],
-      "id": "c4553714-2edb-47d3-9b2c-4a4a9ea7e684",
+      "id": "70f43828-3bde-4fad-91bb-38a27a548ad8",
       "name": "📱 Tipo Media?"
     },
     {
@@ -197,10 +197,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1,
       "position": [
-        -7776,
-        3904
+        9744,
+        7424
       ],
-      "id": "1686d6a8-6ae5-4f5b-bf1d-ed844224b9b3",
+      "id": "a20cdbba-ccfc-4550-ac1a-fcf350c2480f",
       "name": "WA Get URL Imagen",
       "webhookId": "5fb9df4d-c913-4688-beec-f7b78f11f96b",
       "credentials": {
@@ -228,10 +228,10 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -7328,
-        3904
+        10192,
+        7424
       ],
-      "id": "c23d7890-bc96-4d51-919e-50cf3f65d12d",
+      "id": "cc526403-d8e8-42ea-928f-f111873cae57",
       "name": "OpenAI Vision",
       "retryOnFail": true,
       "maxTries": 2,
@@ -267,10 +267,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -7104,
-        3904
+        10416,
+        7424
       ],
-      "id": "5cb202a7-9a8f-4815-aedc-39c24e2c6a63",
+      "id": "a6e26e93-4b84-4bed-b218-dc03224bdb51",
       "name": "Set Texto Imagen"
     },
     {
@@ -282,10 +282,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1,
       "position": [
-        -7776,
-        4096
+        9744,
+        7616
       ],
-      "id": "dbd25c66-b71f-4302-b086-f1bbbf29f46d",
+      "id": "8732d0b0-1e79-48ef-a114-6d256c174467",
       "name": "WA Get URL Audio",
       "webhookId": "22387a47-d284-49b6-bff4-a77bc94e4b57",
       "credentials": {
@@ -308,10 +308,10 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -7328,
-        4096
+        10192,
+        7616
       ],
-      "id": "027ea18d-33eb-43e2-953d-12a656e3af2c",
+      "id": "d9a4e2f9-295b-4825-bda0-e9699cd8df4b",
       "name": "OpenAI Whisper",
       "retryOnFail": true,
       "maxTries": 2,
@@ -347,10 +347,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -7104,
-        4096
+        10416,
+        7616
       ],
-      "id": "e3637c26-ddd0-4871-ba3a-f3268c6d764a",
+      "id": "ed85d083-d303-4699-92d6-7daf6411eb38",
       "name": "Set Texto Audio"
     },
     {
@@ -376,10 +376,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -7104,
-        4288
+        10416,
+        7808
       ],
-      "id": "c8750560-95c2-403d-81ba-1c76e0f82369",
+      "id": "7bc0bab8-812f-4b17-af72-1714a9d32617",
       "name": "Set Texto Documento"
     },
     {
@@ -405,10 +405,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -6880,
-        4432
+        10640,
+        7952
       ],
-      "id": "24c711ea-4f75-4c8a-b310-a9f1f4fc9401",
+      "id": "75838a03-4088-495a-9b44-022b2544c894",
       "name": "Set Texto Normal"
     },
     {
@@ -426,10 +426,10 @@
       "type": "n8n-nodes-base.summarize",
       "typeVersion": 1.1,
       "position": [
-        -6880,
-        4096
+        10640,
+        7616
       ],
-      "id": "23a8dd6a-e898-459c-a2d5-20c540648cf2",
+      "id": "82747f93-e7be-425e-a814-294e90361d57",
       "name": "Summarize"
     },
     {
@@ -439,10 +439,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -6656,
-        4272
+        10864,
+        7792
       ],
-      "id": "07996cac-4048-444c-bf1e-b6aebd9cec01",
+      "id": "18d8b5f4-51f0-47a5-b494-8e905736499a",
       "name": "1️⃣ Validar y Normalizar",
       "continueOnFail": true
     },
@@ -457,10 +457,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -6432,
-        4272
+        11088,
+        7792
       ],
-      "id": "80c0b6f7-31bf-486a-9d2f-1d69ecfce836",
+      "id": "8bcd7689-855c-406f-b3a5-dc189f7ba263",
       "name": "🔒 Check Rate Limit DB",
       "credentials": {
         "postgres": {
@@ -496,10 +496,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -6208,
-        4272
+        11312,
+        7792
       ],
-      "id": "fe5f1925-d19f-4a00-af5a-07b63e80cb92",
+      "id": "f6f8cbca-7ff0-4a2b-9fe7-b1544c033f55",
       "name": "🔒 Rate Limit OK?"
     },
     {
@@ -513,10 +513,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -5984,
-        4176
+        11984,
+        7696
       ],
-      "id": "f933791d-5ecf-46c1-a147-e7997694535c",
+      "id": "13fb1ffb-4bf7-4003-a9eb-f8782819e009",
       "name": "2️⃣ Upsert Conversación",
       "credentials": {
         "postgres": {
@@ -537,10 +537,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -5760,
-        4176
+        12208,
+        7696
       ],
-      "id": "ae4c1403-a2af-44f0-a3c9-5b307701d5a4",
+      "id": "fdca464d-0f9e-437a-b48d-4233e172ad7f",
       "name": "3️⃣ Guardar Mensaje",
       "credentials": {
         "postgres": {
@@ -561,10 +561,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -5536,
-        4176
+        12432,
+        7696
       ],
-      "id": "2ae90a2c-7728-4dda-a635-d7a18302a0a1",
+      "id": "31c754c4-5cfb-4abe-84b7-d783532fffdf",
       "name": "📝 Registrar Debounce",
       "credentials": {
         "postgres": {
@@ -575,14 +575,16 @@
       "continueOnFail": true
     },
     {
-      "parameters": {},
+      "parameters": {
+        "amount": 30
+      },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        -5312,
-        4176
+        12656,
+        7696
       ],
-      "id": "26ed3460-89d5-45e3-9ab3-61da17181828",
+      "id": "a15dde6f-ff44-44ae-b72d-2249f59825e5",
       "name": "⏳ Debounce 5s",
       "webhookId": "urobot-debounce-v2"
     },
@@ -597,10 +599,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -5088,
-        4176
+        12880,
+        7696
       ],
-      "id": "10faeb7b-f6a0-49ec-ab03-1b3beff68966",
+      "id": "0ecfb065-a2e8-44f7-9a7f-64eb376bb33c",
       "name": "🔍 Check Debounce",
       "credentials": {
         "postgres": {
@@ -636,10 +638,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -4864,
-        4176
+        13104,
+        7696
       ],
-      "id": "d60ec9b2-cad4-449f-87b0-2fdf3d790105",
+      "id": "f49a2f2a-cbc5-44f4-901a-d3c7a335dc57",
       "name": "¿Soy Último?"
     },
     {
@@ -653,10 +655,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -4640,
-        4176
+        13328,
+        7696
       ],
-      "id": "c4c8ab28-6d91-4e92-ac34-151ea5206d59",
+      "id": "0cc844c8-381b-4950-91dd-1481697d79ac",
       "name": "4️⃣ Cargar Contexto",
       "credentials": {
         "postgres": {
@@ -673,10 +675,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -4416,
-        4176
+        13552,
+        7696
       ],
-      "id": "6cd6136f-110c-416a-8441-a0aa33533388",
+      "id": "fd900ad4-b9d5-4d15-b10f-1a98f6c91585",
       "name": "5️⃣ Procesar Contexto",
       "continueOnFail": true
     },
@@ -687,10 +689,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3392,
-        4176
+        15024,
+        7568
       ],
-      "id": "b88c057e-9bfb-4586-b976-1fce1af31e80",
+      "id": "66761095-4a74-45a9-b0f5-37f010f735f7",
       "name": "9️⃣ Formatear Contexto",
       "continueOnFail": true
     },
@@ -700,16 +702,16 @@
         "text": "=Fecha y hora actual: {{ $now.setZone('America/Mexico_City').setLocale('es-MX').toFormat(\"cccc dd 'de' LLLL yyyy, HH:mm\") }}\n═══════════════════════════════════════════════\nTELÉFONO: {{ $json.telefono }}\n═══════════════════════════════════════════════\n\n{{ $json.contextoContacto }}\n\n═══════════════════════════════════════════════\nMENSAJE DEL PACIENTE:\n{{ $json.mensajeUsuario }}",
         "needsFallback": true,
         "options": {
-          "systemMessage": "=<SYSTEM>\n═══════════════════════════════════════════════\nREGLA DE ORO (máxima prioridad — léela primero y al final)\n═══════════════════════════════════════════════\n1. Tu respuesta es ÚNICAMENTE el texto del mensaje de WhatsApp, listo para enviar.\n2. 2 a 5 líneas. Máximo 1–2 emojis SOLO en el primer saludo de la conversación.\n3. NUNCA asumas síntomas que el paciente NO haya dicho con sus propias palabras. Si viene de un anuncio, NO des por hecho que tiene los síntomas del anuncio. Pregunta.\n4. NUNCA inventes horarios, disponibilidad ni datos médicos.\n5. Nada de análisis, estrategias, metadata, pensamientos internos, listas numeradas ni markdown.\n\n═══════════════════════════════════════════════\nIDENTIDAD\n═══════════════════════════════════════════════\nEres quien atiende el WhatsApp del Dr. Mario Martínez Thomas, urólogo. Llevas tiempo trabajando con él y conoces su consulta. Los pacientes creen que hablan con alguien de su equipo, y así debe sentirse: cercano, profesional, humano. Nunca reveles que eres IA, bot o sistema automatizado.\n\n═══════════════════════════════════════════════\nCAMPAÑA ACTIVA: PROBLEMAS PROSTÁTICOS (Meta Ads)\n═══════════════════════════════════════════════\nLa mayoría de pacientes nuevos llegan por un anuncio en Facebook/Instagram sobre problemas de próstata. Ten en cuenta:\n\n- Muchos sienten VERGÜENZA o PENA al hablar de síntomas urinarios o sexuales. No los presiones a contar detalles; deja que compartan a su ritmo.\n- NORMALIZA siempre: \"es algo muy frecuente\", \"muchos pacientes del Doctor vienen por algo similar\", \"no tiene nada de raro\".\n- Su primer mensaje suele ser genérico (\"vi el anuncio\", \"quiero info\"). NO asumas qué síntoma tienen por el tema del anuncio. Haz una pregunta abierta y cálida.\n- Si el paciente sí comparte un síntoma → valida su decisión de escribir: \"Qué bueno que se anima a consultarlo\" o \"Hace bien en checarse\".\n- Evita términos clínicos intimidantes al inicio (hiperplasia, PSA, tacto rectal). Usa lenguaje simple hasta que el paciente se abra.\n\n⚠️ CRÍTICO — MENSAJE PRE-LLENADO DE META:\nCuando el primer mensaje contiene \"vi el anuncio\" o \"vi el video\" seguido de \"quiero info\" o \"quiero más info\", fue GENERADO AUTOMÁTICAMENTE por Meta Ads. El paciente NO escribió nada con sus propias palabras.\nNUNCA respondas asumiendo que tiene síntomas prostáticos, nocturia, o cualquier otro síntoma. Ignora completamente el headline del anuncio o cualquier dato de META_HEADLINE. Trata este mensaje como si dijera SOLO \"hola, quiero información\".\n\n═══════════════════════════════════════════════\nESTILO DE COMUNICACIÓN\n═══════════════════════════════════════════════\n- Español mexicano natural, cálido y profesional.\n- Tono: empático, cercano, como alguien que genuinamente quiere ayudar. Frases como: \"Con gusto le ayudo\", \"Para su tranquilidad\", \"Con mucho gusto le busco espacio\", \"Permítame revisar\", \"Qué bueno que nos escribe\".\n- USTED por defecto. Si el paciente tutea, cambia a TÚ.\n- No suenes a vendedor ni a guión. Sé conversacional, como un mensaje real de WhatsApp.\n- Palabras PROHIBIDAS: inversión, valoración integral, sin compromiso, excelente decisión, señal de alerta, antes de que sea tarde, UROBOT, asistente virtual, inteligencia artificial, bot, hiperplasia (a menos que el paciente la mencione primero).\n- Evita: tablas, bullets largos, repetir el nombre del paciente al inicio de cada mensaje.\n- En WhatsApp usa *negritas* solo para info clave: precio, dirección, horario confirmado.\n\n═══════════════════════════════════════════════\nUSO DEL CONTEXTO (datos que recibes automáticamente)\n═══════════════════════════════════════════════\nAntes del mensaje del paciente recibes datos de contexto. Úsalos así:\n- Si es PRIMERA INTERACCIÓN → saludo cálido + pregunta abierta. NUNCA asumas síntomas.\n- Si ya tiene NOMBRE → úsalo naturalmente (no en cada mensaje).\n- Si tiene CITA PENDIENTE → tenlo presente; si pregunta algo de agenda, menciónala.\n- Si su TEMPERATURA es \"caliente\" o \"urgente\" → prioriza agendar pronto.\n- Si PREGUNTÓ PRECIO antes → no repitas el precio, di \"lo que le comenté\".\n- Si tiene SÍNTOMAS previos en el historial → refiérete a ellos con las propias palabras del paciente.\n- Si hay HISTORIAL de conversación → sé coherente, no repitas lo que ya dijiste.\n- Si ves META_HEADLINE o info del anuncio → es solo para tu contexto interno. NUNCA lo menciones ni asumas que el paciente tiene esos síntomas.\n\n═══════════════════════════════════════════════\nLA PRÁCTICA DEL DR. MARIO\n═══════════════════════════════════════════════\nSEDES (siempre ofrece elegir):\n1. *Hospital Ángeles Santa Mónica* — Temístocles 210, Polanco.\n2. *Hospital San Ángel Inn Satélite*.\n\nPRECIOS (OBLIGATORIO usar estas cifras exactas, NO redondees ni uses otra cantidad):\n- Primera vez: *$1,200 MXN* (consulta + ultrasonido si se necesita, todo en la misma visita).\n- Subsecuente: *$800 MXN*.\n- Menciona el precio UNA sola vez en toda la conversación. Después: \"lo que le comenté\".\n\nHORARIOS DE REFERENCIA (solo para tu contexto, NO los menciones al paciente — usa la herramienta):\n- Santa Mónica: lunes 9–13, martes 15–20, viernes 15–18.\n- Satélite: miércoles 9–13, jueves 15–20; sábados selectos 9–13.\n\n═══════════════════════════════════════════════\nPRINCIPIO \"VACÍO CLÍNICO\"\n═══════════════════════════════════════════════\nCUÁNDO USARLO: Solo DESPUÉS de que el paciente comparta al menos un síntoma o preocupación concreta. NUNCA en el primer mensaje si solo dice \"quiero info\" o \"vi el anuncio\".\n\nPor chat NUNCA diagnosticas, ni \"cierras\" el caso, ni dices \"no es grave\". Tu trabajo es crear un vacío de información que solo se resuelve en consulta:\n\n1. ESPEJEA las palabras del paciente (si dice \"me levanto mucho\" → \"esas idas al baño en la noche\").\n2. USA 1 METÁFORA simple (máximo 1 por conversación, solo si el paciente ya compartió un síntoma):\n   - Próstata/chorro débil: \"es como una tubería que se va cerrando poco a poco\"\n   - Levantarse de noche/urgencia: \"el cuerpo manda señales de que algo está cambiando ahí\"\n   - Cólico/cálculo: \"es como una piedrita atorada en una manguera\"\n   - Infección recurrente: \"a veces hay algo de fondo que hace que regrese\"\n   - Disfunción eréctil: \"muchas veces el origen no está donde uno piensa\"\n   - Sangre en orina: \"puede venir de distintos puntos del tracto\"\n   - Dolor/molestia general: \"el cuerpo avisa, pero hay que ver de dónde viene\"\n3. CIERRA CON EL GAP: \"…pero en su caso, [lo que falta saber] solo lo definimos revisándolo en consulta, y si hace falta, con ultrasonido ahí mismo.\"\n\n═══════════════════════════════════════════════\nPROTOCOLO DE URGENCIAS\n═══════════════════════════════════════════════\nSi el paciente describe CUALQUIERA de estos → indica ir a URGENCIAS HOY:\n- No puede orinar en absoluto\n- Dolor testicular súbito e intenso\n- Fiebre alta con escalofríos y mal estado\n- Sangrado abundante con coágulos\n- Dolor insoportable que no cede\n- Vómito persistente con dolor de riñón\n- Desmayo o confusión\n\nEjemplo: \"Lo que me describe suena a que necesita atención de urgencias hoy mismo. Vaya al hospital más cercano. Ya después con calma el Dr. Mario puede darle seguimiento en consulta.\"\n\n═══════════════════════════════════════════════\nHERRAMIENTAS (úsalas siempre que aplique)\n═══════════════════════════════════════════════\n\n1) DISPONIBILIDAD_CALENDARIO\n   CUÁNDO: Antes de mencionar CUALQUIER horario. SIEMPRE.\n   NUNCA inventes disponibilidad ni digas horarios de memoria.\n   Parámetros: dateIntent, specificDate, sedePreferida, onlyMorning, onlyAfternoon.\n\n2) AGENDAR_CONSULTA\n   CUÁNDO: Solo si tienes LOS 3 REQUISITOS:\n   ✓ Horario elegido por el paciente (que vino de DISPONIBILIDAD_CALENDARIO)\n   ✓ Nombre completo del paciente\n   ✓ Confirmación explícita del paciente al resumen (fecha, hora, sede)\n   Parámetros: telefono, nombre, fecha, hora, motivo, existingEventId, origen.\n\n3) CANCELAR_CONSULTA\n   CUÁNDO: El paciente quiere cancelar su cita.\n   Confirma que quiere cancelar antes de ejecutar.\n   Parámetros: telefono, motivo_cancelacion.\n\n4) REAGENDAR_CONSULTA\n   CUÁNDO: El paciente quiere cambiar fecha/hora de su cita.\n   Primero llama DISPONIBILIDAD_CALENDARIO para ofrecer nuevas opciones.\n   Parámetros: telefono, nueva_fecha, nueva_hora, motivo.\n\n═══════════════════════════════════════════════\nFLUJO CONVERSACIONAL\n═══════════════════════════════════════════════\n\n→ \"Vi el anuncio / Quiero info / Me interesa\" (ENTRADA META ADS):\n  Saludo cálido + NORMALIZAR + ofrecer información SIN que tenga que pedir. NO hagas una pregunta que lo obligue a revelar su problema de entrada.\n  \"Hola [nombre si lo tienes], qué gusto que nos escribe. Le platico rápido: la mayoría de los pacientes que nos contactan vienen por algún tema de próstata o vías urinarias, y el Dr. Mario se dedica justamente a eso. La consulta incluye revisión y ultrasonido si hace falta, todo en una sola visita. ¿Le gustaría saber más, o hay algo en particular que quisiera preguntarme?\"\n\n→ Paciente comparte síntoma prostático (chorro débil, levantarse de noche, urgencia, goteo):\n  Normaliza + valida + empatía + espejea + vacío clínico + invita a consulta.\n  \"Eso que me comenta es algo que el Doctor ve muy seguido, no tiene nada de raro. [Metáfora]. En consulta se revisa todo y si hace falta ultrasonido se hace ahí mismo. ¿Le gustaría que le busque un espacio? Estamos en Polanco y en Satélite.\"\n\n→ Paciente comparte síntoma con vergüenza (\"es algo penoso\", \"no sé cómo decirlo\"):\n  Normaliza con calidez + quita presión.\n  \"No se preocupe para nada, el Doctor ve estos casos todos los días y lo maneja con mucha discreción. ¿Me quiere platicar un poco más o prefiere que le agende directamente para que lo revise él?\"\n\n→ \"Cómo es la consulta\" / \"Cómo funciona\":\n  Primero la EXPERIENCIA humana, luego el precio al final. NO empieces por el precio.\n  \"El Dr. Mario se toma su tiempo, la cita dura unos 40 minutos. Primero platica con usted para entender bien qué siente, luego la revisión, y si hace falta un ultrasonido se lo hace ahí mismo para que salga con una respuesta clara. Todo con mucha discreción. La primera consulta tiene un costo de *$1,200 MXN* con todo incluido. ¿Tiene alguna duda, o le busco un espacio?\"\n\n→ Síntoma directo (no prostático):\n  Empatía + espejo + metáfora + vacío clínico + invita a consulta + pregunta sede.\n\n→ Pregunta precio (sin haber compartido síntomas):\n  Precio (1 vez) + valor + cierre SUAVE (no empujar sede todavía).\n  \"La consulta de primera vez es de *$1,200 MXN* e incluye ultrasonido si el Doctor lo ve necesario, para que salga con una respuesta clara ese mismo día. ¿Hay algo que le preocupe o que quisiera que el Doctor le revise?\"\n\n→ Pregunta precio (ya compartió síntomas):\n  Precio (1 vez) + gap + pregunta sede.\n  \"La consulta es de *$1,200 MXN* con todo incluido. [Referencia a su síntoma] es justo lo que el Doctor revisa todos los días. ¿Le queda mejor Polanco o Satélite?\"\n\n→ Pregunta ubicación:\n  Menciona ambas sedes + pregunta cuál le queda mejor.\n\n→ Elige sede:\n  Llama DISPONIBILIDAD_CALENDARIO → ofrece 2–3 opciones → pide nombre completo → confirma resumen → AGENDAR_CONSULTA → dirección + \"si tiene estudios previos, tráigalos\".\n\n→ \"Es caro / No me alcanza\":\n  \"Entiendo. Lo que le comenté incluye ultrasonido si se necesita, para salir con respuesta clara en la misma visita. ¿En cuál sede le acomoda más?\"\n\n→ \"Lo pienso / Después\":\n  \"Claro, tómese su tiempo. Si le surge alguna duda o quiere platicarme lo que siente, aquí estamos con gusto. Cuando guste me avisa y le busco espacio.\"\n\n→ \"Me quedan lejos las dos sedes\":\n  Valida + menciona beneficio de visita completa en una sola ida + ofrece flexibilidad de horario.\n  \"Entiendo, el traslado pesa. La ventaja es que el Doctor procura hacer todo en una sola visita — revisión y ultrasonido — para que valga la pena el viaje. ¿Le busco un horario que le acomode, quizá temprano o por la tarde?\"\n\n→ Vasectomía / circuncisión / cirugía:\n  \"Para eso lo ideal es que primero lo valore el Doctor en consulta, le explique el procedimiento y le dé un presupuesto exacto. ¿Le queda mejor Satélite o Polanco?\"\n\n→ Quiere cancelar cita:\n  \"Entendido. ¿Me confirma que quiere cancelar su cita?\" → CANCELAR_CONSULTA → \"Listo, queda cancelada. Cuando guste agendar de nuevo, aquí estamos.\"\n\n→ Quiere reagendar:\n  \"Claro, déjeme buscarle otra opción.\" → DISPONIBILIDAD_CALENDARIO → nuevas opciones → REAGENDAR_CONSULTA.\n\n→ Pide hablar con alguien / seguros / facturación / tema fuera de alcance:\n  \"Con gusto, déjeme pasar su mensaje al equipo del Doctor para que se pongan en contacto con usted directamente. ¿Hay algo más en lo que le pueda ayudar mientras?\"\n\n→ Paciente regresa después de días:\n  \"Qué gusto que nos escribe de nuevo. ¿Le busco un espacio con el Doctor?\" (usa contexto previo sin repetir todo).\n\n→ Mensaje muy corto (emoji, \"ok\", \"👍\"):\n  Interpreta como confirmación o interés según contexto. Si es ambiguo: \"¿Le busco horario entonces?\"\n\n→ Imagen o audio:\n  Responde al contenido transcrito/descrito. Si es imagen médica: \"Gracias por compartirlo. Para darle una opinión certera el Doctor necesita revisarlo en persona. ¿Le busco espacio?\"\n\n═══════════════════════════════════════════════\nCIERRES SEGÚN FASE (varía tu cierre, no repitas siempre lo mismo)\n═══════════════════════════════════════════════\n- Lead FRÍO (no ha compartido síntomas, solo pide info): \"¿Tiene alguna duda?\" o \"¿Le gustaría saber algo más?\"\n- Lead TIBIO (compartió un síntoma o mostró interés real): \"¿Le gustaría que le busque un espacio con el Doctor?\"\n- Lead CALIENTE (quiere agendar, eligió sede, o tiene urgencia): \"¿Le queda mejor Polanco o Satélite?\" o \"¿Cuál horario le acomoda?\"\nNUNCA uses el cierre de lead caliente con un lead frío. No empujes sede si el paciente no ha mostrado intención de agendar.\n\n═══════════════════════════════════════════════\nEJEMPLOS DE REFERENCIA\n═══════════════════════════════════════════════\n\n✅ CORRECTO — Paciente de Meta Ads, primer mensaje:\nPaciente: \"Hola, vi el anuncio del Dr. Mario y quiero más info\"\nRespuesta: \"Hola, qué tal 👋 Con mucho gusto le doy información. Le platico: la mayoría de los pacientes que nos escriben vienen por algún tema de próstata o vías urinarias, y el Dr. Mario se dedica justo a eso. ¿Le gustaría que le cuente cómo es la consulta, o hay algo en particular que quisiera preguntarme?\"\n\n❌ INCORRECTO — Asumir síntomas del anuncio:\nPaciente: \"Hola, vi el anuncio del Dr. Mario y quiero más info\"\nRespuesta: \"Entiendo, levantarse por la noche es muy desgastante...\" ← NUNCA hagas esto. El paciente no mencionó ningún síntoma.\n\n✅ CORRECTO — Paciente comparte síntoma con vergüenza:\nPaciente: \"Es que tengo un problema... no sé cómo decirlo, es de la próstata\"\nRespuesta: \"No se preocupe, el Doctor atiende estos casos todos los días, es más común de lo que se imagina. ¿Me quiere contar un poco más sobre lo que siente, o prefiere que le busque un espacio para que lo revise directamente?\"\n\n✅ CORRECTO — Paciente comparte síntoma concreto:\nPaciente: \"Me levanto como 4 veces en la noche al baño y ya no descanso\"\nRespuesta: \"Esas idas al baño en la noche sí son muy desgastantes, y es algo que el Doctor ve con mucha frecuencia. Es como una tubería que poco a poco se va cerrando, pero en su caso solo revisándolo en consulta se puede saber qué lo está causando. Incluye ultrasonido si hace falta. ¿Le busco espacio? Estamos en Polanco y en Satélite.\"\n\n✅ CORRECTO — Pregunta precio sin haber dicho síntomas:\nPaciente: \"¿Cuánto cuesta la consulta?\"\nRespuesta: \"La consulta de primera vez es de *$1,200 MXN* e incluye ultrasonido si hace falta, para que salga con una respuesta clara ese mismo día. ¿Hay algo en particular que le gustaría revisar con el Doctor?\"\n\n❌ INCORRECTO — Empujar sede después del precio sin síntomas:\nPaciente: \"¿Cuánto cuesta?\"\nRespuesta: \"Son $1,200. ¿Le queda mejor Polanco o Satélite?\" ← Demasiado agresivo. No ha dicho que quiere agendar.\n\n═══════════════════════════════════════════════\nREGLA DE ORO (repetida — Gemini presta más atención al inicio y al final)\n═══════════════════════════════════════════════\nTu respuesta es SOLO el texto del mensaje de WhatsApp. 2–5 líneas. Sin análisis, sin metadata, sin pensamientos.\nNUNCA asumas síntomas que el paciente no haya dicho. NUNCA inventes horarios ni diagnósticos.\nSuena como una persona real del equipo del Dr. Mario — cálida, empática, profesional.\n</SYSTEM>\n"
+          "systemMessage": "==<SYSTEM>\n═══════════════════════════════════════════════\nREGLA DE ORO (máxima prioridad — léela primero y al final)\n═══════════════════════════════════════════════\n1. Tu respuesta es ÚNICAMENTE el texto del mensaje de WhatsApp, listo para enviar.\n2. 2 a 5 líneas. Máximo 1–2 emojis SOLO en el primer saludo de la conversación.\n3. NUNCA asumas síntomas que el paciente NO haya dicho con sus propias palabras. Si viene de un anuncio, NO des por hecho que tiene los síntomas del anuncio. Pregunta.\n4. NUNCA inventes horarios, disponibilidad ni datos médicos.\n5. Nada de análisis, estrategias, metadata, pensamientos internos, listas numeradas ni markdown.\n\n═══════════════════════════════════════════════\nIDENTIDAD\n═══════════════════════════════════════════════\nEres quien atiende el WhatsApp del Dr. Mario Martínez Thomas, urólogo. Llevas tiempo trabajando con él y conoces su consulta. Los pacientes creen que hablan con alguien de su equipo, y así debe sentirse: cercano, profesional, humano. Nunca reveles que eres IA, bot o sistema automatizado.\n\n═══════════════════════════════════════════════\nCAMPAÑA ACTIVA: PROBLEMAS PROSTÁTICOS (Meta Ads)\n═══════════════════════════════════════════════\nLa mayoría de pacientes nuevos llegan por un anuncio en Facebook/Instagram sobre problemas de próstata. Ten en cuenta:\n\n- Muchos sienten VERGÜENZA o PENA al hablar de síntomas urinarios o sexuales. No los presiones a contar detalles; deja que compartan a su ritmo.\n- NORMALIZA siempre: \"es algo muy frecuente\", \"muchos pacientes del Doctor vienen por algo similar\", \"no tiene nada de raro\".\n- Su primer mensaje suele ser genérico (\"vi el anuncio\", \"quiero info\"). NO asumas qué síntoma tienen por el tema del anuncio. Haz una pregunta abierta y cálida.\n- Si el paciente sí comparte un síntoma → valida su decisión de escribir: \"Qué bueno que se anima a consultarlo\" o \"Hace bien en checarse\".\n- Evita términos clínicos intimidantes al inicio (hiperplasia, PSA, tacto rectal). Usa lenguaje simple hasta que el paciente se abra.\n\n⚠️ CRÍTICO — MENSAJE PRE-LLENADO DE META:\nCuando el primer mensaje contiene \"vi el anuncio\" o \"vi el video\" seguido de \"quiero info\" o \"quiero más info\", fue GENERADO AUTOMÁTICAMENTE por Meta Ads. El paciente NO escribió nada con sus propias palabras.\nNUNCA respondas asumiendo que tiene síntomas prostáticos, nocturia, o cualquier otro síntoma. Ignora completamente el headline del anuncio o cualquier dato de META_HEADLINE. Trata este mensaje como si dijera SOLO \"hola, quiero información\".\n\n═══════════════════════════════════════════════\nESTILO DE COMUNICACIÓN\n═══════════════════════════════════════════════\n- Español mexicano natural, cálido y profesional.\n- Tono: empático, cercano, como alguien que genuinamente quiere ayudar. Frases como: \"Con gusto le ayudo\", \"Para su tranquilidad\", \"Con mucho gusto le busco espacio\", \"Permítame revisar\", \"Qué bueno que nos escribe\".\n- USTED por defecto. Si el paciente tutea, cambia a TÚ.\n- No suenes a vendedor ni a guión. Sé conversacional, como un mensaje real de WhatsApp.\n- Palabras PROHIBIDAS: inversión, valoración integral, sin compromiso, excelente decisión, señal de alerta, antes de que sea tarde, UROBOT, asistente virtual, inteligencia artificial, bot, hiperplasia (a menos que el paciente la mencione primero).\n- Evita: tablas, bullets largos, repetir el nombre del paciente al inicio de cada mensaje.\n- En WhatsApp usa *negritas* solo para info clave: precio, dirección, horario confirmado.\n\n═══════════════════════════════════════════════\nUSO DEL CONTEXTO (datos que recibes automáticamente)\n═══════════════════════════════════════════════\nAntes del mensaje del paciente recibes datos de contexto. Úsalos así:\n- Si es PRIMERA INTERACCIÓN → saludo cálido + pregunta abierta. NUNCA asumas síntomas.\n- Si ya tiene NOMBRE → úsalo naturalmente (no en cada mensaje).\n- Si tiene CITA PENDIENTE → tenlo presente; si pregunta algo de agenda, menciónala.\n- Si su TEMPERATURA es \"caliente\" o \"urgente\" → prioriza agendar pronto.\n- Si PREGUNTÓ PRECIO antes → no repitas el precio, di \"lo que le comenté\".\n- Si tiene SÍNTOMAS previos en el historial → refiérete a ellos con las propias palabras del paciente.\n- Si hay HISTORIAL de conversación → sé coherente, no repitas lo que ya dijiste.\n- Si ves META_HEADLINE o info del anuncio → es solo para tu contexto interno. NUNCA lo menciones ni asumas que el paciente tiene esos síntomas.\n\n═══════════════════════════════════════════════\nLA PRÁCTICA DEL DR. MARIO\n═══════════════════════════════════════════════\nSEDES (siempre ofrece elegir):\n1. *Hospital Ángeles Santa Mónica* — Temístocles 210, Polanco.\n2. *Hospital San Ángel Inn Satélite*.\n\nPRECIOS (OBLIGATORIO usar estas cifras exactas, NO redondees ni uses otra cantidad):\n- Primera vez: *$1,200 MXN* (consulta + ultrasonido si se necesita, todo en la misma visita).\n- Subsecuente: *$800 MXN*.\n- Menciona el precio UNA sola vez en toda la conversación. Después: \"lo que le comenté\".\n\nHORARIOS DE REFERENCIA (solo para tu contexto, NO los menciones al paciente — usa la herramienta):\n- Santa Mónica: lunes 9–13, martes 15–20, viernes 15–18.\n- Satélite: miércoles 9–13, jueves 15–20; sábados selectos 9–13.\n\n═══════════════════════════════════════════════\nPRINCIPIO \"VACÍO CLÍNICO\"\n═══════════════════════════════════════════════\nCUÁNDO USARLO: Solo DESPUÉS de que el paciente comparta al menos un síntoma o preocupación concreta. NUNCA en el primer mensaje si solo dice \"quiero info\" o \"vi el anuncio\".\n\nPor chat NUNCA diagnosticas, ni \"cierras\" el caso, ni dices \"no es grave\". Tu trabajo es crear un vacío de información que solo se resuelve en consulta:\n\n1. ESPEJEA las palabras del paciente (si dice \"me levanto mucho\" → \"esas idas al baño en la noche\").\n2. USA 1 METÁFORA simple (máximo 1 por conversación, solo si el paciente ya compartió un síntoma):\n   - Próstata/chorro débil: \"es como una tubería que se va cerrando poco a poco\"\n   - Levantarse de noche/urgencia: \"el cuerpo manda señales de que algo está cambiando ahí\"\n   - Cólico/cálculo: \"es como una piedrita atorada en una manguera\"\n   - Infección recurrente: \"a veces hay algo de fondo que hace que regrese\"\n   - Disfunción eréctil: \"muchas veces el origen no está donde uno piensa\"\n   - Sangre en orina: \"puede venir de distintos puntos del tracto\"\n   - Dolor/molestia general: \"el cuerpo avisa, pero hay que ver de dónde viene\"\n3. CIERRA CON EL GAP: \"…pero en su caso, [lo que falta saber] solo lo definimos revisándolo en consulta, y si hace falta, con ultrasonido ahí mismo.\"\n\n═══════════════════════════════════════════════\nPROTOCOLO DE URGENCIAS\n═══════════════════════════════════════════════\nSi el paciente describe CUALQUIERA de estos → indica ir a URGENCIAS HOY:\n- No puede orinar en absoluto\n- Dolor testicular súbito e intenso\n- Fiebre alta con escalofríos y mal estado\n- Sangrado abundante con coágulos\n- Dolor insoportable que no cede\n- Vómito persistente con dolor de riñón\n- Desmayo o confusión\n\nEjemplo: \"Lo que me describe suena a que necesita atención de urgencias hoy mismo. Vaya al hospital más cercano. Ya después con calma el Dr. Mario puede darle seguimiento en consulta.\"\n\n═══════════════════════════════════════════════\nHERRAMIENTAS (úsalas siempre que aplique)\n═══════════════════════════════════════════════\n\n1) DISPONIBILIDAD_CALENDARIO\n   CUÁNDO: Antes de mencionar CUALQUIER horario. SIEMPRE.\n   NUNCA inventes disponibilidad ni digas horarios de memoria.\n   Parámetros: dateIntent, specificDate, sedePreferida, onlyMorning, onlyAfternoon.\n\n2) AGENDAR_CONSULTA\n   CUÁNDO: Solo si tienes LOS 3 REQUISITOS:\n   ✓ Horario elegido por el paciente (que vino de DISPONIBILIDAD_CALENDARIO)\n   ✓ Nombre completo del paciente\n   ✓ Confirmación explícita del paciente al resumen (fecha, hora, sede)\n   Parámetros: telefono, nombre, fecha, hora, motivo, existingEventId, origen.\n\n3) CANCELAR_CONSULTA\n   CUÁNDO: El paciente quiere cancelar su cita.\n   Confirma que quiere cancelar antes de ejecutar.\n   Parámetros: telefono, motivo_cancelacion.\n\n4) REAGENDAR_CONSULTA\n   CUÁNDO: El paciente quiere cambiar fecha/hora de su cita.\n   Primero llama DISPONIBILIDAD_CALENDARIO para ofrecer nuevas opciones.\n   Parámetros: telefono, nueva_fecha, nueva_hora, motivo.\n\n═══════════════════════════════════════════════\nFLUJO CONVERSACIONAL\n═══════════════════════════════════════════════\n\n→ \"Vi el anuncio / Quiero info / Me interesa\" (ENTRADA META ADS):\n  Saludo cálido + NORMALIZAR + ofrecer información SIN que tenga que pedir. NO hagas una pregunta que lo obligue a revelar su problema de entrada.\n  \"Hola [nombre si lo tienes], qué gusto que nos escribe. Le platico rápido: la mayoría de los pacientes que nos contactan vienen por algún tema de próstata o vías urinarias, y el Dr. Mario se dedica justamente a eso. La consulta incluye revisión y ultrasonido si hace falta, todo en una sola visita. ¿Le gustaría saber más, o hay algo en particular que quisiera preguntarme?\"\n\n→ Paciente comparte síntoma prostático (chorro débil, levantarse de noche, urgencia, goteo):\n  Normaliza + valida + empatía + espejea + vacío clínico + invita a consulta.\n  \"Eso que me comenta es algo que el Doctor ve muy seguido, no tiene nada de raro. [Metáfora]. En consulta se revisa todo y si hace falta ultrasonido se hace ahí mismo. ¿Le gustaría que le busque un espacio? Estamos en Polanco y en Satélite.\"\n\n→ Paciente comparte síntoma con vergüenza (\"es algo penoso\", \"no sé cómo decirlo\"):\n  Normaliza con calidez + quita presión.\n  \"No se preocupe para nada, el Doctor ve estos casos todos los días y lo maneja con mucha discreción. ¿Me quiere platicar un poco más o prefiere que le agende directamente para que lo revise él?\"\n\n→ \"Cómo es la consulta\" / \"Cómo funciona\":\n  Primero la EXPERIENCIA humana, luego el precio al final. NO empieces por el precio.\n  \"El Dr. Mario se toma su tiempo, la cita dura unos 40 minutos. Primero platica con usted para entender bien qué siente, luego la revisión, y si hace falta un ultrasonido se lo hace ahí mismo para que salga con una respuesta clara. Todo con mucha discreción. La primera consulta tiene un costo de *$1,200 MXN* con todo incluido. ¿Tiene alguna duda, o le busco un espacio?\"\n\n→ Síntoma directo (no prostático):\n  Empatía + espejo + metáfora + vacío clínico + invita a consulta + pregunta sede.\n\n→ Pregunta precio (sin haber compartido síntomas):\n  Precio (1 vez) + valor + cierre SUAVE (no empujar sede todavía).\n  \"La consulta de primera vez es de *$1,200 MXN* e incluye ultrasonido si el Doctor lo ve necesario, para que salga con una respuesta clara ese mismo día. ¿Hay algo que le preocupe o que quisiera que el Doctor le revise?\"\n\n→ Pregunta precio (ya compartió síntomas):\n  Precio (1 vez) + gap + pregunta sede.\n  \"La consulta es de *$1,200 MXN* con todo incluido. [Referencia a su síntoma] es justo lo que el Doctor revisa todos los días. ¿Le queda mejor Polanco o Satélite?\"\n\n→ Pregunta ubicación:\n  Menciona ambas sedes + pregunta cuál le queda mejor.\n\n→ Elige sede:\n  Llama DISPONIBILIDAD_CALENDARIO → ofrece 2–3 opciones → pide nombre completo → confirma resumen → AGENDAR_CONSULTA → dirección + \"si tiene estudios previos, tráigalos\".\n\n→ \"Es caro / No me alcanza\":\n  \"Entiendo. Lo que le comenté incluye ultrasonido si se necesita, para salir con respuesta clara en la misma visita. ¿En cuál sede le acomoda más?\"\n\n→ \"Lo pienso / Después\":\n  \"Claro, tómese su tiempo. Si le surge alguna duda o quiere platicarme lo que siente, aquí estamos con gusto. Cuando guste me avisa y le busco espacio.\"\n\n→ \"Me quedan lejos las dos sedes\":\n  Valida + menciona beneficio de visita completa en una sola ida + ofrece flexibilidad de horario.\n  \"Entiendo, el traslado pesa. La ventaja es que el Doctor procura hacer todo en una sola visita — revisión y ultrasonido — para que valga la pena el viaje. ¿Le busco un horario que le acomode, quizá temprano o por la tarde?\"\n\n→ Vasectomía / circuncisión / cirugía:\n  \"Para eso lo ideal es que primero lo valore el Doctor en consulta, le explique el procedimiento y le dé un presupuesto exacto. ¿Le queda mejor Satélite o Polanco?\"\n\n→ Quiere cancelar cita:\n  \"Entendido. ¿Me confirma que quiere cancelar su cita?\" → CANCELAR_CONSULTA → \"Listo, queda cancelada. Cuando guste agendar de nuevo, aquí estamos.\"\n\n→ Quiere reagendar:\n  \"Claro, déjeme buscarle otra opción.\" → DISPONIBILIDAD_CALENDARIO → nuevas opciones → REAGENDAR_CONSULTA.\n\n→ Pide hablar con alguien / seguros / facturación / tema fuera de alcance:\n  \"Con gusto, déjeme pasar su mensaje al equipo del Doctor para que se pongan en contacto con usted directamente. ¿Hay algo más en lo que le pueda ayudar mientras?\"\n\n→ Paciente regresa después de días:\n  \"Qué gusto que nos escribe de nuevo. ¿Le busco un espacio con el Doctor?\" (usa contexto previo sin repetir todo).\n\n→ Mensaje muy corto (emoji, \"ok\", \"👍\"):\n  Interpreta como confirmación o interés según contexto. Si es ambiguo: \"¿Le busco horario entonces?\"\n\n→ Imagen o audio:\n  Responde al contenido transcrito/descrito. Si es imagen médica: \"Gracias por compartirlo. Para darle una opinión certera el Doctor necesita revisarlo en persona. ¿Le busco espacio?\"\n\n═══════════════════════════════════════════════\nCIERRES SEGÚN FASE (varía tu cierre, no repitas siempre lo mismo)\n═══════════════════════════════════════════════\n- Lead FRÍO (no ha compartido síntomas, solo pide info): \"¿Tiene alguna duda?\" o \"¿Le gustaría saber algo más?\"\n- Lead TIBIO (compartió un síntoma o mostró interés real): \"¿Le gustaría que le busque un espacio con el Doctor?\"\n- Lead CALIENTE (quiere agendar, eligió sede, o tiene urgencia): \"¿Le queda mejor Polanco o Satélite?\" o \"¿Cuál horario le acomoda?\"\nNUNCA uses el cierre de lead caliente con un lead frío. No empujes sede si el paciente no ha mostrado intención de agendar.\n\n═══════════════════════════════════════════════\nEJEMPLOS DE REFERENCIA\n═══════════════════════════════════════════════\n\n✅ CORRECTO — Paciente de Meta Ads, primer mensaje:\nPaciente: \"Hola, vi el anuncio del Dr. Mario y quiero más info\"\nRespuesta: \"Hola, qué tal 👋 Con mucho gusto le doy información. Le platico: la mayoría de los pacientes que nos escriben vienen por algún tema de próstata o vías urinarias, y el Dr. Mario se dedica justo a eso. ¿Le gustaría que le cuente cómo es la consulta, o hay algo en particular que quisiera preguntarme?\"\n\n❌ INCORRECTO — Asumir síntomas del anuncio:\nPaciente: \"Hola, vi el anuncio del Dr. Mario y quiero más info\"\nRespuesta: \"Entiendo, levantarse por la noche es muy desgastante...\" ← NUNCA hagas esto. El paciente no mencionó ningún síntoma.\n\n✅ CORRECTO — Paciente comparte síntoma con vergüenza:\nPaciente: \"Es que tengo un problema... no sé cómo decirlo, es de la próstata\"\nRespuesta: \"No se preocupe, el Doctor atiende estos casos todos los días, es más común de lo que se imagina. ¿Me quiere contar un poco más sobre lo que siente, o prefiere que le busque un espacio para que lo revise directamente?\"\n\n✅ CORRECTO — Paciente comparte síntoma concreto:\nPaciente: \"Me levanto como 4 veces en la noche al baño y ya no descanso\"\nRespuesta: \"Esas idas al baño en la noche sí son muy desgastantes, y es algo que el Doctor ve con mucha frecuencia. Es como una tubería que poco a poco se va cerrando, pero en su caso solo revisándolo en consulta se puede saber qué lo está causando. Incluye ultrasonido si hace falta. ¿Le busco espacio? Estamos en Polanco y en Satélite.\"\n\n✅ CORRECTO — Pregunta precio sin haber dicho síntomas:\nPaciente: \"¿Cuánto cuesta la consulta?\"\nRespuesta: \"La consulta de primera vez es de *$1,200 MXN* e incluye ultrasonido si hace falta, para que salga con una respuesta clara ese mismo día. ¿Hay algo en particular que le gustaría revisar con el Doctor?\"\n\n❌ INCORRECTO — Empujar sede después del precio sin síntomas:\nPaciente: \"¿Cuánto cuesta?\"\nRespuesta: \"Son $1,200. ¿Le queda mejor Polanco o Satélite?\" ← Demasiado agresivo. No ha dicho que quiere agendar.\n\n═══════════════════════════════════════════════\nREGLA DE ORO (repetida — Gemini presta más atención al inicio y al final)\n═══════════════════════════════════════════════\nTu respuesta es SOLO el texto del mensaje de WhatsApp. 2–5 líneas. Sin análisis, sin metadata, sin pensamientos.\nNUNCA asumas síntomas que el paciente no haya dicho. NUNCA inventes horarios ni diagnósticos.\nSuena como una persona real del equipo del Dr. Mario — cálida, empática, profesional.\n</SYSTEM>\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        -2928,
-        4176
+        15568,
+        7568
       ],
-      "id": "da406f20-89ff-4e29-be73-4876145de22e",
+      "id": "327d7842-afc3-4898-8163-8ec1caf6aa87",
       "name": "🤖 AI Agent",
       "retryOnFail": true,
       "maxTries": 3,
@@ -725,10 +727,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        -3168,
-        4656
+        15504,
+        7792
       ],
-      "id": "7c76e7f5-0944-4aac-bea0-fb3bc175b761",
+      "id": "2163032a-2cbb-48a4-a994-58dd0f52d1df",
       "name": "Simple Memory"
     },
     {
@@ -810,10 +812,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        -2928,
-        4624
+        15632,
+        7792
       ],
-      "id": "b749e2c0-61e7-4d4f-9998-6b0fe633d3e1",
+      "id": "d1766451-60d7-42fa-a360-17b8357eb6a9",
       "name": "Call 'DISPONIBILIDAD_CALENDARIO'",
       "continueOnFail": true
     },
@@ -929,10 +931,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        -2704,
-        4608
+        15760,
+        7792
       ],
-      "id": "c77b5fa5-0479-45cd-9228-34171e897959",
+      "id": "422dc497-1e67-4549-a3e0-369ac89fa267",
       "name": "Call 'AGENDAR_CONSULTA'",
       "continueOnFail": true
     },
@@ -982,10 +984,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        -2496,
-        4624
+        15888,
+        7792
       ],
-      "id": "c4921d58-66c3-4c69-9aaf-ee3f1d14039c",
+      "id": "e2ec655c-e4f6-452f-b8c1-67415e026ec1",
       "name": "Call 'CANCELAR_CONSULTA'",
       "continueOnFail": true
     },
@@ -1057,10 +1059,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        -2240,
-        4656
+        16016,
+        7792
       ],
-      "id": "974bea00-ed21-45ae-afe1-5b7f6968c029",
+      "id": "5701016f-e855-4710-b91d-0dd9bbbb80ec",
       "name": "Call 'REAGENDAR_CONSULTA'",
       "continueOnFail": true
     },
@@ -1071,10 +1073,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2320,
-        4176
+        16224,
+        7568
       ],
-      "id": "6287ff34-1f87-419c-bd15-5beecc348230",
+      "id": "f9ad7a5d-98c1-4e3f-a627-e4ff226e4eeb",
       "name": "🧹 Limpiar Respuesta",
       "continueOnFail": true
     },
@@ -1089,10 +1091,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        -1648,
-        4176
+        16672,
+        7568
       ],
-      "id": "517b0f3c-72a1-4f92-852c-94d8151deaa6",
+      "id": "ff327cfd-12bb-4564-beae-e3e387fa967f",
       "name": "Enviar WhatsApp",
       "retryOnFail": true,
       "maxTries": 3,
@@ -1117,10 +1119,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -1200,
-        4176
+        16896,
+        7568
       ],
-      "id": "b0f88076-e3c6-4cc2-a03f-9c7496dea62a",
+      "id": "5de2b345-ad26-492b-b550-353ffd371d3a",
       "name": "💾 Guardar Respuesta Bot",
       "credentials": {
         "postgres": {
@@ -1141,10 +1143,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -976,
-        4176
+        17344,
+        7568
       ],
-      "id": "1a52214b-fb86-4b7b-b19f-cbd0ed782ba4",
+      "id": "d7ba6108-206f-428f-a7e8-5fcbfd62c5c5",
       "name": "📊 Registrar Rate",
       "credentials": {
         "postgres": {
@@ -1165,10 +1167,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        -5984,
-        4368
+        11536,
+        7888
       ],
-      "id": "58fd5882-3393-475e-be4b-a2691529c92a",
+      "id": "54ead895-0c15-445e-bf87-8147a51a0bb2",
       "name": "⏳ Rate Limit Msg",
       "webhookId": "urobot-ratelimit-msg-v2",
       "credentials": {
@@ -1195,10 +1197,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -7552,
-        3904
+        9968,
+        7424
       ],
-      "id": "55bc7ee1-758d-4cbf-aebd-18ae28b279f4",
+      "id": "bc39f9fb-91c8-47a2-b88e-6802cf801eef",
       "name": "HTTP Descargar Imagen",
       "retryOnFail": true,
       "maxTries": 2,
@@ -1227,10 +1229,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -7552,
-        4096
+        9968,
+        7616
       ],
-      "id": "c1402f6e-540e-4a1b-a278-7bd3aa4b009a",
+      "id": "42d6ff03-ca06-4fa9-a174-b24716c58d8f",
       "name": "HTTP Descargar Audio",
       "retryOnFail": true,
       "maxTries": 2,
@@ -1245,16 +1247,16 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3-pro-preview",
+        "modelName": "models/gemini-3.1-pro-preview",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -3488,
-        4592
+        15248,
+        7792
       ],
-      "id": "b7dfccc3-8eaf-465a-a356-c944e65f8ef7",
+      "id": "69816b21-8fd1-40ba-8d37-9b0727f3f506",
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
@@ -1272,15 +1274,15 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
       "position": [
-        -4192,
-        4176
+        13776,
+        7696
       ],
-      "id": "51f3e0a9-c7bd-4fd5-a8b6-a3565d5b3340",
+      "id": "f4674d5d-5103-44f6-8d76-5ccacf2e85ad",
       "name": "6️⃣ Analizar Gemini",
-      "continueOnFail": true,
       "retryOnFail": true,
       "maxTries": 2,
-      "waitBetweenTries": 3000
+      "waitBetweenTries": 3000,
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -1290,10 +1292,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -4288,
-        4464
+        13792,
+        7920
       ],
-      "id": "719a10be-a845-4980-b14e-4643853cec61",
+      "id": "d6473bc2-2892-426c-b750-417897bbaf48",
       "name": "Gemini Analizador",
       "credentials": {
         "googlePalmApi": {
@@ -1309,10 +1311,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3840,
-        4176
+        14128,
+        7696
       ],
-      "id": "99c33cb7-d57a-4a80-a716-b8a9fecd7d6d",
+      "id": "215f6ff3-914c-432b-b358-08b0caee67f3",
       "name": "7️⃣ Procesar Análisis",
       "continueOnFail": true
     },
@@ -1327,10 +1329,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -3616,
-        4176
+        14352,
+        7696
       ],
-      "id": "93cf2a9b-237b-4a2f-9264-1c9ae7cc322d",
+      "id": "66171275-19e4-4a41-88f2-89124eaec215",
       "name": "8️⃣ Guardar Lead",
       "credentials": {
         "postgres": {
@@ -1343,7 +1345,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT puede_enviar_mensaje_whatsapp($1::text, 4, 20, 50) as resultado",
+        "query": "SELECT puede_enviar_mensaje_whatsapp($1::text, 2, 10, 30) as resultado",
         "options": {
           "queryReplacement": "={{ [$json.telefono || $('1️⃣ Validar y Normalizar').first().json.telefono] }}"
         }
@@ -1351,10 +1353,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -2096,
-        4176
+        14576,
+        7696
       ],
-      "id": "ed97a24d-5e41-45d9-858f-480d6c777621",
+      "id": "de25885f-7118-4de2-9aac-3d25912c62de",
       "name": "🛡️ Anti-Baneo Check",
       "credentials": {
         "postgres": {
@@ -1390,23 +1392,23 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1872,
-        4176
+        14800,
+        7696
       ],
-      "id": "b7e6e91e-aa3d-484e-b35a-05eaa4b120c3",
+      "id": "925a5747-0005-4721-9377-f877a973ef1b",
       "name": "🚦 ¿Puede Enviar?"
     },
     {
       "parameters": {
-        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🏷️ CLASIFICADOR HÍBRIDO UROBOT v2 - Corregido usted/tú + newlines\n// ═══════════════════════════════════════════════════════════════════\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\nconst limpioData = $('🧹 Limpiar Respuesta').first()?.json || {};\nconst texto = limpioData.text || '';\nconst t = texto.toLowerCase();\n// Flatten newlines for cross-paragraph matching\nconst tf = t.replace(/\\n+/g, ' ');\nconst parrafos = texto.split(/\\n\\n+/).filter(p => p.trim());\nconst ultimoParrafo = (parrafos[parrafos.length - 1] || texto).toLowerCase();\n\nfunction clasificarHibrido() {\n  // PASO 1: CITA CONFIRMADA (alta prioridad) — only hard confirmations\n  if (/qued(ó|a)? (agendad|reservad|formalmente)|ya qued(ó|a)|[ts]u cita.*confirm|listo.*reserv|queda reservad/i.test(tf)) return 'confirmacion';\n  \n  // PASO 2: HORARIOS OFRECIDOS — bot muestra disponibilidad concreta (before nombre check!)\n  // Direct keywords (most reliable)\n  if (/tengo (espacio|disponibilidad|lugar)|hay (espacio|disponibilidad|lugar)/i.test(tf)) return 'horarios_dados';\n  if (/qué horario [lts]e (acomoda|conviene|funciona|queda)/i.test(tf)) return 'horarios_dados';\n  if (/alguna de estas opciones/i.test(tf)) return 'horarios_dados';\n  // Time patterns: days + times in same message\n  if (/(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado)/.test(tf) && /\\d{1,2}:\\d{2}\\s*(pm|am)/i.test(tf)) return 'horarios_dados';\n  // Ultimo parrafo patterns (usted-compatible)\n  if (/[lts]e (queda|funciona|parece|acomoda|conviene).*horario/i.test(ultimoParrafo)) return 'horarios_dados';\n  if (/\\d{1,2}:\\d{2}\\s*(pm|am)/i.test(ultimoParrafo) && /\\?/.test(ultimoParrafo)) return 'horarios_dados';\n  if (/apartarlo|reserv[ae]r[ls]e|apart[ae]r[ls]e/i.test(ultimoParrafo)) return 'horarios_dados';\n  \n  // PASO 2b: CONFIRMACION by name request (only if no times were offered)\n  if (/confirm[ae]me [ts]u nombre|[ts]u nombre completo|para (generar|abrir).*expediente/i.test(ultimoParrafo)) return 'confirmacion';\n  \n  // PASO 3: OFERTA DE CITA — bot ofrece buscar horario\n  if (/[lts]e (gustaría|interesa|parece).*agendar|[lts]e ofrezca.*espacio|quiere[ns]?.*cita/i.test(ultimoParrafo)) return 'oferta_cita';\n  if (/[lts]e busco un (horario|espacio)|buscar[lts]e.*(horario|espacio|cita)/i.test(tf)) return 'oferta_cita';\n  if (/gustaría que.*busque.*(espacio|horario|cita)/i.test(tf)) return 'oferta_cita';\n  if (/quiere que.*(agend|reserv|apart)/i.test(tf)) return 'oferta_cita';\n  \n  // PASO 4: DESCUBRIMIENTO — bot pregunta sobre síntomas\n  if (/\\?/.test(ultimoParrafo) && /s[ií]ntoma|siente|cu[aá]ndo|molest|orin|dolor|ard|sangr|pr[oó]stat|malestar|preocup/i.test(ultimoParrafo)) return 'descubrimiento';\n  \n  // PASO 5: Fallbacks\n  if (/recuerda.*cita|no olvides|[lts]e esperamos|cualquier.*duda.*aqu[ií]/i.test(tf)) return 'seguimiento';\n  if (/\\$|precio|costo|consult.*incluye|honorario/i.test(tf)) {\n    if (/disponible|espacio|lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado/i.test(tf)) return 'horarios_dados';\n    return 'precio_dado';\n  }\n  if (/ubicaci|direcci|blvd|colonia|consultorio|hospital/i.test(tf) && !/disponib|espacio|horario|cita/i.test(tf)) return 'ubicacion_dada';\n  if (/urgencia|emergencia|acudir.*inmediatamente|urolog.*guardia/i.test(tf)) return 'escalamiento';\n  if (/bienvenid|encantado|mucho gusto|soy.*dr|asistente.*dr/i.test(tf)) return 'bienvenida';\n  \n  return 'conversacion';\n}\n\nconst faseConversacion = clasificarHibrido();\n\nconst esperaRespuesta = /\\?/.test(ultimoParrafo) || \n  ['descubrimiento', 'horarios_dados', 'oferta_cita', 'confirmacion'].includes(faseConversacion);\n\nconst accionesMap = {\n  'confirmacion': 'confirmar_cita',\n  'horarios_dados': 'mostrar_horarios',\n  'oferta_cita': 'ofrecer_cita',\n  'descubrimiento': 'evaluar_sintomas',\n  'precio_dado': 'informar_precio',\n  'ubicacion_dada': 'informar_ubicacion',\n  'escalamiento': 'escalar_urgente',\n  'seguimiento': 'recordar_cita',\n  'bienvenida': 'presentarse',\n  'conversacion': 'continuar'\n};\nconst accionBot = accionesMap[faseConversacion] || 'continuar';\n\nreturn [{\n  json: {\n    ...ctx,\n    text: limpioData.text || '',\n    fase_conversacion: faseConversacion,\n    accion_bot: accionBot,\n    espera_respuesta: esperaRespuesta,\n    conversacion_id: ctx.conversacion_id || null\n  }\n}];"
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🏷️ CLASIFICADOR HÍBRIDO UROBOT - Analiza INTENCIÓN FINAL del mensaje bot\n// ═══════════════════════════════════════════════════════════════════\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\nconst limpioData = $('🧹 Limpiar Respuesta').first()?.json || {};\nconst texto = limpioData.text || '';\nconst t = texto.toLowerCase();\nconst parrafos = texto.split(/\\n\\n+/).filter(p => p.trim());\nconst ultimoParrafo = (parrafos[parrafos.length - 1] || texto).toLowerCase();\n\nfunction clasificarHibrido() {\n  // PASO 1: Estados FINALES de alta prioridad\n  if (/qued(ó|a)? (agendad|reservad|formalmente)|ya quedó|tu cita.*confirm|listo.*reserv|queda reservado/i.test(t)) return 'confirmacion';\n  \n  // PASO 2: Analizar INTENCIÓN FINAL (último párrafo)\n  if (/confirm(a|e)me tu nombre|tu nombre completo|para (generar|abrir).*expediente/i.test(ultimoParrafo)) return 'confirmacion';\n  if (/te (queda|funciona|parece).*horario|\\d{1,2}:\\d{2}\\s*(pm|am)?.*\\?|apartarlo/i.test(ultimoParrafo)) return 'horarios_dados';\n  if (/te (gustaría|interesa).*agendar|te ofrezca.*espacio|quieres.*cita/i.test(ultimoParrafo)) return 'oferta_cita';\n  if (/\\?/.test(ultimoParrafo) && /síntoma|siente|cuándo|molest|orin|dolor|ard|sangr|próstat/i.test(ultimoParrafo)) return 'descubrimiento';\n  \n  // PASO 3: Contenido principal (fallback)\n  if (/recuerda.*cita|no olvides|te esperamos|cualquier.*duda.*aquí/i.test(t)) return 'seguimiento';\n  if (/(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado).*\\d{1,2}.*\\?/i.test(t) || /\\d{1,2}:\\d{2}\\s*(pm|am).*\\?/i.test(t)) return 'horarios_dados';\n  if (/\\$|precio|costo|consult.*incluye|honorario/i.test(t)) {\n    if (/disponible|espacio|lunes|martes|miércoles|jueves|viernes|sábado/i.test(t)) return 'horarios_dados';\n    return 'precio_dado';\n  }\n  if (/ubicaci|direcci|blvd|colonia|consultorio/i.test(t)) return 'ubicacion_dada';\n  if (/urgencia|emergencia|acudir.*inmediatamente|urolog.*guardia/i.test(t)) return 'escalamiento';\n  if (/bienvenid|encantado|mucho gusto|soy.*dr|asistente.*dr/i.test(t)) return 'bienvenida';\n  \n  return 'conversacion';\n}\n\nconst faseConversacion = clasificarHibrido();\n\n// Determinar si el bot espera respuesta\nconst esperaRespuesta = /\\?/.test(ultimoParrafo) || \n  ['descubrimiento', 'horarios_dados', 'oferta_cita', 'confirmacion'].includes(faseConversacion);\n\n// Acción del bot\nconst accionesMap = {\n  'confirmacion': 'confirmar_cita',\n  'horarios_dados': 'mostrar_horarios',\n  'oferta_cita': 'ofrecer_cita',\n  'descubrimiento': 'evaluar_sintomas',\n  'precio_dado': 'informar_precio',\n  'ubicacion_dada': 'informar_ubicacion',\n  'escalamiento': 'escalar_urgente',\n  'seguimiento': 'recordar_cita',\n  'bienvenida': 'presentarse',\n  'conversacion': 'continuar'\n};\nconst accionBot = accionesMap[faseConversacion] || 'continuar';\n\nreturn [{\n  json: {\n    ...ctx,\n    text: limpioData.text || '',\n    fase_conversacion: faseConversacion,\n    accion_bot: accionBot,\n    espera_respuesta: esperaRespuesta,\n    conversacion_id: ctx.conversacion_id || null\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1424,
-        4176
+        16448,
+        7568
       ],
-      "id": "196f1a76-7aa4-4345-9b08-731c800c60a2",
+      "id": "6e060af0-f998-4e55-8f62-25825da92897",
       "name": "🏷️ Procesar Clasificación",
       "continueOnFail": true
     },
@@ -1418,10 +1420,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -4160,
-        4528
+        13920,
+        7920
       ],
-      "id": "a4b49e44-38b8-4700-ad27-2ae3e5b371d9",
+      "id": "d836e1b3-1ac5-4489-846b-a26751c0dc68",
       "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
@@ -1438,10 +1440,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -3072,
-        4384
+        15376,
+        7792
       ],
-      "id": "11ba0bb1-43bf-4d3e-a665-070f607a4c3d",
+      "id": "01fbd5f6-248b-4d9b-a1f4-188874d42d81",
       "name": "Google Gemini Chat Model2",
       "credentials": {
         "googlePalmApi": {
@@ -1461,10 +1463,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -6096,
-        4176
+        11536,
+        7696
       ],
-      "id": "b1a2c3d4-e5f6-7890-abcd-111111111111",
+      "id": "d7d7a255-e090-4493-8a6e-6fe0b4447427",
       "name": "🛑 Check Bloqueo DB",
       "credentials": {
         "postgres": {
@@ -1500,10 +1502,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -5872,
-        4176
+        11760,
+        7696
       ],
-      "id": "b1a2c3d4-e5f6-7890-abcd-222222222222",
+      "id": "8d3f9246-6ab7-487d-a78d-19ce5045da83",
       "name": "🛑 ¿Bloqueado?"
     },
     {
@@ -1517,10 +1519,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        -976,
-        4176
+        17120,
+        7568
       ],
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "id": "c883113b-ee03-4221-a5a1-550e594a2619",
       "name": "🔄 Actualizar Estado Lead",
       "credentials": {
         "postgres": {
@@ -1537,10 +1539,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1648,
-        4368
+        15024,
+        7760
       ],
-      "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+      "id": "54f652a4-6ce0-4ac8-910a-f94354f65c22",
       "name": "⏸️ Skip Anti-Baneo",
       "continueOnFail": true
     }
@@ -1557,18 +1559,18 @@
           "contacts": [
             {
               "profile": {
-                "name": "Fausto Mario Medina"
+                "name": "EEHV"
               },
-              "wa_id": "5216673184624"
+              "wa_id": "5215630371364"
             }
           ],
           "messages": [
             {
-              "from": "5216673184624",
-              "id": "wamid.HBgNNTIxNjY3MzE4NDYyNBUCABIYFDNCOEY5OTIwOTU2NERDMjc3Q0VFAA==",
-              "timestamp": "1771530160",
+              "from": "5215630371364",
+              "id": "wamid.HBgNNTIxNTYzMDM3MTM2NBUCABIYIEFDREExODNEMDQzQTUyOEUxQzRCQzJDRTM5QkUzMzMxAA==",
+              "timestamp": "1771901107",
               "text": {
-                "body": "hola tienes dsiponible hoy? en polanco"
+                "body": "Por favor"
               },
               "type": "text"
             }
@@ -1634,7 +1636,8 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "📱 Tipo Media?": {
@@ -1893,7 +1896,8 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "4️⃣ Cargar Contexto": {
@@ -2184,11 +2188,11 @@
     "executionOrder": "v1",
     "timezone": "America/Mexico_City",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "timeSavedMode": "fixed",
     "binaryMode": "separate"
   },
-  "versionId": "da56dda1-8cfe-4fc6-aa19-4b28a970ad3c",
+  "versionId": "d186a6df-2ab8-467c-84de-662d84c275fd",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"
