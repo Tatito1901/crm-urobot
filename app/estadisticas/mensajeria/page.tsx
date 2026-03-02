@@ -1,6 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { useStats } from '@/hooks/dashboard/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,10 +8,10 @@ import { spacing, cards } from '@/app/lib/design-system';
 import { MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
-export const dynamicConfig = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
 // Lazy Load
-const MensajeriaChart = dynamic(() => import('../components/dashboard/DashboardMensajeriaChart').then(mod => mod.DashboardMensajeriaChart), {
+const MensajeriaChart = nextDynamic(() => import('../components/dashboard/DashboardMensajeriaChart').then(mod => mod.DashboardMensajeriaChart), {
   loading: () => <Skeleton className="h-[400px] w-full" />,
   ssr: false
 });

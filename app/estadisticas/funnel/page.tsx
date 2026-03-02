@@ -1,6 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { useStats } from '@/hooks/dashboard/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,10 +8,10 @@ import { spacing, cards } from '@/app/lib/design-system';
 import { Target } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
-export const dynamicConfig = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
 // Lazy Load del gráfico pesado
-const FunnelChart = dynamic(() => import('../components/dashboard/DashboardFunnelChart').then(mod => mod.DashboardFunnelChart), {
+const FunnelChart = nextDynamic(() => import('../components/dashboard/DashboardFunnelChart').then(mod => mod.DashboardFunnelChart), {
   loading: () => <Skeleton className="h-[500px] w-full" />,
   ssr: false
 });
@@ -51,7 +51,7 @@ export default function FunnelPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <FunnelChart data={funnelLeads} height={typeof window !== 'undefined' && window.innerWidth < 640 ? 320 : 500} barSize={typeof window !== 'undefined' && window.innerWidth < 640 ? 28 : 40} />
+          <FunnelChart data={funnelLeads} height={500} barSize={40} />
         </CardContent>
       </Card>
     </PageShell>

@@ -526,6 +526,20 @@ body {
   }
 }
 
+/* ── Accessibility: cursor-pointer on all interactive elements ── */
+button,
+[role="button"],
+a,
+select,
+summary,
+[type="checkbox"],
+[type="radio"],
+[type="submit"],
+[type="reset"],
+[type="button"] {
+  cursor: pointer;
+}
+
 /* Ensure all images/media respect container width */
 img, video, svg, canvas {
   max-width: 100%;

@@ -1,6 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { useStats } from '@/hooks/dashboard/useStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,14 +9,14 @@ import { Users, TrendingUp, Target, Thermometer } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 import { MetricCard } from '@/app/components/metrics/MetricCard';
 
-export const dynamicConfig = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
-const FunnelChart = dynamic(() => import('../components/dashboard/DashboardFunnelChart').then(mod => mod.DashboardFunnelChart), {
+const FunnelChart = nextDynamic(() => import('../components/dashboard/DashboardFunnelChart').then(mod => mod.DashboardFunnelChart), {
   loading: () => <Skeleton className="h-[300px] w-full" />,
   ssr: false
 });
 
-const SourcesChart = dynamic(() => import('../components/dashboard/DashboardSourcesChart').then(mod => mod.DashboardSourcesChart), {
+const SourcesChart = nextDynamic(() => import('../components/dashboard/DashboardSourcesChart').then(mod => mod.DashboardSourcesChart), {
   loading: () => <Skeleton className="h-[220px] w-full" />,
   ssr: false
 });

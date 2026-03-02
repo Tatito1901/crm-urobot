@@ -20,7 +20,7 @@ import {
   Clock,
   Megaphone,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 import { MetricCard } from '@/app/components/metrics/MetricCard';

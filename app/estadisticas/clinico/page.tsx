@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { useClinicalStats } from '@/hooks/estadisticas/useClinicalStats';
 import { PageShell } from '@/app/components/crm/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,40 +17,40 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/app/components/common/SkeletonLoader';
 
-export const dynamicConfig = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
 // Lazy Loading de Componentes
-const DashboardDiagnosticos = dynamic(
+const DashboardDiagnosticos = nextDynamic(
   () => import('../components/dashboard/DashboardDiagnosticos').then(mod => mod.DashboardDiagnosticos),
   { loading: () => <Skeleton className="h-[300px] w-full" />, ssr: false }
 );
 
-const DashboardProcedimientos = dynamic(
+const DashboardProcedimientos = nextDynamic(
   () => import('../components/dashboard/DashboardProcedimientos').then(mod => mod.DashboardProcedimientos),
   { loading: () => <Skeleton className="h-[280px] w-full" />, ssr: false }
 );
 
-const DashboardSedesDetalle = dynamic(
+const DashboardSedesDetalle = nextDynamic(
   () => import('../components/dashboard/DashboardSedesDetalle').then(mod => mod.DashboardSedesDetalle),
   { loading: () => <Skeleton className="h-[200px] w-full" />, ssr: false }
 );
 
-const DashboardDemandaDias = dynamic(
+const DashboardDemandaDias = nextDynamic(
   () => import('../components/dashboard/DashboardDemandaDias').then(mod => mod.DashboardDemandaDias),
   { loading: () => <Skeleton className="h-[250px] w-full" />, ssr: false }
 );
 
-const DashboardPacientesFieles = dynamic(
+const DashboardPacientesFieles = nextDynamic(
   () => import('../components/dashboard/DashboardPacientesFieles').then(mod => mod.DashboardPacientesFieles),
   { loading: () => <Skeleton className="h-[300px] w-full" />, ssr: false }
 );
 
-const DashboardKPIsClinico = dynamic(
+const DashboardKPIsClinico = nextDynamic(
   () => import('../components/dashboard/DashboardKPIsClinico').then(mod => mod.DashboardKPIsClinico),
   { loading: () => <Skeleton className="h-[100px] w-full" />, ssr: false }
 );
 
-const DashboardTendenciaSedes = dynamic(
+const DashboardTendenciaSedes = nextDynamic(
   () => import('../components/dashboard/DashboardTendenciaSedes').then(mod => mod.DashboardTendenciaSedes),
   { loading: () => <Skeleton className="h-[280px] w-full" />, ssr: false }
 );

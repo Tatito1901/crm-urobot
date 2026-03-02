@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Home, RefreshCw, Search } from 'lucide-react';
+import { Home, RefreshCw, Bot, Lightbulb, ArrowLeft } from 'lucide-react';
 
 /**
  * ============================================================
@@ -13,12 +13,12 @@ import { Home, RefreshCw, Search } from 'lucide-react';
 
 // Mensajes aleatorios del robot
 const MENSAJES_ROBOT = [
-  "¡Ups! Me perdí en el sistema... 🤖💫",
-  "Error 404: Mi GPS interno falló 🗺️❌",
-  "Buscando página... No encontrada... Necesito café ☕",
-  "¿Seguro que escribiste bien la dirección? 🤔",
-  "Esta página se fue de vacaciones 🏖️",
-  "Houston, tenemos un problema... de navegación 🚀",
+  "¡Ups! Me perdí en el sistema...",
+  "Error 404: Mi GPS interno falló",
+  "Buscando página... No encontrada",
+  "¿Seguro que escribiste bien la dirección?",
+  "Esta página se fue de vacaciones",
+  "Houston, tenemos un problema... de navegación",
 ];
 
 const TIPS = [
@@ -78,9 +78,10 @@ export default function NotFound() {
 
         {/* Mensaje del robot */}
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 space-y-2 shine-top">
-          <p className="text-sm text-muted-foreground font-mono">
-            🤖 UroBot dice:
-          </p>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-mono">
+            <Bot className="w-4 h-4 text-teal-400 shrink-0" />
+            <span>UroBot dice:</span>
+          </div>
           <p className="text-base font-medium text-foreground">
             "{mensaje}"
           </p>
@@ -88,9 +89,10 @@ export default function NotFound() {
 
         {/* Tips */}
         <div className="text-left bg-teal-500/[0.06] border border-teal-500/20 rounded-xl p-4">
-          <p className="text-xs font-semibold text-teal-400 mb-2">
-            💡 Sugerencias:
-          </p>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-teal-400 mb-2">
+            <Lightbulb className="w-3.5 h-3.5 shrink-0" />
+            <span>Sugerencias:</span>
+          </div>
           <ul className="text-sm text-teal-300 space-y-1">
             {TIPS.map((tip, i) => (
               <li key={i}>• {tip}</li>
@@ -104,7 +106,7 @@ export default function NotFound() {
             href="/dashboard"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 
                        bg-primary text-primary-foreground rounded-xl font-medium
-                       hover:opacity-90 transition-all active:scale-95"
+                       hover:opacity-90 transition-all active:scale-95 cursor-pointer"
           >
             <Home className="w-4 h-4" />
             Ir al Dashboard
@@ -115,9 +117,9 @@ export default function NotFound() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 
                        bg-muted text-foreground rounded-xl font-medium
                        hover:bg-muted/80 transition-all active:scale-95
-                       border border-border"
+                       border border-border cursor-pointer"
           >
-            <RefreshCw className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" />
             Volver atrás
           </button>
         </div>
