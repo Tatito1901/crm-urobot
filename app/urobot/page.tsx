@@ -141,25 +141,31 @@ export default function UrobotPage() {
       />
 
       {activeTab === 'crm' && (
-        <CRMTab dias={dias} evolucionHoras={stats.evolucionHoras} />
+        <div key="crm" className="animate-tab-in">
+          <CRMTab dias={dias} evolucionHoras={stats.evolucionHoras} />
+        </div>
       )}
 
       {activeTab === 'mensajes' && (
-        <MensajesTab dias={dias} evolucionHoras={stats.evolucionHoras} />
+        <div key="mensajes" className="animate-tab-in">
+          <MensajesTab dias={dias} evolucionHoras={stats.evolucionHoras} />
+        </div>
       )}
 
       {activeTab === 'monitoreo' && (
-        <MonitoreoTab
-          kpi={kpi}
-          evolucionHoras={stats.evolucionHoras}
-          interaccionesPorTipo={stats.interaccionesPorTipo}
-          erroresPorTipo={stats.erroresPorTipo}
-          herramientasUsadas={stats.herramientasUsadas}
-          sentimentDistribucion={stats.sentimentDistribucion}
-          ultimosErrores={stats.ultimosErrores}
-          alertasPendientes={stats.alertasPendientes}
-          onRevisarAlerta={handleRevisarAlerta}
-        />
+        <div key="monitoreo" className="animate-tab-in">
+          <MonitoreoTab
+            kpi={kpi}
+            evolucionHoras={stats.evolucionHoras}
+            interaccionesPorTipo={stats.interaccionesPorTipo}
+            erroresPorTipo={stats.erroresPorTipo}
+            herramientasUsadas={stats.herramientasUsadas}
+            sentimentDistribucion={stats.sentimentDistribucion}
+            ultimosErrores={stats.ultimosErrores}
+            alertasPendientes={stats.alertasPendientes}
+            onRevisarAlerta={handleRevisarAlerta}
+          />
+        </div>
       )}
     </PageShell>
   );

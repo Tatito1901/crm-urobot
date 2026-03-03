@@ -78,10 +78,10 @@ export default function ConsultasPage() {
 
       <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
         {/* Header con búsqueda y filtros */}
-        <div className="p-3 sm:p-4 border-b border-border bg-muted/20">
-          <div className="flex flex-col gap-2.5 sm:flex-row sm:gap-3 sm:items-center sm:justify-between">
+        <div className="p-2.5 sm:p-4 border-b border-border bg-muted/20">
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-3 sm:items-center sm:justify-between">
             {/* Búsqueda */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative flex-1 sm:max-w-md">
               <label htmlFor="consultas-search" className="sr-only">Buscar consultas</label>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <input
@@ -97,7 +97,7 @@ export default function ConsultasPage() {
             </div>
 
             {/* Filtros de sede + refresh */}
-            <div className="flex items-center gap-1.5 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-3">
               <div className="inline-flex p-0.5 sm:p-1 bg-muted/50 rounded-lg border border-border flex-1 sm:flex-none overflow-x-auto scrollbar-hide">
                 {[
                   { key: 'all' as const, label: 'Todas', icon: <Building2 className="h-3.5 w-3.5" /> },

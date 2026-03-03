@@ -64,7 +64,8 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className="flex h-screen w-full bg-background relative overflow-hidden">
       <RouteProgress />
-      {/* Subtle noise texture for depth */}
+      {/* Atmospheric layers for depth */}
+      <div className="ambient-mesh" aria-hidden />
       <div className="pointer-events-none fixed inset-0 noise-overlay z-0" aria-hidden />
       <Suspense fallback={<div className="hidden lg:block lg:w-60 xl:w-72 2xl:w-80 shrink-0 h-full" />}>
         <Sidebar />

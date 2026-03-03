@@ -11,10 +11,10 @@
       "type": "n8n-nodes-base.whatsAppTrigger",
       "typeVersion": 1,
       "position": [
-        8624,
-        7600
+        12992,
+        7328
       ],
-      "id": "42dc3cb0-2323-4b5b-8258-844e8772fcfe",
+      "id": "9e670d22-fd5c-4ab0-a09c-4c0a96c66119",
       "name": "WhatsApp Trigger",
       "webhookId": "urobot-webhook-v2",
       "credentials": {
@@ -31,10 +31,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        8624,
-        7792
+        12992,
+        7520
       ],
-      "id": "2ff87052-542a-4cb1-9054-b9097a3185b7",
+      "id": "bb6a186d-1e71-4c2c-9578-64cfc8e7b399",
       "name": "When chat message received",
       "webhookId": "urobot-chat-trigger-v2"
     },
@@ -45,10 +45,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        8848,
-        7696
+        13216,
+        7424
       ],
-      "id": "38f46355-42a5-4688-8926-297de162ffbf",
+      "id": "bbdaa2c9-c59e-4c0b-b08d-acec390d4acc",
       "name": "🚫 Filtrar Status"
     },
     {
@@ -58,10 +58,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        9072,
-        7696
+        13440,
+        7424
       ],
-      "id": "9cfb8dbb-f6a7-4e7e-92b5-5bea5e257e67",
+      "id": "7d6762fc-059d-4675-8ad9-5b626a79ca8d",
       "name": "⚡ Rate Limit Check",
       "continueOnFail": true
     },
@@ -91,10 +91,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        9296,
-        7696
+        13664,
+        7424
       ],
-      "id": "021a2eb9-ceb7-432e-954f-8c63e9767c01",
+      "id": "7a472fdf-fb16-4308-9090-f5f87bac266a",
       "name": "🚦 Rate OK?"
     },
     {
@@ -182,10 +182,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        9520,
-        7664
+        13888,
+        7392
       ],
-      "id": "70f43828-3bde-4fad-91bb-38a27a548ad8",
+      "id": "5ce478b5-8b13-46f9-bc4e-305c72fca675",
       "name": "📱 Tipo Media?"
     },
     {
@@ -197,10 +197,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1,
       "position": [
-        9744,
-        7424
+        14112,
+        7152
       ],
-      "id": "a20cdbba-ccfc-4550-ac1a-fcf350c2480f",
+      "id": "18f5528c-4475-46be-8d61-14229894adb5",
       "name": "WA Get URL Imagen",
       "webhookId": "5fb9df4d-c913-4688-beec-f7b78f11f96b",
       "credentials": {
@@ -228,10 +228,10 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        10192,
-        7424
+        14560,
+        7152
       ],
-      "id": "cc526403-d8e8-42ea-928f-f111873cae57",
+      "id": "006edbf5-fbcd-4966-b7cd-249e5661a52f",
       "name": "OpenAI Vision",
       "retryOnFail": true,
       "maxTries": 2,
@@ -267,10 +267,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        10416,
-        7424
+        14784,
+        7152
       ],
-      "id": "a6e26e93-4b84-4bed-b218-dc03224bdb51",
+      "id": "9b237fa4-5eb3-4d63-ba6f-c4a15d793bf8",
       "name": "Set Texto Imagen"
     },
     {
@@ -282,10 +282,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1,
       "position": [
-        9744,
-        7616
+        14112,
+        7344
       ],
-      "id": "8732d0b0-1e79-48ef-a114-6d256c174467",
+      "id": "0248a540-b26c-40ae-9e08-e0bf843cb767",
       "name": "WA Get URL Audio",
       "webhookId": "22387a47-d284-49b6-bff4-a77bc94e4b57",
       "credentials": {
@@ -308,10 +308,10 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        10192,
-        7616
+        14560,
+        7344
       ],
-      "id": "d9a4e2f9-295b-4825-bda0-e9699cd8df4b",
+      "id": "a8512aae-4447-4e39-bfab-0c26511f128e",
       "name": "OpenAI Whisper",
       "retryOnFail": true,
       "maxTries": 2,
@@ -347,10 +347,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        10416,
-        7616
+        14784,
+        7344
       ],
-      "id": "ed85d083-d303-4699-92d6-7daf6411eb38",
+      "id": "f86d4b04-5247-4b21-ae5a-b4eed6ed506d",
       "name": "Set Texto Audio"
     },
     {
@@ -376,10 +376,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        10416,
-        7808
+        14784,
+        7536
       ],
-      "id": "7bc0bab8-812f-4b17-af72-1714a9d32617",
+      "id": "fb632c2c-dcd0-4228-afe1-94acecea8b37",
       "name": "Set Texto Documento"
     },
     {
@@ -405,10 +405,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        10640,
-        7952
+        15008,
+        7680
       ],
-      "id": "75838a03-4088-495a-9b44-022b2544c894",
+      "id": "2c1ed517-e7a1-4fc6-acbf-9415c8ae5f63",
       "name": "Set Texto Normal"
     },
     {
@@ -426,10 +426,10 @@
       "type": "n8n-nodes-base.summarize",
       "typeVersion": 1.1,
       "position": [
-        10640,
-        7616
+        15008,
+        7344
       ],
-      "id": "82747f93-e7be-425e-a814-294e90361d57",
+      "id": "7bdab177-3391-4a47-8269-a830fbd6193d",
       "name": "Summarize"
     },
     {
@@ -439,10 +439,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        10864,
-        7792
+        15232,
+        7520
       ],
-      "id": "18d8b5f4-51f0-47a5-b494-8e905736499a",
+      "id": "6da98d48-6a6b-435e-a099-7437c35f991e",
       "name": "1️⃣ Validar y Normalizar",
       "continueOnFail": true
     },
@@ -457,10 +457,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        11088,
-        7792
+        15456,
+        7520
       ],
-      "id": "8bcd7689-855c-406f-b3a5-dc189f7ba263",
+      "id": "ec685748-9e4c-4748-9791-c69f19af86c1",
       "name": "🔒 Check Rate Limit DB",
       "credentials": {
         "postgres": {
@@ -496,10 +496,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        11312,
-        7792
+        15680,
+        7520
       ],
-      "id": "f6f8cbca-7ff0-4a2b-9fe7-b1544c033f55",
+      "id": "f9d3cebd-4182-46ee-825d-c23785f1e7af",
       "name": "🔒 Rate Limit OK?"
     },
     {
@@ -513,10 +513,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        11984,
-        7696
+        16352,
+        7424
       ],
-      "id": "13fb1ffb-4bf7-4003-a9eb-f8782819e009",
+      "id": "08870c42-e25e-4102-85da-24d057c2cd5c",
       "name": "2️⃣ Upsert Conversación",
       "credentials": {
         "postgres": {
@@ -537,10 +537,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        12208,
-        7696
+        16576,
+        7424
       ],
-      "id": "fdca464d-0f9e-437a-b48d-4233e172ad7f",
+      "id": "cb0673d8-fed8-4efe-8c2c-0d824869abd6",
       "name": "3️⃣ Guardar Mensaje",
       "credentials": {
         "postgres": {
@@ -561,10 +561,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        12432,
-        7696
+        16800,
+        7424
       ],
-      "id": "31c754c4-5cfb-4abe-84b7-d783532fffdf",
+      "id": "a843a077-ed7a-44a9-9da9-12eac8d7165c",
       "name": "📝 Registrar Debounce",
       "credentials": {
         "postgres": {
@@ -581,10 +581,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        12656,
-        7696
+        17024,
+        7424
       ],
-      "id": "a15dde6f-ff44-44ae-b72d-2249f59825e5",
+      "id": "88ef35e4-03c8-4c57-8528-54e6732301ae",
       "name": "⏳ Debounce 5s",
       "webhookId": "urobot-debounce-v2"
     },
@@ -599,10 +599,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        12880,
-        7696
+        17248,
+        7424
       ],
-      "id": "0ecfb065-a2e8-44f7-9a7f-64eb376bb33c",
+      "id": "5b745823-a700-45bc-acab-bd9bb29416f4",
       "name": "🔍 Check Debounce",
       "credentials": {
         "postgres": {
@@ -638,10 +638,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        13104,
-        7696
+        17472,
+        7424
       ],
-      "id": "f49a2f2a-cbc5-44f4-901a-d3c7a335dc57",
+      "id": "685895a8-214c-4376-a275-7bcc0141d469",
       "name": "¿Soy Último?"
     },
     {
@@ -655,10 +655,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        13328,
-        7696
+        17696,
+        7424
       ],
-      "id": "0cc844c8-381b-4950-91dd-1481697d79ac",
+      "id": "36d7587e-af5f-49cc-8428-49788b7441d5",
       "name": "4️⃣ Cargar Contexto",
       "credentials": {
         "postgres": {
@@ -675,24 +675,24 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13552,
-        7696
+        17920,
+        7424
       ],
-      "id": "fd900ad4-b9d5-4d15-b10f-1a98f6c91585",
+      "id": "088d17ad-f318-4dc9-96c3-f3e7fbc9a480",
       "name": "5️⃣ Procesar Contexto",
       "continueOnFail": true
     },
     {
       "parameters": {
-        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 9️⃣ FORMATEAR CONTEXTO PARA AGENTE (UROBOT V2.1)\n// ═══════════════════════════════════════════════════════════════════\n// Merge 3 sources:\n//   - Node 5: telefono, mensajeUsuario, historial BD, cita pendiente\n//   - Node 7: análisis Gemini (intención, perfil, síntomas, barreras)\n//   - $input: scoring from Node 8 via Anti-Baneo chain\n\nconst node5 = $('5️⃣ Procesar Contexto').first()?.json || {};\n\n// ⚡ FIX: Read rich analysis from Node 7 (was being lost after Postgres call)\nlet node7 = {};\ntry {\n  node7 = $('7️⃣ Procesar Análisis').first()?.json || {};\n} catch (e) {\n  node7 = {};\n}\n\nconst node8 = $input.first()?.json || {};\n\n// Merge: node5 (base) → node7 (analysis) → node8 (scoring overrides)\nconst ctx = { ...node5, ...node7, ...node8 };\n\nconst historialBD = ctx.historial_mensajes || '';\nconst ultimoBot = ctx.ultimo_mensaje_bot || '';\nconst totalMensajes = ctx.total_mensajes || 0;\nconst esPrimera = ctx.es_primera_interaccion ?? (totalMensajes <= 1);\n\nconst nombreFinal = ctx.nombre_detectado || ctx.nombreUsuario || 'Usuario';\nconst tenemosNombre = nombreFinal !== 'Usuario';\n\nlet contextoContacto = '';\n\n// ═══ PACIENTE ═══\ncontextoContacto += `PACIENTE: ${nombreFinal}`;\nif (!tenemosNombre) contextoContacto += ' (nombre desconocido — pregúntalo de forma natural)';\ncontextoContacto += '\\n';\n\nif (esPrimera) {\n  contextoContacto += '⚡ PRIMERA INTERACCIÓN — Sé especialmente cálido y profesional\\n';\n}\n\n// ═══ SCORING ═══\ncontextoContacto += `📊 Temp: ${ctx.temperatura || 'frio'} | Score: ${ctx.score_total || 0}/100 | Funnel: ${ctx.funnel_stage || ctx.etapa_funnel || '01_contactado'} | Msgs: ${totalMensajes}\\n`;\n\n// ═══ ANÁLISIS DEL MENSAJE ACTUAL (from Gemini via Node 7) ═══\nconst intencion = ctx.intencion_principal || ctx.intencion || '';\nconst perfil = ctx.perfil_paciente || '';\nconst emociones = Array.isArray(ctx.emociones_detectadas) ? ctx.emociones_detectadas : [];\nconst nivelCompromiso = ctx.nivel_compromiso || 0;\nconst prediccion = ctx.prediccion_conversion || '';\nconst barrera = ctx.barrera_principal || 'ninguna';\nconst detalleBarrera = ctx.detalle_barrera || '';\nconst incentivo = ctx.incentivo_sugerido || '';\nconst siguientePaso = ctx.siguiente_paso_ideal || '';\n\nif (intencion) {\n  contextoContacto += `\\n🎯 INTENCIÓN ACTUAL: ${intencion.replace(/_/g, ' ')}`;\n  if (perfil) contextoContacto += ` | Perfil: ${perfil.replace(/_/g, ' ')}`;\n  if (nivelCompromiso) contextoContacto += ` | Compromiso: ${nivelCompromiso}/10`;\n  contextoContacto += '\\n';\n}\n\nif (prediccion && prediccion !== 'media') {\n  contextoContacto += `📈 Predicción conversión: ${prediccion}`;\n  if (incentivo && incentivo !== 'ninguno') contextoContacto += ` → Estrategia: ${incentivo.replace(/_/g, ' ')}`;\n  contextoContacto += '\\n';\n}\n\nif (emociones.length > 0) {\n  contextoContacto += `💭 Emociones detectadas: ${emociones.join(', ')}\\n`;\n}\n\nif (barrera !== 'ninguna' && barrera) {\n  contextoContacto += `⚠️ BARRERA: ${barrera.replace(/_/g, ' ')}`;\n  if (detalleBarrera) contextoContacto += ` — ${detalleBarrera}`;\n  contextoContacto += '\\n';\n}\n\nif (siguientePaso) {\n  contextoContacto += `➡️ SIGUIENTE PASO IDEAL: ${siguientePaso}\\n`;\n}\n\n// ═══ SÍNTOMAS ESTRUCTURADOS (from Gemini analysis) ═══\nconst sintomasEstructurados = Array.isArray(ctx.sintomas_estructurados) ? ctx.sintomas_estructurados.filter(s => s && s.nombre) : [];\nconst sintomasPrevios = Array.isArray(ctx.sintomas_acumulados) ? ctx.sintomas_acumulados : [];\n\nif (sintomasEstructurados.length > 0) {\n  contextoContacto += '\\n🩺 SÍNTOMAS DETECTADOS:\\n';\n  for (const s of sintomasEstructurados) {\n    const sev = s.severidad ? ` [${s.severidad}]` : '';\n    const tiempo = s.tiempo_evolucion ? ` — ${s.tiempo_evolucion}` : '';\n    const desc = s.descripcion_original && s.descripcion_original !== s.nombre ? ` (paciente dijo: \"${s.descripcion_original}\")` : '';\n    contextoContacto += `  • ${(s.nombre || '').replace(/_/g, ' ')}${sev}${tiempo}${desc}\\n`;\n  }\n} else if (sintomasPrevios.length > 0) {\n  const nombres = sintomasPrevios.map(s => typeof s === 'string' ? s : s.nombre).filter(Boolean);\n  if (nombres.length > 0) {\n    contextoContacto += `\\n🩺 SÍNTOMAS PREVIOS: ${nombres.join(', ')}\\n`;\n  }\n}\n\n// ═══ BANDERAS ROJAS ═══\nconst banderas = Array.isArray(ctx.banderas_rojas) ? ctx.banderas_rojas : [];\nif (banderas.length > 0) {\n  contextoContacto += `\\n🚨 BANDERAS ROJAS: ${banderas.map(b => b.replace(/_/g, ' ')).join(', ')}\\n`;\n}\n\nif (ctx.es_urgencia || ctx.es_urgencia_medica) {\n  contextoContacto += '⚠️ URGENCIA MÉDICA — Priorizar atención inmediata\\n';\n}\n\n// ═══ DATOS CLÍNICOS EXTRA ═══\nconst antecedentes = Array.isArray(ctx.antecedentes_mencionados) ? ctx.antecedentes_mencionados.filter(Boolean) : [];\nconst medicamentos = Array.isArray(ctx.medicamentos_mencionados) ? ctx.medicamentos_mencionados.filter(Boolean) : [];\nconst edad = ctx.edad_detectada || null;\n\nif (antecedentes.length > 0 || medicamentos.length > 0 || edad) {\n  contextoContacto += '\\n📋 DATOS CLÍNICOS:\\n';\n  if (edad) contextoContacto += `  • Edad: ${edad}\\n`;\n  if (antecedentes.length > 0) contextoContacto += `  • Antecedentes: ${antecedentes.join(', ')}\\n`;\n  if (medicamentos.length > 0) contextoContacto += `  • Medicamentos: ${medicamentos.join(', ')}\\n`;\n}\n\n// ═══ PRECIO ═══\nif (ctx.pregunto_precio) {\n  contextoContacto += '\\n💰 Ha preguntado por precios';\n  const sensibilidad = ctx.nivel_sensibilidad_precio || (ctx.senales_precio?.nivel_sensibilidad) || '';\n  if (sensibilidad && sensibilidad !== 'ninguna') {\n    contextoContacto += ` (sensibilidad: ${sensibilidad})`;\n  }\n  contextoContacto += '\\n';\n}\n\n// ═══ CITA PENDIENTE ═══\nif (ctx.tiene_cita_pendiente && ctx.cita_pendiente) {\n  const c = ctx.cita_pendiente;\n  contextoContacto += `\\n📅 CITA PENDIENTE:\\n- Fecha: ${c.fecha_hora}\\n- Sede: ${c.sede || 'Por definir'}\\n- Estado: ${c.estado} / ${c.confirmacion || 'sin confirmar'}\\n- Tipo: ${c.tipo || 'consulta'}\\n`;\n}\n\n// ═══ ACCIÓN RECOMENDADA ═══\nif (ctx.accion_recomendada) {\n  contextoContacto += `\\n🎯 Acción sistema: ${ctx.accion_recomendada.replace(/_/g, ' ')}\\n`;\n}\n\n// ═══ META ADS ═══\nif (ctx.es_meta_ads) {\n  contextoContacto += '\\n📱 Llegó por anuncio de Facebook/Instagram';\n  if (ctx.meta_headline) contextoContacto += ` — \"${ctx.meta_headline}\"`;\n  contextoContacto += '\\n';\n}\n\n// ═══ HISTORIAL ═══\nif (historialBD) {\n  contextoContacto += `\\n═══ HISTORIAL RECIENTE ═══\\n${historialBD}\\n═════════════════════════════\\n`;\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    contextoContacto,\n    origen: 'urobot'\n  }\n}];"
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 9️⃣ FORMATEAR CONTEXTO PARA AGENTE (UROBOT V2.2 — Multi-Campaña)\n// ═══════════════════════════════════════════════════════════════════\n// Merge 3 sources:\n//   - Node 5: telefono, mensajeUsuario, historial BD, cita pendiente\n//   - Node 7: análisis Gemini (intención, perfil, síntomas, barreras)\n//   - $input: scoring from Node 8 via Anti-Baneo chain\n\nconst node5 = $('5️⃣ Procesar Contexto').first()?.json || {};\n\n// ⚡ FIX: Read rich analysis from Node 7 (was being lost after Postgres call)\nlet node7 = {};\ntry {\n  node7 = $('7️⃣ Procesar Análisis').first()?.json || {};\n} catch (e) {\n  node7 = {};\n}\n\nconst node8 = $input.first()?.json || {};\n\n// Merge: node5 (base) → node7 (analysis) → node8 (scoring overrides)\nconst ctx = { ...node5, ...node7, ...node8 };\n\nconst historialBD = ctx.historial_mensajes || '';\nconst ultimoBot = ctx.ultimo_mensaje_bot || '';\nconst totalMensajes = ctx.total_mensajes || 0;\nconst esPrimera = ctx.es_primera_interaccion ?? (totalMensajes <= 1);\n\nconst nombreFinal = ctx.nombre_detectado || ctx.nombreUsuario || 'Usuario';\nconst tenemosNombre = nombreFinal !== 'Usuario';\n\n// ═══════════════════════════════════════════════════════════════\n// DETECCIÓN DE CAMPAÑA\n// ═══════════════════════════════════════════════════════════════\nlet campanaDetectada = 'general';\nconst headline = (ctx.meta_headline || '').toLowerCase();\nconst mensaje = (ctx.mensajeUsuario || '').toLowerCase();\nconst histLower = (historialBD || '').toLowerCase();\n\n// Detectar por headline de Meta Ads\nif (/circuncisi[oó]n|fimosis|prepucio/i.test(headline)) {\n  campanaDetectada = 'circuncision';\n} else if (/pr[oó]stata|prost[aá]t|orin|nocturia|urinari/i.test(headline)) {\n  campanaDetectada = 'prostata';\n}\n\n// Si no se detectó por headline, intentar por mensaje del paciente\nif (campanaDetectada === 'general' && esPrimera) {\n  if (/circuncisi[oó]n|fimosis|prepucio/i.test(mensaje)) {\n    campanaDetectada = 'circuncision';\n  } else if (/pr[oó]stata|prost[aá]t|levant.*noche.*ba[nñ]o|chorro.*d[eé]bil|orin/i.test(mensaje)) {\n    campanaDetectada = 'prostata';\n  }\n}\n\n// Si no es primera interacción, revisar historial\nif (campanaDetectada === 'general' && !esPrimera) {\n  if (/circuncisi[oó]n|fimosis|prepucio/i.test(histLower)) {\n    campanaDetectada = 'circuncision';\n  } else if (/pr[oó]stata|nocturia|chorro/i.test(histLower)) {\n    campanaDetectada = 'prostata';\n  }\n}\n\n// Override campaign with analyzer's tema_detectado if available\nconst temaAnalyzer = ctx.tema_detectado || null;\nif (temaAnalyzer === 'circuncision') campanaDetectada = 'circuncision';\nelse if (temaAnalyzer === 'prostata') campanaDetectada = 'prostata';\n\nconst cualificado = ctx.cualificado === true;\n\nlet contextoContacto = '';\n\n// ═══ PACIENTE ═══\ncontextoContacto += `PACIENTE: ${nombreFinal}`;\nif (!tenemosNombre) contextoContacto += ' (nombre desconocido — pregúntalo de forma natural)';\ncontextoContacto += '\\n';\n\nif (esPrimera) {\n  contextoContacto += '⚡ PRIMERA INTERACCIÓN — Sé especialmente cálido y profesional\\n';\n}\n\n// ═══ CAMPAÑA DETECTADA ═══\ncontextoContacto += `\\n🎯 CAMPAÑA DETECTADA: ${campanaDetectada.toUpperCase()}\\n`;\nif (campanaDetectada === 'circuncision') {\n  contextoContacto += cualificado\n    ? '✅ PACIENTE CUALIFICADO — Ya compartió para quién es o su motivo. Puedes dar info de procedimiento y precio de consulta.\\n'\n    : '⚠️ PACIENTE NO CUALIFICADO — Pregunta primero para quién es y si tiene alguna molestia. NO des precio de cirugía todavía.\\n';\n}\n\n// ═══ SCORING ═══\ncontextoContacto += `📊 Temp: ${ctx.temperatura || 'frio'} | Score: ${ctx.score_total || 0}/100 | Funnel: ${ctx.funnel_stage || ctx.etapa_funnel || '01_contactado'} | Msgs: ${totalMensajes}\\n`;\n\n// ═══ ANÁLISIS DEL MENSAJE ACTUAL (from Gemini via Node 7) ═══\nconst intencion = ctx.intencion_principal || ctx.intencion || '';\nconst perfil = ctx.perfil_paciente || '';\nconst emociones = Array.isArray(ctx.emociones_detectadas) ? ctx.emociones_detectadas : [];\nconst nivelCompromiso = ctx.nivel_compromiso || 0;\nconst prediccion = ctx.prediccion_conversion || '';\nconst barrera = ctx.barrera_principal || 'ninguna';\nconst detalleBarrera = ctx.detalle_barrera || '';\nconst incentivo = ctx.incentivo_sugerido || '';\nconst siguientePaso = ctx.siguiente_paso_ideal || '';\n\nif (intencion) {\n  contextoContacto += `\\n🎯 INTENCIÓN ACTUAL: ${intencion.replace(/_/g, ' ')}`;\n  if (perfil) contextoContacto += ` | Perfil: ${perfil.replace(/_/g, ' ')}`;\n  if (nivelCompromiso) contextoContacto += ` | Compromiso: ${nivelCompromiso}/10`;\n  contextoContacto += '\\n';\n}\n\nif (prediccion && prediccion !== 'media') {\n  contextoContacto += `📈 Predicción conversión: ${prediccion}`;\n  if (incentivo && incentivo !== 'ninguno') contextoContacto += ` → Estrategia: ${incentivo.replace(/_/g, ' ')}`;\n  contextoContacto += '\\n';\n}\n\nif (emociones.length > 0) {\n  contextoContacto += `💭 Emociones detectadas: ${emociones.join(', ')}\\n`;\n}\n\nif (barrera !== 'ninguna' && barrera) {\n  contextoContacto += `⚠️ BARRERA: ${barrera.replace(/_/g, ' ')}`;\n  if (detalleBarrera) contextoContacto += ` — ${detalleBarrera}`;\n  contextoContacto += '\\n';\n}\n\nif (siguientePaso) {\n  contextoContacto += `➡️ SIGUIENTE PASO IDEAL: ${siguientePaso}\\n`;\n}\n\n// ═══ SÍNTOMAS ESTRUCTURADOS (from Gemini analysis) ═══\nconst sintomasEstructurados = Array.isArray(ctx.sintomas_estructurados) ? ctx.sintomas_estructurados.filter(s => s && s.nombre) : [];\nconst sintomasPrevios = Array.isArray(ctx.sintomas_acumulados) ? ctx.sintomas_acumulados : [];\n\nif (sintomasEstructurados.length > 0) {\n  contextoContacto += '\\n🩺 SÍNTOMAS DETECTADOS:\\n';\n  for (const s of sintomasEstructurados) {\n    const sev = s.severidad ? ` [${s.severidad}]` : '';\n    const tiempo = s.tiempo_evolucion ? ` — ${s.tiempo_evolucion}` : '';\n    const desc = s.descripcion_original && s.descripcion_original !== s.nombre ? ` (paciente dijo: \"${s.descripcion_original}\")` : '';\n    contextoContacto += `  • ${(s.nombre || '').replace(/_/g, ' ')}${sev}${tiempo}${desc}\\n`;\n  }\n} else if (sintomasPrevios.length > 0) {\n  const nombres = sintomasPrevios.map(s => typeof s === 'string' ? s : s.nombre).filter(Boolean);\n  if (nombres.length > 0) {\n    contextoContacto += `\\n🩺 SÍNTOMAS PREVIOS: ${nombres.join(', ')}\\n`;\n  }\n}\n\n// ═══ BANDERAS ROJAS ═══\nconst banderas = Array.isArray(ctx.banderas_rojas) ? ctx.banderas_rojas : [];\nif (banderas.length > 0) {\n  contextoContacto += `\\n🚨 BANDERAS ROJAS: ${banderas.map(b => b.replace(/_/g, ' ')).join(', ')}\\n`;\n}\n\nif (ctx.es_urgencia || ctx.es_urgencia_medica) {\n  contextoContacto += '⚠️ URGENCIA MÉDICA — Priorizar atención inmediata\\n';\n}\n\n// ═══ DATOS CLÍNICOS EXTRA ═══\nconst antecedentes = Array.isArray(ctx.antecedentes_mencionados) ? ctx.antecedentes_mencionados.filter(Boolean) : [];\nconst medicamentos = Array.isArray(ctx.medicamentos_mencionados) ? ctx.medicamentos_mencionados.filter(Boolean) : [];\nconst edad = ctx.edad_detectada || null;\n\nif (antecedentes.length > 0 || medicamentos.length > 0 || edad) {\n  contextoContacto += '\\n📋 DATOS CLÍNICOS:\\n';\n  if (edad) contextoContacto += `  • Edad: ${edad}\\n`;\n  if (antecedentes.length > 0) contextoContacto += `  • Antecedentes: ${antecedentes.join(', ')}\\n`;\n  if (medicamentos.length > 0) contextoContacto += `  • Medicamentos: ${medicamentos.join(', ')}\\n`;\n}\n\n// ═══ PRECIO ═══\nif (ctx.pregunto_precio) {\n  contextoContacto += '\\n💰 Ha preguntado por precios';\n  const sensibilidad = ctx.nivel_sensibilidad_precio || (ctx.senales_precio?.nivel_sensibilidad) || '';\n  if (sensibilidad && sensibilidad !== 'ninguna') {\n    contextoContacto += ` (sensibilidad: ${sensibilidad})`;\n  }\n  contextoContacto += '\\n';\n}\n\n// ═══ CITA PENDIENTE ═══\nif (ctx.tiene_cita_pendiente && ctx.cita_pendiente) {\n  const c = ctx.cita_pendiente;\n  contextoContacto += `\\n📅 CITA PENDIENTE:\\n- Fecha: ${c.fecha_hora}\\n- Sede: ${c.sede || 'Por definir'}\\n- Estado: ${c.estado} / ${c.confirmacion || 'sin confirmar'}\\n- Tipo: ${c.tipo || 'consulta'}\\n`;\n}\n\n// ═══ ACCIÓN RECOMENDADA ═══\nif (ctx.accion_recomendada) {\n  contextoContacto += `\\n🎯 Acción sistema: ${ctx.accion_recomendada.replace(/_/g, ' ')}\\n`;\n}\n\n// ═══ META ADS ═══\nif (ctx.es_meta_ads) {\n  contextoContacto += '\\n📱 Llegó por anuncio de Facebook/Instagram';\n  if (ctx.meta_headline) contextoContacto += ` — \"${ctx.meta_headline}\"`;\n  contextoContacto += '\\n';\n}\n\n// ═══ HISTORIAL ═══\nif (historialBD) {\n  contextoContacto += `\\n═══ HISTORIAL RECIENTE ═══\\n${historialBD}\\n═════════════════════════════\\n`;\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    contextoContacto,\n    campana_detectada: campanaDetectada,\n    origen: 'urobot'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        15024,
-        7568
+        19392,
+        7296
       ],
-      "id": "66761095-4a74-45a9-b0f5-37f010f735f7",
+      "id": "676f0890-5703-45f4-b4ed-6f911c6f21da",
       "name": "9️⃣ Formatear Contexto",
       "continueOnFail": true
     },
@@ -702,16 +702,16 @@
         "text": "=Fecha y hora actual: {{ $now.setZone('America/Mexico_City').setLocale('es-MX').toFormat(\"cccc dd 'de' LLLL yyyy, HH:mm\") }}\n═══════════════════════════════════════════════\nTELÉFONO: {{ $json.telefono }}\n═══════════════════════════════════════════════\n\n{{ $json.contextoContacto }}\n\n═══════════════════════════════════════════════\nMENSAJE DEL PACIENTE:\n{{ $json.mensajeUsuario }}",
         "needsFallback": true,
         "options": {
-          "systemMessage": "==<SYSTEM>\n═══════════════════════════════════════════════\nREGLA DE ORO (máxima prioridad — léela primero y al final)\n═══════════════════════════════════════════════\n1. Tu respuesta es ÚNICAMENTE el texto del mensaje de WhatsApp, listo para enviar.\n2. 2 a 5 líneas. Máximo 1–2 emojis SOLO en el primer saludo de la conversación.\n3. NUNCA asumas síntomas que el paciente NO haya dicho con sus propias palabras. Si viene de un anuncio, NO des por hecho que tiene los síntomas del anuncio. Pregunta.\n4. NUNCA inventes horarios, disponibilidad ni datos médicos.\n5. Nada de análisis, estrategias, metadata, pensamientos internos, listas numeradas ni markdown.\n\n═══════════════════════════════════════════════\nIDENTIDAD\n═══════════════════════════════════════════════\nEres quien atiende el WhatsApp del Dr. Mario Martínez Thomas, urólogo. Llevas tiempo trabajando con él y conoces su consulta. Los pacientes creen que hablan con alguien de su equipo, y así debe sentirse: cercano, profesional, humano. Nunca reveles que eres IA, bot o sistema automatizado.\n\n═══════════════════════════════════════════════\nCAMPAÑA ACTIVA: PROBLEMAS PROSTÁTICOS (Meta Ads)\n═══════════════════════════════════════════════\nLa mayoría de pacientes nuevos llegan por un anuncio en Facebook/Instagram sobre problemas de próstata. Ten en cuenta:\n\n- Muchos sienten VERGÜENZA o PENA al hablar de síntomas urinarios o sexuales. No los presiones a contar detalles; deja que compartan a su ritmo.\n- NORMALIZA siempre: \"es algo muy frecuente\", \"muchos pacientes del Doctor vienen por algo similar\", \"no tiene nada de raro\".\n- Su primer mensaje suele ser genérico (\"vi el anuncio\", \"quiero info\"). NO asumas qué síntoma tienen por el tema del anuncio. Haz una pregunta abierta y cálida.\n- Si el paciente sí comparte un síntoma → valida su decisión de escribir: \"Qué bueno que se anima a consultarlo\" o \"Hace bien en checarse\".\n- Evita términos clínicos intimidantes al inicio (hiperplasia, PSA, tacto rectal). Usa lenguaje simple hasta que el paciente se abra.\n\n⚠️ CRÍTICO — MENSAJE PRE-LLENADO DE META:\nCuando el primer mensaje contiene \"vi el anuncio\" o \"vi el video\" seguido de \"quiero info\" o \"quiero más info\", fue GENERADO AUTOMÁTICAMENTE por Meta Ads. El paciente NO escribió nada con sus propias palabras.\nNUNCA respondas asumiendo que tiene síntomas prostáticos, nocturia, o cualquier otro síntoma. Ignora completamente el headline del anuncio o cualquier dato de META_HEADLINE. Trata este mensaje como si dijera SOLO \"hola, quiero información\".\n\n═══════════════════════════════════════════════\nESTILO DE COMUNICACIÓN\n═══════════════════════════════════════════════\n- Español mexicano natural, cálido y profesional.\n- Tono: empático, cercano, como alguien que genuinamente quiere ayudar. Frases como: \"Con gusto le ayudo\", \"Para su tranquilidad\", \"Con mucho gusto le busco espacio\", \"Permítame revisar\", \"Qué bueno que nos escribe\".\n- USTED por defecto. Si el paciente tutea, cambia a TÚ.\n- No suenes a vendedor ni a guión. Sé conversacional, como un mensaje real de WhatsApp.\n- Palabras PROHIBIDAS: inversión, valoración integral, sin compromiso, excelente decisión, señal de alerta, antes de que sea tarde, UROBOT, asistente virtual, inteligencia artificial, bot, hiperplasia (a menos que el paciente la mencione primero).\n- Evita: tablas, bullets largos, repetir el nombre del paciente al inicio de cada mensaje.\n- En WhatsApp usa *negritas* solo para info clave: precio, dirección, horario confirmado.\n\n═══════════════════════════════════════════════\nUSO DEL CONTEXTO (datos que recibes automáticamente)\n═══════════════════════════════════════════════\nAntes del mensaje del paciente recibes datos de contexto. Úsalos así:\n- Si es PRIMERA INTERACCIÓN → saludo cálido + pregunta abierta. NUNCA asumas síntomas.\n- Si ya tiene NOMBRE → úsalo naturalmente (no en cada mensaje).\n- Si tiene CITA PENDIENTE → tenlo presente; si pregunta algo de agenda, menciónala.\n- Si su TEMPERATURA es \"caliente\" o \"urgente\" → prioriza agendar pronto.\n- Si PREGUNTÓ PRECIO antes → no repitas el precio, di \"lo que le comenté\".\n- Si tiene SÍNTOMAS previos en el historial → refiérete a ellos con las propias palabras del paciente.\n- Si hay HISTORIAL de conversación → sé coherente, no repitas lo que ya dijiste.\n- Si ves META_HEADLINE o info del anuncio → es solo para tu contexto interno. NUNCA lo menciones ni asumas que el paciente tiene esos síntomas.\n\n═══════════════════════════════════════════════\nLA PRÁCTICA DEL DR. MARIO\n═══════════════════════════════════════════════\nSEDES (siempre ofrece elegir):\n1. *Hospital Ángeles Santa Mónica* — Temístocles 210, Polanco.\n2. *Hospital San Ángel Inn Satélite*.\n\nPRECIOS (OBLIGATORIO usar estas cifras exactas, NO redondees ni uses otra cantidad):\n- Primera vez: *$1,200 MXN* (consulta + ultrasonido si se necesita, todo en la misma visita).\n- Subsecuente: *$800 MXN*.\n- Menciona el precio UNA sola vez en toda la conversación. Después: \"lo que le comenté\".\n\nHORARIOS DE REFERENCIA (solo para tu contexto, NO los menciones al paciente — usa la herramienta):\n- Santa Mónica: lunes 9–13, martes 15–20, viernes 15–18.\n- Satélite: miércoles 9–13, jueves 15–20; sábados selectos 9–13.\n\n═══════════════════════════════════════════════\nPRINCIPIO \"VACÍO CLÍNICO\"\n═══════════════════════════════════════════════\nCUÁNDO USARLO: Solo DESPUÉS de que el paciente comparta al menos un síntoma o preocupación concreta. NUNCA en el primer mensaje si solo dice \"quiero info\" o \"vi el anuncio\".\n\nPor chat NUNCA diagnosticas, ni \"cierras\" el caso, ni dices \"no es grave\". Tu trabajo es crear un vacío de información que solo se resuelve en consulta:\n\n1. ESPEJEA las palabras del paciente (si dice \"me levanto mucho\" → \"esas idas al baño en la noche\").\n2. USA 1 METÁFORA simple (máximo 1 por conversación, solo si el paciente ya compartió un síntoma):\n   - Próstata/chorro débil: \"es como una tubería que se va cerrando poco a poco\"\n   - Levantarse de noche/urgencia: \"el cuerpo manda señales de que algo está cambiando ahí\"\n   - Cólico/cálculo: \"es como una piedrita atorada en una manguera\"\n   - Infección recurrente: \"a veces hay algo de fondo que hace que regrese\"\n   - Disfunción eréctil: \"muchas veces el origen no está donde uno piensa\"\n   - Sangre en orina: \"puede venir de distintos puntos del tracto\"\n   - Dolor/molestia general: \"el cuerpo avisa, pero hay que ver de dónde viene\"\n3. CIERRA CON EL GAP: \"…pero en su caso, [lo que falta saber] solo lo definimos revisándolo en consulta, y si hace falta, con ultrasonido ahí mismo.\"\n\n═══════════════════════════════════════════════\nPROTOCOLO DE URGENCIAS\n═══════════════════════════════════════════════\nSi el paciente describe CUALQUIERA de estos → indica ir a URGENCIAS HOY:\n- No puede orinar en absoluto\n- Dolor testicular súbito e intenso\n- Fiebre alta con escalofríos y mal estado\n- Sangrado abundante con coágulos\n- Dolor insoportable que no cede\n- Vómito persistente con dolor de riñón\n- Desmayo o confusión\n\nEjemplo: \"Lo que me describe suena a que necesita atención de urgencias hoy mismo. Vaya al hospital más cercano. Ya después con calma el Dr. Mario puede darle seguimiento en consulta.\"\n\n═══════════════════════════════════════════════\nHERRAMIENTAS (úsalas siempre que aplique)\n═══════════════════════════════════════════════\n\n1) DISPONIBILIDAD_CALENDARIO\n   CUÁNDO: Antes de mencionar CUALQUIER horario. SIEMPRE.\n   NUNCA inventes disponibilidad ni digas horarios de memoria.\n   Parámetros: dateIntent, specificDate, sedePreferida, onlyMorning, onlyAfternoon.\n\n2) AGENDAR_CONSULTA\n   CUÁNDO: Solo si tienes LOS 3 REQUISITOS:\n   ✓ Horario elegido por el paciente (que vino de DISPONIBILIDAD_CALENDARIO)\n   ✓ Nombre completo del paciente\n   ✓ Confirmación explícita del paciente al resumen (fecha, hora, sede)\n   Parámetros: telefono, nombre, fecha, hora, motivo, existingEventId, origen.\n\n3) CANCELAR_CONSULTA\n   CUÁNDO: El paciente quiere cancelar su cita.\n   Confirma que quiere cancelar antes de ejecutar.\n   Parámetros: telefono, motivo_cancelacion.\n\n4) REAGENDAR_CONSULTA\n   CUÁNDO: El paciente quiere cambiar fecha/hora de su cita.\n   Primero llama DISPONIBILIDAD_CALENDARIO para ofrecer nuevas opciones.\n   Parámetros: telefono, nueva_fecha, nueva_hora, motivo.\n\n═══════════════════════════════════════════════\nFLUJO CONVERSACIONAL\n═══════════════════════════════════════════════\n\n→ \"Vi el anuncio / Quiero info / Me interesa\" (ENTRADA META ADS):\n  Saludo cálido + NORMALIZAR + ofrecer información SIN que tenga que pedir. NO hagas una pregunta que lo obligue a revelar su problema de entrada.\n  \"Hola [nombre si lo tienes], qué gusto que nos escribe. Le platico rápido: la mayoría de los pacientes que nos contactan vienen por algún tema de próstata o vías urinarias, y el Dr. Mario se dedica justamente a eso. La consulta incluye revisión y ultrasonido si hace falta, todo en una sola visita. ¿Le gustaría saber más, o hay algo en particular que quisiera preguntarme?\"\n\n→ Paciente comparte síntoma prostático (chorro débil, levantarse de noche, urgencia, goteo):\n  Normaliza + valida + empatía + espejea + vacío clínico + invita a consulta.\n  \"Eso que me comenta es algo que el Doctor ve muy seguido, no tiene nada de raro. [Metáfora]. En consulta se revisa todo y si hace falta ultrasonido se hace ahí mismo. ¿Le gustaría que le busque un espacio? Estamos en Polanco y en Satélite.\"\n\n→ Paciente comparte síntoma con vergüenza (\"es algo penoso\", \"no sé cómo decirlo\"):\n  Normaliza con calidez + quita presión.\n  \"No se preocupe para nada, el Doctor ve estos casos todos los días y lo maneja con mucha discreción. ¿Me quiere platicar un poco más o prefiere que le agende directamente para que lo revise él?\"\n\n→ \"Cómo es la consulta\" / \"Cómo funciona\":\n  Primero la EXPERIENCIA humana, luego el precio al final. NO empieces por el precio.\n  \"El Dr. Mario se toma su tiempo, la cita dura unos 40 minutos. Primero platica con usted para entender bien qué siente, luego la revisión, y si hace falta un ultrasonido se lo hace ahí mismo para que salga con una respuesta clara. Todo con mucha discreción. La primera consulta tiene un costo de *$1,200 MXN* con todo incluido. ¿Tiene alguna duda, o le busco un espacio?\"\n\n→ Síntoma directo (no prostático):\n  Empatía + espejo + metáfora + vacío clínico + invita a consulta + pregunta sede.\n\n→ Pregunta precio (sin haber compartido síntomas):\n  Precio (1 vez) + valor + cierre SUAVE (no empujar sede todavía).\n  \"La consulta de primera vez es de *$1,200 MXN* e incluye ultrasonido si el Doctor lo ve necesario, para que salga con una respuesta clara ese mismo día. ¿Hay algo que le preocupe o que quisiera que el Doctor le revise?\"\n\n→ Pregunta precio (ya compartió síntomas):\n  Precio (1 vez) + gap + pregunta sede.\n  \"La consulta es de *$1,200 MXN* con todo incluido. [Referencia a su síntoma] es justo lo que el Doctor revisa todos los días. ¿Le queda mejor Polanco o Satélite?\"\n\n→ Pregunta ubicación:\n  Menciona ambas sedes + pregunta cuál le queda mejor.\n\n→ Elige sede:\n  Llama DISPONIBILIDAD_CALENDARIO → ofrece 2–3 opciones → pide nombre completo → confirma resumen → AGENDAR_CONSULTA → dirección + \"si tiene estudios previos, tráigalos\".\n\n→ \"Es caro / No me alcanza\":\n  \"Entiendo. Lo que le comenté incluye ultrasonido si se necesita, para salir con respuesta clara en la misma visita. ¿En cuál sede le acomoda más?\"\n\n→ \"Lo pienso / Después\":\n  \"Claro, tómese su tiempo. Si le surge alguna duda o quiere platicarme lo que siente, aquí estamos con gusto. Cuando guste me avisa y le busco espacio.\"\n\n→ \"Me quedan lejos las dos sedes\":\n  Valida + menciona beneficio de visita completa en una sola ida + ofrece flexibilidad de horario.\n  \"Entiendo, el traslado pesa. La ventaja es que el Doctor procura hacer todo en una sola visita — revisión y ultrasonido — para que valga la pena el viaje. ¿Le busco un horario que le acomode, quizá temprano o por la tarde?\"\n\n→ Vasectomía / circuncisión / cirugía:\n  \"Para eso lo ideal es que primero lo valore el Doctor en consulta, le explique el procedimiento y le dé un presupuesto exacto. ¿Le queda mejor Satélite o Polanco?\"\n\n→ Quiere cancelar cita:\n  \"Entendido. ¿Me confirma que quiere cancelar su cita?\" → CANCELAR_CONSULTA → \"Listo, queda cancelada. Cuando guste agendar de nuevo, aquí estamos.\"\n\n→ Quiere reagendar:\n  \"Claro, déjeme buscarle otra opción.\" → DISPONIBILIDAD_CALENDARIO → nuevas opciones → REAGENDAR_CONSULTA.\n\n→ Pide hablar con alguien / seguros / facturación / tema fuera de alcance:\n  \"Con gusto, déjeme pasar su mensaje al equipo del Doctor para que se pongan en contacto con usted directamente. ¿Hay algo más en lo que le pueda ayudar mientras?\"\n\n→ Paciente regresa después de días:\n  \"Qué gusto que nos escribe de nuevo. ¿Le busco un espacio con el Doctor?\" (usa contexto previo sin repetir todo).\n\n→ Mensaje muy corto (emoji, \"ok\", \"👍\"):\n  Interpreta como confirmación o interés según contexto. Si es ambiguo: \"¿Le busco horario entonces?\"\n\n→ Imagen o audio:\n  Responde al contenido transcrito/descrito. Si es imagen médica: \"Gracias por compartirlo. Para darle una opinión certera el Doctor necesita revisarlo en persona. ¿Le busco espacio?\"\n\n═══════════════════════════════════════════════\nCIERRES SEGÚN FASE (varía tu cierre, no repitas siempre lo mismo)\n═══════════════════════════════════════════════\n- Lead FRÍO (no ha compartido síntomas, solo pide info): \"¿Tiene alguna duda?\" o \"¿Le gustaría saber algo más?\"\n- Lead TIBIO (compartió un síntoma o mostró interés real): \"¿Le gustaría que le busque un espacio con el Doctor?\"\n- Lead CALIENTE (quiere agendar, eligió sede, o tiene urgencia): \"¿Le queda mejor Polanco o Satélite?\" o \"¿Cuál horario le acomoda?\"\nNUNCA uses el cierre de lead caliente con un lead frío. No empujes sede si el paciente no ha mostrado intención de agendar.\n\n═══════════════════════════════════════════════\nEJEMPLOS DE REFERENCIA\n═══════════════════════════════════════════════\n\n✅ CORRECTO — Paciente de Meta Ads, primer mensaje:\nPaciente: \"Hola, vi el anuncio del Dr. Mario y quiero más info\"\nRespuesta: \"Hola, qué tal 👋 Con mucho gusto le doy información. Le platico: la mayoría de los pacientes que nos escriben vienen por algún tema de próstata o vías urinarias, y el Dr. Mario se dedica justo a eso. ¿Le gustaría que le cuente cómo es la consulta, o hay algo en particular que quisiera preguntarme?\"\n\n❌ INCORRECTO — Asumir síntomas del anuncio:\nPaciente: \"Hola, vi el anuncio del Dr. Mario y quiero más info\"\nRespuesta: \"Entiendo, levantarse por la noche es muy desgastante...\" ← NUNCA hagas esto. El paciente no mencionó ningún síntoma.\n\n✅ CORRECTO — Paciente comparte síntoma con vergüenza:\nPaciente: \"Es que tengo un problema... no sé cómo decirlo, es de la próstata\"\nRespuesta: \"No se preocupe, el Doctor atiende estos casos todos los días, es más común de lo que se imagina. ¿Me quiere contar un poco más sobre lo que siente, o prefiere que le busque un espacio para que lo revise directamente?\"\n\n✅ CORRECTO — Paciente comparte síntoma concreto:\nPaciente: \"Me levanto como 4 veces en la noche al baño y ya no descanso\"\nRespuesta: \"Esas idas al baño en la noche sí son muy desgastantes, y es algo que el Doctor ve con mucha frecuencia. Es como una tubería que poco a poco se va cerrando, pero en su caso solo revisándolo en consulta se puede saber qué lo está causando. Incluye ultrasonido si hace falta. ¿Le busco espacio? Estamos en Polanco y en Satélite.\"\n\n✅ CORRECTO — Pregunta precio sin haber dicho síntomas:\nPaciente: \"¿Cuánto cuesta la consulta?\"\nRespuesta: \"La consulta de primera vez es de *$1,200 MXN* e incluye ultrasonido si hace falta, para que salga con una respuesta clara ese mismo día. ¿Hay algo en particular que le gustaría revisar con el Doctor?\"\n\n❌ INCORRECTO — Empujar sede después del precio sin síntomas:\nPaciente: \"¿Cuánto cuesta?\"\nRespuesta: \"Son $1,200. ¿Le queda mejor Polanco o Satélite?\" ← Demasiado agresivo. No ha dicho que quiere agendar.\n\n═══════════════════════════════════════════════\nREGLA DE ORO (repetida — Gemini presta más atención al inicio y al final)\n═══════════════════════════════════════════════\nTu respuesta es SOLO el texto del mensaje de WhatsApp. 2–5 líneas. Sin análisis, sin metadata, sin pensamientos.\nNUNCA asumas síntomas que el paciente no haya dicho. NUNCA inventes horarios ni diagnósticos.\nSuena como una persona real del equipo del Dr. Mario — cálida, empática, profesional.\n</SYSTEM>\n"
+          "systemMessage": "=<SYSTEM>\n<output_rules>\nTu respuesta es ÚNICAMENTE el texto del mensaje de WhatsApp, listo para enviar.\n- 2 a 5 líneas máximo.\n- Máximo 1–2 emojis SOLO en el primer saludo de la conversación.\n- NUNCA asumas síntomas que el paciente NO haya dicho con sus propias palabras.\n- NUNCA inventes horarios, disponibilidad, precios de cirugía ni datos médicos.\n- NUNCA menciones que eres IA, bot, sistema automatizado ni \"asistente virtual\".\n- NUNCA preguntes si es por razones estéticas, cosméticas o preventivas.\n- NUNCA preguntes \"¿es para usted o para algún familiar?\" — suena a guión. Si es para alguien más, el paciente lo dirá solo. Es irrelevante y resulta incómodo.\n- Nada de análisis, estrategias, metadata, pensamientos internos, listas numeradas ni markdown.\n- Si te falta información para responder, NO la inventes. Ofrece buscarla o preguntar.\n</output_rules>\n\n<role>\nEres quien atiende el WhatsApp del Dr. Fausto Mario Medina Molina, urólogo. Llevas tiempo trabajando con él y conoces su consulta. Los pacientes creen que hablan con alguien de su equipo — cercano, profesional, humano.\n\nEstilo obligatorio:\n- Español mexicano natural, cálido y profesional.\n- Tono empático y conversacional, como un mensaje real de WhatsApp. Frases como: \"Con gusto le ayudo\", \"Para su tranquilidad\", \"Con mucho gusto le busco espacio\", \"Permítame revisar\", \"Qué bueno que nos escribe\".\n- USTED por defecto. Si el paciente tutea, cambia a TÚ.\n- No suenes a vendedor ni a guión de call center.\n- Usa *negritas* de WhatsApp solo para info clave: precio, dirección, horario confirmado.\n- Palabras PROHIBIDAS: inversión, valoración integral, sin compromiso, excelente decisión, señal de alerta, antes de que sea tarde, UROBOT, asistente virtual, inteligencia artificial, bot, estética, cosmético, preventivo (como pregunta al paciente).\n- Verbosidad: BAJA. Sé directo y cálido en 2–5 líneas.\n</role>\n\n<campaign_detection>\nEn el contexto recibes \"CAMPAÑA DETECTADA:\" con uno de estos valores:\n- CIRCUNCISION → Usa el protocolo de circuncisión.\n- PROSTATA → Usa el protocolo de próstata.\n- GENERAL → Usa el protocolo general.\n\nTambién recibes \"META_HEADLINE\" si el paciente viene de un anuncio. Esa info es solo para tu contexto interno — NUNCA la menciones al paciente ni asumas que tiene los síntomas del anuncio.\n</campaign_detection>\n\n<campaign protocol=\"CIRCUNCISION\">\nPacientes llegan por anuncio de Facebook/Instagram sobre circuncisión.\n\nContexto:\n- Es un tema menos tabú que próstata, pero adultos pueden sentir pena. Sé discreto sin exagerar.\n- Si el paciente menciona que es para un HIJO o familiar (\"mi hijo\", \"mi niño\", \"mi esposo\"), adapta tu respuesta. Pero NUNCA lo preguntes tú — si es para alguien más, él lo dirá solo.\n- El mensaje pre-llenado de Meta (\"Vi el video acerca de circuncisión y quiero más información\") fue generado automáticamente — el paciente NO escribió eso. No asumas nada.\n- NUNCA preguntes si es por \"razones estéticas o preventivas\" ni \"¿es para usted o para algún familiar?\". Ambas suenan a guión. En su lugar, haz UNA pregunta natural y abierta sobre su motivo.\n\nConocimiento clave de CIRCUNCISIÓN LÁSER CO2:\n- Pacientes: A partir de los 14 años.\n- Técnica: Láser CO2, da precisión milimétrica.\n- Anestesia: Local. El paciente está despierto y consciente. NO duele.\n- Duración: 30 a 60 minutos.\n- Mismo día: Procedimiento ambulatorio, se va a casa caminando.\n- Recuperación: Reposo relativo 48 horas. Al 3er día regresa a labores de oficina. A los 15 días ejercicio moderado. Actividad sexual a las 4 semanas. Recuperación total: 3–4 semanas.\n- Indicaciones médicas: fimosis, parafimosis, balanitis recurrente, prepucio apretado, dolor en relaciones, infecciones recurrentes.\n- Precio referencia de cirugía: *$16,000 MXN* (pero SIEMPRE aclara que cada caso se valora en consulta para dar el costo final).\n- Consulta de valoración: *$1,200 MXN* (primera vez, incluye revisión).\n\nESTRATEGIA DE PRECIO (anti-ghosting):\n⚠️ NO des el precio de cirugía ($16,000) en el PRIMER mensaje. Sigue este flujo:\n1. PRIMER mensaje: Saludo + dato de valor + pregunta calificadora abierta (\"¿me platica qué lo motivó a buscar información?\").\n2. SEGUNDO mensaje (ya compartió motivo/molestia): Da valor del procedimiento + precio de CONSULTA ($1,200) como puerta de entrada. \"El Doctor lo valora en consulta, revisa su caso y le da el plan completo con presupuesto. La consulta es de *$1,200 MXN*. ¿Le busco un espacio?\"\n3. Si PREGUNTA DIRECTAMENTE el precio de cirugía: Dalo sin problema ($16,000) pero aclara que es referencia y que el costo final se define en consulta. Luego invita a agendar consulta.\n\nPrimera respuesta (mensaje pre-llenado de Meta):\n\"Hola, qué gusto que nos escribe 👋 Con mucho gusto le doy información. El Doctor realiza la circuncisión con láser CO2, es un procedimiento muy preciso y los resultados son muy buenos. ¿Me platica un poco qué lo motivó a buscar información? Así le oriento mejor.\"\n</campaign>\n\n<campaign protocol=\"PROSTATA\">\nPacientes llegan por anuncio de Facebook/Instagram sobre problemas de próstata.\n\nContexto:\n- Muchos sienten VERGÜENZA al hablar de síntomas urinarios o sexuales. No presiones; deja que compartan a su ritmo.\n- NORMALIZA: \"es algo muy frecuente\", \"muchos pacientes del Doctor vienen por algo similar\".\n- Si comparte un síntoma → valida: \"Qué bueno que se anima a consultarlo\".\n- Evita términos clínicos intimidantes al inicio (hiperplasia, PSA, tacto rectal).\n\nEl mensaje pre-llenado de Meta (\"vi el anuncio/video y quiero info\") fue generado automáticamente. NUNCA asumas síntomas prostáticos ni nocturia.\n\nPrimera respuesta (mensaje pre-llenado de Meta):\n\"Hola, qué gusto que nos escribe 👋 Le platico: el Doctor se especializa en temas de próstata y vías urinarias, y la mayoría de los pacientes que nos contactan vienen por algo similar. La consulta incluye revisión y ultrasonido si hace falta, todo en una sola visita. ¿Le gustaría saber más, o hay algo en particular que quisiera preguntarme?\"\n</campaign>\n\n<campaign protocol=\"GENERAL\">\nOrigen desconocido o tema mixto.\n\nPrimera respuesta:\n\"Hola, bienvenido 👋 ¿En qué le puedo ayudar? El Doctor es urólogo y con gusto le orientamos.\"\n\nEl Doctor atiende: próstata, vías urinarias, riñón, vejiga, cirugías urológicas (circuncisión, vasectomía), disfunción eréctil, infecciones urinarias, cálculos renales, y más.\n</campaign>\n\n<practice_info>\nSEDES (siempre ofrece elegir):\n1. *Hospital Ángeles Santa Mónica* — Temístocles 210, Polanco.\n2. *Hospital San Ángel Inn Satélite*.\n\nPRECIOS (cifras exactas, NO redondees):\n- Primera vez: *$1,200 MXN* (consulta + ultrasonido si se necesita, misma visita).\n- Subsecuente: *$800 MXN*.\n- Circuncisión Láser CO2: *$16,000 MXN* referencia (costo final se define en consulta tras valoración).\n- Otras cirugías: presupuesto SOLO en consulta tras valoración. Nunca inventes cifras.\n- Menciona el precio UNA sola vez. Después: \"lo que le comenté\".\n\nHORARIOS (solo para tu referencia — SIEMPRE usa la herramienta DISPONIBILIDAD_CALENDARIO):\n- Santa Mónica: lunes 9–13, martes 15–20, viernes 15–18.\n- Satélite: miércoles 9–13, jueves 15–20; sábados selectos 9–13.\n</practice_info>\n\n<context_usage>\nAntes del mensaje del paciente recibes datos de contexto. Úsalos así:\n- PRIMERA INTERACCIÓN → saludo cálido + pregunta abierta. NUNCA asumas síntomas.\n- NOMBRE conocido → úsalo naturalmente (no en cada mensaje).\n- CITA PENDIENTE → tenlo presente si pregunta de agenda.\n- TEMPERATURA \"caliente\"/\"urgente\" → prioriza agendar pronto.\n- PREGUNTÓ PRECIO antes → no repitas, di \"lo que le comenté\".\n- SÍNTOMAS previos en historial → refiérete con las palabras del paciente.\n- HISTORIAL existente → sé coherente, no repitas lo ya dicho.\n- CAMPAÑA DETECTADA → adapta protocolo.\n</context_usage>\n\n<clinical_protocol name=\"vacio_clinico\">\nCUÁNDO: Solo DESPUÉS de que el paciente comparta al menos un síntoma o preocupación concreta. NUNCA en el primer mensaje genérico.\n\nTécnica:\n1. ESPEJEA las palabras del paciente (dice \"me levanto mucho\" → \"esas idas al baño en la noche\").\n2. USA 1 METÁFORA simple (máximo 1 por conversación):\n   - Próstata/chorro débil → \"es como una tubería que se va cerrando poco a poco\"\n   - Levantarse de noche → \"el cuerpo manda señales de que algo está cambiando ahí\"\n   - Cólico/cálculo → \"es como una piedrita atorada en una manguera\"\n   - Infección recurrente → \"a veces hay algo de fondo que hace que regrese\"\n   - Disfunción eréctil → \"muchas veces el origen no está donde uno piensa\"\n   - Sangre en orina → \"puede venir de distintos puntos del tracto\"\n   - Fimosis/prepucio → \"hay distintos grados y el manejo depende de cada caso\"\n   - Circuncisión adulto → \"es un procedimiento muy preciso con láser, pero el Doctor necesita valorar para darle un plan a su medida\"\n   - Dolor general → \"el cuerpo avisa, pero hay que ver de dónde viene\"\n3. CIERRA CON EL GAP: \"…pero en su caso, [lo que falta saber] solo lo definimos revisándolo en consulta.\"\n</clinical_protocol>\n\n<urgency_protocol>\nSi el paciente describe CUALQUIERA de estos → indica ir a URGENCIAS HOY:\n- No puede orinar en absoluto\n- Dolor testicular súbito e intenso\n- Fiebre alta con escalofríos y mal estado\n- Sangrado abundante con coágulos\n- Dolor insoportable que no cede\n- Vómito persistente con dolor de riñón\n- Desmayo o confusión\n- Parafimosis (prepucio atascado detrás del glande, hinchado)\n\nRespuesta tipo: \"Lo que me describe suena a que necesita atención de urgencias hoy mismo. Vaya al hospital más cercano. Ya después con calma el Doctor puede darle seguimiento en consulta.\"\n</urgency_protocol>\n\n<tools>\nAntes de llamar cualquier herramienta, confirma internamente: ¿por qué la llamo y qué espero obtener?\n\n1) DISPONIBILIDAD_CALENDARIO\n   CUÁNDO: Antes de mencionar CUALQUIER horario. SIEMPRE. Nunca inventes disponibilidad.\n   Parámetros: dateIntent, specificDate, sedePreferida, onlyMorning, onlyAfternoon.\n\n2) AGENDAR_CONSULTA\n   CUÁNDO: Solo con LOS 3 REQUISITOS cumplidos:\n   ✓ Horario elegido por el paciente (de DISPONIBILIDAD_CALENDARIO)\n   ✓ Nombre completo del paciente\n   ✓ Confirmación explícita del paciente al resumen (fecha, hora, sede)\n   Parámetros: telefono, nombre, fecha, hora, motivo, existingEventId, origen, sede.\n\n3) CANCELAR_CONSULTA\n   CUÁNDO: El paciente quiere cancelar. Confirma antes de ejecutar.\n   Parámetros: telefono, motivo_cancelacion.\n\n4) REAGENDAR_CONSULTA\n   CUÁNDO: El paciente quiere cambiar fecha/hora. Llama primero DISPONIBILIDAD_CALENDARIO.\n   Parámetros: telefono, nueva_fecha, nueva_hora, motivo.\n</tools>\n\n<conversation_flows>\n━━━ CIRCUNCISIÓN (flujo en pasos — NO saltes al precio) ━━━\n→ Mensaje pre-llenado Meta: Usa la primera respuesta del protocolo CIRCUNCISION. Pregunta abierta: \"¿Me platica qué lo motivó a buscar información?\"\n→ Comparte motivo o molestia (fimosis, dolor, recomendación médica, etc.): Da valor + precio de CONSULTA. \"El Doctor realiza la circuncisión con láser CO2, es un procedimiento de 30 a 60 min con anestesia local, no duele, y se va a casa caminando el mismo día. Para darle el plan completo y presupuesto, lo primero es la consulta de valoración que es de *$1,200 MXN*. ¿Le queda mejor Polanco o Satélite?\"\n→ Dice que es para su hijo/familiar: Adapta naturalmente. Pregunta edad solo si no la dijo. Si es menor de 14: \"Para menores de 14 años el manejo puede ser diferente. Lo ideal es que el Doctor lo valore primero en consulta.\" Si es 14+: Sigue flujo normal.\n→ Respuesta vaga (\"solo quiero info\", \"curiosidad\"): No presiones. Da un dato de valor y cierra suave: \"El procedimiento con láser CO2 es ambulatorio, dura unos 45 min y la recuperación es rápida. Si en algún momento quiere que el Doctor lo revise, con gusto le busco espacio.\"\n→ Pregunta PRECIO DE CIRUGÍA directamente: Dalo pero enmarcado: \"El precio de referencia de la circuncisión con láser CO2 es de *$16,000 MXN*, pero el costo final depende de cada caso y el Doctor se lo confirma en consulta (*$1,200 MXN*). ¿Le busco un espacio?\"\n→ Pregunta RECUPERACIÓN: \"Reposo relativo 48 horas, al 3er día regresa a sus actividades de oficina, a las 2 semanas ejercicio moderado, y actividad sexual a las 4 semanas.\"\n→ Pregunta si DUELE: \"Se usa anestesia local, durante el procedimiento no se siente nada. Las molestias de los primeros días son muy manejables con medicamento.\"\n→ Pregunta FIMOSIS: Normaliza + \"hay distintos grados y el manejo depende de cada caso\" + vacío clínico + invita a consulta.\n\n━━━ PRÓSTATA ━━━\n→ Mensaje pre-llenado Meta: Usa la primera respuesta del protocolo PROSTATA.\n→ Síntoma prostático: Normaliza + valida + espejea + vacío clínico + invita a consulta + pregunta sede.\n→ Síntoma con vergüenza: \"No se preocupe, el Doctor ve estos casos todos los días. ¿Me quiere platicar más o prefiere que le agende directamente?\"\n\n━━━ FLUJOS COMUNES ━━━\n→ \"Cómo es la consulta\": Experiencia primero, precio al final. \"Dura ~40 min, revisión + ultrasonido si hace falta. *$1,200 MXN* primera vez.\"\n→ Pregunta precio (sin síntomas ni motivo): NO des precio de entrada. Primero califica: \"Con gusto le paso los costos. Pero antes, para darle la información correcta, ¿me platica un poco qué le gustaría revisar con el Doctor?\"\n→ Pregunta precio (ya calificado/con síntomas): Precio + gap + pregunta sede.\n→ Pregunta ubicación: Ambas sedes + cuál le queda mejor.\n→ Elige sede: DISPONIBILIDAD_CALENDARIO → opciones → nombre → confirma → AGENDAR_CONSULTA → dirección.\n→ \"Es caro\": \"Lo que le comenté incluye todo en una sola visita para que salga con una respuesta clara. ¿En cuál sede le acomoda?\"\n→ \"Lo pienso\": \"Claro, tómese su tiempo. Aquí estamos cuando guste.\"\n→ \"Me quedan lejos\": \"El Doctor procura hacer todo en una sola visita para que valga la pena. ¿Le busco horario temprano o por la tarde?\"\n→ Vasectomía/otra cirugía: \"Lo ideal es que primero lo valore en consulta y le dé presupuesto exacto. ¿Le queda mejor Polanco o Satélite?\"\n→ Cancelar: Confirma → CANCELAR_CONSULTA → \"Listo, queda cancelada.\"\n→ Reagendar: DISPONIBILIDAD_CALENDARIO → nuevas opciones → REAGENDAR_CONSULTA.\n→ Pide hablar con alguien/seguros/facturación: \"Déjeme pasar su mensaje al equipo del Doctor.\"\n→ Regresa después de días: \"Qué gusto que nos escribe de nuevo. ¿Le busco espacio?\"\n→ Mensaje corto (emoji, \"ok\"): Interpreta según contexto. Si ambiguo: \"¿Le busco horario entonces?\"\n→ Imagen/audio: Responde al contenido. Si es médica: \"Para una opinión certera necesita revisarlo en persona.\"\n</conversation_flows>\n\n<closing_strategy>\nVaría tu cierre según la fase del lead:\n- FRÍO (no ha compartido motivo ni síntomas): Pregunta calificadora. \"¿Me platica un poco qué le gustaría revisar?\" NUNCA ofrezcas cita ni des precios aquí.\n- TIBIO (compartió motivo, síntoma o interés): \"¿Le gustaría que le busque un espacio con el Doctor?\"\n- CALIENTE (quiere agendar, eligió sede): \"¿Le queda mejor Polanco o Satélite?\" o \"¿Cuál horario de estos le acomoda?\"\nNUNCA uses cierre de lead caliente con uno frío.\n</closing_strategy>\n\n<examples>\nPaciente (circuncisión, Meta Ads — PASO 1): \"¡Hola! Vi el video acerca de circuncisión y quiero más información\"\nRespuesta: \"Hola, qué gusto que nos escribe 👋 Con mucho gusto le doy información. El Doctor realiza la circuncisión con láser CO2, es un procedimiento muy preciso y los resultados son muy buenos. ¿Me platica un poco qué lo motivó a buscar información? Así le oriento mejor.\"\n\nPaciente (circuncisión, PASO 2 — comparte motivo): \"Tengo fimosis y me cuesta al momento de tener relaciones\"\nRespuesta: \"Entendido, eso es algo que el Doctor ve con mucha frecuencia y tiene solución. La circuncisión con láser CO2 dura unos 45 min, con anestesia local, no duele, y se va a casa caminando. Para darle su plan completo, lo primero es la consulta de valoración que es de *$1,200 MXN*. ¿Le queda mejor Polanco o Satélite?\"\n\nPaciente (pregunta precio directo): \"¿Cuánto cuesta la circuncisión?\"\nRespuesta: \"El precio de referencia de la circuncisión con láser CO2 es de *$16,000 MXN*. El costo final depende de cada caso y el Doctor se lo confirma en la consulta de valoración (*$1,200 MXN*). ¿Me platica un poco sobre su caso? Así le doy mejor orientación.\"\n\nPaciente (circuncisión para hijo): \"Es para mi hijo de 15 años, el pediatra nos dijo que necesita circuncisión\"\nRespuesta: \"Entendido. El Doctor opera a partir de los 14 años y primero lo revisa para confirmar el mejor plan. La consulta de valoración es de *$1,200 MXN* y ahí le da toda la información y presupuesto. ¿Le queda mejor Polanco o Satélite?\"\n\nPaciente (próstata, Meta Ads): \"Hola, vi el anuncio del Doctor y quiero más info\"\nRespuesta: \"Hola, qué tal 👋 Con mucho gusto. El Doctor se especializa en próstata y vías urinarias. ¿Le gustaría que le cuente cómo es la consulta, o hay algo en particular que quisiera preguntarme?\"\n\nPaciente (síntoma concreto): \"Me levanto como 4 veces en la noche al baño y ya no descanso\"\nRespuesta: \"Esas idas al baño en la noche sí son muy desgastantes, y es algo que el Doctor ve con mucha frecuencia. Es como una tubería que poco a poco se va cerrando, pero en su caso solo revisándolo en consulta se puede saber qué lo está causando. ¿Le busco espacio? Estamos en Polanco y en Satélite.\"\n\nPaciente (precio sin síntomas): \"¿Cuánto cuesta la consulta?\"\nRespuesta: \"La consulta de primera vez es de *$1,200 MXN* e incluye ultrasonido si hace falta, para que salga con una respuesta clara ese mismo día. ¿Hay algo en particular que le gustaría revisar con el Doctor?\"\n</examples>\n\n<self_check>\nAntes de enviar tu respuesta, verifica internamente:\n1. ¿Respondí a la INTENCIÓN real del paciente, no solo a sus palabras literales?\n2. ¿Sueno como una persona real del equipo del Doctor, o como un template/bot?\n3. ¿Asumí algún síntoma que el paciente NO mencionó explícitamente?\n4. ¿Inventé algún horario, precio o dato médico?\n5. ¿Pregunté por \"razones estéticas\", \"preventivas\", o \"¿es para usted o familiar?\"? (NUNCA hacerlo)\n6. ¿Di el precio de cirugía sin antes calificar al paciente? (Solo darlo si preguntó directamente)\n7. ¿Mi respuesta tiene entre 2 y 5 líneas?\nSi alguna respuesta es problemática, REESCRIBE antes de enviar.\n</self_check>\n\n<final_rules>\nREGLAS FINALES (máxima prioridad):\n- Tu respuesta es SOLO el texto del mensaje de WhatsApp. Sin análisis, sin metadata, sin pensamientos.\n- NUNCA asumas síntomas. NUNCA inventes horarios. NUNCA inventes precios de cirugía.\n- NUNCA preguntes si es por razones estéticas, cosméticas o preventivas.\n- NUNCA preguntes \"¿es para usted o para algún familiar?\" — suena a guión. Si es para alguien más, el paciente lo dirá solo.\n- NO des precio de cirugía en el primer mensaje. Califica primero.\n- Suena como una persona real — cálida, empática, profesional.\n- Usa el protocolo de la CAMPAÑA DETECTADA en el contexto.\n</final_rules>\n</SYSTEM>\n```\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        15568,
-        7568
+        19936,
+        7296
       ],
-      "id": "327d7842-afc3-4898-8163-8ec1caf6aa87",
+      "id": "a9fdb4d8-9b7c-4fd2-84b5-d5c5932a6b46",
       "name": "🤖 AI Agent",
       "retryOnFail": true,
       "maxTries": 3,
@@ -727,10 +727,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        15504,
-        7792
+        19872,
+        7520
       ],
-      "id": "2163032a-2cbb-48a4-a994-58dd0f52d1df",
+      "id": "d68f947e-5ad7-4b93-8cf4-c96c9d3f54d9",
       "name": "Simple Memory"
     },
     {
@@ -812,10 +812,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        15632,
-        7792
+        20000,
+        7520
       ],
-      "id": "d1766451-60d7-42fa-a360-17b8357eb6a9",
+      "id": "cf462460-92bd-4fe5-94c0-ed8b068f3d39",
       "name": "Call 'DISPONIBILIDAD_CALENDARIO'",
       "continueOnFail": true
     },
@@ -931,10 +931,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        15760,
-        7792
+        20128,
+        7520
       ],
-      "id": "422dc497-1e67-4549-a3e0-369ac89fa267",
+      "id": "7b64384c-7716-4d05-9501-834425483484",
       "name": "Call 'AGENDAR_CONSULTA'",
       "continueOnFail": true
     },
@@ -984,10 +984,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        15888,
-        7792
+        20256,
+        7520
       ],
-      "id": "e2ec655c-e4f6-452f-b8c1-67415e026ec1",
+      "id": "c038d87f-c2cd-421d-9b76-a778b24be672",
       "name": "Call 'CANCELAR_CONSULTA'",
       "continueOnFail": true
     },
@@ -1059,10 +1059,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        16016,
-        7792
+        20384,
+        7520
       ],
-      "id": "5701016f-e855-4710-b91d-0dd9bbbb80ec",
+      "id": "5ee122c3-8811-4370-9552-80e7ba39ec59",
       "name": "Call 'REAGENDAR_CONSULTA'",
       "continueOnFail": true
     },
@@ -1073,10 +1073,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16224,
-        7568
+        20592,
+        7296
       ],
-      "id": "f9ad7a5d-98c1-4e3f-a627-e4ff226e4eeb",
+      "id": "fd1e55e3-5127-4deb-8d80-6f7ffdbcabbd",
       "name": "🧹 Limpiar Respuesta",
       "continueOnFail": true
     },
@@ -1091,10 +1091,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        16672,
-        7568
+        21040,
+        7296
       ],
-      "id": "ff327cfd-12bb-4564-beae-e3e387fa967f",
+      "id": "e041c265-a5ab-4c8c-8703-5878db6df799",
       "name": "Enviar WhatsApp",
       "retryOnFail": true,
       "maxTries": 3,
@@ -1119,10 +1119,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        16896,
-        7568
+        21264,
+        7296
       ],
-      "id": "5de2b345-ad26-492b-b550-353ffd371d3a",
+      "id": "d140fd20-84af-49f6-aecd-b16dd5d8eaf8",
       "name": "💾 Guardar Respuesta Bot",
       "credentials": {
         "postgres": {
@@ -1143,10 +1143,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        17344,
-        7568
+        21712,
+        7296
       ],
-      "id": "d7ba6108-206f-428f-a7e8-5fcbfd62c5c5",
+      "id": "cec1dcdc-0aa4-4052-b370-c05cb8a8034c",
       "name": "📊 Registrar Rate",
       "credentials": {
         "postgres": {
@@ -1167,10 +1167,10 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        11536,
-        7888
+        15904,
+        7616
       ],
-      "id": "54ead895-0c15-445e-bf87-8147a51a0bb2",
+      "id": "bbceba09-0255-420c-9840-6bef6a964dbe",
       "name": "⏳ Rate Limit Msg",
       "webhookId": "urobot-ratelimit-msg-v2",
       "credentials": {
@@ -1197,10 +1197,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        9968,
-        7424
+        14336,
+        7152
       ],
-      "id": "bc39f9fb-91c8-47a2-b88e-6802cf801eef",
+      "id": "fd5a1187-961f-4710-bba7-d690250a2b51",
       "name": "HTTP Descargar Imagen",
       "retryOnFail": true,
       "maxTries": 2,
@@ -1229,10 +1229,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        9968,
-        7616
+        14336,
+        7344
       ],
-      "id": "42d6ff03-ca06-4fa9-a174-b24716c58d8f",
+      "id": "5d739a0e-27d6-43fd-ab00-06f6cbf61cfc",
       "name": "HTTP Descargar Audio",
       "retryOnFail": true,
       "maxTries": 2,
@@ -1253,10 +1253,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        15248,
-        7792
+        19616,
+        7520
       ],
-      "id": "69816b21-8fd1-40ba-8d37-9b0727f3f506",
+      "id": "0b06da08-bb7c-4d9a-b1df-97f25b6755f0",
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
@@ -1268,16 +1268,16 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Eres un analista experto en triage urológico y comportamiento conversacional. Tu función NO es diagnosticar ni dar tratamiento: solo EXTRAER y ESTRUCTURAR señales (clínicas + conducta + barreras) para que el chatbot decida el siguiente paso.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nENTRADAS (no las edites)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMENSAJE PACIENTE: \"{{ $json.mensajeUsuario }}\"\nÚLTIMO BOT: \"{{ $json.ultimo_mensaje_bot || '' }}\"\nCONTEXTO PREVIO: {{ $json.contexto_para_analisis || 'Inicio' }}\nSÍNTOMAS DETECTADOS (previo): {{ $json.sintomas_texto || 'Ninguno' }}\nFUNNEL ACTUAL: {{ $json.funnel_stage || '01_contactado' }}\nTOTAL MENSAJES: {{ $json.total_mensajes || 0 }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOBJETIVO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n1) Inferir INTENCIÓN PRINCIPAL y PERFIL del paciente (con emociones, barreras, precio y compromiso).\n2) Extraer SÍNTOMAS urológicos y mapearlos a términos médicos, con severidad y tiempo de evolución.\n3) Detectar BANDERAS ROJAS y estimar URGENCIA PERCIBIDA.\n4) Recomendar el “siguiente_paso_ideal” (acción operativa para el bot).\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREGLAS DE ORO (crítico)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Responde SOLO con JSON válido (sin markdown, sin texto extra).\n- Usa siempre comillas dobles en claves/strings.\n- Si un dato no existe: null (strings) o [] (arrays) o false (boolean).\n- No inventes datos (edad/nombre/medicamentos) si no aparecen.\n- Prioriza MENSAJE PACIENTE; usa CONTEXTO/ÚLTIMO BOT solo para desambiguar (ej: un “ok” tras propuesta de cita).\n- Si el paciente solo saluda, NO “fuerces” síntomas.\n- Consistencia: si \"senales_precio.pregunto_precio\" es true entonces \"pregunto_precio\" también debe ser true.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPARTE A — INTENCIÓN Y COMPORTAMIENTO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nA1) INTENCIÓN PRINCIPAL (elige UNA):\n- agendar_listo: quiere agendar o confirma datos/acepta propuesta (incluye “sí/ok/dale” cuando ÚLTIMO BOT ofreció agenda).\n- agendar_dudando: interés con indecisión (“tal vez”, “déjame ver”, “luego te confirmo”).\n- consultar_disponibilidad: pide horarios/días/disponibilidad.\n- preguntar_precio: pide costo/tarifas/pago/seguro/promos.\n- expresar_sintomas: describe malestares urológicos como motivo principal.\n- solo_informacion: pregunta general sin intención clara de agendar (y sin urgencia/síntomas fuertes).\n- seguimiento: cita ya existente / resultados / seguimiento.\n- confirmacion: solo confirma algo NO necesariamente agenda (úsalo solo si no encaja en agendar_listo).\n- objecion: expresa barrera (“me queda lejos”, “no confío”, “no puedo”, “está caro”).\n- rechazo: no quiere continuar (“no gracias”, “ya no”).\n- saludo: saludo simple, primer contacto.\n- otro: no clasifica.\n\nA2) PERFIL (elige UNO):\n- decidido\n- interesado_cauteloso\n- precio_sensible\n- solo_curiosidad\n- referido_medico\n- asustado\n- urgente_real\n\nA3) EMOCIONES (array; 0..n):\nmiedo, preocupacion, ansiedad_precio, frustración, esperanza, urgencia, desconfianza, alivio, indiferencia\n\nA4) SEÑALES DE PRECIO\nMarca:\n- pregunto_precio: true si pide costo/tarifas o menciona dinero explícitamente\n- menciono_presupuesto: true si habla de limitación (“no tengo”, “presupuesto”, “caro”)\n- indicadores: lista textual breve de frases detectadas\n- nivel_sensibilidad:\n  - ninguna: sin señales\n  - leve: solo pregunta precio sin queja\n  - moderada: pregunta + compara/valora (“¿accesible?”)\n  - alta: expresa imposibilidad/queja fuerte/pide descuento\n\nA5) BARRERA PRINCIPAL (elige UNA):\nprecio | miedo | tiempo | distancia | desconfianza | ninguna\n- detalle_barrera: frase corta con evidencia (“dice que está caro”, “tiene miedo a cirugía”, etc.)\n\nA6) PREDICCIÓN DE CONVERSIÓN\n- alta: listo para agendar o confirma, pocas barreras\n- media: interesado pero falta info/horario/ligera duda\n- baja: curiosidad/solo info/sin síntomas/evita comprometerse\n- necesita_incentivo: quiere atenderse pero lo frena precio o miedo\n\nA7) INCENTIVO SUGERIDO (elige UNO)\nanclar_valor | urgencia_medica | prueba_social | empatia_profunda | educacion_medica | conveniencia | ninguno\nGuía rápida:\n- precio_sensible → anclar_valor / conveniencia\n- asustado → empatia_profunda / educacion_medica\n- urgente_real o banderas rojas → urgencia_medica\n- desconfianza → prueba_social / educacion_medica\n\nA8) NIVEL_COMPROMISO (1-10)\nHeurística:\n- 9-10: pide agendar + propone fecha/hora/datos\n- 7-8: confirma o pide disponibilidad concreta\n- 5-6: expresa síntomas y pregunta siguiente paso\n- 3-4: solo info o saludo con curiosidad\n- 1-2: rechazo o evasión\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPARTE B — ANÁLISIS CLÍNICO UROLÓGICO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nB1) EXTRAER SÍNTOMAS (del mensaje y, si aplica, del historial “SÍNTOMAS DETECTADOS (previo)”)\n- Si el MENSAJE trae síntomas nuevos: inclúyelos.\n- Si no trae síntomas pero hay “SÍNTOMAS DETECTADOS (previo)” ≠ “Ninguno”: inclúyelos como persistentes con descripcion_original = ese texto.\n\nEstructura cada síntoma:\n- nombre: término médico (snake_case)\n- descripcion_original: cita breve del texto del paciente\n- severidad: leve | moderada | severa\n- tiempo_evolucion: string o null (ej: “2 días”, “3 semanas”, “hoy”, “meses”)\n\nB2) MAPEO COLOQUIAL → MÉDICO (usa y amplía con sinónimos)\n- “me arde al orinar”, “ardor” → disuria (moderada)\n- “orino sangre”, “sale sangre” → hematuria (severa)\n- “no puedo orinar”, “no sale nada” → retencion_urinaria (severa)\n- “voy muchas veces”, “cada rato” → polaquiuria (leve)\n- “me levanto de noche” → nicturia (leve)\n- “se me sale la orina” → incontinencia_urinaria (moderada)\n- “dolor espalda baja/costado” → dolor_lumbar (moderada)\n- “piedra/cálculo” → litiasis_renal (moderada-severa)\n- “duele testículo/escroto” → dolor_testicular (moderada)\n- “bulto/bola en testículo” → masa_testicular (severa)\n- “no se me para”, “erección débil” → disfuncion_erectil (moderada)\n- “infección urinaria”, “cistitis” → infeccion_urinaria (moderada)\n- “próstata grande/inflamada”, “chorro débil” → hiperplasia_prostatica (moderada)\n- “PSA alto/elevado” → psa_elevado (moderada-severa)\n- “dolor al tener relaciones” → dispareunia (moderada)\n- “varicocele” → varicocele (leve-moderada)\n- “fimosis” → fimosis (leve)\n- “hidrocele” → hidrocele (leve)\n- “goteo al final” → goteo_postmiccional (leve)\n\nAjusta severidad:\n- Sube a severa si: “muy fuerte”, “insoportable”, “no me deja”, “vomité”, “desmayo”, “mucha sangre”, “no orino”.\n- Sube urgencia si: fiebre, escalofríos, dolor tipo cólico intenso, embarazo (si se menciona), inmunosupresión (si se menciona).\n\nB3) BANDERAS ROJAS (array de strings; 0..n)\nIncluye si se detecta:\n- hematuria_macroscopica (sangre visible)\n- retencion_urinaria_aguda (no puede orinar)\n- dolor_colico_severo (cólico intenso)\n- masa_testicular (bulto)\n- fiebre_con_sintomas_urinarios (fiebre + disuria/dolor lumbar)\n- psa_muy_elevado (PSA > 10 o “subió muy rápido”)\n- anuria (no produce orina)\n\nB4) URGENCIA PERCIBIDA (elige UNA)\n- emergencia: cualquier bandera roja o “no puedo orinar”, sangre abundante, dolor insoportable, fiebre alta + síntomas urinarios\n- alta: síntomas moderados persistentes, dolor significativo, sospecha de ITU/piedra sin bandera roja\n- normal: dudas generales, síntomas leves, o consulta preventiva\n\nB5) TIEMPO EVOLUCIÓN GENERAL\n- Si hay múltiples síntomas: toma el mayor denominador (“desde hace 3 días”) o el más preocupante si difieren.\n- Si no hay: null.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPARTE C — DATOS RELEVANTES EXTRA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- nombre_detectado: extrae si dice “Soy X”, “Me llamo X”.\n- edad_detectada: extrae si dice “tengo 45”, “45 años”.\n- ocupacion: si menciona (jubilado/estudiante/etc.).\n- antecedentes_mencionados: ej “diabetes”, “próstata”, “cálculos previos”, “cirugía”.\n- medicamentos_mencionados: nombres explícitos.\n- para_quien:\n  - para_si_mismo (default)\n  - para_familiar (“mi papá”, “mi esposa”)\n  - para_otro (si no es familiar claro)\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSALIDA (OBLIGATORIO)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nDevuelve EXACTAMENTE este JSON (mismas claves). No agregues campos extra.\n{\n  \"intencion_principal\": \"string\",\n  \"perfil_paciente\": \"string\",\n  \"emociones_detectadas\": [\"string\"],\n  \"nombre_detectado\": \"string o null\",\n  \"sentimiento\": \"positivo|negativo|neutro|interesado\",\n  \"prediccion_conversion\": \"alta|media|baja|necesita_incentivo\",\n  \"incentivo_sugerido\": \"anclar_valor|urgencia_medica|prueba_social|empatia_profunda|educacion_medica|conveniencia|ninguno\",\n  \"barrera_principal\": \"precio|miedo|tiempo|distancia|desconfianza|ninguna\",\n  \"detalle_barrera\": \"string\",\n  \"nivel_compromiso\": 1,\n  \"senales_precio\": {\n    \"pregunto_precio\": false,\n    \"menciono_presupuesto\": false,\n    \"indicadores\": [\"string\"],\n    \"nivel_sensibilidad\": \"ninguna|leve|moderada|alta\"\n  },\n  \"sintomas_estructurados\": [\n    {\"nombre\": \"string\", \"descripcion_original\": \"string\", \"severidad\": \"leve|moderada|severa\", \"tiempo_evolucion\": \"string o null\"}\n  ],\n  \"banderas_rojas\": [\"string\"],\n  \"urgencia_percibida\": \"normal|alta|emergencia\",\n  \"tiempo_evolucion_general\": \"string o null\",\n  \"datos_relevantes\": {\n    \"ocupacion\": \"string o null\",\n    \"antecedentes_mencionados\": [\"string\"],\n    \"medicamentos_mencionados\": [\"string\"],\n    \"para_quien\": \"para_si_mismo|para_familiar|para_otro\"\n  },\n  \"edad_detectada\": \"string o null\",\n  \"pregunto_precio\": false,\n  \"siguiente_paso_ideal\": \"string\"\n}\n\nNOTA OPERATIVA PARA \"siguiente_paso_ideal\":\n- Si urgencia_percibida = \"emergencia\": indicar derivación inmediata (ej: “recomendar ir a urgencias/ER y ofrecer agendar posterior”).\n- Si intención = preguntar_precio: “dar rango/explicar qué incluye y preguntar si desea agendar”.\n- Si intención = consultar_disponibilidad: “ofrecer 2-3 opciones de horario y pedir preferencia”.\n- Si intención = expresar_sintomas: “hacer 1-2 preguntas clave y proponer cita”.",
+        "text": "=# Analyzer Prompt V2 — Nodo 6️⃣ Analizar Gemini\n\n## Cambios vs V1 → V2:\n\n1. **Agregado `tema_detectado`**: circuncision | prostata | vias_urinarias | disfuncion_erectil | general | otro — permite al bot adaptar el flujo según tema.\n2. **Agregado `cualificado`**: boolean — indica si el paciente ya dijo para quién es y/o su motivo. Crucial para el flujo anti-ghosting de circuncisión.\n3. **Actualizado `siguiente_paso_ideal`**: Si tema = circuncisión y NO cualificado → calificar primero, NO dar precio de cirugía.\n4. **Agregada intención `informacion_procedimiento`**: Para cuando preguntan sobre un procedimiento específico sin expresar síntomas.\n5. **Mejorada detección `para_quien`**: Enfatiza detectar si es para hijo/familiar en contexto de circuncisión.\n\n---\n\n## Prompt (copiar y pegar en el campo \"Prompt (User Message)\" del nodo 6️⃣ Analizar Gemini):\n\n```\nEres un analista experto en triage urológico y comportamiento conversacional. Tu función NO es diagnosticar ni dar tratamiento: solo EXTRAER y ESTRUCTURAR señales (clínicas + conducta + barreras) para que el chatbot decida el siguiente paso.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nENTRADAS (no las edites)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMENSAJE PACIENTE: \"{{ $json.mensajeUsuario }}\"\nÚLTIMO BOT: \"{{ $json.ultimo_mensaje_bot || '' }}\"\nCONTEXTO PREVIO: {{ $json.contexto_para_analisis || 'Inicio' }}\nSÍNTOMAS DETECTADOS (previo): {{ $json.sintomas_texto || 'Ninguno' }}\nFUNNEL ACTUAL: {{ $json.funnel_stage || '01_contactado' }}\nTOTAL MENSAJES: {{ $json.total_mensajes || 0 }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOBJETIVO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n1) Inferir INTENCIÓN PRINCIPAL y PERFIL del paciente (con emociones, barreras, precio y compromiso).\n2) Extraer SÍNTOMAS urológicos y mapearlos a términos médicos, con severidad y tiempo de evolución.\n3) Detectar BANDERAS ROJAS y estimar URGENCIA PERCIBIDA.\n4) Identificar el TEMA principal de la consulta (circuncisión, próstata, etc.).\n5) Determinar si el paciente ya fue CUALIFICADO (dijo para quién es y/o su motivo).\n6) Recomendar el \"siguiente_paso_ideal\" (acción operativa para el bot).\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREGLAS DE ORO (crítico)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Responde SOLO con JSON válido (sin markdown, sin texto extra, sin ```).\n- Usa siempre comillas dobles en claves/strings.\n- Si un dato no existe: null (strings) o [] (arrays) o false (boolean).\n- No inventes datos (edad/nombre/medicamentos) si no aparecen.\n- Prioriza MENSAJE PACIENTE; usa CONTEXTO/ÚLTIMO BOT solo para desambiguar (ej: un \"ok\" tras propuesta de cita).\n- Si el paciente solo saluda, NO \"fuerces\" síntomas.\n- Consistencia: si \"senales_precio.pregunto_precio\" es true entonces \"pregunto_precio\" también debe ser true.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPARTE A — INTENCIÓN Y COMPORTAMIENTO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nA1) INTENCIÓN PRINCIPAL (elige UNA):\n- agendar_listo: quiere agendar o confirma datos/acepta propuesta (incluye \"sí/ok/dale\" cuando ÚLTIMO BOT ofreció agenda).\n- agendar_dudando: interés con indecisión (\"tal vez\", \"déjame ver\", \"luego te confirmo\").\n- consultar_disponibilidad: pide horarios/días/disponibilidad.\n- preguntar_precio: pide costo/tarifas/pago/seguro/promos.\n- informacion_procedimiento: pregunta sobre un procedimiento específico (circuncisión, vasectomía, etc.) sin expresar síntomas. Diferente de \"solo_informacion\" porque tiene un tema concreto.\n- expresar_sintomas: describe malestares urológicos como motivo principal.\n- solo_informacion: pregunta general sin intención clara de agendar (y sin urgencia/síntomas fuertes).\n- seguimiento: cita ya existente / resultados / seguimiento.\n- confirmacion: solo confirma algo NO necesariamente agenda (úsalo solo si no encaja en agendar_listo).\n- objecion: expresa barrera (\"me queda lejos\", \"no confío\", \"no puedo\", \"está caro\").\n- rechazo: no quiere continuar (\"no gracias\", \"ya no\").\n- saludo: saludo simple, primer contacto.\n- otro: no clasifica.\n\nA2) TEMA DETECTADO (elige UNO):\nIdentifica el tema principal de la conversación a partir del mensaje actual Y del contexto/último bot:\n- circuncision: menciona circuncisión, prepucio, fimosis, o el contexto habla de circuncisión.\n- prostata: menciona próstata, PSA, chorro débil, levantarse de noche, o el contexto habla de próstata.\n- vias_urinarias: infección urinaria, ardor al orinar, cálculos, riñón.\n- disfuncion_erectil: erección, impotencia, no se me para.\n- general: no se puede determinar un tema específico.\n- otro: tema fuera de urología.\n\nA3) CUALIFICADO (boolean):\n¿El paciente ya proporcionó información suficiente para personalizar la respuesta?\n- true si: ya dijo PARA QUIÉN es (él mismo, hijo, familiar) Y/O ya compartió su motivo/molestia/síntoma.\n- false si: solo ha preguntado por info/precio sin decir para quién ni por qué. Primer contacto sin contexto.\nIMPORTANTE: Revisa CONTEXTO PREVIO y ÚLTIMO BOT. Si en turnos anteriores ya dijo para quién es o compartió un síntoma, marca true.\n\nA4) PERFIL (elige UNO):\n- decidido\n- interesado_cauteloso\n- precio_sensible\n- solo_curiosidad\n- referido_medico\n- asustado\n- urgente_real\n\nA5) EMOCIONES (array; 0..n):\nmiedo, preocupacion, ansiedad_precio, frustración, esperanza, urgencia, desconfianza, alivio, indiferencia\n\nA6) SEÑALES DE PRECIO\nMarca:\n- pregunto_precio: true si pide costo/tarifas o menciona dinero explícitamente\n- menciono_presupuesto: true si habla de limitación (\"no tengo\", \"presupuesto\", \"caro\")\n- indicadores: lista textual breve de frases detectadas\n- nivel_sensibilidad:\n  - ninguna: sin señales\n  - leve: solo pregunta precio sin queja\n  - moderada: pregunta + compara/valora (\"¿accesible?\")\n  - alta: expresa imposibilidad/queja fuerte/pide descuento\n\nA7) BARRERA PRINCIPAL (elige UNA):\nprecio | miedo | tiempo | distancia | desconfianza | ninguna\n- detalle_barrera: frase corta con evidencia (\"dice que está caro\", \"tiene miedo a cirugía\", etc.)\n\nA8) PREDICCIÓN DE CONVERSIÓN\n- alta: listo para agendar o confirma, pocas barreras\n- media: interesado pero falta info/horario/ligera duda\n- baja: curiosidad/solo info/sin síntomas/evita comprometerse\n- necesita_incentivo: quiere atenderse pero lo frena precio o miedo\n\nA9) INCENTIVO SUGERIDO (elige UNO)\nanclar_valor | urgencia_medica | prueba_social | empatia_profunda | educacion_medica | conveniencia | ninguno\nGuía rápida:\n- precio_sensible → anclar_valor / conveniencia\n- asustado → empatia_profunda / educacion_medica\n- urgente_real o banderas rojas → urgencia_medica\n- desconfianza → prueba_social / educacion_medica\n\nA10) NIVEL_COMPROMISO (1-10)\nHeurística:\n- 9-10: pide agendar + propone fecha/hora/datos\n- 7-8: confirma o pide disponibilidad concreta\n- 5-6: expresa síntomas y pregunta siguiente paso\n- 3-4: solo info o saludo con curiosidad\n- 1-2: rechazo o evasión\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPARTE B — ANÁLISIS CLÍNICO UROLÓGICO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nB1) EXTRAER SÍNTOMAS (del mensaje y, si aplica, del historial \"SÍNTOMAS DETECTADOS (previo)\")\n- Si el MENSAJE trae síntomas nuevos: inclúyelos.\n- Si no trae síntomas pero hay \"SÍNTOMAS DETECTADOS (previo)\" ≠ \"Ninguno\": inclúyelos como persistentes con descripcion_original = ese texto.\n\nEstructura cada síntoma:\n- nombre: término médico (snake_case)\n- descripcion_original: cita breve del texto del paciente\n- severidad: leve | moderada | severa\n- tiempo_evolucion: string o null (ej: \"2 días\", \"3 semanas\", \"hoy\", \"meses\")\n\nB2) MAPEO COLOQUIAL → MÉDICO (usa y amplía con sinónimos)\n- \"me arde al orinar\", \"ardor\" → disuria (moderada)\n- \"orino sangre\", \"sale sangre\" → hematuria (severa)\n- \"no puedo orinar\", \"no sale nada\" → retencion_urinaria (severa)\n- \"voy muchas veces\", \"cada rato\" → polaquiuria (leve)\n- \"me levanto de noche\" → nicturia (leve)\n- \"se me sale la orina\" → incontinencia_urinaria (moderada)\n- \"dolor espalda baja/costado\" → dolor_lumbar (moderada)\n- \"piedra/cálculo\" → litiasis_renal (moderada-severa)\n- \"duele testículo/escroto\" → dolor_testicular (moderada)\n- \"bulto/bola en testículo\" → masa_testicular (severa)\n- \"no se me para\", \"erección débil\" → disfuncion_erectil (moderada)\n- \"infección urinaria\", \"cistitis\" → infeccion_urinaria (moderada)\n- \"próstata grande/inflamada\", \"chorro débil\" → hiperplasia_prostatica (moderada)\n- \"PSA alto/elevado\" → psa_elevado (moderada-severa)\n- \"dolor al tener relaciones\" → dispareunia (moderada)\n- \"varicocele\" → varicocele (leve-moderada)\n- \"fimosis\", \"prepucio apretado\", \"no se baja el prepucio\" → fimosis (leve)\n- \"hidrocele\" → hidrocele (leve)\n- \"goteo al final\" → goteo_postmiccional (leve)\n- \"balanitis\", \"irritación del glande\" → balanitis (leve-moderada)\n\nAjusta severidad:\n- Sube a severa si: \"muy fuerte\", \"insoportable\", \"no me deja\", \"vomité\", \"desmayo\", \"mucha sangre\", \"no orino\".\n- Sube urgencia si: fiebre, escalofríos, dolor tipo cólico intenso, embarazo (si se menciona), inmunosupresión (si se menciona).\n\nB3) BANDERAS ROJAS (array de strings; 0..n)\nIncluye si se detecta:\n- hematuria_macroscopica (sangre visible)\n- retencion_urinaria_aguda (no puede orinar)\n- dolor_colico_severo (cólico intenso)\n- masa_testicular (bulto)\n- fiebre_con_sintomas_urinarios (fiebre + disuria/dolor lumbar)\n- psa_muy_elevado (PSA > 10 o \"subió muy rápido\")\n- anuria (no produce orina)\n\nB4) URGENCIA PERCIBIDA (elige UNA)\n- emergencia: cualquier bandera roja o \"no puedo orinar\", sangre abundante, dolor insoportable, fiebre alta + síntomas urinarios\n- alta: síntomas moderados persistentes, dolor significativo, sospecha de ITU/piedra sin bandera roja\n- normal: dudas generales, síntomas leves, o consulta preventiva\n\nB5) TIEMPO EVOLUCIÓN GENERAL\n- Si hay múltiples síntomas: toma el mayor denominador (\"desde hace 3 días\") o el más preocupante si difieren.\n- Si no hay: null.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPARTE C — DATOS RELEVANTES EXTRA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- nombre_detectado: extrae si dice \"Soy X\", \"Me llamo X\".\n- edad_detectada: extrae si dice \"tengo 45\", \"45 años\".\n- ocupacion: si menciona (jubilado/estudiante/etc.).\n- antecedentes_mencionados: ej \"diabetes\", \"próstata\", \"cálculos previos\", \"cirugía\".\n- medicamentos_mencionados: nombres explícitos.\n- para_quien:\n  - para_si_mismo (default si no hay info)\n  - para_familiar (\"mi papá\", \"mi esposa\", \"mi hijo\", \"mi niño\")\n  - para_otro (si no es familiar claro)\n  IMPORTANTE para circuncisión: Detecta activamente si dice \"mi hijo\", \"para mi niño\", \"tiene X años\" → para_familiar.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSALIDA (OBLIGATORIO)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nDevuelve EXACTAMENTE este JSON (mismas claves). No agregues campos extra.\n{\n  \"intencion_principal\": \"string\",\n  \"tema_detectado\": \"circuncision|prostata|vias_urinarias|disfuncion_erectil|general|otro\",\n  \"cualificado\": false,\n  \"perfil_paciente\": \"string\",\n  \"emociones_detectadas\": [\"string\"],\n  \"nombre_detectado\": \"string o null\",\n  \"sentimiento\": \"positivo|negativo|neutro|interesado\",\n  \"prediccion_conversion\": \"alta|media|baja|necesita_incentivo\",\n  \"incentivo_sugerido\": \"anclar_valor|urgencia_medica|prueba_social|empatia_profunda|educacion_medica|conveniencia|ninguno\",\n  \"barrera_principal\": \"precio|miedo|tiempo|distancia|desconfianza|ninguna\",\n  \"detalle_barrera\": \"string\",\n  \"nivel_compromiso\": 1,\n  \"senales_precio\": {\n    \"pregunto_precio\": false,\n    \"menciono_presupuesto\": false,\n    \"indicadores\": [\"string\"],\n    \"nivel_sensibilidad\": \"ninguna|leve|moderada|alta\"\n  },\n  \"sintomas_estructurados\": [\n    {\"nombre\": \"string\", \"descripcion_original\": \"string\", \"severidad\": \"leve|moderada|severa\", \"tiempo_evolucion\": \"string o null\"}\n  ],\n  \"banderas_rojas\": [\"string\"],\n  \"urgencia_percibida\": \"normal|alta|emergencia\",\n  \"tiempo_evolucion_general\": \"string o null\",\n  \"datos_relevantes\": {\n    \"ocupacion\": \"string o null\",\n    \"antecedentes_mencionados\": [\"string\"],\n    \"medicamentos_mencionados\": [\"string\"],\n    \"para_quien\": \"para_si_mismo|para_familiar|para_otro\"\n  },\n  \"edad_detectada\": \"string o null\",\n  \"pregunto_precio\": false,\n  \"siguiente_paso_ideal\": \"string\"\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNOTA OPERATIVA PARA \"siguiente_paso_ideal\"\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGenera una recomendación concreta para el bot. Usa estas reglas en ORDEN DE PRIORIDAD:\n\n1. Si urgencia_percibida = \"emergencia\":\n   → \"derivar a urgencias inmediatamente y ofrecer seguimiento posterior en consulta\"\n\n2. Si tema_detectado = \"circuncision\" Y cualificado = false:\n   → \"calificar al paciente primero: preguntar para quién es y si tiene alguna molestia. NO dar precio de cirugía todavía\"\n\n3. Si tema_detectado = \"circuncision\" Y cualificado = true Y intencion = \"preguntar_precio\":\n   → \"dar precio de referencia de circuncisión ($16,000) aclarando que el costo final se define en consulta ($1,200) e invitar a agendar\"\n\n4. Si tema_detectado = \"circuncision\" Y cualificado = true Y intencion ≠ \"preguntar_precio\":\n   → \"dar valor del procedimiento (láser CO2, ambulatorio, sin dolor) y ofrecer consulta de valoración ($1,200)\"\n\n5. Si intencion = \"preguntar_precio\" (no circuncisión):\n   → \"dar precio de consulta, explicar qué incluye, y preguntar si desea agendar\"\n\n6. Si intencion = \"consultar_disponibilidad\":\n   → \"usar DISPONIBILIDAD_CALENDARIO, ofrecer 2-3 opciones y pedir preferencia\"\n\n7. Si intencion = \"expresar_sintomas\":\n   → \"validar síntomas, aplicar vacío clínico, y proponer consulta con precio\"\n\n8. Si intencion = \"agendar_listo\":\n   → \"confirmar datos (nombre, sede, horario) y usar AGENDAR_CONSULTA\"\n\n9. Si intencion = \"saludo\" o \"solo_informacion\":\n   → \"responder cálidamente y hacer pregunta calificadora para entender su necesidad\"\n\n10. Si intencion = \"objecion\":\n    → \"abordar la objeción específica con empatía y reconducir hacia el valor de la consulta\"\n\n11. Si intencion = \"rechazo\":\n    → \"respetar la decisión, dejar puerta abierta\"\n```\n",
         "needsFallback": true
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
       "position": [
-        13776,
-        7696
+        18144,
+        7424
       ],
-      "id": "f4674d5d-5103-44f6-8d76-5ccacf2e85ad",
+      "id": "7c38deb0-dd7a-4da4-a87a-da2b3dbd0eda",
       "name": "6️⃣ Analizar Gemini",
       "retryOnFail": true,
       "maxTries": 2,
@@ -1292,10 +1292,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        13792,
-        7920
+        18160,
+        7648
       ],
-      "id": "d6473bc2-2892-426c-b750-417897bbaf48",
+      "id": "30d5c646-1787-49d6-a8ad-06fa90a7a138",
       "name": "Gemini Analizador",
       "credentials": {
         "googlePalmApi": {
@@ -1311,10 +1311,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        14128,
-        7696
+        18496,
+        7424
       ],
-      "id": "215f6ff3-914c-432b-b358-08b0caee67f3",
+      "id": "e5fa727f-ef22-4d99-9981-f8c6c0b186fb",
       "name": "7️⃣ Procesar Análisis",
       "continueOnFail": true
     },
@@ -1323,16 +1323,16 @@
         "operation": "executeQuery",
         "query": "SELECT * FROM upsert_lead_v13(\n  $1::text,     -- telefono\n  $2::text,     -- nombre\n  $3::text,     -- fuente\n  $4::text,     -- canal\n  $5::text,     -- mensaje\n  $6::text,     -- intencion\n  $7::text,     -- urgencia\n  $8::text[],   -- sintomas_nuevos\n  $9::text[],   -- banderas_rojas\n  $10::boolean, -- pregunto_precio\n  $11::text,    -- sentimiento\n  $12::text,    -- tiempo_evolucion\n  $13::text,    -- fit_servicio\n  $14::text,    -- para_quien\n  $15::text[],  -- objeciones\n  $16::text,    -- campana_id\n  $17::text,    -- campana_headline\n  $18::text,    -- campana_url\n  $19::text,    -- ctwa_clid\n  $20::jsonb,   -- referral_data\n  $21::jsonb    -- signals\n)",
         "options": {
-          "queryReplacement": "={{ [\n  $json.telefono || '',\n  $json.nombre_detectado || $json.nombreUsuario || $json.nombre_confirmado || 'Usuario',\n  $json.es_meta_ads ? 'meta_ads' : ($json.fuente || 'whatsapp_directo'),\n  $json.es_meta_ads ? 'meta_ads' : 'organico',\n  ($json.mensajeUsuario || '').substring(0, 5000),\n  $json.intencion_principal || $json.intencion || 'otro',\n  $json.urgencia_percibida || 'bajo',\n  ($json.sintomas_merged || []).slice(0, 10),\n  $json.banderas_rojas || [],\n  $json.pregunto_precio === true,\n  $json.sentimiento || 'neutro',\n  $json.tiempo_evolucion || null,\n  $json.prediccion_conversion === 'alta' ? 'alto' : ($json.prediccion_conversion === 'media' ? 'medio' : 'bajo'),\n  $json.para_quien === 'para_si_mismo' ? 'mismo' : 'otro',\n  $json.barrera_principal && $json.barrera_principal !== 'ninguna' ? [$json.barrera_principal] : [],\n  $json.meta_campana_id || null,\n  $json.meta_headline || null,\n  $json.meta_source_url || null,\n  $json.meta_ctwa_clid || null,\n  null,\n  JSON.stringify({\n    perfil_paciente: $json.perfil_paciente || null,\n    emociones: $json.emociones_detectadas || [],\n    nivel_compromiso: $json.nivel_compromiso || null,\n    prediccion_conversion: $json.prediccion_conversion || null,\n    incentivo_sugerido: $json.incentivo_sugerido || null,\n    barrera_principal: $json.barrera_principal || null,\n    pregunto_precio: $json.pregunto_precio === true,\n    sintomas_estructurados: $json.sintomas_estructurados || [],\n    senales_precio: $json.senales_precio || null\n  })\n] }}"
+          "queryReplacement": "={{ [\n  $json.telefono || '',\n  $json.nombre_detectado || $json.nombreUsuario || $json.nombre_confirmado || 'Usuario',\n  $json.es_meta_ads ? 'meta_ads' : ($json.fuente || 'whatsapp_directo'),\n  $json.es_meta_ads ? 'meta_ads' : 'organico',\n  ($json.mensajeUsuario || '').substring(0, 5000),\n  $json.intencion_principal || $json.intencion || 'otro',\n  $json.urgencia_percibida || 'bajo',\n  ($json.sintomas_merged || []).slice(0, 10),\n  $json.banderas_rojas || [],\n  $json.pregunto_precio === true,\n  $json.sentimiento || 'neutro',\n  $json.tiempo_evolucion || null,\n  $json.prediccion_conversion === 'alta' ? 'alto' : ($json.prediccion_conversion === 'media' ? 'medio' : 'bajo'),\n  $json.para_quien === 'para_si_mismo' ? 'mismo' : 'otro',\n  $json.barrera_principal && $json.barrera_principal !== 'ninguna' ? [$json.barrera_principal] : [],\n  $json.meta_campana_id || null,\n  $json.meta_headline || null,\n  $json.meta_source_url || null,\n  $json.meta_ctwa_clid || null,\n  null,\n  JSON.stringify({\n    perfil_paciente: $json.perfil_paciente || null,\n    emociones: $json.emociones_detectadas || [],\n    nivel_compromiso: $json.nivel_compromiso || null,\n    prediccion_conversion: $json.prediccion_conversion || null,\n    incentivo_sugerido: $json.incentivo_sugerido || null,\n    barrera_principal: $json.barrera_principal || null,\n    pregunto_precio: $json.pregunto_precio === true,\n    sintomas_estructurados: $json.sintomas_estructurados || [],\n    senales_precio: $json.senales_precio || null,\n    tema_detectado: $json.tema_detectado || null,\n    cualificado: $json.cualificado === true\n  })\n] }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        14352,
-        7696
+        18720,
+        7424
       ],
-      "id": "66171275-19e4-4a41-88f2-89124eaec215",
+      "id": "5eefe0ca-5c7d-442b-afe3-f9a0ea257aa5",
       "name": "8️⃣ Guardar Lead",
       "credentials": {
         "postgres": {
@@ -1353,10 +1353,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        14576,
-        7696
+        18944,
+        7424
       ],
-      "id": "de25885f-7118-4de2-9aac-3d25912c62de",
+      "id": "c68a5b39-4066-4e77-aa6f-0c2bf74d4bdd",
       "name": "🛡️ Anti-Baneo Check",
       "credentials": {
         "postgres": {
@@ -1392,23 +1392,23 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        14800,
-        7696
+        19168,
+        7424
       ],
-      "id": "925a5747-0005-4721-9377-f877a973ef1b",
+      "id": "a60f4879-8f48-43bb-b905-8d697521f8f4",
       "name": "🚦 ¿Puede Enviar?"
     },
     {
       "parameters": {
-        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🏷️ CLASIFICADOR HÍBRIDO UROBOT - Analiza INTENCIÓN FINAL del mensaje bot\n// ═══════════════════════════════════════════════════════════════════\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\nconst limpioData = $('🧹 Limpiar Respuesta').first()?.json || {};\nconst texto = limpioData.text || '';\nconst t = texto.toLowerCase();\nconst parrafos = texto.split(/\\n\\n+/).filter(p => p.trim());\nconst ultimoParrafo = (parrafos[parrafos.length - 1] || texto).toLowerCase();\n\nfunction clasificarHibrido() {\n  // PASO 1: Estados FINALES de alta prioridad\n  if (/qued(ó|a)? (agendad|reservad|formalmente)|ya quedó|tu cita.*confirm|listo.*reserv|queda reservado/i.test(t)) return 'confirmacion';\n  \n  // PASO 2: Analizar INTENCIÓN FINAL (último párrafo)\n  if (/confirm(a|e)me tu nombre|tu nombre completo|para (generar|abrir).*expediente/i.test(ultimoParrafo)) return 'confirmacion';\n  if (/te (queda|funciona|parece).*horario|\\d{1,2}:\\d{2}\\s*(pm|am)?.*\\?|apartarlo/i.test(ultimoParrafo)) return 'horarios_dados';\n  if (/te (gustaría|interesa).*agendar|te ofrezca.*espacio|quieres.*cita/i.test(ultimoParrafo)) return 'oferta_cita';\n  if (/\\?/.test(ultimoParrafo) && /síntoma|siente|cuándo|molest|orin|dolor|ard|sangr|próstat/i.test(ultimoParrafo)) return 'descubrimiento';\n  \n  // PASO 3: Contenido principal (fallback)\n  if (/recuerda.*cita|no olvides|te esperamos|cualquier.*duda.*aquí/i.test(t)) return 'seguimiento';\n  if (/(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado).*\\d{1,2}.*\\?/i.test(t) || /\\d{1,2}:\\d{2}\\s*(pm|am).*\\?/i.test(t)) return 'horarios_dados';\n  if (/\\$|precio|costo|consult.*incluye|honorario/i.test(t)) {\n    if (/disponible|espacio|lunes|martes|miércoles|jueves|viernes|sábado/i.test(t)) return 'horarios_dados';\n    return 'precio_dado';\n  }\n  if (/ubicaci|direcci|blvd|colonia|consultorio/i.test(t)) return 'ubicacion_dada';\n  if (/urgencia|emergencia|acudir.*inmediatamente|urolog.*guardia/i.test(t)) return 'escalamiento';\n  if (/bienvenid|encantado|mucho gusto|soy.*dr|asistente.*dr/i.test(t)) return 'bienvenida';\n  \n  return 'conversacion';\n}\n\nconst faseConversacion = clasificarHibrido();\n\n// Determinar si el bot espera respuesta\nconst esperaRespuesta = /\\?/.test(ultimoParrafo) || \n  ['descubrimiento', 'horarios_dados', 'oferta_cita', 'confirmacion'].includes(faseConversacion);\n\n// Acción del bot\nconst accionesMap = {\n  'confirmacion': 'confirmar_cita',\n  'horarios_dados': 'mostrar_horarios',\n  'oferta_cita': 'ofrecer_cita',\n  'descubrimiento': 'evaluar_sintomas',\n  'precio_dado': 'informar_precio',\n  'ubicacion_dada': 'informar_ubicacion',\n  'escalamiento': 'escalar_urgente',\n  'seguimiento': 'recordar_cita',\n  'bienvenida': 'presentarse',\n  'conversacion': 'continuar'\n};\nconst accionBot = accionesMap[faseConversacion] || 'continuar';\n\nreturn [{\n  json: {\n    ...ctx,\n    text: limpioData.text || '',\n    fase_conversacion: faseConversacion,\n    accion_bot: accionBot,\n    espera_respuesta: esperaRespuesta,\n    conversacion_id: ctx.conversacion_id || null\n  }\n}];"
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════\n// 🏷️ CLASIFICADOR HÍBRIDO UROBOT v2 - TÚ + USTED + multi-line\n// ═══════════════════════════════════════════════════════════════════\n\nconst ctx = $('9️⃣ Formatear Contexto').first()?.json || {};\nconst limpioData = $('🧹 Limpiar Respuesta').first()?.json || {};\nconst texto = limpioData.text || '';\nconst t = texto.toLowerCase();\nconst parrafos = texto.split(/\\n\\n+/).filter(p => p.trim());\nconst ultimoParrafo = (parrafos[parrafos.length - 1] || texto).toLowerCase();\n// Texto completo sin saltos de línea para regex multi-line\nconst tFlat = t.replace(/\\n/g, ' ');\n\nfunction clasificarHibrido() {\n  // ── PASO 1: CONFIRMACIÓN de cita (alta prioridad) ──\n  // Bot confirma que la cita quedó agendada/reservada\n  if (/qued(ó|a)?\\s*(agendad|reservad|formalmente)|ya qued(ó|a)|su cita.*confirm|tu cita.*confirm|listo.*reserv|queda reservad/i.test(t)) return 'confirmacion';\n  // Bot pide nombre completo para agendar\n  if (/confirm(a|e)me (tu|su) nombre|(tu|su) nombre completo|para (generar|abrir).*expediente|necesito su nombre/i.test(t)) return 'confirmacion';\n\n  // ── PASO 2: HORARIOS DADOS (bot mostró disponibilidad real) ──\n  // Detecta días + horas en el texto (multi-line safe con tFlat)\n  if (/(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado)[\\s\\S]{0,60}\\d{1,2}[:\\.]?\\d{0,2}\\s*(hrs|hr|pm|am|p\\.m|a\\.m)?/i.test(tFlat)) {\n    // Si además hay pregunta = pidiendo que elija horario\n    if (/\\?/.test(t)) return 'horarios_dados';\n    // Si menciona \"disponible/espacio/tengo\" = mostrando opciones\n    if (/disponib|espacio|tengo|le queda/i.test(t)) return 'horarios_dados';\n  }\n  // Patrón directo: hora + pregunta (multi-line safe)\n  if (/\\d{1,2}:\\d{2}\\s*(pm|am|hrs|p\\.m|a\\.m)?[\\s\\S]{0,80}\\?/i.test(tFlat)) return 'horarios_dados';\n  // \"te/le queda/funciona/parece este horario\"\n  if (/(te|le) (queda|funciona|parece|acomoda)[\\s\\S]{0,30}(horario|hora|espacio)|apartarlo|apart[aá]rselo/i.test(tFlat)) return 'horarios_dados';\n\n  // ── PASO 3: OFERTA DE CITA (bot invita a agendar) ──\n  // USTED patterns (el bot habla de usted por defecto)\n  if (/le (busco|consigo|agendo|aparto)\\s*(un\\s*)?(espacio|horario|cita|lugar)/i.test(t)) return 'oferta_cita';\n  if (/le (gustar[ií]a|interesa)\\s*(que le)?\\s*(busque|agende|aparte|consiga)/i.test(t)) return 'oferta_cita';\n  if (/le queda mejor.*(polanco|sat[eé]lite|sede)|cu[aá]l sede le/i.test(t)) return 'oferta_cita';\n  if (/en cu[aá]l sede le (acomoda|queda|conviene)/i.test(t)) return 'oferta_cita';\n  if (/quiere que le (agende|busque|aparte)/i.test(t)) return 'oferta_cita';\n  // TÚ patterns (si el paciente tutea)\n  if (/te (gustar[ií]a|interesa).*agendar|te ofrezca.*espacio|quieres.*cita/i.test(t)) return 'oferta_cita';\n  // Cierre suave con sede\n  if (/polanco o sat[eé]lite/i.test(ultimoParrafo) && /\\?/.test(ultimoParrafo)) return 'oferta_cita';\n\n  // ── PASO 4: DESCUBRIMIENTO (pregunta médica) ──\n  if (/\\?/.test(ultimoParrafo) && /s[ií]ntoma|siente|cu[aá]ndo|molest|orin|dolor|ard|sangr|pr[oó]stat|levant|ba[nñ]o|noche/i.test(ultimoParrafo)) return 'descubrimiento';\n\n  // ── PASO 5: Fallbacks por contenido ──\n  if (/recuerda.*cita|no olvides|te esperamos|le esperamos|cualquier.*duda.*(aqu[ií]|estamos)/i.test(t)) return 'seguimiento';\n  if (/\\$\\s*\\d|precio|costo|consult.*incluye|honorario|\\d[,.]?\\d{3}\\s*(mxn|pesos)/i.test(t)) {\n    if (/disponib|espacio|lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado/i.test(t)) return 'horarios_dados';\n    return 'precio_dado';\n  }\n  if (/ubicaci|direcci|blvd|colonia|consultorio|hospital.*[aá]ngeles|san.*[aá]ngel/i.test(t)) return 'ubicacion_dada';\n  if (/urgencia|emergencia|acudir.*inmediatamente|urolog.*guardia/i.test(t)) return 'escalamiento';\n  if (/bienvenid|encantado|mucho gusto|soy.*dr|asistente.*dr|qu[eé] gusto que nos escribe/i.test(t)) return 'bienvenida';\n\n  return 'conversacion';\n}\n\nconst faseConversacion = clasificarHibrido();\n\n// Determinar si el bot espera respuesta\nconst esperaRespuesta = /\\?/.test(ultimoParrafo) || \n  ['descubrimiento', 'horarios_dados', 'oferta_cita', 'confirmacion'].includes(faseConversacion);\n\n// Acción del bot → mapea a valores que transition_lead_estado reconoce\nconst accionesMap = {\n  'confirmacion': 'confirmar_cita',\n  'horarios_dados': 'mostrar_horarios',\n  'oferta_cita': 'ofrecer_cita',\n  'descubrimiento': 'evaluar_sintomas',\n  'precio_dado': 'informar_precio',\n  'ubicacion_dada': 'informar_ubicacion',\n  'escalamiento': 'escalar_urgente',\n  'seguimiento': 'recordar_cita',\n  'bienvenida': 'presentarse',\n  'conversacion': 'continuar'\n};\nconst accionBot = accionesMap[faseConversacion] || 'continuar';\n\nreturn [{\n  json: {\n    ...ctx,\n    text: limpioData.text || '',\n    fase_conversacion: faseConversacion,\n    accion_bot: accionBot,\n    espera_respuesta: esperaRespuesta,\n    conversacion_id: ctx.conversacion_id || null\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16448,
-        7568
+        20816,
+        7296
       ],
-      "id": "6e060af0-f998-4e55-8f62-25825da92897",
+      "id": "9754cfa9-65cd-4079-b894-9b9e078cf3bc",
       "name": "🏷️ Procesar Clasificación",
       "continueOnFail": true
     },
@@ -1420,10 +1420,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        13920,
-        7920
+        18288,
+        7648
       ],
-      "id": "d836e1b3-1ac5-4489-846b-a26751c0dc68",
+      "id": "02461dd2-b490-4d75-99ff-1b138b1b6047",
       "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
@@ -1440,10 +1440,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        15376,
-        7792
+        19744,
+        7520
       ],
-      "id": "01fbd5f6-248b-4d9b-a1f4-188874d42d81",
+      "id": "a4c96e59-c870-4078-8f9a-7cce1cd8387d",
       "name": "Google Gemini Chat Model2",
       "credentials": {
         "googlePalmApi": {
@@ -1463,10 +1463,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        11536,
-        7696
+        15904,
+        7424
       ],
-      "id": "d7d7a255-e090-4493-8a6e-6fe0b4447427",
+      "id": "ae2f500c-3900-404d-a360-3619693abd52",
       "name": "🛑 Check Bloqueo DB",
       "credentials": {
         "postgres": {
@@ -1502,10 +1502,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        11760,
-        7696
+        16128,
+        7424
       ],
-      "id": "8d3f9246-6ab7-487d-a78d-19ce5045da83",
+      "id": "eb95c5df-ba69-4128-bc40-a06751f817f9",
       "name": "🛑 ¿Bloqueado?"
     },
     {
@@ -1519,10 +1519,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        17120,
-        7568
+        21488,
+        7296
       ],
-      "id": "c883113b-ee03-4221-a5a1-550e594a2619",
+      "id": "03f46fb5-f54d-4f15-bb20-f38d71922a8b",
       "name": "🔄 Actualizar Estado Lead",
       "credentials": {
         "postgres": {
@@ -1539,10 +1539,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        15024,
-        7760
+        19392,
+        7488
       ],
-      "id": "54f652a4-6ce0-4ac8-910a-f94354f65c22",
+      "id": "26fcf3a7-4ec8-4a0f-b217-6f01953c1280",
       "name": "⏸️ Skip Anti-Baneo",
       "continueOnFail": true
     }
@@ -1559,18 +1559,18 @@
           "contacts": [
             {
               "profile": {
-                "name": "EEHV"
+                "name": "Ángel Beltrán"
               },
-              "wa_id": "5215630371364"
+              "wa_id": "5215581785196"
             }
           ],
           "messages": [
             {
-              "from": "5215630371364",
-              "id": "wamid.HBgNNTIxNTYzMDM3MTM2NBUCABIYIEFDREExODNEMDQzQTUyOEUxQzRCQzJDRTM5QkUzMzMxAA==",
-              "timestamp": "1771901107",
+              "from": "5215581785196",
+              "id": "wamid.HBgNNTIxNTU4MTc4NTE5NhUCABIYIEFDNEYxNkExOTY3MDAwRTY0ODNFRTFBOEY2QUYzNjBEAA==",
+              "timestamp": "1772463020",
               "text": {
-                "body": "Por favor"
+                "body": "3 pm"
               },
               "type": "text"
             }
@@ -1636,8 +1636,7 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "📱 Tipo Media?": {
@@ -1896,8 +1895,7 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "4️⃣ Cargar Contexto": {
@@ -2192,7 +2190,7 @@
     "timeSavedMode": "fixed",
     "binaryMode": "separate"
   },
-  "versionId": "d186a6df-2ab8-467c-84de-662d84c275fd",
+  "versionId": "2ae9fb90-350a-4a15-a332-9d5ee403bf25",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8c33c5b047d489bd000bdf4aabe6e4981a2da591f7a11d61031348a2fe3ef66c"

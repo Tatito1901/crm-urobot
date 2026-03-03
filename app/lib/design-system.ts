@@ -175,11 +175,19 @@ export const spacing = {
 export const layouts = {
   grid2: 'grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4',
   grid3: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4',
-  grid4: 'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 lg:gap-4',
+  grid4: 'grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 lg:gap-4',
   grid5: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3',
   // KPI grids
-  kpiGrid: 'grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4',
+  kpiGrid: 'grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4',
   kpiGrid5: 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3',
+} as const;
+
+// ==================== SHADOWS ====================
+export const shadows = {
+  sm: 'shadow-sm',
+  md: 'shadow-[0_2px_8px_-2px_oklch(0_0_0/15%)]',
+  lg: 'shadow-[0_4px_16px_-4px_oklch(0_0_0/20%)]',
+  glow: (color: string) => `shadow-[0_0_20px_-4px] shadow-${color}-500/[0.08]`,
 } as const;
 
 // ==================== CARDS ====================
@@ -192,8 +200,10 @@ export const cards = {
   glassWithHeader: 'flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm',
   // Header dentro de card glass
   glassHeader: 'flex items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 sm:py-4',
-  // Card interactiva
-  interactive: 'cursor-pointer hover:border-ring/50 hover:bg-accent/30 active:scale-[0.98] transition-all overflow-hidden',
+  // Card interactiva (con hover lift)
+  interactive: 'cursor-pointer card-lift hover:border-ring/50 hover:bg-accent/30 transition-all overflow-hidden',
+  // Card con lift en hover
+  lift: 'card-lift',
   mobileCard: 'min-h-[80px] flex flex-col justify-center overflow-hidden',
   chart: 'overflow-hidden min-w-0',
 } as const;
@@ -281,6 +291,18 @@ export const tables = {
   th: 'px-4 py-3 font-medium',
   td: 'px-4 py-3',
   tr: 'border-b border-border hover:bg-muted/30 transition-colors',
+} as const;
+
+// ==================== HOVER STATES ====================
+export const hover = {
+  // Hover genérico para cards
+  card: 'transition-all duration-200 hover:border-primary/20 hover:bg-muted/10',
+  // Hover con glow teal
+  glow: 'glow-ring-teal',
+  // Hover con lift
+  lift: 'card-lift',
+  // Hover sutil para rows
+  row: 'transition-colors hover:bg-muted/30',
 } as const;
 
 // ==================== PROGRESS BARS ====================

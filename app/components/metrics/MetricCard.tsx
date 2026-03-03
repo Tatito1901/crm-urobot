@@ -37,6 +37,8 @@ interface MetricCardProps {
   tooltip?: string;
   /** Layout variant */
   variant?: 'default' | 'compact' | 'kpi';
+  /** Additional CSS classes */
+  className?: string;
 }
 
 /**
@@ -103,6 +105,7 @@ export const MetricCard = React.memo(({
   animate = true,
   tooltip,
   variant = 'default',
+  className: externalClassName,
 }: MetricCardProps) => {
   const mounted = useHasMounted();
 
@@ -144,7 +147,7 @@ export const MetricCard = React.memo(({
   if (variant === 'compact') {
     return (
       <div
-        className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 hover:shadow-sm min-h-[64px] sm:min-h-[72px] min-w-[140px] sm:min-w-0 shrink-0 sm:shrink cursor-pointer relative overflow-hidden group snap-start"
+        className={cn("flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-4 rounded-xl bg-card border border-border transition-all duration-200 hover:border-primary/30 hover:bg-muted/10 hover:shadow-sm min-h-[64px] sm:min-h-[72px] min-w-[140px] sm:min-w-0 shrink-0 sm:shrink cursor-pointer relative overflow-hidden group snap-start", externalClassName)}
         title={tooltip}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:animate-shimmer pointer-events-none" />
@@ -180,7 +183,7 @@ export const MetricCard = React.memo(({
     const kpiColor = iconColor || `${colors.label}`;
     return (
       <div
-        className="bg-white/[0.05] border border-white/[0.10] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top"
+        className={cn("bg-white/[0.05] border border-white/[0.10] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top", externalClassName)}
         title={tooltip}
       >
         <div className="flex justify-between items-start mb-3">
@@ -211,7 +214,7 @@ export const MetricCard = React.memo(({
   // ═══════════════════════════════════════════════
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border ${colors.border} bg-card p-3 sm:p-4 flex flex-col justify-between min-h-[90px] sm:min-h-[108px] transition-colors hover:bg-muted/30`}
+      className={cn(`relative overflow-hidden rounded-xl border ${colors.border} bg-card p-3 sm:p-4 flex flex-col justify-between min-h-[90px] sm:min-h-[108px] transition-colors hover:bg-muted/30`, externalClassName)}
       title={tooltip}
     >
       <div>

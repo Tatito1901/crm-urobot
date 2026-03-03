@@ -222,15 +222,6 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   return (
     <ErrorBoundary>
       <div className="relative min-h-full bg-background text-foreground">
-        {/* Ambient background gradient — dual layer for depth */}
-        <div
-          className="pointer-events-none fixed inset-0 opacity-40"
-          aria-hidden="true"
-          style={{
-            background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(20, 184, 166, 0.07) 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 80% 20%, rgba(56, 189, 248, 0.03) 0%, transparent 60%)',
-          }}
-        />
-
         <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6 px-4 py-5 sm:px-6 sm:py-10 lg:px-8">
 
           {/* ═══════════════════════════════════════════
@@ -313,16 +304,16 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-5">
+          <section className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5">
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
                 <div
                   key={m.title}
-                  className={`kpi-card ${m.glowClass} shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-4 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default transition-transform duration-200 hover:scale-[1.01]`}
+                  className={`kpi-card ${m.glowClass} shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-4 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default card-lift`}
                 >
                   {/* Top row: icon + label */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
                     <div className="flex items-center gap-2.5">
                       <div className={`p-2 rounded-lg ${m.accentBg}`}>
                         <Icon className={`h-4 w-4 ${m.accentColor}`} />
@@ -335,13 +326,13 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
                   {/* Big number */}
                   <div className="flex-1 flex items-end">
-                    <div className={`text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
+                    <div className={`text-2xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
                       {loading ? '—' : m.value}
                     </div>
                   </div>
 
                   {/* Subtitle */}
-                  <p className="text-xs text-muted-foreground mt-3 mb-3">{m.subtitle}</p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-2 sm:mt-3 mb-2 sm:mb-3">{m.subtitle}</p>
 
                   {/* Integrated sparkline */}
                   <div className="mt-auto -mx-1">
@@ -360,7 +351,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               SECONDARY METRICS — Compact strip
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 animate-fade-up stagger-6">
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 animate-fade-up stagger-6">
             {secondaryMetrics.map(sm => {
               const Icon = sm.icon;
               return (
@@ -455,7 +446,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
             {/* ── Consultas Próximas ── */}
-            <div className="animate-fade-up stagger-8 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal">
+            <div className="animate-fade-up stagger-8 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal card-lift">
               <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-teal-500/10">
@@ -507,7 +498,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
             </div>
 
             {/* ── Leads Recientes ── */}
-            <div className="animate-fade-up stagger-9 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal">
+            <div className="animate-fade-up stagger-9 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal card-lift">
               <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-emerald-500/10">
@@ -633,7 +624,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               BOT PERFORMANCE — Compact summary
               ═══════════════════════════════════════════ */}
-          <section className="animate-fade-up stagger-11 rounded-2xl border border-border bg-card overflow-hidden shine-top relative">
+          <section className="animate-fade-up stagger-11 rounded-2xl border border-border bg-card overflow-hidden shine-top relative card-lift">
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-sky-500/10">
@@ -642,14 +633,14 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 <h2 className="text-sm font-bold text-foreground font-jakarta">Rendimiento del Bot</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border text-center">
               {[
                 { label: 'Resolución', value: `${bot.tasaResolucion}%`, color: 'text-emerald-400' },
                 { label: 'Escalamiento', value: `${bot.tasaEscalamiento}%`, color: 'text-amber-400' },
                 { label: 'Citas bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
                 { label: 'Resp. prom.', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
               ].map(stat => (
-                <div key={stat.label} className="px-3 sm:px-6 py-3 sm:py-4 text-center">
+                <div key={stat.label} className="px-2 sm:px-6 py-2.5 sm:py-4">
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">{stat.label}</p>
                   <p className={`text-lg sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}

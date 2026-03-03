@@ -82,16 +82,17 @@ export function Sidebar() {
     <>
       {/* Main Sidebar — Glass Morphism Premium */}
       <aside
-        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-border lg:bg-sidebar lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 shrink-0 sticky top-0 transition-all duration-300"
+        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-border lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 shrink-0 sticky top-0 transition-all duration-300 sidebar-mesh"
       >
         <div className="relative flex flex-1 flex-col gap-6 min-h-0">
           {/* Brand Header */}
-          <header className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/15">
+          <header className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3.5 glass-depth relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/[0.04] to-transparent pointer-events-none" aria-hidden />
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/15 border border-teal-500/20 shadow-[0_0_12px_-2px] shadow-teal-500/20">
               <Bot className="h-5 w-5 text-teal-400" aria-hidden />
             </div>
-            <div className="space-y-0.5">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">CRM Clínico</p>
+            <div className="relative space-y-0.5">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">CRM Clínico</p>
               <p className="text-sm font-bold text-sidebar-foreground font-jakarta tracking-tight">Urobot</p>
             </div>
           </header>
@@ -112,10 +113,10 @@ export function Sidebar() {
                           prefetch={true}
                           aria-current={isActive ? "page" : undefined}
                           className={cn(
-                            "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-150",
+                            "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-200",
                             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
                             isActive 
-                              ? "bg-muted text-foreground border border-border shadow-sm"
+                              ? "bg-teal-500/[0.08] text-foreground border border-teal-500/15 shadow-sm shadow-teal-500/[0.06]"
                               : "text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent"
                           )}
                         >
@@ -143,9 +144,9 @@ export function Sidebar() {
         <footer className="relative space-y-3">
           <BotKillSwitch />
 
-          <div className="rounded-xl border border-border bg-muted/30 px-3.5 py-3">
+          <div className="rounded-xl border border-border bg-muted/30 px-3.5 py-3 glass-depth relative overflow-hidden">
             <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-glow" />
               <p className="font-semibold text-sidebar-foreground text-xs">Agenda al día</p>
             </div>
             <span className="mt-1.5 block text-xs text-muted-foreground" suppressHydrationWarning>{today}</span>

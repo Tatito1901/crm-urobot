@@ -35,11 +35,11 @@ export function PageShell({
 }: PageShellProps) {
   const layoutClasses = compact
     ? cn(
-        "relative flex w-full flex-col gap-3 px-4 pt-4 pb-20 sm:gap-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-5 lg:pb-6 xl:px-10",
+        "relative flex w-full flex-col gap-3 px-3 pt-3 pb-20 sm:gap-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-5 lg:pb-6 xl:px-10",
         fullWidth ? "max-w-full" : "max-w-6xl mx-auto"
       )
     : cn(
-        "relative mx-auto flex w-full flex-col gap-4 px-4 pb-20 pt-5 sm:gap-5 sm:px-6 sm:pb-24 sm:pt-6 md:gap-6 lg:px-8 lg:pt-10 lg:pb-20 xl:px-10",
+        "relative mx-auto flex w-full flex-col gap-3 px-3 pb-20 pt-4 sm:gap-5 sm:px-6 sm:pb-24 sm:pt-6 md:gap-6 lg:px-8 lg:pt-10 lg:pb-20 xl:px-10",
         fullWidth ? "max-w-full" : "max-w-6xl"
       );
 
@@ -63,12 +63,12 @@ export function PageShell({
         <header className={headerClasses}>
           <div className={titleBlockClasses}>
             <p className={cn(
-              "uppercase tracking-widest font-semibold",
-              "text-muted-foreground",
-              "text-xs"
+              "uppercase tracking-[0.2em] font-semibold",
+              "text-muted-foreground/80",
+              "text-[11px]"
             )}>{eyebrow}</p>
             <h1 className={cn(
-              "font-bold tracking-tight",
+              "font-bold tracking-tight font-jakarta",
               "text-foreground",
               compact ? "text-xl sm:text-2xl" : "text-xl sm:text-2xl md:text-3xl"
             )}>{title}</h1>

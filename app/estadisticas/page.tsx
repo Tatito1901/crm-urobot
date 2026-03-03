@@ -121,7 +121,7 @@ export default function EstadisticasPage() {
     >
       {/* Error State */}
       {error && (
-        <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive mb-4">
+        <div className="flex items-center gap-2 p-3 sm:p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive mb-3 sm:mb-4">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <p className="text-sm">Error al cargar datos. <button onClick={() => refresh()} className="underline font-medium">Reintentar</button></p>
         </div>
@@ -204,7 +204,7 @@ export default function EstadisticasPage() {
       {/* ═══ Ocupación y Predicciones ═══ */}
       <section>
         <SectionHeader icon={Flame} title="Ocupación y Predicciones" iconColor="text-orange-500" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
           <Card className={`${cards.base} lg:col-span-2 min-w-0`}>
             <CardHeader className={spacing.cardHeader}>
               <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">

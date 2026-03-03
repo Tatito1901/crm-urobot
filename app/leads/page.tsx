@@ -125,20 +125,11 @@ export default function LeadsPage() {
         }
       >
 
-      {/* Ambient background gradient */}
-      <div
-        className="pointer-events-none fixed inset-0 opacity-30 z-0"
-        aria-hidden="true"
-        style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(20, 184, 166, 0.06) 0%, transparent 70%)',
-        }}
-      />
-
       {/* ── Main content ── */}
       <div className="relative z-[1] space-y-4">
 
         {/* ── Stats grid ── */}
-        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-3 animate-fade-up stagger-1">
+        <div className="flex gap-1.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-3 animate-fade-up stagger-1">
           <MetricCard
             variant="compact"
             icon={<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />}
@@ -146,6 +137,7 @@ export default function LeadsPage() {
             title="Activos"
             value={computedStats.activos}
             loading={statsLoading}
+            className="metric-card-mobile"
           />
           <MetricCard
             variant="compact"
@@ -154,6 +146,7 @@ export default function LeadsPage() {
             title="Nuevos"
             value={stats.nuevos}
             loading={statsLoading}
+            className="metric-card-mobile"
           />
           <MetricCard
             variant="compact"
@@ -162,6 +155,7 @@ export default function LeadsPage() {
             title="En proceso"
             value={computedStats.enProceso}
             loading={statsLoading}
+            className="metric-card-mobile"
           />
           <MetricCard
             variant="compact"
@@ -171,6 +165,7 @@ export default function LeadsPage() {
             value={stats.citaPropuesta}
             loading={statsLoading}
             tooltip="Leads a los que se les ofreci\u00f3 cita"
+            className="metric-card-mobile"
           />
           <MetricCard
             variant="compact"
@@ -180,6 +175,7 @@ export default function LeadsPage() {
             value={stats.citaAgendada}
             loading={statsLoading}
             tooltip="Leads que agendaron cita"
+            className="metric-card-mobile"
           />
           <MetricCard
             variant="compact"
@@ -188,6 +184,7 @@ export default function LeadsPage() {
             title="Convertidos"
             value={stats.convertidos}
             loading={statsLoading}
+            className="metric-card-mobile"
           />
         </div>
 
@@ -210,7 +207,7 @@ export default function LeadsPage() {
         {/* ── Table ── */}
         <div className="space-y-4 animate-fade-up stagger-2">
           {/* Search + filters bar */}
-          <div className="bg-card p-3 sm:p-4 rounded-xl border border-border shadow-sm space-y-2 shine-top relative overflow-hidden">
+          <div className="bg-card p-2.5 sm:p-4 rounded-xl border border-border shadow-sm space-y-2 shine-top relative overflow-hidden">
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
                 <LeadsFilters
