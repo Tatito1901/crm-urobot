@@ -213,7 +213,7 @@ export const buttons = {
   // Refresh / action button (usado en headers de página)
   refresh: cn(
     'flex items-center justify-center gap-1.5 rounded-xl',
-    'px-3 py-1.5 sm:px-4 sm:py-2 min-h-[36px]',
+    'px-3 py-2 sm:px-4 sm:py-2 min-h-[44px] sm:min-h-[36px]',
     'text-xs font-semibold transition-all duration-150',
     'disabled:opacity-50 disabled:cursor-not-allowed',
   ),

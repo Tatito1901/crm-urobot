@@ -76,7 +76,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
           <button 
             onClick={onRefetch} 
             title="Actualizar" 
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-2.5 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -101,12 +101,12 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
         </div>
         
         {/* Filter tabs — minimal pill style with touch-friendly targets */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 momentum-scroll">
           {FILTER_OPTIONS.map(({ id, label }) => (
             <button
               key={id}
               onClick={() => onFiltroChange(id)}
-              className={`px-3.5 py-2 min-h-[36px] rounded-full text-xs font-semibold whitespace-nowrap transition-all no-select
+              className={`px-3.5 py-2 min-h-[40px] sm:min-h-[36px] rounded-full text-xs font-semibold whitespace-nowrap transition-all no-select
                 ${filtroActivo === id 
                   ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20' 
                   : 'text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted active:bg-muted/70'}`}

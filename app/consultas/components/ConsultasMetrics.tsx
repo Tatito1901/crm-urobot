@@ -91,7 +91,7 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
       </div>
 
       {/* Esta semana */}
-      <div className="col-span-2 sm:col-span-1 bg-card border border-amber-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
+      <div className="col-span-2 min-[480px]:col-span-1 bg-card border border-amber-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
           <CalendarDays className="w-10 h-10 text-amber-400" />
         </div>

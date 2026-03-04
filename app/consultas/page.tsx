@@ -109,7 +109,7 @@ export default function ConsultasPage() {
                     type="button"
                     onClick={() => handleSedeFilterChange(option.key)}
                     className={`
-                      flex-1 sm:flex-none px-2.5 sm:px-3 py-2 min-h-[36px] text-xs font-medium rounded-md transition-all flex items-center justify-center sm:justify-start gap-1 sm:gap-1.5 whitespace-nowrap no-select
+                      flex-1 sm:flex-none px-2.5 sm:px-3 py-2 min-h-[40px] sm:min-h-[36px] text-xs font-medium rounded-md transition-all flex items-center justify-center sm:justify-start gap-1 sm:gap-1.5 whitespace-nowrap no-select
                       ${sedeFilter === option.key
                         ? 'bg-background text-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground active:bg-muted/50'
@@ -126,7 +126,7 @@ export default function ConsultasPage() {
                 onClick={() => refetch()}
                 disabled={loading}
                 aria-label={loading ? 'Recargando datos...' : 'Recargar datos'}
-                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 shrink-0"
+                className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 title="Recargar datos"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />

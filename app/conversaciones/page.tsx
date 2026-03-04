@@ -109,7 +109,7 @@ function ConversacionesContent() {
           <button 
             onClick={() => refetch()} 
             aria-label="Actualizar conversaciones"
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-2.5 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
           </button>

@@ -239,7 +239,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-gradient-teal">
                   {getGreeting()}
                 </h1>
-                <p className="text-sm text-muted-foreground capitalize">
+                <p className="text-xs sm:text-sm text-muted-foreground capitalize">
                   {getFormattedDate()}
                 </p>
               </div>
@@ -304,7 +304,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-5">
+          <section className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-5">
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
@@ -326,7 +326,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
                   {/* Big number */}
                   <div className="flex-1 flex items-end">
-                    <div className={`text-2xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
+                    <div className={`text-3xl sm:text-5xl lg:text-[3.5rem] font-extrabold tabular-nums font-jakarta tracking-tighter leading-none ${loading ? 'opacity-30' : 'animate-count-in'}`}>
                       {loading ? '—' : m.value}
                     </div>
                   </div>

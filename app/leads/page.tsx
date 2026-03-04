@@ -110,7 +110,7 @@ export default function LeadsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSelectedLeadId(prev => prev ? null : leads[0]?.id ?? null)}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2.5 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 selectedLeadId
                   ? 'bg-teal-500/10 text-teal-400'
                   : 'hover:bg-secondary text-muted-foreground'

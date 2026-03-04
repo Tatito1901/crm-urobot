@@ -307,6 +307,21 @@ body {
   min-width: 44px;
 }
 
+/* ── Mobile: Prevent iOS zoom on input focus (font-size >= 16px) ── */
+@media (max-width: 639px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="url"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* ── Mobile: Safe area padding for notch devices ── */
 .safe-area-top {
   padding-top: env(safe-area-inset-top);
@@ -662,6 +677,11 @@ button:active:not(:disabled),
   }
 }
 
+/* ── Mobile: Eliminate 300ms tap delay ── */
+a, button, [role="button"], input, select, textarea, label, summary {
+  touch-action: manipulation;
+}
+
 /* ── Accessibility: cursor-pointer on all interactive elements ── */
 button,
 [role="button"],
@@ -739,5 +759,29 @@ img, video, svg, canvas {
   }
   .mobile-stack > * {
     width: 100%;
+  }
+}
+
+/* ── Mobile: Better bottom padding for pages with BottomNav ── */
+@media (max-width: 1023px) {
+  .pb-safe-bottom {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Mobile: Prevent body bounce/overscroll on iOS ── */
+@supports (-webkit-touch-callout: none) {
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+/* ── Mobile: Week range truncation helper ── */
+@media (max-width: 639px) {
+  .mobile-text-truncate {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

@@ -380,6 +380,7 @@ export const PatientSearch: React.FC<PatientSearchProps> = ({
             </Label>
             <Input
               type="tel"
+              inputMode="tel"
               value={newPatientData?.telefono || newPatientForm.telefono}
               onChange={(e) =>
                 setNewPatientForm({ ...newPatientForm, telefono: e.target.value })

@@ -107,7 +107,7 @@ export const LeadsFilters = React.memo(function LeadsFilters({
       })()}
 
       {/* Tabs de Filtros — horizontal scroll con touch targets grandes */}
-      <div className="overflow-x-auto scrollbar-hide scroll-fade-x -mx-1 px-1" role="tablist" aria-label="Filtrar leads por estado">
+      <div className="overflow-x-auto scrollbar-hide scroll-fade-x -mx-1 px-1 momentum-scroll" role="tablist" aria-label="Filtrar leads por estado">
         <div className="flex gap-1.5 sm:gap-2 py-0.5">
           {FILTERS.map((filter) => (
             <button
@@ -116,7 +116,7 @@ export const LeadsFilters = React.memo(function LeadsFilters({
               aria-selected={currentFilter === filter.id}
               onClick={() => onFilterChange(filter.id)}
               className={`
-                px-3 sm:px-4 py-2 min-h-[36px] text-[11px] sm:text-xs font-bold rounded-full uppercase tracking-wider transition-all whitespace-nowrap border no-select
+                px-3 sm:px-4 py-2 min-h-[40px] sm:min-h-[36px] text-[11px] sm:text-xs font-bold rounded-full uppercase tracking-wider transition-all whitespace-nowrap border no-select
                 ${currentFilter === filter.id
                   ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
                   : 'bg-transparent text-muted-foreground border-border hover:bg-muted/30 hover:text-foreground active:bg-muted/50'

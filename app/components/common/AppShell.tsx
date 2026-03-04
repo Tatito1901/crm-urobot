@@ -71,7 +71,7 @@ export function AppShell({ children }: PropsWithChildren) {
         <Sidebar />
       </Suspense>
       <div className="relative z-[1] flex h-full flex-1 flex-col min-w-0">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto pb-16 lg:pb-0">{children}</main>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto pb-safe-bottom lg:pb-0">{children}</main>
         <Suspense fallback={<div className="h-16 lg:hidden shrink-0" />}>
           <BottomNav />
         </Suspense>

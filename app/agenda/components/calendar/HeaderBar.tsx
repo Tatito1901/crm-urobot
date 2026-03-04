@@ -133,7 +133,7 @@ export const HeaderBar = React.memo(function HeaderBar({
 
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-transparent px-3 py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-transparent px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors min-h-[44px] sm:min-h-0"
           >
             <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden md:inline">Volver</span>
@@ -141,7 +141,7 @@ export const HeaderBar = React.memo(function HeaderBar({
 
           <button
             onClick={goToToday}
-            className="px-3 py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-all"
+            className="px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-all min-h-[44px] sm:min-h-0"
             title="Ir al día de hoy"
           >
             Hoy
@@ -150,7 +150,7 @@ export const HeaderBar = React.memo(function HeaderBar({
           <div className="flex items-center">
             <button
               onClick={goToPreviousWeek}
-              className="p-1.5 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+              className="p-2.5 sm:p-1.5 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Anterior"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -158,14 +158,14 @@ export const HeaderBar = React.memo(function HeaderBar({
 
             <button
               onClick={goToNextWeek}
-              className="p-1.5 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+              className="p-2.5 sm:p-1.5 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Siguiente"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
 
-          <span className="text-sm md:text-lg font-medium text-foreground hidden sm:inline truncate ml-2">{weekRange}</span>
+          <span className="text-xs sm:text-sm md:text-lg font-medium text-foreground truncate ml-1 sm:ml-2 mobile-text-truncate sm:max-w-none">{weekRange}</span>
         </div>
 
         {/* Acciones derecha */}

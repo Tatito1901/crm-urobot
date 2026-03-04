@@ -181,7 +181,7 @@ export default function EstadisticasPage() {
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Consultas vs Pacientes vs Leads (6 meses)</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {showChartSkeletons ? <Skeleton className="h-[300px] w-full" /> : <EvolutionChart data={evolucionMensual} />}
             </CardContent>
           </Card>
@@ -194,7 +194,7 @@ export default function EstadisticasPage() {
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Flujo de leads desde captura hasta cierre</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {showChartSkeletons ? <Skeleton className="h-[300px] w-full" /> : <FunnelChart data={funnelLeads} />}
             </CardContent>
           </Card>
@@ -245,7 +245,7 @@ export default function EstadisticasPage() {
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground truncate">Origen de leads</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <SourcesChart data={fuentesCaptacion} />}
             </CardContent>
           </Card>
@@ -258,7 +258,7 @@ export default function EstadisticasPage() {
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground truncate">Estado actual</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <StatusChart data={estadoCitas} />}
             </CardContent>
           </Card>
@@ -271,7 +271,7 @@ export default function EstadisticasPage() {
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground truncate">Distribución</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <SedesChart data={consultasPorSede} />}
             </CardContent>
           </Card>
@@ -284,7 +284,7 @@ export default function EstadisticasPage() {
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground truncate">Resolución</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {showChartSkeletons ? <Skeleton className="h-[220px] w-full" /> : <DestinosChart data={destinosPacientes} />}
             </CardContent>
           </Card>
