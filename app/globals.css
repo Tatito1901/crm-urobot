@@ -769,6 +769,16 @@ img, video, svg, canvas {
   }
 }
 
+/* ── Mobile: Full-height page minus BottomNav (for chat-like pages) ── */
+.h-minus-bottomnav {
+  height: 100dvh;
+}
+@media (max-width: 1023px) {
+  .h-minus-bottomnav {
+    height: calc(100dvh - 4rem - env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* ── Mobile: Prevent body bounce/overscroll on iOS ── */
 @supports (-webkit-touch-callout: none) {
   body {

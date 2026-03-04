@@ -187,9 +187,11 @@ export function useConversaciones(): UseConversacionesReturn {
   const enviarMensaje = useCallback(async (telefono: string, contenido: string) => {
     const { error } = await supabase.rpc('guardar_mensaje_urobot' as never, {
       p_telefono: telefono,
-      p_remitente: 'asistente',
       p_contenido: contenido,
       p_tipo: 'texto_manual',
+      p_tipo_contenido: 'text/plain',
+      p_nombre: 'CRM',
+      p_source_node: 'crm_manual',
     } as never)
 
     if (error) throw error

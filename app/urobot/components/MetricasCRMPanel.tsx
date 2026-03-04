@@ -345,7 +345,8 @@ export const ActividadHeatmap = React.memo(function ActividadHeatmap({ datos }: 
       </CardHeader>
       <CardContent className="space-y-3 overflow-hidden">
         {/* Heatmap */}
-        <div className="grid grid-cols-8 gap-0.5 overflow-hidden" style={{ gridTemplateColumns: `repeat(${Math.min(horasVisibles.length, 16)}, minmax(0, 1fr))` }}>
+        <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+        <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${Math.min(horasVisibles.length, 16)}, minmax(24px, 1fr))` }}>
           {horasVisibles.map((hora) => {
             const intensidad = maxMensajes > 0 ? hora.mensajes / maxMensajes : 0;
             return (
@@ -370,6 +371,7 @@ export const ActividadHeatmap = React.memo(function ActividadHeatmap({ datos }: 
               </div>
             );
           })}
+        </div>
         </div>
         
         {/* Leyenda */}

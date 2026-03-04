@@ -144,8 +144,8 @@ export function DataTable({
         </table>
       </div>
 
-      {/* Mobile: Card-based layout optimizado */}
-      <div className="space-y-2 sm:hidden px-2 py-2 momentum-scroll">
+      {/* Mobile: List-based layout optimizado */}
+      <div className="divide-y divide-border sm:hidden momentum-scroll">
         {rows.map((row, index) => {
           const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
           const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
@@ -173,15 +173,15 @@ export function DataTable({
               tabIndex={onRowClick ? index === 0 ? 0 : -1 : undefined}
               role={onRowClick ? "button" : undefined}
               className={cn(
-                "rounded-xl border border-border bg-card px-3.5 py-3 flex flex-col gap-2 shadow-sm",
-                onRowClick && "cursor-pointer active:scale-[0.98] active:bg-muted/40 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+                "px-3.5 py-3 flex flex-col gap-2",
+                onRowClick && "cursor-pointer active:bg-muted/40 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-teal-500"
               )}
             >
               {primary && <div className="text-sm font-semibold text-foreground leading-tight min-w-0">{primary}</div>}
               {secondary && <div className="text-xs text-muted-foreground min-w-0 -mt-0.5">{secondary}</div>}
               
               {metadata.length > 0 && (
-                <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 pt-2 border-t border-border/40 text-xs">
+                <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 pt-1.5 text-xs">
                   {metadata.map((key) => (
                     <div key={key} className="flex items-center gap-1 shrink-0 text-foreground">
                       {row[key]}

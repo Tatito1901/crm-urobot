@@ -413,8 +413,8 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
             {/* Dual sparklines footer */}
             <div className="grid grid-cols-2 divide-x divide-border border-t border-border">
-              <div className="px-5 sm:px-6 py-4">
-                <div className="flex items-center gap-2 mb-2.5">
+              <div className="px-3 sm:px-6 py-3 sm:py-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Leads
@@ -425,8 +425,8 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 </div>
                 <SparklineChart data={leadsTendencia} color="var(--chart-emerald)" gradientId="leadsFooter" height={44} />
               </div>
-              <div className="px-5 sm:px-6 py-4">
-                <div className="flex items-center gap-2 mb-2.5">
+              <div className="px-3 sm:px-6 py-3 sm:py-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Consultas
@@ -447,7 +447,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
             {/* ── Consultas Próximas ── */}
             <div className="animate-fade-up stagger-8 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal card-lift">
-              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+              <div className="flex items-center justify-between px-3 sm:px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-teal-500/10">
                     <Stethoscope className="h-4 w-4 text-teal-400" />
@@ -468,7 +468,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                   consultasProximas.slice(0, 6).map(c => {
                     const statusClasses = ESTADO_CITA_COLORS[c.estadoCita] || 'bg-muted text-muted-foreground border-border';
                     return (
-                      <div key={c.id} className="group flex items-center gap-3 px-5 sm:px-6 py-3 transition-colors hover:bg-muted/30">
+                      <div key={c.id} className="group flex items-center gap-3 px-3 sm:px-6 py-3 transition-colors hover:bg-muted/30">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{c.paciente}</p>
                           <div className="flex items-center gap-2 mt-1">
@@ -499,7 +499,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
             {/* ── Leads Recientes ── */}
             <div className="animate-fade-up stagger-9 rounded-2xl border border-border bg-card overflow-hidden flex flex-col glow-ring-teal card-lift">
-              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+              <div className="flex items-center justify-between px-3 sm:px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-emerald-500/10">
                     <UserCheck className="h-4 w-4 text-emerald-400" />
@@ -518,7 +518,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                   </div>
                 ) : (
                   leadsRecientes.slice(0, 6).map(l => (
-                    <div key={l.id} className="group flex items-center gap-3 px-5 sm:px-6 py-3 transition-colors hover:bg-muted/30">
+                    <div key={l.id} className="group flex items-center gap-3 px-3 sm:px-6 py-3 transition-colors hover:bg-muted/30">
                       <div className="shrink-0">
                         {l.temperatura ? (
                           <TemperatureDot temp={l.temperatura} />
@@ -562,7 +562,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               ═══════════════════════════════════════════ */}
           {escalamientosRecientes.length > 0 && (
             <section className="animate-fade-up stagger-10 rounded-2xl border border-rose-500/15 bg-card overflow-hidden">
-              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+              <div className="flex items-center justify-between px-3 sm:px-6 py-4 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-rose-500/10">
                     <ShieldAlert className="h-4 w-4 text-rose-400" />
@@ -576,7 +576,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
 
               <div className="divide-y divide-border">
                 {escalamientosRecientes.slice(0, 5).map(e => (
-                  <div key={e.id} className="flex items-center gap-3 px-5 sm:px-6 py-3 transition-colors hover:bg-muted/30">
+                  <div key={e.id} className="flex items-center gap-3 px-3 sm:px-6 py-3 transition-colors hover:bg-muted/30">
                     <div className="shrink-0">
                       {e.esUrgente ? (
                         <AlertTriangle className="h-4 w-4 text-rose-400" />
@@ -625,7 +625,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               BOT PERFORMANCE — Compact summary
               ═══════════════════════════════════════════ */}
           <section className="animate-fade-up stagger-11 rounded-2xl border border-border bg-card overflow-hidden shine-top relative card-lift">
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-border">
+            <div className="flex items-center justify-between px-3 sm:px-6 py-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-sky-500/10">
                   <Zap className="h-4 w-4 text-sky-400" />
@@ -633,14 +633,14 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 <h2 className="text-sm font-bold text-foreground font-jakarta">Rendimiento del Bot</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 text-center">
               {[
                 { label: 'Resolución', value: `${bot.tasaResolucion}%`, color: 'text-emerald-400' },
                 { label: 'Escalamiento', value: `${bot.tasaEscalamiento}%`, color: 'text-amber-400' },
                 { label: 'Citas bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
                 { label: 'Resp. prom.', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
-              ].map(stat => (
-                <div key={stat.label} className="px-2 sm:px-6 py-2.5 sm:py-4">
+              ].map((stat, i) => (
+                <div key={stat.label} className={`px-3 sm:px-6 py-2.5 sm:py-4 ${i % 2 !== 0 ? 'border-l border-border' : ''} ${i >= 2 ? 'border-t border-border sm:border-t-0' : ''} ${i >= 2 && i % 2 !== 0 ? '' : ''} ${i >= 1 ? 'sm:border-l sm:border-border' : ''}`}>
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">{stat.label}</p>
                   <p className={`text-lg sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}

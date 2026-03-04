@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      bot_config: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       bot_rate_limits: {
         Row: {
           count: number | null
@@ -38,6 +59,60 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_estados_lead: {
+        Row: {
+          aliases: string[] | null
+          id: string
+          label: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          id: string
+          label: string
+        }
+        Update: {
+          aliases?: string[] | null
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
+      catalog_fuentes: {
+        Row: {
+          aliases: string[] | null
+          id: string
+          label: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          id: string
+          label: string
+        }
+        Update: {
+          aliases?: string[] | null
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
+      catalog_temperaturas: {
+        Row: {
+          aliases: string[] | null
+          id: string
+          label: string
+        }
+        Insert: {
+          aliases?: string[] | null
+          id: string
+          label: string
+        }
+        Update: {
+          aliases?: string[] | null
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
       consultas: {
         Row: {
           calendar_event_id: string | null
@@ -47,7 +122,7 @@ export type Database = {
           comentarios_admin: string | null
           confirmado_paciente: boolean | null
           consulta_id: string | null
-          created_at: string | null
+          created_at: string
           diagnostico_principal: string | null
           doctoralia_event_id: string | null
           duracion_minutos: number | null
@@ -80,7 +155,7 @@ export type Database = {
           sync_calendar_error: string | null
           tipo_cita: string | null
           total_neto: number | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           calendar_event_id?: string | null
@@ -90,7 +165,7 @@ export type Database = {
           comentarios_admin?: string | null
           confirmado_paciente?: boolean | null
           consulta_id?: string | null
-          created_at?: string | null
+          created_at?: string
           diagnostico_principal?: string | null
           doctoralia_event_id?: string | null
           duracion_minutos?: number | null
@@ -123,7 +198,7 @@ export type Database = {
           sync_calendar_error?: string | null
           tipo_cita?: string | null
           total_neto?: number | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           calendar_event_id?: string | null
@@ -133,7 +208,7 @@ export type Database = {
           comentarios_admin?: string | null
           confirmado_paciente?: boolean | null
           consulta_id?: string | null
-          created_at?: string | null
+          created_at?: string
           diagnostico_principal?: string | null
           doctoralia_event_id?: string | null
           duracion_minutos?: number | null
@@ -166,7 +241,7 @@ export type Database = {
           sync_calendar_error?: string | null
           tipo_cita?: string | null
           total_neto?: number | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -202,7 +277,7 @@ export type Database = {
       consultas_notas: {
         Row: {
           consulta_id: string | null
-          created_at: string | null
+          created_at: string
           diagnosticos: string[] | null
           dias_proximo_seguimiento: number | null
           doctoralia_episode_id: string | null
@@ -227,11 +302,11 @@ export type Database = {
           talla_cm: number | null
           temperatura: number | null
           titulo: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           consulta_id?: string | null
-          created_at?: string | null
+          created_at?: string
           diagnosticos?: string[] | null
           dias_proximo_seguimiento?: number | null
           doctoralia_episode_id?: string | null
@@ -256,11 +331,11 @@ export type Database = {
           talla_cm?: number | null
           temperatura?: number | null
           titulo?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           consulta_id?: string | null
-          created_at?: string | null
+          created_at?: string
           diagnosticos?: string[] | null
           dias_proximo_seguimiento?: number | null
           doctoralia_episode_id?: string | null
@@ -285,7 +360,7 @@ export type Database = {
           talla_cm?: number | null
           temperatura?: number | null
           titulo?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -420,17 +495,17 @@ export type Database = {
       }
       debounce_whatsapp: {
         Row: {
-          created_at: string | null
+          created_at: string
           mensaje_id: string
           telefono: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           mensaje_id: string
           telefono: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           mensaje_id?: string
           telefono?: string
         }
@@ -438,7 +513,7 @@ export type Database = {
       }
       destinos_pacientes: {
         Row: {
-          created_at: string | null
+          created_at: string
           estado: string | null
           fecha_programada: string | null
           id: string
@@ -447,10 +522,10 @@ export type Database = {
           paciente_id: string | null
           tipo_cirugia: string | null
           tipo_destino: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           estado?: string | null
           fecha_programada?: string | null
           id?: string
@@ -459,10 +534,10 @@ export type Database = {
           paciente_id?: string | null
           tipo_cirugia?: string | null
           tipo_destino?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           estado?: string | null
           fecha_programada?: string | null
           id?: string
@@ -471,7 +546,7 @@ export type Database = {
           paciente_id?: string | null
           tipo_cirugia?: string | null
           tipo_destino?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -592,7 +667,7 @@ export type Database = {
           calificacion: string | null
           ciudad_inferida: string | null
           conversacion_id: string
-          created_at: string | null
+          created_at: string
           diagnostico: string | null
           enviado_at: string | null
           fase_conversacion: string | null
@@ -619,7 +694,7 @@ export type Database = {
           calificacion?: string | null
           ciudad_inferida?: string | null
           conversacion_id: string
-          created_at?: string | null
+          created_at?: string
           diagnostico?: string | null
           enviado_at?: string | null
           fase_conversacion?: string | null
@@ -646,7 +721,7 @@ export type Database = {
           calificacion?: string | null
           ciudad_inferida?: string | null
           conversacion_id?: string
-          created_at?: string | null
+          created_at?: string
           diagnostico?: string | null
           enviado_at?: string | null
           fase_conversacion?: string | null
@@ -694,7 +769,7 @@ export type Database = {
       historial_clinico: {
         Row: {
           contenido: string | null
-          created_at: string | null
+          created_at: string
           external_episode_id: string | null
           fecha: string | null
           id: string
@@ -704,7 +779,7 @@ export type Database = {
         }
         Insert: {
           contenido?: string | null
-          created_at?: string | null
+          created_at?: string
           external_episode_id?: string | null
           fecha?: string | null
           id?: string
@@ -714,7 +789,7 @@ export type Database = {
         }
         Update: {
           contenido?: string | null
-          created_at?: string | null
+          created_at?: string
           external_episode_id?: string | null
           fecha?: string | null
           id?: string
@@ -820,7 +895,7 @@ export type Database = {
       }
       lead_funnel_stages: {
         Row: {
-          created_at: string | null
+          created_at: string
           etapa_anterior: string | null
           etapa_nueva: string
           id: string
@@ -830,7 +905,7 @@ export type Database = {
           triggered_by: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           etapa_anterior?: string | null
           etapa_nueva: string
           id?: string
@@ -840,7 +915,7 @@ export type Database = {
           triggered_by?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           etapa_anterior?: string | null
           etapa_nueva?: string
           id?: string
@@ -861,7 +936,7 @@ export type Database = {
       }
       lead_state_transitions: {
         Row: {
-          created_at: string | null
+          created_at: string
           estado_anterior: string
           estado_nuevo: string
           etapa_anterior: string | null
@@ -873,7 +948,7 @@ export type Database = {
           triggered_by: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           estado_anterior: string
           estado_nuevo: string
           etapa_anterior?: string | null
@@ -885,7 +960,7 @@ export type Database = {
           triggered_by?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           estado_anterior?: string
           estado_nuevo?: string
           etapa_anterior?: string | null
@@ -1076,7 +1151,7 @@ export type Database = {
           tipo: string
           tipo_contenido: string | null
           tokens_usados: number | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           accion_bot?: string | null
@@ -1107,7 +1182,7 @@ export type Database = {
           tipo: string
           tipo_contenido?: string | null
           tokens_usados?: number | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           accion_bot?: string | null
@@ -1138,7 +1213,7 @@ export type Database = {
           tipo?: string
           tipo_contenido?: string | null
           tokens_usados?: number | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -1200,7 +1275,7 @@ export type Database = {
           cost_per_first_reply: number | null
           cpc: number | null
           cpm: number | null
-          created_at: string | null
+          created_at: string
           crm_calientes: number | null
           crm_citas: number | null
           crm_cost_per_hot_lead: number | null
@@ -1243,7 +1318,7 @@ export type Database = {
           cost_per_first_reply?: number | null
           cpc?: number | null
           cpm?: number | null
-          created_at?: string | null
+          created_at?: string
           crm_calientes?: number | null
           crm_citas?: number | null
           crm_cost_per_hot_lead?: number | null
@@ -1286,7 +1361,7 @@ export type Database = {
           cost_per_first_reply?: number | null
           cpc?: number | null
           cpm?: number | null
-          created_at?: string | null
+          created_at?: string
           crm_calientes?: number | null
           crm_citas?: number | null
           crm_cost_per_hot_lead?: number | null
@@ -1349,7 +1424,7 @@ export type Database = {
           attempt_count: number | null
           claimed_at: string | null
           consulta_id: string | null
-          created_at: string | null
+          created_at: string
           error_log: string | null
           id: string
           message_body: string
@@ -1360,14 +1435,14 @@ export type Database = {
           reminder_type: string | null
           sent_at: string | null
           status: Database["public"]["Enums"]["notification_status"] | null
-          updated_at: string | null
+          updated_at: string
           worker_id: string | null
         }
         Insert: {
           attempt_count?: number | null
           claimed_at?: string | null
           consulta_id?: string | null
-          created_at?: string | null
+          created_at?: string
           error_log?: string | null
           id?: string
           message_body: string
@@ -1378,14 +1453,14 @@ export type Database = {
           reminder_type?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["notification_status"] | null
-          updated_at?: string | null
+          updated_at?: string
           worker_id?: string | null
         }
         Update: {
           attempt_count?: number | null
           claimed_at?: string | null
           consulta_id?: string | null
-          created_at?: string | null
+          created_at?: string
           error_log?: string | null
           id?: string
           message_body?: string
@@ -1396,7 +1471,7 @@ export type Database = {
           reminder_type?: string | null
           sent_at?: string | null
           status?: Database["public"]["Enums"]["notification_status"] | null
-          updated_at?: string | null
+          updated_at?: string
           worker_id?: string | null
         }
         Relationships: [
@@ -1413,7 +1488,7 @@ export type Database = {
         Row: {
           activo: boolean | null
           bloqueado_por: string | null
-          created_at: string | null
+          created_at: string
           id: string
           lead_id: string | null
           mensajes_bloqueados: number | null
@@ -1422,12 +1497,12 @@ export type Database = {
           telefono: string
           telefono_normalizado: string
           ultimo_intento_at: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           activo?: boolean | null
           bloqueado_por?: string | null
-          created_at?: string | null
+          created_at?: string
           id?: string
           lead_id?: string | null
           mensajes_bloqueados?: number | null
@@ -1436,12 +1511,12 @@ export type Database = {
           telefono: string
           telefono_normalizado: string
           ultimo_intento_at?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           activo?: boolean | null
           bloqueado_por?: string | null
-          created_at?: string | null
+          created_at?: string
           id?: string
           lead_id?: string | null
           mensajes_bloqueados?: number | null
@@ -1450,7 +1525,7 @@ export type Database = {
           telefono?: string
           telefono_normalizado?: string
           ultimo_intento_at?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -1472,7 +1547,7 @@ export type Database = {
           app_alergias: string[] | null
           app_enfermedades_cronicas: string[] | null
           app_quirurgicos: string[] | null
-          created_at: string | null
+          created_at: string
           deleted_at: string | null
           diagnostico_principal: string | null
           doctoralia_id: string | null
@@ -1503,7 +1578,7 @@ export type Database = {
           tipo_sangre: string | null
           total_consultas: number | null
           ultima_consulta: string | null
-          updated_at: string | null
+          updated_at: string
           valor_total_pagado: number | null
           zona: string | null
         }
@@ -1516,7 +1591,7 @@ export type Database = {
           app_alergias?: string[] | null
           app_enfermedades_cronicas?: string[] | null
           app_quirurgicos?: string[] | null
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           diagnostico_principal?: string | null
           doctoralia_id?: string | null
@@ -1547,7 +1622,7 @@ export type Database = {
           tipo_sangre?: string | null
           total_consultas?: number | null
           ultima_consulta?: string | null
-          updated_at?: string | null
+          updated_at?: string
           valor_total_pagado?: number | null
           zona?: string | null
         }
@@ -1560,7 +1635,7 @@ export type Database = {
           app_alergias?: string[] | null
           app_enfermedades_cronicas?: string[] | null
           app_quirurgicos?: string[] | null
-          created_at?: string | null
+          created_at?: string
           deleted_at?: string | null
           diagnostico_principal?: string | null
           doctoralia_id?: string | null
@@ -1591,7 +1666,7 @@ export type Database = {
           tipo_sangre?: string | null
           total_consultas?: number | null
           ultima_consulta?: string | null
-          updated_at?: string | null
+          updated_at?: string
           valor_total_pagado?: number | null
           zona?: string | null
         }
@@ -1611,7 +1686,8 @@ export type Database = {
           anchor_date: string | null
           anchor_week_type: string | null
           calendar_id: string | null
-          created_at: string | null
+          calendarios_bloqueo: string[] | null
+          created_at: string
           direccion: string | null
           display_name: string | null
           horario_json: Json | null
@@ -1620,14 +1696,15 @@ export type Database = {
           maps_url: string | null
           sede: string
           timezone: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           activo?: boolean | null
           anchor_date?: string | null
           anchor_week_type?: string | null
           calendar_id?: string | null
-          created_at?: string | null
+          calendarios_bloqueo?: string[] | null
+          created_at?: string
           direccion?: string | null
           display_name?: string | null
           horario_json?: Json | null
@@ -1636,14 +1713,15 @@ export type Database = {
           maps_url?: string | null
           sede: string
           timezone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           activo?: boolean | null
           anchor_date?: string | null
           anchor_week_type?: string | null
           calendar_id?: string | null
-          created_at?: string | null
+          calendarios_bloqueo?: string[] | null
+          created_at?: string
           direccion?: string | null
           display_name?: string | null
           horario_json?: Json | null
@@ -1652,13 +1730,13 @@ export type Database = {
           maps_url?: string | null
           sede?: string
           timezone?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
       slot_reservations: {
         Row: {
-          created_at: string | null
+          created_at: string
           expires_at: string
           id: string
           slot_datetime: string
@@ -1666,7 +1744,7 @@ export type Database = {
           telefono: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           expires_at?: string
           id?: string
           slot_datetime: string
@@ -1674,7 +1752,7 @@ export type Database = {
           telefono: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           expires_at?: string
           id?: string
           slot_datetime?: string
@@ -1726,6 +1804,10 @@ export type Database = {
           razon: string
         }[]
       }
+      crear_lead_automatico: {
+        Args: { p_nombre: string; p_telefono: string }
+        Returns: string
+      }
       desbloquear_numero: { Args: { p_telefono: string }; Returns: Json }
       escalar_lead_atomico: {
         Args: {
@@ -1739,6 +1821,7 @@ export type Database = {
         }
         Returns: Json
       }
+      generar_whatsapp_link: { Args: { p_telefono: string }; Returns: string }
       get_behavioral_distribution_stats: {
         Args: { p_dias?: number }
         Returns: Json
@@ -1889,6 +1972,7 @@ export type Database = {
         Args: { p_telefono: string }
         Returns: undefined
       }
+      safe_uuid: { Args: { val: string }; Returns: string }
       search_knowledge_base: {
         Args: {
           filter_category?: string
@@ -1920,8 +2004,15 @@ export type Database = {
         }
         Returns: Json
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
+      transition_lead_by_telefono: {
+        Args: {
+          p_motivo?: string
+          p_new_estado: string
+          p_telefono: string
+          p_triggered_by?: string
+        }
+        Returns: Json
+      }
       transition_lead_estado: {
         Args: {
           p_lead_id: string
@@ -1988,41 +2079,42 @@ export type Database = {
       upsert_lead_v13: {
         Args: {
           p_accion_bot?: string
-          p_banderas_rojas: string[]
-          p_campana_headline: string
-          p_campana_id: string
-          p_campana_url: string
-          p_canal: string
-          p_ctwa_clid: string
-          p_fit_servicio: string
-          p_fuente: string
-          p_intencion: string
-          p_mensaje: string
-          p_nombre: string
-          p_objeciones: string[]
-          p_para_quien: string
-          p_pregunto_precio: boolean
-          p_referral_data: Json
-          p_sentimiento: string
-          p_signals: Json
-          p_sintomas_nuevos: string[]
+          p_banderas_rojas?: string[]
+          p_campana_headline?: string
+          p_campana_id?: string
+          p_campana_url?: string
+          p_canal?: string
+          p_ctwa_clid?: string
+          p_fit_servicio?: string
+          p_fuente?: string
+          p_intencion?: string
+          p_mensaje?: string
+          p_nombre?: string
+          p_objeciones?: string[]
+          p_para_quien?: string
+          p_pregunto_precio?: boolean
+          p_referral_data?: Json
+          p_sentimiento?: string
+          p_signals?: Json
+          p_sintomas_nuevos?: string[]
           p_telefono: string
-          p_tiempo_evolucion: string
-          p_urgencia: string
+          p_tiempo_evolucion?: string
+          p_urgencia?: string
         }
         Returns: {
-          out_accion_recomendada: string
+          out_accion: string
           out_compromiso: number
           out_es_nuevo: boolean
           out_es_urgencia: boolean
-          out_etapa_funnel: string
+          out_estado: string
+          out_funnel: string
           out_intencion: number
           out_lead_id: string
           out_necesidad: number
           out_perfil: number
           out_score_total: number
           out_temperatura: string
-          out_total_mensajes: number
+          out_total_msgs: number
         }[]
       }
       validate_lead_transition: {
@@ -2174,3 +2266,4 @@ export const Constants = {
     },
   },
 } as const
+

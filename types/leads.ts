@@ -229,7 +229,7 @@ const DEFAULT_LEAD_ESTADO: LeadEstado = 'nuevo';
 // PARSERS JSONB → TYPED
 // ============================================================
 
-function parseSignals(raw: unknown): LeadSignals | null {
+export function parseSignals(raw: unknown): LeadSignals | null {
   if (!raw || typeof raw !== 'object') return null;
   const s = raw as Record<string, unknown>;
   // Only return if there's at least one meaningful field
@@ -245,7 +245,7 @@ function parseSignals(raw: unknown): LeadSignals | null {
   };
 }
 
-function parseScores(raw: unknown): LeadScores | null {
+export function parseScores(raw: unknown): LeadScores | null {
   if (!raw || typeof raw !== 'object') return null;
   const s = raw as Record<string, unknown>;
   // Support both v12 (new names) and v11 (old names) for backward compatibility

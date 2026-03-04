@@ -9,8 +9,8 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { SWR_CONFIG_STANDARD, SWR_CONFIG_DASHBOARD, CACHE_KEYS } from '@/lib/swr-config';
-import type { Lead, LeadSignals, LeadScores } from '@/types/leads';
-import { LEAD_ESTADO_DISPLAY, LEAD_ESTADOS_ACTIVOS } from '@/types/leads';
+import type { Lead } from '@/types/leads';
+import { LEAD_ESTADO_DISPLAY, LEAD_ESTADOS_ACTIVOS, parseSignals, parseScores } from '@/types/leads';
 import { normalizeCanalMarketing } from '@/types/canales-marketing';
 
 const supabase = createClient();
@@ -75,36 +75,6 @@ const fetchStats = async (): Promise<LeadsStats> => {
     tasaLeadAAgenda: s.tasa_lead_a_agenda || 0,
   };
 };
-
-function parseSignals(raw: unknown): LeadSignals | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const s = raw as Record<string, unknown>;
-  if (!s.perfil_paciente && !s.prediccion_conversion && !s.nivel_compromiso) return null;
-  return {
-    perfil_paciente: (s.perfil_paciente as string) || null,
-    emociones: Array.isArray(s.emociones) ? s.emociones : [],
-    nivel_compromiso: typeof s.nivel_compromiso === 'number' ? s.nivel_compromiso : null,
-    prediccion_conversion: (s.prediccion_conversion as string) || null,
-    incentivo_sugerido: (s.incentivo_sugerido as string) || null,
-    barrera_principal: (s.barrera_principal as string) || null,
-    pregunto_precio: s.pregunto_precio === true,
-  };
-}
-
-function parseScores(raw: unknown): LeadScores | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const s = raw as Record<string, unknown>;
-  // Support both v12 (new names) and v11 (old names) for backward compatibility
-  const nc = s.necesidad_clinica ?? s.clinical;
-  const ia = s.intencion_agendar ?? s.intent;
-  if (nc === undefined && ia === undefined) return null;
-  return {
-    necesidad_clinica: Number(nc) || 0,
-    intencion_agendar: Number(ia) || 0,
-    compromiso: Number(s.compromiso ?? s.engagement) || 0,
-    perfil_paciente: Number(s.perfil_paciente ?? s.bant) || 0,
-  };
-}
 
 const fetchLeadsPaginated = async (
   page: number,

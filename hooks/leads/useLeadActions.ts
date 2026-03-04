@@ -127,7 +127,7 @@ async function analizarHistorialConversacion(telefono: string): Promise<Historia
     };
   }
 
-  const enviados = mensajes.filter((m: Record<string, unknown>) => m.remitente === 'asistente');
+  const enviados = mensajes.filter((m: Record<string, unknown>) => m.remitente === 'bot');
   const recibidos = mensajes.filter((m: Record<string, unknown>) => m.remitente === 'usuario');
   
   const ultimoEnviado = enviados.length > 0 
@@ -154,7 +154,7 @@ async function analizarHistorialConversacion(telefono: string): Promise<Historia
   let esperandoRespuesta = false;
   
   for (const msg of mensajes) {
-    if ((msg as Record<string, unknown>).remitente === 'asistente') {
+    if ((msg as Record<string, unknown>).remitente === 'bot') {
       if (esperandoRespuesta) {
         intentosSeguimiento++;
       }

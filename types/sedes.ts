@@ -43,6 +43,7 @@ export interface SedeRow {
   anchor_date: string | null;
   anchor_week_type: string | null;
   instrucciones_llegada: string | null;
+  calendarios_bloqueo: string[] | null;
   activo: boolean | null;
   created_at: string | null;
   updated_at: string | null;
@@ -62,6 +63,7 @@ export interface Sede {
   anchorDate: string | null;
   anchorWeekType: string | null;
   instruccionesLlegada: string | null;
+  calendariosBloqueo: string[];
   activo: boolean;
   createdAt: string | null;
   updatedAt: string | null;
@@ -82,6 +84,7 @@ export function mapSedeFromDB(row: SedeRow): Sede {
     anchorDate: row.anchor_date,
     anchorWeekType: row.anchor_week_type,
     instruccionesLlegada: row.instrucciones_llegada,
+    calendariosBloqueo: row.calendarios_bloqueo ?? [],
     activo: row.activo ?? true,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

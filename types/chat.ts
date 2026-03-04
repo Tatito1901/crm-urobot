@@ -28,7 +28,7 @@ export interface Mensaje {
   id: string;
   conversacionId: string;
   contenido: string;           // BD: contenido
-  remitente: string;           // BD: remitente ('usuario' | 'asistente' | 'sistema')
+  remitente: string;           // BD: remitente ('usuario' | 'bot' | 'sistema')
   tipo: string;                // BD: tipo
   createdAt: Date;
   

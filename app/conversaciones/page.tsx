@@ -96,7 +96,7 @@ function ConversacionesContent() {
   )
 
   return (
-    <div className="h-[calc(100dvh-64px)] lg:h-dvh flex flex-col bg-background overflow-hidden">
+    <div className="h-minus-bottomnav flex flex-col bg-background overflow-hidden">
       {/* Header Mobile */}
       {!isMobileViewingChat && (
         <header className="sm:hidden shrink-0 px-4 py-3 border-b border-border bg-card flex items-center justify-between">
