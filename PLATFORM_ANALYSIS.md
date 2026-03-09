@@ -8,14 +8,14 @@
 
 ## Resumen Ejecutivo
 
-Se encontraron **60 hallazgos** categorizados por severidad:
+Se encontraron **66 hallazgos** categorizados por severidad:
 
 | Severidad | Cantidad | Descripción |
 |-----------|----------|-------------|
 | CRÍTICO | 5 | Bugs que causan fallos silenciosos o pérdida de datos |
 | ALTO | 16 | Inconsistencias, race conditions, errores silenciados |
 | MEDIO | 21 | Deuda técnica y patrones subóptimos |
-| BAJO | 18 | Mejoras de calidad y mantenibilidad |
+| BAJO | 24 | Mejoras de calidad, UI consistency y mantenibilidad |
 
 ---
 
@@ -609,7 +609,73 @@ La normalización del teléfono ocurre después de la validación de formato. Si
 
 ---
 
-## 7. RESUMEN DE ACCIONES RECOMENDADAS
+## 7. HALLAZGOS DE UI Y COMPONENTES
+
+### 7.1 Dos componentes de paginación con indexing diferente
+
+**Archivos:**
+- `app/components/common/Pagination.tsx` — base-0: `currentPage * itemsPerPage + 1`
+- `app/components/common/PaginationControls.tsx` — base-1: `(currentPage - 1) * pageSize + 1`
+
+Leads usa `PaginationControls`, Consultas usa `Pagination`. Si se confunden, los rangos de paginación se calculan mal.
+
+### 7.2 Layouts inconsistentes — Suspense y dynamic export
+
+| Ruta | Suspense | `dynamic = 'force-dynamic'` |
+|------|----------|----------------------------|
+| dashboard | Si | No |
+| leads | No | No |
+| consultas | No | No |
+| conversaciones | Si | No |
+| agenda | No | Si |
+| estadisticas | Parcial | No |
+| urobot | No | No |
+
+Estadísticas rompe el patrón: renderiza tabs custom en el layout en lugar de solo wrappear children.
+
+### 7.3 Naming inconsistente en dynamic imports
+
+```typescript
+// 9+ archivos usan:
+import dynamic from 'next/dynamic';
+
+// 4 archivos en estadísticas usan:
+import nextDynamic from 'next/dynamic';
+```
+
+### 7.4 ErrorBoundary importado pero no usado
+
+**Archivo:** `app/leads/page.tsx`
+
+`ErrorBoundary` se importa del componente common pero no se aplica. Ninguna página wrappea sus charts o componentes dinámicos con error boundaries específicos.
+
+### 7.5 Dynamic imports sin loading fallback
+
+Algunos dynamic imports tienen skeleton loading, otros no:
+
+```typescript
+// ✅ Con loading:
+const FunnelChart = nextDynamic(() => ..., {
+  loading: () => <Skeleton className="h-[500px]" />, ssr: false
+});
+
+// ❌ Sin loading:
+const LeadClinicSidebar = dynamic(() => ..., { ssr: false });
+```
+
+### 7.6 Localhost hardcoded como fallback
+
+**Archivo:** `app/auth/actions.ts:84`
+
+```typescript
+redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/auth/reset`
+```
+
+Si `NEXT_PUBLIC_APP_URL` no está configurado en producción, los redirects de auth apuntan a localhost.
+
+---
+
+## 8. RESUMEN DE ACCIONES RECOMENDADAS
 
 ### Prioridad 1 — Fix inmediato (Críticos)
 
@@ -650,6 +716,12 @@ La normalización del teléfono ocurre después de la validación de formato. Si
 29. **Implementar `marcarComoLeido`** o eliminar la función no-op
 30. **Agregar optimistic updates** para envío de mensajes en useConversaciones
 31. **No silenciar error** de conversión lead→paciente en patients-service.ts
+32. **Unificar componentes de paginación** — deprecar uno de los dos
+33. **Estandarizar Suspense** en layouts — aplicar consistentemente o no
+34. **Unificar naming** de dynamic imports (`dynamic` vs `nextDynamic`)
+35. **Usar ErrorBoundary** en componentes de charts y dynamic imports
+36. **Agregar loading fallback** a todos los dynamic imports
+37. **Eliminar fallback localhost** en auth actions — requerir env variable
 
 ---
 
