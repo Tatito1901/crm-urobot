@@ -73,8 +73,7 @@ const supabase = createClient();
  *               consultas: {programadas, hoy, completadas_mes}, pacientes: {total, nuevos_mes}}
  */
 const fetchStats = async (): Promise<StatsData> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_dashboard_stats_fast');
+  const { data, error } = await supabase.rpc('get_dashboard_stats_fast');
 
   if (error) throw error;
 

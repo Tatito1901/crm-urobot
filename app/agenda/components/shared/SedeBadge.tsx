@@ -8,8 +8,7 @@
 import React from 'react';
 import { Building2, MapPin } from 'lucide-react';
 
-// Incluye TRINIDAD como sede histórica (ya no activa pero con datos existentes)
-type Sede = 'POLANCO' | 'SATELITE' | 'TRINIDAD';
+type Sede = 'POLANCO' | 'SATELITE';
 
 interface SedeBadgeProps {
   sede: Sede;
@@ -28,11 +27,6 @@ const sedeConfig: Record<Sede, { color: string; label: string; icon: typeof Buil
     color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
     label: 'Satélite',
     icon: MapPin,
-  },
-  TRINIDAD: {
-    color: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
-    label: 'Trinidad (histórico)',
-    icon: Building2,
   },
 };
 

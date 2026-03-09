@@ -141,8 +141,7 @@ const defaultStats: ImpactStats = {
 const supabase = createClient();
 
 const fetchImpactStats = async (): Promise<ImpactStats> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_impact_stats');
+  const { data, error } = await supabase.rpc('get_impact_stats');
 
   if (error) {
     console.error('Error fetching impact stats:', error);

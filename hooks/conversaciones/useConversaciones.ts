@@ -39,11 +39,8 @@ interface UseConversacionesReturn {
  * - DESCONOCIDO: sin lead ni paciente
  */
 const fetchConversaciones = async (): Promise<ConversacionUI[]> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any
-
   // 1. Obtener conversaciones recientes con datos de lead y paciente
-  const { data: convData, error: convError } = await sb
+  const { data: convData, error: convError } = await supabase
     .from('conversaciones')
     .select('id, telefono, nombre_contacto, estado, lead_id, paciente_id, ultimo_mensaje_at, ultimo_mensaje_preview, mensajes_no_leidos, total_mensajes_usuario, total_mensajes_bot, created_at')
     .order('ultimo_mensaje_at', { ascending: false })
@@ -95,10 +92,10 @@ const inferirTipoMensaje = (tipo: string | null, tipoContenido: string | null, m
  * Ahora: Una sola llamada RPC con JOIN interno en el servidor
  */
 const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> => {
-  const { data, error } = await supabase.rpc('get_mensajes_por_telefono' as never, {
+  const { data, error } = await supabase.rpc('get_mensajes_por_telefono', {
     p_telefono: telefono,
     p_limit: 200,
-  } as never)
+  })
 
   if (error) throw error
 
@@ -156,26 +153,32 @@ export function useConversaciones(): UseConversacionesReturn {
   const telefonoActivoRef = useRef(telefonoActivo)
   telefonoActivoRef.current = telefonoActivo
 
+  // Refs para las funciones mutate — evita re-crear el canal cuando SWR renueva las funciones
+  const mutateConversacionesRef = useRef(mutateConversaciones)
+  mutateConversacionesRef.current = mutateConversaciones
+  const mutateMensajesRef = useRef(mutateMensajes)
+  mutateMensajesRef.current = mutateMensajes
+
   useEffect(() => {
     const channel = supabase
       .channel('conv-updates')
       .on(
         'postgres_changes' as never,
         { event: '*', schema: 'public', table: 'conversaciones' },
-        () => { mutateConversaciones() }
+        () => { mutateConversacionesRef.current() }
       )
       .on(
         'postgres_changes' as never,
         { event: 'INSERT', schema: 'public', table: 'mensajes' },
         () => {
-          mutateConversaciones()
-          if (telefonoActivoRef.current) mutateMensajes()
+          mutateConversacionesRef.current()
+          if (telefonoActivoRef.current) mutateMensajesRef.current()
         }
       )
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [mutateConversaciones, mutateMensajes])
+  }, []) // ✅ Una sola instancia del canal — mutaciones via refs
 
   // Marcar como leído (no-op por ahora, la tabla no tiene ese campo)
   const marcarComoLeido = useCallback(async (_telefono: string) => {
@@ -185,14 +188,14 @@ export function useConversaciones(): UseConversacionesReturn {
 
   // Enviar mensaje usando RPC
   const enviarMensaje = useCallback(async (telefono: string, contenido: string) => {
-    const { error } = await supabase.rpc('guardar_mensaje_urobot' as never, {
+    const { error } = await supabase.rpc('guardar_mensaje_urobot', {
       p_telefono: telefono,
       p_contenido: contenido,
       p_tipo: 'texto_manual',
       p_tipo_contenido: 'text/plain',
       p_nombre: 'CRM',
       p_source_node: 'crm_manual',
-    } as never)
+    })
 
     if (error) throw error
 

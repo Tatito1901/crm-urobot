@@ -21,7 +21,7 @@ import { formatTimeRange, formatLongDate } from '../../lib/agenda-utils';
 import { StatusBadge } from '../shared/StatusBadge';
 import { SedeBadge } from '../shared/SedeBadge';
 import type { Appointment } from '@/types/agenda';
-import type { EstadoConsulta } from '../../lib/constants';
+import type { ConsultaEstado } from '@/types/consultas';
 import { cn } from '@/lib/utils';
 
 interface ServiceResponse<T = void> {
@@ -224,7 +224,7 @@ export const AppointmentDetailsModal: React.FC<AppointmentDetailsModalProps> = (
 
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge 
-                estado={appointment.estado as EstadoConsulta} 
+                estado={appointment.estado as ConsultaEstado} 
                 size="sm" 
                 showIcon={true}
               />

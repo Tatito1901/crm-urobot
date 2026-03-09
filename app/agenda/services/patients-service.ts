@@ -73,38 +73,35 @@ export async function createPatient(
 
     const normalizedPhone = normalizePhone(data.telefono);
 
-    // Verificar si ya existe un paciente con ese teléfono
-    const { data: existingPatient } = await supabase
-      .from('pacientes')
-      .select('*')
-      .eq('telefono', normalizedPhone)
-      .maybeSingle();
-
-    if (existingPatient) {
-      const paciente = mapPacienteFromDB(existingPatient as PacienteRow);
-      return { success: true, data: paciente };
-    }
-
     // Preparar datos para insertar (SOLO columnas existentes)
-    const insertPayload = {
+    const upsertPayload = {
       nombre: data.nombre.trim(),
       telefono: normalizedPhone,
       email: data.email?.trim() || null,
       origen_lead: 'Agenda', // Default
-      // Notas y Estado no existen en la tabla 'pacientes' actual
     };
 
-    // Insertar el nuevo paciente
-    // Casting as any para evitar errores de tipos desactualizados en types/database.ts
-    const { data: newPatient, error: insertError } = await supabase
+    // UPSERT idempotente: evita race condition de check-then-insert
+    // ignoreDuplicates: true — si ya existe, no modifica el registro
+    const { data: upsertedPatient, error: upsertError } = await supabase
       .from('pacientes')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .insert(insertPayload as any)
+      .upsert(upsertPayload, { onConflict: 'telefono', ignoreDuplicates: true })
       .select('*')
-      .single();
+      .maybeSingle();
 
-    if (insertError) {
-      return { success: false, error: insertError.message || 'Error al crear el paciente' };
+    if (upsertError) {
+      return { success: false, error: upsertError.message || 'Error al crear el paciente' };
+    }
+
+    // ignoreDuplicates: true retorna null si hubo conflicto — fetch el registro existente
+    const newPatient = upsertedPatient ?? await supabase
+      .from('pacientes')
+      .select('*')
+      .eq('telefono', normalizedPhone)
+      .single().then(({ data }) => data);
+
+    if (!newPatient) {
+      return { success: false, error: 'Error al crear el paciente' };
     }
 
     // Actualizar Lead asociado si existe
@@ -121,7 +118,7 @@ export async function createPatient(
           .update({
             estado: 'convertido',
             convertido_a_paciente_id: newPatient.id,
-          } as never)
+          })
           .eq('id', existingLead.id);
       }
     } catch {

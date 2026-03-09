@@ -117,9 +117,9 @@ const defaultStats: ConversacionesStats = {
  * Ahora: 1 RPC que retorna jsonb pre-calculado
  */
 async function fetchConversacionesStats(dias: number): Promise<ConversacionesStats> {
-  const { data, error } = await supabase.rpc('get_conversaciones_stats' as never, {
+  const { data, error } = await supabase.rpc('get_conversaciones_stats', {
     p_dias: dias,
-  } as never);
+  });
 
   if (error) throw error;
 

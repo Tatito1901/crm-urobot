@@ -27,10 +27,10 @@ const inferirTipoMensaje = (
 };
 
 async function fetchMensajesLead(telefono: string): Promise<Mensaje[]> {
-  const { data, error } = await supabase.rpc('get_mensajes_por_telefono' as never, {
+  const { data, error } = await supabase.rpc('get_mensajes_por_telefono', {
     p_telefono: telefono,
     p_limit: 100,
-  } as never);
+  });
 
   if (error) throw error;
 

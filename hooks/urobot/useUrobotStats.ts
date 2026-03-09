@@ -7,7 +7,7 @@
 
 import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
-import { SWR_CONFIG_REALTIME } from '@/lib/swr-config';
+import { SWR_CONFIG_DASHBOARD } from '@/lib/swr-config';
 
 const supabase = createClient();
 
@@ -103,8 +103,7 @@ const defaultStats: UrobotStats = {
 // ============================================================
 
 const fetchUrobotStats = async (dias: number): Promise<UrobotStats> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_urobot_stats', {
+  const { data, error } = await supabase.rpc('get_urobot_stats', {
     p_dias: dias,
   });
 
@@ -131,10 +130,7 @@ export function useUrobotStats(dias: number = 7) {
   const { data, error, isLoading, mutate } = useSWR(
     `urobot-stats-${dias}`,
     () => fetchUrobotStats(dias),
-    {
-      ...SWR_CONFIG_REALTIME,
-      refreshInterval: 60 * 1000, // Actualizar cada minuto
-    }
+    SWR_CONFIG_DASHBOARD
   );
 
   return {
@@ -151,8 +147,7 @@ export function useUrobotStats(dias: number = 7) {
 // ============================================================
 
 export async function marcarAlertaRevisada(alertaId: string, notas?: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('escalamientos')
     .update({
       resultado: 'revisado',

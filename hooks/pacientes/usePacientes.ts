@@ -75,8 +75,7 @@ interface RPCResult {
  * ✅ Solo campos necesarios (no SELECT *)
  */
 const fetchPacientes = async (): Promise<{ pacientes: Paciente[], stats: PacienteStats, metricas: PacienteMetricas, count: number }> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_pacientes_with_stats')
+  const { data, error } = await supabase.rpc('get_pacientes_with_stats')
 
   if (error) throw error
 

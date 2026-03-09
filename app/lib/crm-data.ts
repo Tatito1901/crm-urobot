@@ -7,13 +7,13 @@
  */
 
 import type { Tables } from "@/types/database";
+import type { LeadEstado } from "@/types/leads";
+import type { ConsultaEstado } from "@/types/consultas";
 
 // ===== ENUMS Y TIPOS LITERALES =====
 type TabKey = "leads" | "pacientes" | "consultas" | "confirmaciones" | "metricas";
 
-type LeadEstado = "nuevo" | "contactado" | "interesado" | "calificado" | "escalado" | "cita_agendada" | "convertido" | "no_interesado" | "descartado";
 type PacienteEstado = "Activo" | "Inactivo";
-type ConsultaEstado = "Programada" | "Confirmada" | "Reagendada" | "Cancelada" | "Completada";
 type RecordatorioTipo = "confirmacion_inicial" | "48h" | "24h" | "3h";
 type RecordatorioEstado = "pendiente" | "procesando" | "enviado" | "error";
 type SedeType = "POLANCO" | "SATELITE";

@@ -23,8 +23,7 @@ const supabase = createClient();
 // ── Fetcher ──────────────────────────────────────────────────
 
 const fetchDashboardV2 = async (): Promise<DashboardV2Data> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_dashboard_v3');
+  const { data, error } = await supabase.rpc('get_dashboard_v3');
   if (error) throw error;
   return parseDashboardV2(data);
 };

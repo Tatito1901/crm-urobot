@@ -29,9 +29,9 @@ interface CampaignStats {
 const DEFAULT: CampaignStats = { campaigns: [], total_meta_ads: 0, total_organico: 0 };
 
 const fetchCampaignStats = async (dias: number): Promise<CampaignStats> => {
-  const { data, error } = await supabase.rpc('get_leads_by_campaign_stats' as never, {
+  const { data, error } = await supabase.rpc('get_leads_by_campaign_stats', {
     p_dias: dias,
-  } as never);
+  });
 
   if (error || !data) return DEFAULT;
 

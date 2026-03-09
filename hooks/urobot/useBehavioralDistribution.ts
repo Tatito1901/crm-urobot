@@ -34,9 +34,9 @@ const DEFAULT: BehavioralStats = {
 };
 
 const fetchBehavioralStats = async (dias: number): Promise<BehavioralStats> => {
-  const { data, error } = await supabase.rpc('get_behavioral_distribution_stats' as never, {
+  const { data, error } = await supabase.rpc('get_behavioral_distribution_stats', {
     p_dias: dias,
-  } as never);
+  });
 
   if (error || !data) return DEFAULT;
 

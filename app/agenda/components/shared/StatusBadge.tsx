@@ -6,33 +6,30 @@
  */
 
 import React from 'react';
-import { CheckCircle2, Clock, XCircle, Calendar, AlertCircle } from 'lucide-react';
-
-type EstadoConsulta = 
-  | 'Programada' 
-  | 'Confirmada' 
-  | 'Completada' 
-  | 'Cancelada' 
-  | 'Reagendada'
-  | 'En_Curso'
-  | 'No_Acudio';
+import { CheckCircle2, Clock, XCircle, Calendar, AlertCircle, MinusCircle } from 'lucide-react';
+import type { ConsultaEstado } from '@/types/consultas';
 
 interface StatusBadgeProps {
-  estado: EstadoConsulta;
+  estado: ConsultaEstado;
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
 }
 
-const estadoConfig = {
+const estadoConfig: Record<ConsultaEstado, { color: string; icon: React.ElementType; label: string }> = {
   Programada: {
     color: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
     icon: Calendar,
     label: 'Programada',
   },
-  Confirmada: {
-    color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-    icon: CheckCircle2,
-    label: 'Confirmada',
+  Pendiente: {
+    color: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    icon: AlertCircle,
+    label: 'Pendiente',
+  },
+  En_Curso: {
+    color: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    icon: Clock,
+    label: 'En Curso',
   },
   Completada: {
     color: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
@@ -44,20 +41,10 @@ const estadoConfig = {
     icon: XCircle,
     label: 'Cancelada',
   },
-  Reagendada: {
-    color: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-    icon: AlertCircle,
-    label: 'Reagendada',
-  },
-  En_Curso: {
-    color: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-    icon: Clock,
-    label: 'En Curso',
-  },
-  No_Acudio: {
+  No_Asistio: {
     color: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
-    icon: XCircle,
-    label: 'No Acudió',
+    icon: MinusCircle,
+    label: 'No Asistió',
   },
 };
 

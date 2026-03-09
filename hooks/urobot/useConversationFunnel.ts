@@ -35,9 +35,9 @@ const DEFAULT_STATS: FunnelStats = {
 };
 
 const fetchFunnelStats = async (dias: number): Promise<FunnelStats> => {
-  const { data, error } = await supabase.rpc('get_conversation_funnel_stats' as never, {
+  const { data, error } = await supabase.rpc('get_conversation_funnel_stats', {
     p_dias: dias,
-  } as never);
+  });
 
   if (error || !data) return DEFAULT_STATS;
 

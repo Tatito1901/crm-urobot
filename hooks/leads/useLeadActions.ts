@@ -88,11 +88,8 @@ const CONFIG = {
  * Analiza el historial de conversación de un lead
  */
 async function analizarHistorialConversacion(telefono: string): Promise<HistorialContacto> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any;
-  
   // Primero buscar la conversación por teléfono
-  const { data: conv } = await sb
+  const { data: conv } = await supabase
     .from('conversaciones')
     .select('id')
     .eq('telefono', telefono)
@@ -110,7 +107,7 @@ async function analizarHistorialConversacion(telefono: string): Promise<Historia
     };
   }
 
-  const { data: mensajes, error } = await sb
+  const { data: mensajes, error } = await supabase
     .from('mensajes')
     .select('remitente, created_at, contenido')
     .eq('conversacion_id', conv.id)
@@ -352,7 +349,7 @@ async function registrarAccion(
       notas: nuevasNotas.substring(0, 2000),
       ultima_interaccion: timestamp,
       updated_at: timestamp,
-    } as never)
+    })
     .eq('id', leadId);
 }
 
@@ -487,7 +484,7 @@ export function useLeadActions(lead: Lead | null): UseLeadActionsReturn {
       .update({ 
         total_mensajes: (lead.totalMensajes || 0) + 1,
         ultima_interaccion: new Date().toISOString(),
-      } as never)
+      })
       .eq('id', lead.id);
     
     // ✅ Invalidar dominio completo: leads + dashboard + historial local

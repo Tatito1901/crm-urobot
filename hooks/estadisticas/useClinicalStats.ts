@@ -110,8 +110,7 @@ const supabase = createClient();
  * Fetcher para métricas clínicas
  */
 const fetchClinicalStats = async (): Promise<ClinicalStatsData> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_clinical_insights');
+  const { data, error } = await supabase.rpc('get_clinical_insights');
 
   if (error) throw error;
 

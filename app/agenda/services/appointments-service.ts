@@ -24,8 +24,7 @@ interface ServiceResponse<T = void> {
   error?: string;
 }
 
-// Tipo de sede: incluye TRINIDAD para datos históricos
-type SedeActiva = 'POLANCO' | 'SATELITE' | 'TRINIDAD';
+type SedeActiva = 'POLANCO' | 'SATELITE';
 
 export interface CreateAppointmentData {
   patientId: string;
@@ -71,6 +70,14 @@ function generateConsultaId(): string {
   return `CONS-${timestamp}-${random}`.toUpperCase();
 }
 
+// Helper para obtener el UUID de sede a partir del nombre
+async function getSedeId(sedeName: SedeActiva): Promise<string | null> {
+  if (!sedeName) return null;
+  const { data, error } = await supabase.from('sedes').select('id').eq('sede', sedeName).single();
+  if (error || !data) return null;
+  return data.id;
+}
+
 // Helper para concatenar info extra en motivo_consulta
 function buildMotivoConsulta(data: {
   motivo?: string;
@@ -108,16 +115,20 @@ export async function createAppointment(
     const startIso = data.start.toInstant().toString();
     const endIso = data.end.toInstant().toString();
 
+    const sedeId = await getSedeId(data.sede);
+    if (!sedeId) return { success: false, error: `Sede '${data.sede}' no encontrada` };
+
     const { data: conflicts, error: conflictError } = await supabase
       .from('consultas')
       .select('id')
-      .eq('sede', data.sede)
-      .gte('fecha_hora_inicio', startIso) // Usar columna correcta
-      .lt('fecha_hora_inicio', endIso) // Simplificación para conflicto básico
-      .in('estado_cita', ['Programada', 'Confirmada', 'Reagendada']);
+      .eq('sede_id', sedeId)
+      .lt('fecha_hora_inicio', endIso)
+      .gt('fecha_hora_fin', startIso)
+      .in('estado_cita', ['Programada', 'Pendiente', 'En_Curso']);
 
-    // Ignorar error de validación de conflictos si ocurre por tipos desactualizados
-    if (conflictError) { /* silenciado */ }
+    if (conflictError) {
+      return { success: false, error: `Error al verificar disponibilidad: ${conflictError.message}` };
+    }
 
     if (conflicts && conflicts.length > 0) {
       return { success: false, error: 'El horario seleccionado ya está ocupado' };
@@ -135,7 +146,7 @@ export async function createAppointment(
     const insertPayload = {
       consulta_id: generateConsultaId(),
       paciente_id: data.patientId,
-      sede: data.sede,
+      sede_id: sedeId,
       fecha_hora_inicio: startIso,
       fecha_hora_fin: endIso,
       estado_cita: 'Programada',
@@ -146,9 +157,8 @@ export async function createAppointment(
     // Insertar
     const { data: newConsulta, error: insertError } = await supabase
       .from('consultas')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .insert(insertPayload as any) // Casting para bypass tipos desactualizados
-      .select('id, consulta_id, paciente_id, sede, fecha_hora_inicio, fecha_hora_fin, estado_cita, motivo_consulta, calendar_event_id, created_at, updated_at')
+      .insert(insertPayload)
+      .select('id, consulta_id, paciente_id, sede_id, fecha_hora_inicio, fecha_hora_fin, estado_cita, motivo_consulta, calendar_event_id, created_at, updated_at')
       .single();
 
     if (insertError) {
@@ -201,15 +211,16 @@ export async function updateAppointment(
       updatePayload.fecha_hora_fin = updates.end.toInstant().toString();
     }
 
-    if (updates.sede) updatePayload.sede = updates.sede;
+    if (updates.sede) {
+      const sedeId = await getSedeId(updates.sede);
+      if (!sedeId) return { success: false, error: `Sede '${updates.sede}' no encontrada` };
+      updatePayload.sede_id = sedeId;
+    }
 
-    // Reconstruir motivo si cambia algo relevante
-    if (updates.motivoConsulta || updates.tipo || updates.prioridad || updates.notasInternas) {
-      // Recuperar motivo actual y tratar de parsear o sobrescribir
-      // Simplificación: Sobrescribimos con lo nuevo + lo que no cambió (difícil sin estructura json)
-      // Estrategia segura: Solo agregar lo nuevo si se provee explícitamente
+    // Solo reconstruir motivo si se provee explícitamente
+    if (updates.motivoConsulta !== undefined) {
       updatePayload.motivo_consulta = buildMotivoConsulta({
-        motivo: updates.motivoConsulta, // Si es undefined, el helper pone "Sin motivo" -> Bug potencial si solo actualizo prioridad
+        motivo: updates.motivoConsulta,
         tipo: updates.tipo,
         prioridad: updates.prioridad,
         modalidad: updates.modalidad,
@@ -247,11 +258,9 @@ export async function cancelAppointment(
       .from('consultas')
       .update({
         estado_cita: 'Cancelada',
-        // motivo_cancelacion: cancelData.reason, // No existe columna en BD actual
-        motivo_consulta: `[CANCELADA: ${cancelData.reason}]`, // Guardar en motivo
+        cancelado_por: `${cancelData.cancelledBy}: ${cancelData.reason}`,
         updated_at: new Date().toISOString(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      })
       .eq('consulta_id', appointmentId);
 
     if (updateError) {
@@ -272,10 +281,9 @@ export async function confirmAppointment(appointmentId: string): Promise<Service
     const { error } = await supabase
       .from('consultas')
       .update({
-        estado_cita: 'Confirmada',
+        estado_confirmacion: 'Confirmada',
         updated_at: new Date().toISOString(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      })
       .eq('consulta_id', appointmentId);
 
     if (error) return { success: false, error: error.message };
@@ -307,8 +315,7 @@ export async function markPatientArrived(appointmentId: string): Promise<Service
       .update({
         estado_cita: 'Completada', // Usamos Completada como "Llegó/En consulta" por ahora
         updated_at: new Date().toISOString(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      })
       .eq('consulta_id', appointmentId);
 
     if (updateError) return { success: false, error: updateError.message };
@@ -320,12 +327,21 @@ export async function markPatientArrived(appointmentId: string): Promise<Service
 
 /**
  * Reagenda una cita
+ * Patrón saga: cancela la original y crea la nueva.
+ * Si la creación falla, intenta restaurar la original (compensating transaction).
  */
 export async function rescheduleAppointment(
   appointmentId: string,
   newData: CreateAppointmentData
 ): Promise<ServiceResponse<{ id: string; uuid: string }>> {
   try {
+    // Snapshot del estado actual para poder restaurar si falla
+    const { data: snapshot } = await supabase
+      .from('consultas')
+      .select('estado_cita, cancelado_por, motivo_consulta')
+      .eq('consulta_id', appointmentId)
+      .single();
+
     const cancelResult = await cancelAppointment(appointmentId, {
       reason: 'Reagendada a nueva fecha',
       cancelledBy: 'sistema',
@@ -334,13 +350,19 @@ export async function rescheduleAppointment(
     if (!cancelResult.success) return { success: false, error: cancelResult.error };
 
     const createResult = await createAppointment(newData);
-    
-    // Marcar original como Reagendada si es posible, sino queda como Cancelada
-    await supabase
-      .from('consultas')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .update({ estado_cita: 'Reagendada' } as any)
-      .eq('consulta_id', appointmentId);
+
+    if (!createResult.success && snapshot) {
+      // Compensating transaction: restaurar estado original
+      await supabase
+        .from('consultas')
+        .update({
+          estado_cita: snapshot.estado_cita,
+          cancelado_por: snapshot.cancelado_por,
+          motivo_consulta: snapshot.motivo_consulta,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('consulta_id', appointmentId);
+    }
 
     return createResult;
   } catch (error) {

@@ -92,15 +92,12 @@ interface CombinedConsultasResponse {
  * Ahora: 2 queries paralelas — 1 RPC ligera + 1 lista con solo campos necesarios
  */
 const fetchConsultasWithStats = async (): Promise<CombinedConsultasResponse> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any
-  
   // ✅ Paralelo: stats RPC + lista consultas
   const [statsResult, consultasResult] = await Promise.all([
     // Stats calculadas en PostgreSQL (0 rows transferidas)
-    sb.rpc('get_consultas_stats'),
+    supabase.rpc('get_consultas_stats'),
     // Lista con solo campos necesarios para la UI
-    sb
+    supabase
       .from('consultas')
       .select('*, pacientes!consultas_paciente_id_fkey(nombre, apellido), sedes!consultas_sede_id_fkey(sede)', { count: 'exact' })
       .order('fecha_hora_inicio', { ascending: false })

@@ -187,8 +187,7 @@ const FUNNEL_COLORS = {
 // ============================================================
 
 async function fetchMetricasCRM(dias: number): Promise<UrobotMetricasCRMData> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_urobot_metricas_crm', {
+  const { data, error } = await supabase.rpc('get_urobot_metricas_crm', {
     p_dias: dias,
   });
 
@@ -352,10 +351,7 @@ export function useUrobotMetricasCRM(dias: number = 7) {
   const { data, error, isLoading, mutate } = useSWR(
     `urobot-metricas-crm-${dias}`,
     () => fetchMetricasCRM(dias),
-    {
-      ...SWR_CONFIG_DASHBOARD,
-      refreshInterval: 2 * 60 * 1000, // Actualizar cada 2 minutos
-    }
+    SWR_CONFIG_DASHBOARD
   );
 
   return {

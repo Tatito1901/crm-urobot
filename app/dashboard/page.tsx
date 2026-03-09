@@ -15,8 +15,7 @@ export default async function DashboardPage() {
 
   try {
     const supabase = await createClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any).rpc('get_dashboard_v3');
+    const { data } = await supabase.rpc('get_dashboard_v3');
 
     if (data) {
       initialData = parseDashboardV2(data);

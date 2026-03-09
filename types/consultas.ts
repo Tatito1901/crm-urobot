@@ -17,13 +17,12 @@ export type ConsultaRow = Tables<'consultas'>;
 // CONSTANTES Y ENUMS
 // ============================================================
 
-// Estados disponibles en BD (estado_cita)
-export const CONSULTA_ESTADOS = ['Programada', 'Pendiente', 'Confirmada', 'Reagendada', 'Cancelada', 'Completada', 'No Asistió'] as const;
+// Estados disponibles en BD (estado_cita) — sincronizado con CHECK constraint consultas_estado_cita_check
+export const CONSULTA_ESTADOS = ['Programada', 'Pendiente', 'En_Curso', 'Completada', 'Cancelada', 'No_Asistio'] as const;
 
 // Sedes disponibles (FK a tabla sedes via sede_id UUID)
 // Nota: la tabla sedes almacena sede (text), display_name, direccion, etc.
-// TRINIDAD es histórica (ya no activa) pero tiene datos de pacientes anteriores
-export const CONSULTA_SEDES = ['POLANCO', 'SATELITE', 'TRINIDAD'] as const;
+export const CONSULTA_SEDES = ['POLANCO', 'SATELITE'] as const;
 
 // Tipos de cita (tipo_cita) - Default en BD: 'Primera Vez'
 export const CONSULTA_TIPOS = ['Primera Vez', 'Seguimiento', 'Urgencia', 'Procedimiento', 'Valoración'] as const;
@@ -75,7 +74,7 @@ export interface Consulta {
 // ============================================================
 // DEFAULTS
 // ============================================================
-const DEFAULT_CONSULTA_ESTADO: ConsultaEstado = 'Programada';
+export const DEFAULT_CONSULTA_ESTADO: ConsultaEstado = 'Programada';
 const DEFAULT_CONSULTA_SEDE: ConsultaSede = 'POLANCO';
 const DEFAULT_CONSULTA_TIPO: ConsultaTipo = 'Primera Vez';
 

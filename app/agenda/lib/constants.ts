@@ -5,18 +5,12 @@
  * Configuraciones centralizadas para evitar duplicación
  */
 
-import { Calendar, CheckCircle2, Clock, XCircle, AlertCircle, Building2, MapPin } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, XCircle, AlertCircle, Building2, MapPin, MinusCircle } from 'lucide-react';
+import type { ConsultaEstado } from '@/types/consultas';
 import type { LucideIcon } from 'lucide-react';
 
 // ========== ESTADOS ==========
-export type EstadoConsulta = 
-  | 'Programada' 
-  | 'Confirmada' 
-  | 'Completada' 
-  | 'Cancelada' 
-  | 'Reagendada'
-  | 'En_Curso'
-  | 'No_Acudio';
+export type EstadoConsulta = ConsultaEstado;
 
 interface EstadoConfig {
   value: EstadoConsulta;
@@ -39,13 +33,22 @@ export const ESTADOS: EstadoConfig[] = [
     icon: Calendar,
   },
   {
-    value: 'Confirmada',
-    label: 'Confirmada',
-    color: 'emerald-500',
-    bgClass: 'bg-emerald-500/15',
-    textClass: 'text-emerald-400',
-    borderClass: 'border-emerald-500/30',
-    icon: CheckCircle2,
+    value: 'Pendiente',
+    label: 'Pendiente',
+    color: 'amber-500',
+    bgClass: 'bg-amber-500/15',
+    textClass: 'text-amber-400',
+    borderClass: 'border-amber-500/30',
+    icon: AlertCircle,
+  },
+  {
+    value: 'En_Curso',
+    label: 'En Curso',
+    color: 'purple-500',
+    bgClass: 'bg-purple-500/15',
+    textClass: 'text-purple-400',
+    borderClass: 'border-purple-500/30',
+    icon: Clock,
   },
   {
     value: 'Completada',
@@ -66,31 +69,13 @@ export const ESTADOS: EstadoConfig[] = [
     icon: XCircle,
   },
   {
-    value: 'Reagendada',
-    label: 'Reagendada',
-    color: 'amber-500',
-    bgClass: 'bg-amber-500/15',
-    textClass: 'text-amber-400',
-    borderClass: 'border-amber-500/30',
-    icon: AlertCircle,
-  },
-  {
-    value: 'En_Curso',
-    label: 'En Curso',
-    color: 'purple-500',
-    bgClass: 'bg-purple-500/15',
-    textClass: 'text-purple-400',
-    borderClass: 'border-purple-500/30',
-    icon: Clock,
-  },
-  {
-    value: 'No_Acudio',
-    label: 'No Acudió',
+    value: 'No_Asistio',
+    label: 'No Asistió',
     color: 'orange-500',
     bgClass: 'bg-orange-500/15',
     textClass: 'text-orange-400',
     borderClass: 'border-orange-500/30',
-    icon: XCircle,
+    icon: MinusCircle,
   },
 ];
 
@@ -99,8 +84,7 @@ export const getEstadoConfig = (estado: string): EstadoConfig => {
 };
 
 // ========== SEDES ==========
-// TRINIDAD es histórica (ya no activa) pero tiene datos de pacientes anteriores
-type Sede = 'POLANCO' | 'SATELITE' | 'TRINIDAD' | 'ALL';
+type Sede = 'POLANCO' | 'SATELITE' | 'ALL';
 
 interface SedeConfig {
   value: Sede;
@@ -133,16 +117,6 @@ export const SEDES: SedeConfig[] = [
     borderClass: 'border-cyan-500/30',
     borderLeftClass: 'border-l-cyan-500',
     icon: MapPin,
-  },
-  {
-    value: 'TRINIDAD',
-    label: 'Trinidad',
-    color: 'slate-500',
-    bgClass: 'bg-slate-500/15',
-    textClass: 'text-slate-400',
-    borderClass: 'border-slate-500/30',
-    borderLeftClass: 'border-l-slate-500',
-    icon: Building2,
   },
   {
     value: 'ALL',

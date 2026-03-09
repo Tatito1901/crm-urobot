@@ -37,12 +37,14 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
   // Determinar badge de estado
   const getEstadoBadge = () => {
     switch (appointment.estado) {
-      case 'Confirmada':
+      case 'En_Curso':
+        return { icon: '▶' };
+      case 'Completada':
         return { icon: '✓' };
       case 'Cancelada':
         return { icon: '✕' };
-      case 'Reagendada':
-        return { icon: '↻' };
+      case 'No_Asistio':
+        return { icon: '—' };
       default:
         return null;
     }

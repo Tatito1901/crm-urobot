@@ -48,7 +48,7 @@ const DEFAULT_STATS: LeadsStats = {
 };
 
 const fetchStats = async (): Promise<LeadsStats> => {
-  const { data, error } = await supabase.rpc('get_leads_stats_optimized' as never);
+  const { data, error } = await supabase.rpc('get_leads_stats_optimized');
   if (error) return DEFAULT_STATS;
   
   const s = data as Record<string, number>;
@@ -83,13 +83,13 @@ const fetchLeadsPaginated = async (
   estado: string,
   fuente: string
 ): Promise<{ data: Lead[]; totalCount: number }> => {
-  const { data, error } = await supabase.rpc('search_leads_optimized' as never, {
+  const { data, error } = await supabase.rpc('search_leads_optimized', {
     p_search: search || null,
     p_estado: estado || null,
     p_fuente: fuente || null,
     p_limit: pageSize,
     p_page: page,
-  } as never);
+  });
   
   if (error) throw error;
   
