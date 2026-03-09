@@ -8,13 +8,13 @@
 
 ## Resumen Ejecutivo
 
-Se encontraron **52 hallazgos** categorizados por severidad:
+Se encontraron **60 hallazgos** categorizados por severidad:
 
 | Severidad | Cantidad | Descripción |
 |-----------|----------|-------------|
 | CRÍTICO | 5 | Bugs que causan fallos silenciosos o pérdida de datos |
-| ALTO | 11 | Inconsistencias que pueden causar comportamiento inesperado |
-| MEDIO | 18 | Deuda técnica y patrones subóptimos |
+| ALTO | 16 | Inconsistencias, race conditions, errores silenciados |
+| MEDIO | 21 | Deuda técnica y patrones subóptimos |
 | BAJO | 18 | Mejoras de calidad y mantenibilidad |
 
 ---
@@ -530,7 +530,86 @@ Arrays `porHora` e `intents` se reconstruyen en cada fetch sin memoización. Deb
 
 ---
 
-## 6. RESUMEN DE ACCIONES RECOMENDADAS
+## 6. HALLAZGOS DE API, ERRORES Y RACE CONDITIONS
+
+### 6.1 Race condition en `getOrCreatePatient()` (check-then-create)
+
+**Archivo:** `app/agenda/services/patients-service.ts:195-211`
+
+Dos queries secuenciales sin transacción:
+1. Buscar paciente por teléfono
+2. Buscar por email si no se encontró
+3. Crear si no existe
+
+Entre el check y el create, otro usuario podría crear el mismo paciente → duplicado. Debería usar UPSERT con constraint único.
+
+### 6.2 Error de conversión de lead silenciado
+
+**Archivo:** `app/agenda/services/patients-service.ts:127-129`
+
+```typescript
+try { /* Update lead if exists */ }
+catch { /* No bloqueamos la creación del paciente si falla */ }
+```
+
+Si falla marcar el lead como convertido, el usuario no sabe que el lead sigue en su estado anterior. Se pierde la trazabilidad lead→paciente.
+
+### 6.3 Inconsistencia en patrones de error de RPCs
+
+| RPC | Archivo | Patrón |
+|-----|---------|--------|
+| `transition_lead_estado` | useLeadActions.ts | Retorna `{ success, error }` |
+| `get_mensajes_por_telefono` | useConversaciones.ts | Hace `throw error` |
+| `guardar_mensaje_urobot` | useConversaciones.ts | Hace `throw error` |
+| `bloquear_numero` | useBloqueo.ts | Retorna `{ success, error }` |
+
+Unos RPCs hacen throw, otros retornan objetos. Los consumidores no saben qué esperar.
+
+### 6.4 Falta optimistic update en envío de mensajes
+
+**Archivo:** `hooks/conversaciones/useConversaciones.ts:187-205`
+
+Cuando se envía un mensaje:
+1. Se llama RPC `guardar_mensaje_urobot`
+2. Se espera respuesta
+3. Se invalida cache
+
+El mensaje "desaparece" momentáneamente y reaparece cuando el cache se refresca. Debería agregarse optimistic update para UX fluida.
+
+### 6.5 Sin sistema de notificaciones/toasts para errores
+
+Ninguno de los 5 archivos de servicios/hooks principales muestra notificaciones al usuario en caso de error. Los errores solo van a `console.error()`. El usuario no recibe feedback cuando:
+- Falla crear una cita
+- Falla enviar un mensaje
+- Falla cambiar el estado de un lead
+- Falla la conversión lead→paciente
+
+### 6.6 Conflict check incompleto en citas
+
+**Archivo:** `app/agenda/services/appointments-service.ts:107-117`
+
+La detección de conflictos solo verifica `fecha_hora_inicio` con `gte/lt`, pero **no verifica `fecha_hora_fin`**. Esto permite crear citas que se solapan parcialmente:
+
+```
+Cita existente: 10:00 - 11:00
+Nueva cita:     10:30 - 11:30  ← NO detectada como conflicto
+```
+
+### 6.7 Validación de teléfono después de normalización
+
+**Archivo:** `app/agenda/services/patients-service.ts:74`
+
+La normalización del teléfono ocurre después de la validación de formato. Si el teléfono normalizado cambia de longitud, la validación previa pierde sentido.
+
+### 6.8 `enviarMensajeWhatsApp` no valida formato de teléfono
+
+**Archivo:** `hooks/leads/useLeadActions.ts:408-421`
+
+`generarWhatsAppURL()` asume que si el teléfono tiene 10 dígitos, es mexicano y agrega `52`. No valida el formato ni el resultado final, generando URLs potencialmente inválidas.
+
+---
+
+## 7. RESUMEN DE ACCIONES RECOMENDADAS
 
 ### Prioridad 1 — Fix inmediato (Críticos)
 
@@ -547,24 +626,30 @@ Arrays `porHora` e `intents` se reconstruyen en cada fetch sin memoización. Deb
 8. **Reemplazar hardcoded strings** con constantes importadas
 9. **Implementar RLS** al menos para tabla `pacientes`
 10. **Hacer `total_mensajes` atómico** usando SQL `total_mensajes + 1`
-11. **Agregar rollback** a rescheduleAppointment
+11. **Agregar rollback** a rescheduleAppointment (usar transacción o RPC atómica)
 12. **Usar timezone en `horaConsulta`**
 13. **Agregar cleanup de Realtime channels** en useConversaciones
 14. **Reducir polling** en useUrobotStats y useUrobotMetricasCRM
+15. **Usar UPSERT** en `getOrCreatePatient()` para evitar race condition
+16. **Fix conflict check** — verificar `fecha_hora_fin` además de inicio
+17. **Estandarizar error handling** en RPCs (throw vs return object)
+18. **Agregar sistema de toasts/notificaciones** para feedback de errores al usuario
 
 ### Prioridad 3 — Sprint siguiente (Medios)
 
-15. **Exportar type guards** consistentemente
-16. **Unificar CONSULTA_TIPOS** naming convention
-17. **Unificar PacienteEstado** case convention
-18. **Agregar transition matrix** para chat/conversaciones
-19. **Exportar funciones útiles** de swr-config.ts
-20. **Usar `En_Curso`** para markPatientArrived
-21. **Limpiar `Recordatorio.status`** alinearlo con `RecordatorioEstado`
-22. **Exponer errores en hooks** (useLeadByTelefono, useLeadConversation, etc.)
-23. **Dividir componentes monolíticos** (DashboardClient, LeadClinicSidebar, HeatmapView)
-24. **Consolidar N+1 queries** en useLeadActions (crear RPC única)
-25. **Implementar `marcarComoLeido`** o eliminar la función no-op
+19. **Exportar type guards** consistentemente
+20. **Unificar CONSULTA_TIPOS** naming convention
+21. **Unificar PacienteEstado** case convention
+22. **Agregar transition matrix** para chat/conversaciones
+23. **Exportar funciones útiles** de swr-config.ts
+24. **Usar `En_Curso`** para markPatientArrived
+25. **Limpiar `Recordatorio.status`** alinearlo con `RecordatorioEstado`
+26. **Exponer errores en hooks** (useLeadByTelefono, useLeadConversation, etc.)
+27. **Dividir componentes monolíticos** (DashboardClient, LeadClinicSidebar, HeatmapView)
+28. **Consolidar N+1 queries** en useLeadActions (crear RPC única)
+29. **Implementar `marcarComoLeido`** o eliminar la función no-op
+30. **Agregar optimistic updates** para envío de mensajes en useConversaciones
+31. **No silenciar error** de conversión lead→paciente en patients-service.ts
 
 ---
 
