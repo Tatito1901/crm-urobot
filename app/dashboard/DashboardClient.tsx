@@ -230,16 +230,17 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           <header className="animate-fade-up stagger-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="space-y-1.5">
-                <div className="flex items-center gap-2.5">
-                  <span className="inline-block h-2 w-2 rounded-full bg-teal-400 live-dot" />
-                  <p className="text-xs uppercase tracking-[0.2em] font-bold text-teal-400/80">
+                <div className="flex items-center gap-2">
+                  <span className="h-3.5 w-[2px] rounded-full bg-teal-400" aria-hidden />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-teal-400 live-dot" />
+                  <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/60">
                     Centro de Comando
                   </p>
                 </div>
                 <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-jakarta text-gradient-teal">
                   {getGreeting()}
                 </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground capitalize">
+                <p className="text-xs sm:text-sm text-muted-foreground/70 capitalize">
                   {getFormattedDate()}
                 </p>
               </div>
@@ -247,7 +248,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               <button
                 onClick={refresh}
                 disabled={loading}
-                className="group flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-2.5 text-xs font-semibold text-muted-foreground transition-all hover:text-foreground hover:border-teal-500/30 hover:bg-teal-500/5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="group flex items-center gap-2 rounded-lg bg-white/[0.03] border border-border px-3.5 py-2 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-teal-500/20 hover:bg-teal-500/5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <RefreshCw className={`h-3.5 w-3.5 transition-transform group-hover:text-teal-400 ${loading ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Actualizar</span>
@@ -304,24 +305,22 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-5">
+          <section className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
                 <div
                   key={m.title}
-                  className={`kpi-card ${m.glowClass} shine-top relative overflow-hidden rounded-2xl border ${m.accentBorder} bg-card p-4 sm:p-6 flex flex-col animate-fade-up stagger-${i + 3} cursor-default card-lift`}
+                  className={`kpi-card ${m.glowClass} relative overflow-hidden rounded-2xl border border-border bg-card p-4 sm:p-5 flex flex-col animate-fade-up stagger-${i + 3} cursor-default card-lift`}
                 >
                   {/* Top row: icon + label */}
-                  <div className="flex items-center justify-between mb-2 sm:mb-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`p-2 rounded-lg ${m.accentBg}`}>
-                        <Icon className={`h-4 w-4 ${m.accentColor}`} />
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {m.title}
-                      </span>
+                  <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                    <div className={`p-1.5 rounded-md ${m.accentBg}`}>
+                      <Icon className={`h-3.5 w-3.5 ${m.accentColor}`} />
                     </div>
+                    <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      {m.title}
+                    </span>
                   </div>
 
                   {/* Big number */}
@@ -332,7 +331,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                   </div>
 
                   {/* Subtitle */}
-                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-2 sm:mt-3 mb-2 sm:mb-3">{m.subtitle}</p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground/60 mt-2 sm:mt-3 mb-2 sm:mb-3">{m.subtitle}</p>
 
                   {/* Integrated sparkline */}
                   <div className="mt-auto -mx-1">

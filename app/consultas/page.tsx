@@ -78,7 +78,7 @@ export default function ConsultasPage() {
 
       <div className={`${cards.base} overflow-hidden rounded-xl border border-border bg-card`}>
         {/* Header con búsqueda y filtros */}
-        <div className="p-2.5 sm:p-4 border-b border-border bg-muted/20">
+        <div className="p-2.5 sm:p-4 border-b border-border">
           <div className="flex flex-col gap-2 sm:flex-row sm:gap-3 sm:items-center sm:justify-between">
             {/* Búsqueda */}
             <div className="relative flex-1 sm:max-w-md">
@@ -92,13 +92,13 @@ export default function ConsultasPage() {
                   debouncedSearch(event.target.value);
                 }}
                 placeholder="Buscar paciente, folio o motivo..."
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg bg-muted/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm transition-all"
+                className="w-full pl-9 pr-3 py-2 border border-border/50 rounded-lg bg-white/[0.03] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-teal-500/20 focus:border-teal-500/30 text-sm transition-all hover:bg-white/[0.05] hover:border-border"
               />
             </div>
 
             {/* Filtros de sede + refresh */}
             <div className="flex items-center gap-1 sm:gap-3">
-              <div className="inline-flex p-0.5 sm:p-1 bg-muted/50 rounded-lg border border-border flex-1 sm:flex-none overflow-x-auto scrollbar-hide">
+              <div className="inline-flex p-0.5 sm:p-1 bg-white/[0.02] rounded-lg border border-border/50 flex-1 sm:flex-none overflow-x-auto scrollbar-hide">
                 {[
                   { key: 'all' as const, label: 'Todas', icon: <Building2 className="h-3.5 w-3.5" /> },
                   { key: 'POLANCO' as const, label: 'Polanco', icon: <MapPin className="h-3.5 w-3.5" /> },
@@ -126,10 +126,10 @@ export default function ConsultasPage() {
                 onClick={() => refetch()}
                 disabled={loading}
                 aria-label={loading ? 'Recargando datos...' : 'Recargar datos'}
-                className="p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all disabled:opacity-50 shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-white/[0.04] transition-all disabled:opacity-50 shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center"
                 title="Recargar datos"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
@@ -159,7 +159,7 @@ export default function ConsultasPage() {
             
             {/* Paginación mejorada */}
             {filteredConsultas.length > itemsPerPage && (
-              <div className="p-4 border-t border-border bg-muted/20">
+              <div className="p-4 border-t border-border">
                 <Pagination
                   currentPage={currentPage}
                   totalItems={filteredConsultas.length}

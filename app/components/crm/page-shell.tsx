@@ -62,11 +62,14 @@ export function PageShell({
       <div className={layoutClasses}>
         <header className={headerClasses}>
           <div className={titleBlockClasses}>
-            <p className={cn(
-              "uppercase tracking-[0.2em] font-semibold",
-              "text-muted-foreground/80",
-              "text-[11px]"
-            )}>{eyebrow}</p>
+            <div className="flex items-center gap-2">
+              <span className="h-3.5 w-[2px] rounded-full bg-teal-400" aria-hidden />
+              <p className={cn(
+                "uppercase tracking-[0.15em] font-semibold",
+                "text-muted-foreground/60",
+                "text-[10px]"
+              )}>{eyebrow}</p>
+            </div>
             <h1 className={cn(
               "font-bold tracking-tight font-jakarta",
               "text-foreground",
@@ -74,7 +77,7 @@ export function PageShell({
             )}>{title}</h1>
             {description && <p className={cn(
               "font-medium",
-              "text-muted-foreground",
+              "text-muted-foreground/70",
               compact ? "text-xs" : "text-sm"
             )}>{description}</p>}
           </div>

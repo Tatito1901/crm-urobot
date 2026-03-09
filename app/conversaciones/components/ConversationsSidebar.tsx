@@ -68,20 +68,25 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
     `}>
       {/* Header */}
       <div className="hidden sm:flex flex-col border-b border-border">
-        <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center justify-between px-5 py-3.5">
           <div>
-            <h2 className="font-semibold text-foreground text-base font-jakarta">Conversaciones</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">{mounted ? conteosPorTipo.todos : '—'} contactos</p>
+            <div className="flex items-center gap-2">
+              <span className="h-3.5 w-[2px] rounded-full bg-teal-400" aria-hidden />
+              <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/60">Mensajes</p>
+            </div>
+            <h2 className="font-bold text-foreground text-lg font-jakarta tracking-tight mt-0.5">Conversaciones</h2>
           </div>
-          <button 
-            onClick={onRefetch} 
-            title="Actualizar" 
-            className="p-2.5 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-          >
-            <RefreshCw className={`w-4 h-4 text-muted-foreground ${mounted && isLoading ? 'animate-spin' : ''}`} />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] tabular-nums font-medium text-muted-foreground/60">{mounted ? conteosPorTipo.todos : '—'}</span>
+            <button 
+              onClick={onRefetch} 
+              title="Actualizar" 
+              className="p-2 rounded-lg hover:bg-white/[0.04] transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-muted-foreground/60 ${mounted && isLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
         </div>
-        <div className="section-divider" />
       </div>
 
       {/* Search + Filters */}
@@ -93,10 +98,10 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
             placeholder="Buscar por nombre o teléfono..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 sm:py-2.5 text-sm bg-muted/40 border border-border/60 rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40
-                     placeholder:text-muted-foreground/50 text-foreground transition-all
-                     hover:bg-muted/60 hover:border-border"
+            className="w-full pl-9 pr-3 py-2 sm:py-2 text-sm bg-white/[0.03] border border-border/50 rounded-lg
+                     focus:outline-none focus:ring-1 focus:ring-teal-500/20 focus:border-teal-500/30
+                     placeholder:text-muted-foreground/40 text-foreground transition-all
+                     hover:bg-white/[0.05] hover:border-border"
           />
         </div>
         

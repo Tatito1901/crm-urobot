@@ -38,69 +38,34 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
   const metricClass = "text-xl font-bold tabular-nums";
   const hintClass = "text-[10px] text-muted-foreground mt-1";
 
+  const cards: { label: string; value: number; hint: string; icon: typeof BarChart3; color: string; iconBg: string }[] = [
+    { label: 'Total', value: stats.total, hint: 'Histórico', icon: BarChart3, color: 'text-muted-foreground', iconBg: 'bg-white/[0.04]' },
+    { label: 'Programadas', value: stats.programadas, hint: 'Por confirmar', icon: Calendar, color: 'text-sky-400', iconBg: 'bg-sky-500/10' },
+    { label: 'Confirmadas', value: stats.confirmadas, hint: 'Listas', icon: CheckCircle2, color: 'text-emerald-400', iconBg: 'bg-emerald-500/10' },
+    { label: 'Hoy', value: stats.hoy, hint: 'Agenda del día', icon: Clock, color: 'text-purple-400', iconBg: 'bg-purple-500/10' },
+    { label: 'Semana', value: stats.semana, hint: 'Próximos 7 días', icon: CalendarDays, color: 'text-amber-400', iconBg: 'bg-amber-500/10' },
+  ];
+
   return (
     <div className="grid grid-cols-2 min-[480px]:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
-      {/* Total */}
-      <div className="bg-card border border-border rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-          <BarChart3 className="w-10 h-10" />
-        </div>
-        <div>
-          <div className={`${labelClass} text-muted-foreground`}>Total</div>
-          <div className={`${metricClass} text-foreground`}>{stats.total.toLocaleString()}</div>
-        </div>
-        <div className={hintClass}>Histórico</div>
-      </div>
-
-      {/* Programadas */}
-      <div className="bg-card border border-blue-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-          <Calendar className="w-10 h-10 text-blue-400" />
-        </div>
-        <div>
-          <div className={`${labelClass} text-blue-400`}>Programadas</div>
-          <div className={`${metricClass} text-foreground`}>{stats.programadas}</div>
-        </div>
-        <div className={hintClass}>Por confirmar</div>
-      </div>
-
-      {/* Confirmadas */}
-      <div className="bg-card border border-emerald-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-          <CheckCircle2 className="w-10 h-10 text-emerald-400" />
-        </div>
-        <div>
-          <div className={`${labelClass} text-emerald-400`}>Confirmadas</div>
-          <div className={`${metricClass} text-emerald-400`}>{stats.confirmadas}</div>
-        </div>
-        <div className={hintClass}>Listas para atender</div>
-      </div>
-
-      {/* Hoy */}
-      <div className="bg-card border border-purple-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-          <Clock className="w-10 h-10 text-purple-400" />
-        </div>
-        <div>
-          <div className={`${labelClass} text-purple-400 flex items-center gap-1`}>
-            <span className="animate-pulse">●</span> Hoy
+      {cards.map((card, i) => {
+        const Icon = card.icon;
+        return (
+          <div
+            key={card.label}
+            className={`bg-card border border-border rounded-xl p-3 sm:p-3.5 flex flex-col gap-2 transition-colors hover:bg-white/[0.02] ${i === 4 ? 'col-span-2 min-[480px]:col-span-1' : ''}`}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`p-1.5 rounded-md ${card.iconBg}`}>
+                <Icon className={`h-3.5 w-3.5 ${card.color}`} />
+              </div>
+              <span className={`${labelClass} ${card.color}`}>{card.label}</span>
+            </div>
+            <div className={`${metricClass} text-foreground`}>{card.value.toLocaleString()}</div>
+            <div className={hintClass}>{card.hint}</div>
           </div>
-          <div className={`${metricClass} text-foreground`}>{stats.hoy}</div>
-        </div>
-        <div className={hintClass}>Agenda del día</div>
-      </div>
-
-      {/* Esta semana */}
-      <div className="col-span-2 min-[480px]:col-span-1 bg-card border border-amber-500/20 rounded-lg p-2.5 sm:p-3 flex flex-col justify-between relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
-          <CalendarDays className="w-10 h-10 text-amber-400" />
-        </div>
-        <div>
-          <div className={`${labelClass} text-amber-400`}>Semana</div>
-          <div className={`${metricClass} text-foreground`}>{stats.semana}</div>
-        </div>
-        <div className={hintClass}>Próximos 7 días</div>
-      </div>
+        );
+      })}
     </div>
   );
 });

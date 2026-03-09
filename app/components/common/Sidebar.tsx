@@ -13,6 +13,8 @@ import {
   Bot,
   Stethoscope,
   Clock,
+  LogOut,
+  Building2,
   type LucideProps,
 } from "lucide-react";
 import {
@@ -60,7 +62,7 @@ const NAV_SECTIONS: readonly NavSection[] = [
   {
     title: "Configuración",
     items: [
-      { label: "Sedes", href: "/sedes", icon: Clock },
+      { label: "Sedes", href: "/sedes", icon: Building2 },
     ],
   },
 ];
@@ -80,108 +82,96 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Main Sidebar — Glass Morphism Premium */}
+      {/* Main Sidebar — Premium Dark */}
       <aside
-        className="hidden lg:flex lg:h-screen lg:flex-col lg:justify-between lg:border-r lg:border-border lg:px-5 lg:py-6 lg:w-60 xl:w-72 2xl:w-80 shrink-0 sticky top-0 transition-all duration-300 sidebar-mesh"
+        className="hidden lg:flex lg:h-screen lg:flex-col lg:border-r lg:border-border lg:w-60 xl:w-72 2xl:w-80 shrink-0 sticky top-0 transition-all duration-300 sidebar-mesh"
       >
-        <div className="relative flex flex-1 flex-col gap-6 min-h-0">
-          {/* Brand Header */}
-          <header className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3.5 glass-depth relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/[0.04] to-transparent pointer-events-none" aria-hidden />
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500/15 border border-teal-500/20 shadow-[0_0_12px_-2px] shadow-teal-500/20">
-              <Bot className="h-5 w-5 text-teal-400" aria-hidden />
+        {/* Brand Header */}
+        <header className="shrink-0 px-5 pt-6 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500/20 to-teal-600/10 border border-teal-500/20 shadow-[0_0_16px_-4px] shadow-teal-500/25">
+              <Bot className="h-4.5 w-4.5 text-teal-400" aria-hidden />
             </div>
-            <div className="relative space-y-0.5">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">CRM Clínico</p>
-              <p className="text-sm font-bold text-sidebar-foreground font-jakarta tracking-tight">Urobot</p>
+            <div>
+              <p className="text-sm font-bold text-sidebar-foreground font-jakarta tracking-tight leading-none">Urobot</p>
+              <p className="text-[10px] text-muted-foreground/70 font-medium mt-0.5">CRM Clínico</p>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Navigation */}
-          <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto pr-1 scrollbar-hide space-y-5">
-            {NAV_SECTIONS.map((section) => (
-              <div key={section.title}>
-                <p className="mb-2 px-3 text-xs uppercase tracking-widest text-muted-foreground font-semibold">{section.title}</p>
-                <ul className="flex flex-col gap-0.5 text-[13px]">
-                  {section.items.map((item) => {
-                    const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
-                    const Icon = item.icon;
-                    return (
-                      <li key={item.label}>
-                        <Link
-                          href={item.href}
-                          prefetch={true}
-                          aria-current={isActive ? "page" : undefined}
+        {/* Navigation */}
+        <nav aria-label="Secciones principales" className="flex-1 overflow-y-auto px-3 scrollbar-hide space-y-5">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.title}>
+              <p className="mb-1.5 px-3 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 font-semibold">{section.title}</p>
+              <ul className="flex flex-col gap-0.5 text-[13px]">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        prefetch={true}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                          "group relative flex items-center gap-2.5 rounded-lg px-3 py-2 font-medium transition-all duration-200",
+                          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
+                          isActive
+                            ? "bg-teal-500/[0.08] text-foreground"
+                            : "text-muted-foreground hover:bg-white/[0.03] hover:text-foreground"
+                        )}
+                      >
+                        {isActive && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-teal-400" aria-hidden />
+                        )}
+                        <Icon
                           className={cn(
-                            "group flex items-center gap-2.5 rounded-xl px-3 py-2.5 font-medium transition-all duration-200",
-                            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400",
-                            isActive 
-                              ? "bg-teal-500/[0.08] text-foreground border border-teal-500/15 shadow-sm shadow-teal-500/[0.06]"
-                              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent"
+                            "h-4 w-4 shrink-0 transition-colors duration-200",
+                            isActive ? "text-teal-400" : "text-muted-foreground/70 group-hover:text-foreground"
                           )}
-                        >
-                          <Icon
-                            className={cn(
-                              "h-4 w-4 shrink-0 transition-colors duration-200",
-                              isActive ? "text-teal-400" : "text-muted-foreground group-hover:text-foreground"
-                            )}
-                            aria-hidden
-                          />
-                          <span className="flex-1">{item.label}</span>
-                          {isActive && (
-                            <span className="h-4 w-0.5 rounded-full bg-teal-400/80" aria-hidden />
-                          )}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-          </nav>
-        </div>
+                          aria-hidden
+                        />
+                        <span className="flex-1">{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
 
-        <footer className="relative space-y-3">
+        {/* Footer */}
+        <footer className="shrink-0 px-3 pb-5 space-y-2.5">
           <BotKillSwitch />
 
-          <div className="rounded-xl border border-border bg-muted/30 px-3.5 py-3 glass-depth relative overflow-hidden">
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-glow" />
-              <p className="font-semibold text-sidebar-foreground text-xs">Agenda al día</p>
+          <div className="section-divider mx-2" />
+
+          {/* Doctor profile + date */}
+          <div className="flex items-center gap-2.5 px-3 py-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-teal-500/15 to-cyan-500/10 border border-white/[0.06] shrink-0">
+              <span className="text-xs font-bold text-teal-400 font-jakarta">FM</span>
             </div>
-            <span className="mt-1.5 block text-xs text-muted-foreground" suppressHydrationWarning>{today}</span>
-          </div>
-
-          <form action={signOutAction} className="w-full">
-            <button
-              type="submit"
-              className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-all duration-150",
-                "hover:border-rose-500/25 hover:bg-rose-500/15 hover:text-rose-400",
-                "active:bg-rose-500/10 active:scale-[0.98]",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
-              )}
-            >
-              <svg
-                className="h-3.5 w-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-foreground truncate leading-tight">Dr. Fausto Medina</p>
+              <p className="text-[10px] text-muted-foreground/60 truncate leading-tight mt-0.5" suppressHydrationWarning>{today}</p>
+            </div>
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                className={cn(
+                  "p-1.5 rounded-lg text-muted-foreground/50 transition-all duration-150",
+                  "hover:bg-rose-500/10 hover:text-rose-400",
+                  "active:scale-[0.92]",
+                  "focus-visible:outline-2 focus-visible:outline-rose-400"
+                )}
+                title="Cerrar sesión"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              Cerrar sesión
-            </button>
-          </form>
-
-          <p className="text-center text-xs uppercase tracking-widest text-muted-foreground/70 font-medium">
-            UROBOT · CRM
-          </p>
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </form>
+          </div>
         </footer>
       </aside>
     </>

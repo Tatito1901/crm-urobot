@@ -77,10 +77,14 @@ const CampaignLeadsChart = dynamic(() => import('./components/CampaignLeadsChart
 
 function SectionHeader({ icon: Icon, title, iconColor = 'text-muted-foreground' }: { icon: React.ElementType; title: string; iconColor?: string }) {
   return (
-    <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 mb-3 sm:mb-4">
-      <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
-      {title}
-    </h2>
+    <div className="flex items-center gap-2.5 mb-3 sm:mb-4">
+      <div className={`p-1.5 rounded-md bg-white/[0.04]`}>
+        <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
+      </div>
+      <h2 className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-[0.12em]">
+        {title}
+      </h2>
+    </div>
   );
 }
 
@@ -112,7 +116,7 @@ export default function EstadisticasPage() {
         <button
           onClick={() => refresh()}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 text-primary text-xs font-semibold hover:bg-primary/25 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-border px-3.5 py-2 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-teal-500/20 hover:bg-teal-500/5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Actualizar

@@ -93,23 +93,23 @@ export function DataTable({
 
   return (
     <div className="space-y-4">
-      <div className="hidden w-full overflow-x-auto rounded-xl border border-border bg-card sm:block scrollbar-hide min-w-0">
+      <div className="hidden w-full overflow-x-auto sm:block scrollbar-hide min-w-0">
         <table className="min-w-full divide-y divide-border text-left text-sm text-foreground" role="grid">
-          <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground font-medium">
-            <tr>
+          <thead>
+            <tr className="border-b border-border">
               {headers.map((header) => (
-                <th key={header.key} scope="col" className={cn("px-4 py-3 font-medium", getAlignmentClasses(header.align))}>
+                <th key={header.key} scope="col" className={cn("px-4 py-2.5 text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground/50", getAlignmentClasses(header.align))}>
                   {header.label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/50">
             {rows.map((row) => (
               <tr
                 key={row.id}
                 className={cn(
-                  "hover:bg-muted/30 transition-colors outline-none",
+                  "hover:bg-white/[0.02] transition-colors duration-150 outline-none",
                   onRowClick && "cursor-pointer focus-visible:bg-muted/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500/50"
                 )}
                 onClick={onRowClick ? () => onRowClick(row.id) : undefined}
@@ -134,7 +134,7 @@ export function DataTable({
                 aria-selected={false}
               >
                 {headers.map((header) => (
-                  <td key={header.key} className={cn("px-4 py-3 align-middle", getAlignmentClasses(header.align))}>
+                  <td key={header.key} className={cn("px-4 py-3 align-middle text-[13px]", getAlignmentClasses(header.align))}>
                     {row[header.key] ?? "—"}
                   </td>
                 ))}

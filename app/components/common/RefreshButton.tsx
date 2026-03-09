@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { RefreshCw } from 'lucide-react';
 import { buttons } from '@/app/lib/design-system';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +35,7 @@ export function RefreshButton({
       aria-label={loading ? 'Actualizando datos...' : label}
       className={cn(buttons.refresh, colorClass, className)}
     >
-      <span className={loading ? 'animate-spin' : ''}>↻</span>
+      <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
       <span className="hidden sm:inline">{label}</span>
     </button>
   );

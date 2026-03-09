@@ -143,24 +143,24 @@ export const ChatArea = memo(function ChatArea({
               )}
               <button
                 onClick={() => openWhatsApp(contactoActivo.telefono)}
-                className="p-2.5 hover:bg-muted rounded-lg transition-colors touch-target"
+                className="p-2 hover:bg-white/[0.06] rounded-lg transition-colors touch-target"
                 title="Abrir WhatsApp"
               >
-                <Phone className="w-4 h-4 text-emerald-500" />
+                <Phone className="w-4 h-4 text-emerald-400" />
               </button>
               <button
                 onClick={() => viewProfile(contactoActivo)}
-                className="hidden sm:flex p-2.5 hover:bg-muted rounded-lg transition-colors touch-target"
+                className="hidden sm:flex p-2 hover:bg-white/[0.06] rounded-lg transition-colors touch-target"
                 title="Ver perfil"
               >
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                <ExternalLink className="w-4 h-4 text-muted-foreground/60" />
               </button>
               <button
                 onClick={onToggleActionsPanel}
-                className={`p-2.5 rounded-lg transition-colors touch-target
+                className={`p-2 rounded-lg transition-colors touch-target
                   ${showActionsPanel 
-                    ? 'bg-primary/10 text-primary' 
-                    : 'hover:bg-muted text-muted-foreground'}`}
+                    ? 'bg-teal-500/10 text-teal-400' 
+                    : 'hover:bg-white/[0.06] text-muted-foreground/60'}`}
                 title={showActionsPanel ? 'Cerrar panel' : 'Panel de acciones'}
               >
                 <PanelRight className="w-4 h-4" />

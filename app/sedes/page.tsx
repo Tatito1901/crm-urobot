@@ -31,22 +31,24 @@ export default function HorariosPage() {
   return (
     <div className={cn(spacing.container, spacing.containerY, 'max-w-4xl mx-auto')}>
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="h-3.5 w-[2px] rounded-full bg-teal-400" aria-hidden />
+            <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/60">Configuración</p>
+          </div>
           <h1 className={typography.pageTitle}>Horarios del Doctor</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground/70">
             Configura los horarios de consulta por sede. Los cambios se reflejan en el bot.
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <button
           onClick={() => refetch()}
-          className="shrink-0 self-start sm:self-auto"
+          className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-border px-3.5 py-2 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-teal-500/20 hover:bg-teal-500/5 shrink-0 self-start sm:self-auto cursor-pointer"
         >
-          <RefreshCw className="h-4 w-4 mr-1.5" />
+          <RefreshCw className="h-3.5 w-3.5" />
           Recargar
-        </Button>
+        </button>
       </div>
 
       {/* ── Info Banner ── */}

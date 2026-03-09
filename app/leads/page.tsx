@@ -190,15 +190,15 @@ export default function LeadsPage() {
 
         {/* ── Conversion funnel mini-bar ── */}
         {(stats.citasOfrecidasTotal > 0 || stats.citasAgendadasTotal > 0) && (
-          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 rounded-lg bg-secondary/30 border border-border text-[11px] sm:text-xs text-muted-foreground animate-fade-up stagger-2 overflow-x-auto scrollbar-hide">
-            <span className="font-medium text-foreground shrink-0">{stats.total}</span><span className="shrink-0">leads</span>
-            <ArrowRight className="w-3 h-3 shrink-0" />
-            <span className="font-medium text-purple-400 shrink-0">{stats.citasOfrecidasTotal}</span><span className="shrink-0">ofrecidas</span>
-            <ArrowRight className="w-3 h-3 shrink-0" />
-            <span className="font-medium text-emerald-400 shrink-0">{stats.citasAgendadasTotal}</span><span className="shrink-0">agendadas</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 rounded-lg bg-white/[0.02] border border-border/50 text-[11px] sm:text-xs text-muted-foreground/70 animate-fade-up stagger-2 overflow-x-auto scrollbar-hide">
+            <span className="font-semibold text-foreground tabular-nums shrink-0">{stats.total}</span><span className="shrink-0">leads</span>
+            <ArrowRight className="w-3 h-3 shrink-0 text-muted-foreground/30" />
+            <span className="font-semibold text-purple-400 tabular-nums shrink-0">{stats.citasOfrecidasTotal}</span><span className="shrink-0">ofrecidas</span>
+            <ArrowRight className="w-3 h-3 shrink-0 text-muted-foreground/30" />
+            <span className="font-semibold text-emerald-400 tabular-nums shrink-0">{stats.citasAgendadasTotal}</span><span className="shrink-0">agendadas</span>
             {stats.tasaOfertaAAgenda > 0 && (
-              <span className="ml-auto font-semibold text-emerald-400 shrink-0 whitespace-nowrap">
-                {stats.tasaOfertaAAgenda}% conversión
+              <span className="ml-auto font-semibold text-emerald-400 shrink-0 whitespace-nowrap tabular-nums">
+                {stats.tasaOfertaAAgenda}%
               </span>
             )}
           </div>
@@ -207,7 +207,7 @@ export default function LeadsPage() {
         {/* ── Table ── */}
         <div className="space-y-4 animate-fade-up stagger-2">
           {/* Search + filters bar */}
-          <div className="bg-card p-2.5 sm:p-4 rounded-xl border border-border shadow-sm space-y-2 shine-top relative overflow-hidden">
+          <div className="bg-card p-2.5 sm:p-4 rounded-xl border border-border space-y-2 relative overflow-hidden">
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1">
                 <LeadsFilters
@@ -228,7 +228,7 @@ export default function LeadsPage() {
           </div>
 
           {/* Table card */}
-          <div className="rounded-xl bg-card border border-border overflow-hidden shadow-sm glow-ring-teal">
+          <div className="rounded-xl bg-card border border-border overflow-hidden">
             <ContentLoader
               loading={statsLoading}
               error={error}

@@ -212,16 +212,16 @@ export const cards = {
 export const buttons = {
   // Refresh / action button (usado en headers de página)
   refresh: cn(
-    'flex items-center justify-center gap-1.5 rounded-xl',
-    'px-3 py-2 sm:px-4 sm:py-2 min-h-[44px] sm:min-h-[36px]',
-    'text-xs font-semibold transition-all duration-150',
+    'flex items-center justify-center gap-2 rounded-lg',
+    'px-3.5 py-2 min-h-[36px]',
+    'text-xs font-medium transition-all duration-150 cursor-pointer',
     'disabled:opacity-50 disabled:cursor-not-allowed',
   ),
   // Variantes de color para refresh
-  refreshTeal: 'bg-teal-500/15 text-teal-400 border border-teal-400/25 hover:bg-teal-500/25',
-  refreshCyan: 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30',
+  refreshTeal: 'bg-white/[0.03] text-muted-foreground border border-border hover:text-foreground hover:border-teal-500/20 hover:bg-teal-500/5',
+  refreshCyan: 'bg-white/[0.03] text-muted-foreground border border-border hover:text-foreground hover:border-cyan-500/20 hover:bg-cyan-500/5',
   // Select / dropdown pequeño
-  select: 'px-2 sm:px-3 py-1.5 rounded-lg bg-muted border border-border text-sm',
+  select: 'px-2 sm:px-3 py-1.5 rounded-lg bg-white/[0.03] border border-border text-sm text-foreground',
 } as const;
 
 // ==================== TABS ====================
@@ -286,11 +286,11 @@ export const inputs = {
 
 // ==================== TABLES ====================
 export const tables = {
-  wrapper: 'w-full overflow-x-auto rounded-xl border border-border bg-card shadow-sm',
-  thead: 'bg-muted/60 text-xs uppercase tracking-wider text-muted-foreground',
-  th: 'px-4 py-3 font-medium',
-  td: 'px-4 py-3',
-  tr: 'border-b border-border hover:bg-muted/30 transition-colors',
+  wrapper: 'w-full overflow-x-auto',
+  thead: 'text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50',
+  th: 'px-4 py-2.5 font-semibold',
+  td: 'px-4 py-3 text-[13px]',
+  tr: 'border-b border-border/50 hover:bg-white/[0.02] transition-colors duration-150',
 } as const;
 
 // ==================== HOVER STATES ====================
