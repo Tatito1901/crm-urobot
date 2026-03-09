@@ -8,14 +8,14 @@
 
 ## Resumen Ejecutivo
 
-Se encontraron **42 hallazgos** categorizados por severidad:
+Se encontraron **52 hallazgos** categorizados por severidad:
 
 | Severidad | Cantidad | Descripción |
 |-----------|----------|-------------|
 | CRÍTICO | 5 | Bugs que causan fallos silenciosos o pérdida de datos |
-| ALTO | 8 | Inconsistencias que pueden causar comportamiento inesperado |
-| MEDIO | 14 | Deuda técnica y patrones subóptimos |
-| BAJO | 15 | Mejoras de calidad y mantenibilidad |
+| ALTO | 11 | Inconsistencias que pueden causar comportamiento inesperado |
+| MEDIO | 18 | Deuda técnica y patrones subóptimos |
+| BAJO | 18 | Mejoras de calidad y mantenibilidad |
 
 ---
 
@@ -452,7 +452,85 @@ Solo se usa en `appointments-service.ts`. Agrega ~40KB al bundle. Podría reempl
 
 ---
 
-## 5. RESUMEN DE ACCIONES RECOMENDADAS
+## 5. HALLAZGOS DE PERFORMANCE Y STATE MANAGEMENT
+
+### 5.1 Dos loops de polling concurrentes (60s cada uno)
+
+**Archivos:** `hooks/urobot/useUrobotStats.ts`, `hooks/urobot/useUrobotMetricasCRM.ts`
+
+En la página de Urobot, `useUrobotStats` usa `SWR_CONFIG_REALTIME` (polling 30s) y `useUrobotMetricasCRM` usa `refreshInterval: 2 * 60 * 1000` (2 min). Para datos estadísticos que no cambian en tiempo real, esto desperdicia batería y hammers la API.
+
+### 5.2 Memory leak — Realtime channels sin cleanup
+
+**Archivo:** `hooks/conversaciones/useConversaciones.ts:159-178`
+
+Las suscripciones Realtime de Supabase no hacen `unsubscribe` en la función de cleanup del useEffect:
+
+```typescript
+// Falta: return () => { supabase.removeChannel(channel) }
+```
+
+Cada vez que el componente se desmonta y remonta, se crea un nuevo channel sin cerrar el anterior.
+
+### 5.3 N+1 queries en useLeadActions
+
+**Archivo:** `hooks/leads/useLeadActions.ts:90-182`
+
+`analizarHistorialConversacion()` ejecuta 2 queries secuenciales:
+1. `SELECT id FROM conversaciones WHERE telefono = X`
+2. `SELECT * FROM mensajes WHERE conversacion_id = id`
+
+Debería ser un solo RPC que retorne el historial analizado desde PostgreSQL.
+
+### 5.4 Componentes monolíticos causan re-renders cascada
+
+| Componente | Líneas | Problema |
+|------------|--------|----------|
+| HeatmapView.tsx | 729 | Calendario heatmap monolítico |
+| DashboardClient.tsx | 658 | Header + KPIs + Charts en un solo componente |
+| LeadClinicSidebar.tsx | 624 | Sidebar, Stats, Clinical, Chat juntos |
+| agenda/page.tsx | 607 | Demasiada lógica en page |
+
+Cualquier cambio de estado en un hook re-renderiza **todo** el componente. Deberían dividirse en sub-componentes memoizados.
+
+### 5.5 Múltiples hooks no exponen errores a componentes
+
+| Hook | Comportamiento en error |
+|------|------------------------|
+| useLeadByTelefono | Retorna `null` silenciosamente |
+| useLeadConversation | Retorna `[]` en error |
+| useLeadActions | Swallows error en historial |
+| useBloqueo | `console.error` pero no retorna |
+| useConsultasStats | Error no expuesto |
+| useDashboardV2 | Error del parser ignorado |
+
+Los componentes no pueden distinguir "cargando" vs "falló" vs "vacío".
+
+### 5.6 Doble fetch en conversaciones con Realtime
+
+**Archivo:** `hooks/conversaciones/useConversaciones.ts:159-178`
+
+Cuando cambia el teléfono activo:
+1. SWR crea nueva key → fetch mensajes
+2. Realtime subscription → trigger `mutateConversaciones` → otro fetch
+
+Resultado: doble solicitud HTTP por cada cambio de conversación.
+
+### 5.7 `marcarComoLeido` es un no-op
+
+**Archivo:** `hooks/conversaciones/useConversaciones.ts:181-184`
+
+La función existe en la interfaz del hook pero no hace nada. Feature incompleto que puede confundir a consumidores.
+
+### 5.8 Memoización faltante en hooks de urobot
+
+**Archivo:** `hooks/urobot/useUrobotMetricasCRM.ts:264-293`
+
+Arrays `porHora` e `intents` se reconstruyen en cada fetch sin memoización. Deberían usar `useMemo` con la data como dependencia.
+
+---
+
+## 6. RESUMEN DE ACCIONES RECOMENDADAS
 
 ### Prioridad 1 — Fix inmediato (Críticos)
 
@@ -471,16 +549,22 @@ Solo se usa en `appointments-service.ts`. Agrega ~40KB al bundle. Podría reempl
 10. **Hacer `total_mensajes` atómico** usando SQL `total_mensajes + 1`
 11. **Agregar rollback** a rescheduleAppointment
 12. **Usar timezone en `horaConsulta`**
+13. **Agregar cleanup de Realtime channels** en useConversaciones
+14. **Reducir polling** en useUrobotStats y useUrobotMetricasCRM
 
 ### Prioridad 3 — Sprint siguiente (Medios)
 
-13. **Exportar type guards** consistentemente
-14. **Unificar CONSULTA_TIPOS** naming convention
-15. **Unificar PacienteEstado** case convention
-16. **Agregar transition matrix** para chat/conversaciones
-17. **Exportar funciones útiles** de swr-config.ts
-18. **Usar `En_Curso`** para markPatientArrived
-19. **Limpiar `Recordatorio.status`** alinearlo con `RecordatorioEstado`
+15. **Exportar type guards** consistentemente
+16. **Unificar CONSULTA_TIPOS** naming convention
+17. **Unificar PacienteEstado** case convention
+18. **Agregar transition matrix** para chat/conversaciones
+19. **Exportar funciones útiles** de swr-config.ts
+20. **Usar `En_Curso`** para markPatientArrived
+21. **Limpiar `Recordatorio.status`** alinearlo con `RecordatorioEstado`
+22. **Exponer errores en hooks** (useLeadByTelefono, useLeadConversation, etc.)
+23. **Dividir componentes monolíticos** (DashboardClient, LeadClinicSidebar, HeatmapView)
+24. **Consolidar N+1 queries** en useLeadActions (crear RPC única)
+25. **Implementar `marcarComoLeido`** o eliminar la función no-op
 
 ---
 
