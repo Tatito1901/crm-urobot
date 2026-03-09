@@ -50,8 +50,8 @@ export const LeadsFilters = React.memo(function LeadsFilters({
   return (
     <div className="flex flex-col gap-3 w-full">
       {/* Buscador + Filtro de origen */}
-      <div className="flex items-center gap-3 w-full flex-wrap sm:flex-nowrap">
-        <div className="relative w-full sm:w-72">
+      <div className="flex items-center gap-2 sm:gap-3 w-full flex-wrap sm:flex-nowrap">
+        <div className="relative flex-1 min-w-0 sm:w-72 sm:flex-none">
           <label htmlFor="leads-search" className="sr-only">Buscar por nombre o teléfono...</label>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden />
           <input
@@ -107,8 +107,8 @@ export const LeadsFilters = React.memo(function LeadsFilters({
       })()}
 
       {/* Tabs de Filtros — horizontal scroll con touch targets grandes */}
-      <div className="overflow-x-auto scrollbar-hide scroll-fade-x -mx-1 px-1 momentum-scroll" role="tablist" aria-label="Filtrar leads por estado">
-        <div className="flex gap-1.5 sm:gap-2 py-0.5">
+      <div className="overflow-x-auto scrollbar-hide scroll-fade-x -mx-1 px-1 momentum-scroll -mb-1" role="tablist" aria-label="Filtrar leads por estado">
+        <div className="flex gap-1 sm:gap-2 py-0.5">
           {FILTERS.map((filter) => (
             <button
               key={filter.id}

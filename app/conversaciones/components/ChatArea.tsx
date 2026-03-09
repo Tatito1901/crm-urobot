@@ -109,7 +109,7 @@ export const ChatArea = memo(function ChatArea({
       flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
-      bg-[#0b141a] touch-manipulation
+      bg-[#0b141a] touch-manipulation z-10
       ${isMobileViewingChat ? 'translate-x-0' : 'translate-x-full sm:translate-x-0'}
     `}>
       {telefonoActivo && contactoActivo ? (
@@ -242,7 +242,7 @@ export const ChatArea = memo(function ChatArea({
           </div>
 
           {/* Minimal footer — read-only indicator */}
-          <div className="shrink-0 py-2.5 px-3 sm:px-4 border-t wa-footer flex items-center justify-between safe-area-bottom">
+          <div className="shrink-0 py-2.5 px-3 sm:px-4 border-t wa-footer flex items-center justify-between pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))] lg:pb-2.5">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <div className={`w-1.5 h-1.5 rounded-full ${estaBloqueado ? 'bg-red-500' : 'bg-emerald-500'}`} />
               <span>{estaBloqueado ? 'Bloqueado' : 'Solo lectura'}</span>

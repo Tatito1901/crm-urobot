@@ -208,14 +208,14 @@ export default function EstadisticasPage() {
       {/* ═══ Ocupación y Predicciones ═══ */}
       <section>
         <SectionHeader icon={Flame} title="Ocupación y Predicciones" iconColor="text-orange-500" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
           <Card className={`${cards.base} lg:col-span-2 min-w-0`}>
             <CardHeader className={spacing.cardHeader}>
               <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
                 <Flame className="w-4 h-4 text-orange-500" />
                 Mapa de Ocupación
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Histórico de consultas estilo GitHub</CardDescription>
+              <CardDescription className="text-xs text-muted-foreground">Histórico de consultas</CardDescription>
             </CardHeader>
             <CardContent className="overflow-x-auto scrollbar-hide">
               <DashboardHeatmap monthsToShow={6} />

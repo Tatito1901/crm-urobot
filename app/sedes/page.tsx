@@ -29,7 +29,7 @@ export default function HorariosPage() {
   }, [updateInfo]);
 
   return (
-    <div className={cn(spacing.container, spacing.containerY, 'max-w-4xl mx-auto')}>
+    <div className={cn(spacing.container, spacing.containerY, 'max-w-4xl mx-auto pb-20 lg:pb-8')}>
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="min-w-0 space-y-1">

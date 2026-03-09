@@ -35,11 +35,11 @@ export function PageShell({
 }: PageShellProps) {
   const layoutClasses = compact
     ? cn(
-        "relative flex w-full flex-col gap-3 px-3 pt-3 pb-2 sm:gap-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-5 lg:pb-6 xl:px-10",
+        "relative flex w-full flex-col gap-3 px-3 pt-3 pb-20 sm:gap-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-5 lg:pb-6 xl:px-10",
         fullWidth ? "max-w-full" : "max-w-6xl mx-auto"
       )
     : cn(
-        "relative mx-auto flex w-full flex-col gap-3 px-3 pb-4 pt-4 sm:gap-5 sm:px-6 sm:pb-8 sm:pt-6 md:gap-6 lg:px-8 lg:pt-10 lg:pb-20 xl:px-10",
+        "relative mx-auto flex w-full flex-col gap-3 px-3 pb-20 pt-4 sm:gap-5 sm:px-6 sm:pb-8 sm:pt-6 md:gap-6 lg:px-8 lg:pt-10 lg:pb-20 xl:px-10",
         fullWidth ? "max-w-full" : "max-w-6xl"
       );
 

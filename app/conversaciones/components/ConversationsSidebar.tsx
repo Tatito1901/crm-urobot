@@ -61,7 +61,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
   return (
     <aside className={`
       w-full sm:w-[300px] md:w-[340px] lg:w-[380px] border-r border-border flex flex-col 
-      bg-card shrink-0 z-10
+      bg-card shrink-0 z-20
       absolute sm:relative inset-0 h-full
       transition-transform duration-300 ease-in-out will-change-transform
       ${isMobileViewingChat ? '-translate-x-full sm:translate-x-0' : 'translate-x-0'}

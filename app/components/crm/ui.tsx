@@ -145,7 +145,7 @@ export function DataTable({
       </div>
 
       {/* Mobile: List-based layout optimizado */}
-      <div className="divide-y divide-border sm:hidden momentum-scroll">
+      <div className="divide-y divide-border/50 sm:hidden momentum-scroll">
         {rows.map((row, index) => {
           const primary = mobileConfig?.primary ? row[mobileConfig.primary] : null;
           const secondary = mobileConfig?.secondary ? row[mobileConfig.secondary] : null;
@@ -173,7 +173,7 @@ export function DataTable({
               tabIndex={onRowClick ? index === 0 ? 0 : -1 : undefined}
               role={onRowClick ? "button" : undefined}
               className={cn(
-                "px-3.5 py-3 flex flex-col gap-2",
+                "px-4 py-3.5 flex flex-col gap-2 min-h-[64px]",
                 onRowClick && "cursor-pointer active:bg-muted/40 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-teal-500"
               )}
             >
@@ -181,7 +181,7 @@ export function DataTable({
               {secondary && <div className="text-xs text-muted-foreground min-w-0 -mt-0.5">{secondary}</div>}
               
               {metadata.length > 0 && (
-                <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 pt-1.5 text-xs">
+                <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 pt-1 text-xs">
                   {metadata.map((key) => (
                     <div key={key} className="flex items-center gap-1 shrink-0 text-foreground">
                       {row[key]}

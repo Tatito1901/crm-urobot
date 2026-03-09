@@ -96,8 +96,8 @@ export const Pagination: React.FC<PaginationProps> = ({
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        {/* Números de página */}
-        <div className="flex items-center gap-0.5 mx-1">
+        {/* Números de página — hidden on small mobile */}
+        <div className="hidden sm:flex items-center gap-0.5 mx-1">
           {visiblePages.map((page, idx) => {
             if (page === 'ellipsis') {
               return (
@@ -121,6 +121,10 @@ export const Pagination: React.FC<PaginationProps> = ({
             );
           })}
         </div>
+        {/* Compact page indicator for mobile */}
+        <span className="sm:hidden text-xs text-muted-foreground tabular-nums mx-2">
+          {currentPage + 1}/{totalPages}
+        </span>
 
         {/* Siguiente */}
         <button

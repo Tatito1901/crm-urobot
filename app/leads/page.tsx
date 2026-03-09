@@ -129,7 +129,7 @@ export default function LeadsPage() {
       <div className="relative z-[1] space-y-4">
 
         {/* ── Stats grid ── */}
-        <div className="flex gap-1.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-3 animate-fade-up stagger-1">
+        <div className="flex gap-1.5 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-3 animate-fade-up stagger-1">
           <MetricCard
             variant="compact"
             icon={<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />}
@@ -254,7 +254,7 @@ export default function LeadsPage() {
               />
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-2 border-t border-border px-4 sm:px-6 py-3 sm:py-4 bg-secondary/20">
+                <div className="flex items-center justify-between gap-2 border-t border-border px-3 sm:px-6 py-3 sm:py-4 bg-secondary/20">
                   <PaginationControls
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -283,7 +283,7 @@ export default function LeadsPage() {
             role="dialog"
             aria-label="Panel clínico del lead"
             aria-modal="true"
-            className="fixed top-0 right-0 z-50 h-full w-full sm:w-[440px] sm:max-w-[90vw] bg-card border-l border-border shadow-2xl shadow-black/20 flex flex-col animate-in slide-in-from-right duration-200 pb-16 lg:pb-0"
+            className="fixed top-0 right-0 z-50 h-full w-full sm:w-[440px] sm:max-w-[90vw] bg-card border-l border-border shadow-2xl shadow-black/20 flex flex-col animate-in slide-in-from-right duration-200 pb-20 lg:pb-0"
           >
             <LeadClinicSidebar
               lead={selectedLead}

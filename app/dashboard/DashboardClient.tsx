@@ -222,7 +222,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
   return (
     <ErrorBoundary>
       <div className="relative min-h-full bg-background text-foreground">
-        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6 px-4 py-5 sm:px-6 sm:py-10 lg:px-8">
+        <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6 px-4 py-5 pb-20 sm:px-6 sm:py-10 lg:px-8 lg:pb-10">
 
           {/* ═══════════════════════════════════════════
               HEADER — Greeting + date + live indicator
@@ -305,7 +305,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           {/* ═══════════════════════════════════════════
               KPI CARDS — 3 glass cards with sparklines
               ═══════════════════════════════════════════ */}
-          <section className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
+          <section className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
@@ -639,7 +639,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                 { label: 'Citas bot', value: String(bot.citasAgendadasBot), color: 'text-teal-400' },
                 { label: 'Resp. prom.', value: `${bot.promedioTiempoRespuestaSeg}s`, color: 'text-sky-400' },
               ].map((stat, i) => (
-                <div key={stat.label} className={`px-3 sm:px-6 py-2.5 sm:py-4 ${i % 2 !== 0 ? 'border-l border-border' : ''} ${i >= 2 ? 'border-t border-border sm:border-t-0' : ''} ${i >= 2 && i % 2 !== 0 ? '' : ''} ${i >= 1 ? 'sm:border-l sm:border-border' : ''}`}>
+                <div key={stat.label} className={`px-3 sm:px-6 py-3 sm:py-4 ${i % 2 !== 0 ? 'border-l border-border' : ''} ${i >= 2 ? 'border-t border-border sm:border-t-0' : ''} ${i >= 1 ? 'sm:border-l sm:border-border' : ''}`}>
                   <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">{stat.label}</p>
                   <p className={`text-lg sm:text-2xl font-extrabold tabular-nums font-jakarta tracking-tight ${loading ? 'opacity-30' : stat.color}`}>
                     {loading ? '—' : stat.value}
