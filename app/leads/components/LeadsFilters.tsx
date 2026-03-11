@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { Search } from 'lucide-react';
 import { FUENTE_FILTER_OPTIONS, CANAL_COLORS } from '@/types/canales-marketing';
+import { SearchInput } from '@/app/components/common/SearchInput';
 import type { CanalMarketing } from '@/types/canales-marketing';
 
 type FilterStatus = 'all' | 'nuevo' | 'interactuando' | 'contactado' | 'cita_propuesta' | 'cita_agendada' | 'perdido';
@@ -36,12 +36,6 @@ export const LeadsFilters = React.memo(function LeadsFilters({
   fuenteFilter,
   onFuenteChange,
 }: LeadsFiltersProps) {
-  // Handler memoizado para el input
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value),
-    [onSearchChange]
-  );
-
   const handleFuenteChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => onFuenteChange(e.target.value),
     [onFuenteChange]
@@ -51,16 +45,13 @@ export const LeadsFilters = React.memo(function LeadsFilters({
     <div className="flex flex-col gap-3 w-full">
       {/* Buscador + Filtro de origen */}
       <div className="flex items-center gap-2 sm:gap-3 w-full flex-wrap sm:flex-nowrap">
-        <div className="relative flex-1 min-w-0 sm:w-72 sm:flex-none">
-          <label htmlFor="leads-search" className="sr-only">Buscar por nombre o teléfono...</label>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden />
-          <input
+        <div className="flex-1 min-w-0 sm:w-72 sm:flex-none">
+          <SearchInput
             id="leads-search"
-            type="text"
             value={searchValue}
-            onChange={handleSearchChange}
-            className="w-full pl-9 pr-3 py-2 bg-white/[0.03] border border-border/50 rounded-lg text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-teal-500/20 focus:border-teal-500/30 text-sm transition-all hover:bg-white/[0.05] hover:border-border"
+            onChange={onSearchChange}
             placeholder="Buscar por nombre o teléfono..."
+            shortcut
           />
         </div>
 

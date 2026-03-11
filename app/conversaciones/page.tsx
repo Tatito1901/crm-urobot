@@ -20,6 +20,19 @@ function ConversacionesContent() {
   const telefonoParam = searchParams.get('telefono')
   const mounted = useHasMounted()
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Debounce search — triggers server-side RPC after 350ms
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 350)
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current) }
+  }, [searchQuery])
+
   const {
     conversaciones,
     mensajesActivos,
@@ -29,16 +42,13 @@ function ConversacionesContent() {
     isLoadingMensajes,
     refetch,
     error,
-  } = useConversaciones()
+  } = useConversaciones({ search: debouncedSearch })
 
   const { estaBloqueado, refetch: refetchBloqueados } = useNumerosBloqueados()
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isMobileViewingChat, setIsMobileViewingChat] = useState(false)
   const [showActionsPanel, setShowActionsPanel] = useState(false)
   const [filtroActivo, setFiltroActivo] = useState<FiltroTipo>('todos')
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Auto-seleccionar teléfono si viene en URL
   useEffect(() => {
@@ -48,19 +58,9 @@ function ConversacionesContent() {
     }
   }, [telefonoParam, telefonoActivo, setTelefonoActivo])
 
-  // Debounce search para no filtrar en cada keystroke
-  useEffect(() => {
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
-    searchTimerRef.current = setTimeout(() => {
-      setDebouncedSearch(searchQuery)
-    }, 250)
-    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current) }
-  }, [searchQuery])
-
-  // ✅ OPTIMIZADO: Single-pass para conteos + filtro combinado
+  // ✅ Single-pass: conteos + filtro por tipo (search is server-side via RPC)
   const { filteredConversaciones, conteosPorTipo } = useMemo(() => {
     const hace24h = Date.now() - 24 * 60 * 60 * 1000
-    const query = debouncedSearch.toLowerCase()
     
     let leads = 0, pacientes = 0, recientes = 0
     const filtered: typeof conversaciones = []
@@ -74,7 +74,6 @@ function ConversacionesContent() {
       if (filtroActivo === 'leads' && c.tipoContacto !== 'lead') continue
       if (filtroActivo === 'pacientes' && c.tipoContacto !== 'paciente') continue
       if (filtroActivo === 'recientes' && !esReciente) continue
-      if (query && !c.telefono.includes(query) && !(c.nombreContacto?.toLowerCase().includes(query))) continue
       
       filtered.push(c)
     }
@@ -83,7 +82,7 @@ function ConversacionesContent() {
       filteredConversaciones: filtered,
       conteosPorTipo: { todos: conversaciones.length, leads, pacientes, recientes }
     }
-  }, [conversaciones, debouncedSearch, filtroActivo])
+  }, [conversaciones, filtroActivo])
 
   const handleSelectConversation = useCallback((telefono: string) => {
     setTelefonoActivo(telefono)

@@ -280,8 +280,9 @@ export type MetricColor = keyof typeof metricColors;
 
 // ==================== INPUTS ====================
 export const inputs = {
-  base: '',
-  search: 'pl-10',
+  base: 'w-full text-sm text-foreground bg-white/[0.03] rounded-xl border border-border/50 placeholder:text-muted-foreground/40 transition-all duration-200 ease-out hover:bg-white/[0.05] hover:border-border/80 focus:outline-none focus:bg-white/[0.06] focus:border-teal-500/40 focus:ring-2 focus:ring-teal-500/10 focus:shadow-[0_0_0_3px_oklch(0.70_0.15_162/6%)]',
+  search: 'pl-10 pr-3 py-2.5',
+  searchCompact: 'pl-9 pr-3 py-2',
 } as const;
 
 // ==================== TABLES ====================

@@ -15,6 +15,10 @@ import type { MensajeRow, Mensaje, ConversacionUI, TipoMensaje } from '@/types/c
 
 const supabase = createClient()
 
+interface UseConversacionesConfig {
+  search?: string
+}
+
 interface UseConversacionesReturn {
   conversaciones: ConversacionUI[]
   mensajesActivos: Mensaje[]
@@ -38,13 +42,12 @@ interface UseConversacionesReturn {
  * - LEAD: lead_id en conversacion
  * - DESCONOCIDO: sin lead ni paciente
  */
-const fetchConversaciones = async (): Promise<ConversacionUI[]> => {
-  // 1. Obtener conversaciones recientes con datos de lead y paciente
-  const { data: convData, error: convError } = await supabase
-    .from('conversaciones')
-    .select('id, telefono, nombre_contacto, estado, lead_id, paciente_id, ultimo_mensaje_at, ultimo_mensaje_preview, mensajes_no_leidos, total_mensajes_usuario, total_mensajes_bot, created_at')
-    .order('ultimo_mensaje_at', { ascending: false })
-    .limit(200)
+const fetchConversaciones = async (search?: string): Promise<ConversacionUI[]> => {
+  // Server-side search via RPC (supports name + phone + lead name)
+  const { data: convData, error: convError } = await supabase.rpc('search_conversaciones', {
+    p_search: search && search.trim().length > 1 ? search.trim() : null,
+    p_limit: 200,
+  })
 
   if (convError) throw convError
 
@@ -125,8 +128,14 @@ const fetchMensajesPorTelefono = async (telefono: string): Promise<Mensaje[]> =>
     }))
 }
 
-export function useConversaciones(): UseConversacionesReturn {
+export function useConversaciones(config: UseConversacionesConfig = {}): UseConversacionesReturn {
+  const { search } = config
   const [telefonoActivo, setTelefonoActivo] = useState<string | null>(null)
+  
+  // SWR key includes search to re-fetch when search changes
+  const swrKey = search && search.trim().length > 1
+    ? `${CACHE_KEYS.CONVERSACIONES}-q-${search.trim()}`
+    : CACHE_KEYS.CONVERSACIONES
   
   // SWR para lista de conversaciones
   const { 
@@ -134,7 +143,10 @@ export function useConversaciones(): UseConversacionesReturn {
     error: errorConversaciones, 
     isLoading: isLoadingConversaciones,
     mutate: mutateConversaciones 
-  } = useSWR(CACHE_KEYS.CONVERSACIONES, fetchConversaciones, SWR_CONFIG_REALTIME)
+  } = useSWR(swrKey, () => fetchConversaciones(search), {
+    ...SWR_CONFIG_REALTIME,
+    keepPreviousData: true,
+  })
 
   // SWR para mensajes del teléfono activo
   const {

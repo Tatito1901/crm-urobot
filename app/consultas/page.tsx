@@ -8,7 +8,8 @@ import { ContentLoader } from '@/app/components/common/ContentLoader';
 import { TableContentSkeleton } from '@/app/components/common/SkeletonLoader';
 import { Pagination } from '@/app/components/common/Pagination';
 import { cards } from '@/app/lib/design-system';
-import { Building2, MapPin, Search, RefreshCw } from 'lucide-react';
+import { Building2, MapPin, RefreshCw } from 'lucide-react';
+import { SearchInput } from '@/app/components/common/SearchInput';
 import { EmptyState } from '@/app/components/common/EmptyState';
 import { ConsultasTable } from './components/ConsultasTable';
 import { ConsultasMetrics } from './components/ConsultasMetrics';
@@ -81,18 +82,15 @@ export default function ConsultasPage() {
         <div className="p-2.5 sm:p-4 border-b border-border">
           <div className="flex flex-col gap-2 sm:flex-row sm:gap-3 sm:items-center sm:justify-between">
             {/* Búsqueda */}
-            <div className="relative flex-1 sm:max-w-md">
-              <label htmlFor="consultas-search" className="sr-only">Buscar consultas</label>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <input
+            <div className="flex-1 sm:max-w-md">
+              <SearchInput
                 id="consultas-search"
                 value={inputValue}
-                onChange={(event) => {
-                  setInputValue(event.target.value);
-                  debouncedSearch(event.target.value);
+                onChange={(val) => {
+                  setInputValue(val);
+                  debouncedSearch(val);
                 }}
                 placeholder="Buscar paciente, folio o motivo..."
-                className="w-full pl-9 pr-3 py-2 border border-border/50 rounded-lg bg-white/[0.03] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-teal-500/20 focus:border-teal-500/30 text-sm transition-all hover:bg-white/[0.05] hover:border-border"
               />
             </div>
 

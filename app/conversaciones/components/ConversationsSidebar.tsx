@@ -1,8 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { MessageCircle, Search, RefreshCw, Users, UserCheck, Clock } from 'lucide-react'
+import { MessageCircle, RefreshCw, Users, UserCheck, Clock } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
+import { SearchInput } from '@/app/components/common/SearchInput'
 
 const FILTER_OPTIONS = [
   { id: 'todos', label: 'Todos' },
@@ -91,19 +92,13 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
 
       {/* Search + Filters */}
       <div className="px-4 pt-3 pb-3 space-y-3 shrink-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Buscar por nombre o teléfono..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 sm:py-2 text-sm bg-white/[0.03] border border-border/50 rounded-lg
-                     focus:outline-none focus:ring-1 focus:ring-teal-500/20 focus:border-teal-500/30
-                     placeholder:text-muted-foreground/40 text-foreground transition-all
-                     hover:bg-white/[0.05] hover:border-border"
-          />
-        </div>
+        <SearchInput
+          id="conversaciones-search"
+          value={searchQuery}
+          onChange={onSearchChange}
+          placeholder="Buscar por nombre o teléfono..."
+          compact
+        />
         
         {/* Filter tabs — minimal pill style with touch-friendly targets */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 momentum-scroll">
