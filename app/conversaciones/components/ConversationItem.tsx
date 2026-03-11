@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ShieldBan, CalendarCheck, Zap, UserX } from 'lucide-react';
+import { ShieldBan, CalendarCheck, Zap, UserX, Flame, Calendar, Megaphone } from 'lucide-react';
 
 interface ConversationItemProps {
   telefono: string;
@@ -16,6 +16,12 @@ interface ConversationItemProps {
   onSelect: (telefono: string) => void;
   isBloqueado?: boolean;
   mensajesNoLeidos?: number;
+  // Lead enrichment
+  temperatura?: string | null;
+  citaOfrecidaAt?: Date | null;
+  citaAgendadaAt?: Date | null;
+  scoreTotal?: number | null;
+  fuente?: string | null;
 }
 
 const getInitials = (nombre: string | null, telefono: string) => {
@@ -80,6 +86,11 @@ export const ConversationItem = memo(function ConversationItem({
   onSelect,
   isBloqueado = false,
   mensajesNoLeidos = 0,
+  temperatura,
+  citaOfrecidaAt,
+  citaAgendadaAt,
+  scoreTotal,
+  fuente,
 }: ConversationItemProps) {
   const colorIndex = telefono.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_GRADIENTS.length;
   const hasUnread = mensajesNoLeidos > 0;
@@ -140,21 +151,66 @@ export const ConversationItem = memo(function ConversationItem({
           </span>
         </div>
         
-        {/* Row 2: Preview + estado badge */}
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <p className={`text-xs truncate flex-1 leading-relaxed ${
-            hasUnread && !isActive ? 'text-foreground/80' : 'text-muted-foreground/60'
-          }`}>
-            {cleanPreview(ultimoMensaje)}
-          </p>
+        {/* Row 2: Preview */}
+        <p className={`text-xs truncate leading-relaxed mt-0.5 ${
+          hasUnread && !isActive ? 'text-foreground/80' : 'text-muted-foreground/60'
+        }`}>
+          {cleanPreview(ultimoMensaje)}
+        </p>
+
+        {/* Row 3: Badges */}
+        <div className="flex items-center gap-1 mt-1 flex-wrap">
           {isBloqueado ? (
             <span className="text-[9px] font-bold shrink-0 px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400">Bloqueado</span>
-          ) : tipoBadge ? (
-            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.06]">
-              <span className={`w-1.5 h-1.5 rounded-full ${tipoBadge.dot}`} />
-              <span className="text-[9px] font-medium text-muted-foreground/80">{tipoBadge.label}</span>
-            </span>
-          ) : null}
+          ) : (
+            <>
+              {/* Cita agendada badge — highest priority */}
+              {citaAgendadaAt && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/20">
+                  <CalendarCheck className="w-2.5 h-2.5 text-emerald-400" />
+                  <span className="text-[9px] font-semibold text-emerald-400">Agendada</span>
+                </span>
+              )}
+              {/* Cita ofrecida badge — only if not already agendada */}
+              {!citaAgendadaAt && citaOfrecidaAt && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/12 border border-amber-500/20">
+                  <Calendar className="w-2.5 h-2.5 text-amber-400" />
+                  <span className="text-[9px] font-semibold text-amber-400">Cita ofrecida</span>
+                </span>
+              )}
+              {/* Temperatura badge */}
+              {temperatura && temperatura !== 'frio' && (
+                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${
+                  temperatura === 'caliente' || temperatura === 'muy_caliente' || temperatura === 'urgente'
+                    ? 'bg-orange-500/12 border border-orange-500/20'
+                    : 'bg-yellow-500/12 border border-yellow-500/20'
+                }`}>
+                  <Flame className={`w-2.5 h-2.5 ${
+                    temperatura === 'caliente' || temperatura === 'muy_caliente' || temperatura === 'urgente'
+                      ? 'text-orange-400' : 'text-yellow-400'
+                  }`} />
+                  <span className={`text-[9px] font-semibold capitalize ${
+                    temperatura === 'caliente' || temperatura === 'muy_caliente' || temperatura === 'urgente'
+                      ? 'text-orange-400' : 'text-yellow-400'
+                  }`}>{temperatura.replace(/_/g, ' ')}</span>
+                </span>
+              )}
+              {/* Fuente Meta Ads badge */}
+              {fuente && fuente.startsWith('meta_') && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-blue-500/12 border border-blue-500/20">
+                  <Megaphone className="w-2.5 h-2.5 text-blue-400" />
+                  <span className="text-[9px] font-semibold text-blue-400">Ads</span>
+                </span>
+              )}
+              {/* Estado badge — show if no enrichment badges */}
+              {!citaAgendadaAt && !citaOfrecidaAt && tipoBadge && (
+                <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.06]">
+                  <span className={`w-1.5 h-1.5 rounded-full ${tipoBadge.dot}`} />
+                  <span className="text-[9px] font-medium text-muted-foreground/80">{tipoBadge.label}</span>
+                </span>
+              )}
+            </>
+          )}
         </div>
       </div>
     </button>

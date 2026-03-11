@@ -25,9 +25,9 @@ interface ConsultasMetricsProps {
 export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, loading }: ConsultasMetricsProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-3 mb-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className={`h-20 sm:h-24 bg-muted/50 rounded-lg animate-pulse ${i === 4 ? 'col-span-2 sm:col-span-1' : ''}`} />
+          <div key={i} className="h-20 sm:h-24 bg-muted/50 rounded-lg animate-pulse min-w-[130px] max-w-[170px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink" />
         ))}
       </div>
     );
@@ -47,13 +47,13 @@ export const ConsultasMetrics = React.memo(function ConsultasMetrics({ stats, lo
   ];
 
   return (
-    <div className="grid grid-cols-2 min-[480px]:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-4">
+    <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:gap-3 mb-4">
       {cards.map((card, i) => {
         const Icon = card.icon;
         return (
           <div
             key={card.label}
-            className={`bg-card border border-border rounded-xl p-3 sm:p-3.5 flex flex-col gap-2 transition-colors hover:bg-white/[0.02] ${i === 4 ? 'col-span-2 min-[480px]:col-span-1' : ''}`}
+            className="bg-card border border-border rounded-xl p-3 sm:p-3.5 flex flex-col gap-2 transition-colors hover:bg-white/[0.02] min-w-[130px] max-w-[170px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
           >
             <div className="flex items-center gap-2">
               <div className={`p-1.5 rounded-md ${card.iconBg}`}>

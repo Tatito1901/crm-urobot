@@ -22,10 +22,11 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
   return (
     <div className="space-y-2 sm:space-y-4">
       {/* Fila 1: Métricas principales */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-4">
         <MetricCard
           variant="kpi"
           title="Total Mensajes"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
           value={kpi.totalMensajes.toLocaleString()}
           subtitle={`${kpi.mensajesHoy} hoy`}
           iconComponent={MessageSquare}
@@ -37,6 +38,7 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           value={`${kpi.tasaExito}%`}
           iconComponent={TrendingUp}
           iconColor={kpi.tasaExito >= 90 ? 'text-emerald-400' : 'text-yellow-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -45,6 +47,7 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           subtitle={`${kpi.erroresHoy} hoy`}
           iconComponent={XCircle}
           iconColor={kpi.totalErrores > 0 ? 'text-red-400' : 'text-emerald-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -52,14 +55,16 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           value={`${(kpi.tiempoPromedioMs / 1000).toFixed(1)}s`}
           iconComponent={Clock}
           iconColor={kpi.tiempoPromedioMs < 3000 ? 'text-emerald-400' : 'text-yellow-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </div>
       
       {/* Fila 2: Métricas secundarias */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-4">
         <MetricCard
           variant="kpi"
           title="Usuarios Únicos"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
           value={kpi.usuariosUnicos}
           iconComponent={Users}
           iconColor="text-purple-400"
@@ -70,6 +75,7 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           value={kpi.alertasPendientes}
           iconComponent={AlertTriangle}
           iconColor={kpi.alertasPendientes > 0 ? 'text-orange-400' : 'text-emerald-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -77,6 +83,7 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           value={kpi.mensajesHoy}
           iconComponent={Activity}
           iconColor="text-cyan-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -84,6 +91,7 @@ export const UrobotMetrics = React.memo(function UrobotMetrics({ kpi }: UrobotMe
           value={kpi.erroresHoy}
           iconComponent={Zap}
           iconColor={kpi.erroresHoy > 0 ? 'text-red-400' : 'text-emerald-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </div>
     </div>

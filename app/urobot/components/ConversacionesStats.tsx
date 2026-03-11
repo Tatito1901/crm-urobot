@@ -30,10 +30,11 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
   return (
     <div className="space-y-2 sm:space-y-4">
       {/* Fila principal: Mensajes */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-4">
         <MetricCard
           variant="kpi"
           title="Mensajes Recibidos"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
           value={kpi.totalMensajesRecibidos.toLocaleString()}
           subtitle={`${kpi.mensajesRecibidosHoy} hoy`}
           iconComponent={ArrowDownLeft}
@@ -46,6 +47,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           subtitle={`${kpi.mensajesEnviadosHoy} hoy`}
           iconComponent={ArrowUpRight}
           iconColor="text-emerald-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -54,6 +56,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           subtitle={`${kpi.conversacionesHoy} hoy`}
           iconComponent={MessageCircle}
           iconColor="text-purple-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -61,14 +64,16 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           value={`${kpi.tasaRespuesta}%`}
           iconComponent={TrendingUp}
           iconColor={kpi.tasaRespuesta >= 90 ? 'text-emerald-400' : 'text-amber-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </div>
 
       {/* Fila secundaria: UroBot */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-4">
         <MetricCard
           variant="kpi"
           title="Preguntas Respondidas"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
           value={kpi.preguntasRespondidas.toLocaleString()}
           iconComponent={HelpCircle}
           iconColor="text-cyan-400"
@@ -79,6 +84,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           value={kpi.citasAgendadasPorBot}
           iconComponent={Calendar}
           iconColor="text-violet-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -86,6 +92,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           value={kpi.usuariosRecurrentes}
           iconComponent={UserCheck}
           iconColor="text-indigo-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -93,6 +100,7 @@ export const ConversacionesKPIs = React.memo(function ConversacionesKPIs({ kpi }
           value={`${(kpi.tiempoRespuestaPromedio / 1000).toFixed(1)}s`}
           iconComponent={Clock}
           iconColor={kpi.tiempoRespuestaPromedio < 3000 ? 'text-emerald-400' : 'text-amber-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </div>
     </div>
@@ -321,7 +329,8 @@ export const ActividadPorHora = React.memo(function ActividadPorHora({ datos }: 
       </CardHeader>
       <CardContent className="space-y-3 overflow-hidden">
         {/* Mini heatmap */}
-        <div className="grid grid-cols-12 gap-0.5">
+        <div className="overflow-x-auto scrollbar-hide momentum-scroll -mx-1 px-1">
+        <div className="grid grid-cols-12 gap-0.5" style={{ minWidth: '240px' }}>
           {datos.slice(6, 22).map((hora) => {
             const total = hora.recibidos + hora.enviados;
             const intensidad = maxTotal > 0 ? total / maxTotal : 0;
@@ -346,6 +355,7 @@ export const ActividadPorHora = React.memo(function ActividadPorHora({ datos }: 
               </div>
             );
           })}
+        </div>
         </div>
         <div className="flex justify-between text-[10px] text-muted-foreground">
           <span>6:00</span>

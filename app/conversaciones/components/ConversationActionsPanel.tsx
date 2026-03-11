@@ -21,7 +21,9 @@ import {
   Brain,
   Megaphone,
   TrendingUp,
-  ShieldBan
+  ShieldBan,
+  MessageCircle,
+  Timer
 } from 'lucide-react';
 import { 
   getEtapaConfig, 
@@ -44,6 +46,8 @@ interface ConversationActionsPanelProps {
   nombreContacto: string | null;
   onClose?: () => void;
   isMobile?: boolean;
+  totalMensajes?: number;
+  primerMensajeAt?: Date | null;
 }
 
 // Estados con iconos de Lucide — sincronizado con catalog_estados_lead
@@ -63,7 +67,9 @@ export function ConversationActionsPanel({
   telefono, 
   nombreContacto,
   onClose,
-  isMobile = false
+  isMobile = false,
+  totalMensajes,
+  primerMensajeAt,
 }: ConversationActionsPanelProps) {
   // Estados
   const [selectedPlantilla, setSelectedPlantilla] = useState<PlantillaMensaje | null>(null);
@@ -193,25 +199,49 @@ export function ConversationActionsPanel({
           </div>
         ) : (
           <>
+            {/* ===== CONVERSATION STATS ===== */}
+            {(totalMensajes || primerMensajeAt) && (
+              <div className="grid grid-cols-2 gap-2">
+                {totalMensajes != null && (
+                  <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-border/40">
+                    <MessageCircle className="w-3.5 h-3.5 text-teal-400/70" />
+                    <div>
+                      <p className="text-xs font-bold text-foreground tabular-nums">{totalMensajes}</p>
+                      <p className="text-[10px] text-muted-foreground/60">mensajes</p>
+                    </div>
+                  </div>
+                )}
+                {primerMensajeAt && (
+                  <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-border/40">
+                    <Timer className="w-3.5 h-3.5 text-violet-400/70" />
+                    <div>
+                      <p className="text-xs font-bold text-foreground">{Math.max(1, Math.ceil((Date.now() - new Date(primerMensajeAt).getTime()) / 86400000))}d</p>
+                      <p className="text-[10px] text-muted-foreground/60">activo</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ===== ACCIÓN PRINCIPAL: WhatsApp ===== */}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3 bg-emerald-600 hover:bg-emerald-700
-                       rounded-lg transition-colors active:scale-[0.98]"
+              className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800
+                       rounded-xl transition-all active:scale-[0.98] shadow-sm shadow-emerald-900/20"
             >
               <Phone className="w-4 h-4 text-white" />
               <span className="text-sm font-medium text-white flex-1">Abrir WhatsApp</span>
-              <ExternalLink className="w-3.5 h-3.5 text-white/60" />
+              <ExternalLink className="w-3.5 h-3.5 text-white/50" />
             </a>
 
             {/* ===== ESTADO DEL LEAD ===== */}
             {lead && (
-              <div className="rounded-lg border border-border p-3">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Estado</span>
-                  <div className={`px-2 py-0.5 rounded-md text-xs font-medium flex items-center gap-1
+              <div className="rounded-xl border border-border/60 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.12em]">Estado actual</span>
+                  <div className={`px-2 py-0.5 rounded-md text-[11px] font-semibold flex items-center gap-1
                     ${lead.estado === 'convertido' || lead.estado === 'show' ? 'bg-emerald-500/15 text-emerald-400' : 
                       lead.estado === 'cita_propuesta' || lead.estado === 'cita_agendada' ? 'bg-amber-500/15 text-amber-400' : 
                       'bg-primary/10 text-primary'}`}
@@ -221,17 +251,17 @@ export function ConversationActionsPanel({
                 </div>
                 
                 {/* Botones de cambio de estado */}
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   {ESTADOS_CONFIG.filter(e => e.estado !== lead.estado).slice(0, 4).map(({ estado, icon, label, color }) => (
                     <button
                       key={estado}
                       onClick={() => handleCambiarEstado(estado)}
                       disabled={cambioExitoso !== null}
-                      className={`flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium rounded-lg
-                               bg-muted border border-border
-                               hover:border-border hover:shadow-sm
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg
+                               bg-white/[0.03] border border-border/50
+                               hover:bg-white/[0.06] hover:border-border
                                active:scale-[0.98] transition-all disabled:opacity-50
-                               ${cambioExitoso === estado ? 'bg-emerald-500/20 border-emerald-500/30' : ''}`}
+                               ${cambioExitoso === estado ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' : ''}`}
                     >
                       <span className={color}>{icon}</span>
                       <span>{cambioExitoso === estado ? '¡Listo!' : label}</span>
@@ -241,12 +271,13 @@ export function ConversationActionsPanel({
 
                 {/* Recomendación */}
                 {recomendacion && recomendacion.prioridad !== 'no_contactar' && (
-                  <div className={`mt-3 p-2.5 rounded-lg text-xs ${
-                    recomendacion.prioridad === 'alta' ? 'bg-red-500/15 text-red-400' :
-                    recomendacion.prioridad === 'media' ? 'bg-amber-500/15 text-amber-400' :
-                    'bg-blue-500/15 text-blue-400'
+                  <div className={`p-2.5 rounded-lg text-xs flex items-start gap-2 ${
+                    recomendacion.prioridad === 'alta' ? 'bg-red-500/10 text-red-400 border border-red-500/15' :
+                    recomendacion.prioridad === 'media' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/15' :
+                    'bg-blue-500/10 text-blue-400 border border-blue-500/15'
                   }`}>
-                    💡 {recomendacion.razon}
+                    <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <span>{recomendacion.razon}</span>
                   </div>
                 )}
               </div>
@@ -254,10 +285,10 @@ export function ConversationActionsPanel({
 
             {/* ===== PERFIL BEHAVIORAL COMPACTO ===== */}
             {lead && (lead.signals || lead.esMetaAds) && (
-              <div className="rounded-lg border border-border p-3 space-y-2">
+              <div className="rounded-xl border border-border/60 p-3 space-y-2">
                 <div className="flex items-center gap-1.5">
                   <Brain className="w-3.5 h-3.5 text-violet-400" />
-                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Perfil</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.12em]">Perfil</span>
                   {lead.esMetaAds && (
                     <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">
                       <Megaphone className="w-3 h-3" /> Ads
@@ -388,8 +419,9 @@ export function ConversationActionsPanel({
               <div className="flex gap-2 pt-1">
                 <a
                   href={`/leads?search=${telefono}`}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-muted 
-                           hover:bg-muted/80 rounded-lg transition-colors text-xs font-medium
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 
+                           bg-white/[0.03] border border-border/50
+                           hover:bg-white/[0.06] hover:border-border rounded-lg transition-all text-xs font-medium
                            text-muted-foreground"
                 >
                   <User className="w-3.5 h-3.5" />
@@ -397,8 +429,9 @@ export function ConversationActionsPanel({
                 </a>
                 <a
                   href={`/citas/nueva?telefono=${telefono}`}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-muted 
-                           hover:bg-muted/80 rounded-lg transition-colors text-xs font-medium
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 
+                           bg-white/[0.03] border border-border/50
+                           hover:bg-white/[0.06] hover:border-border rounded-lg transition-all text-xs font-medium
                            text-muted-foreground"
                 >
                   <Calendar className="w-3.5 h-3.5" />

@@ -471,18 +471,14 @@ export const MessageBubble = memo(function MessageBubble({
           <div className="px-3 sm:px-3.5 pt-2 pb-1">
             {renderContent()}
           </div>
-          
-          {/* Fase badge for bot messages */}
-          {isBot && faseConversacion && FASE_DISPLAY[faseConversacion] && (
-            <div className="px-3 sm:px-3.5 pb-1">
-              <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${FASE_BADGE_COLORS[FASE_DISPLAY[faseConversacion].color] || FASE_BADGE_COLORS.gray}`}>
+
+          {/* Footer: fase badge + hora + check marks */}
+          <div className="wa-timestamp flex items-center justify-end gap-1.5 px-3 pb-1.5 select-none">
+            {isBot && faseConversacion && FASE_DISPLAY[faseConversacion] && (
+              <span className={`inline-flex items-center text-[9px] font-medium px-1.5 py-0.5 rounded-full mr-auto ${FASE_BADGE_COLORS[FASE_DISPLAY[faseConversacion].color] || FASE_BADGE_COLORS.gray}`}>
                 {FASE_DISPLAY[faseConversacion].label}
               </span>
-            </div>
-          )}
-
-          {/* Footer: hora + check marks (WhatsApp style) */}
-          <div className="wa-timestamp flex items-center justify-end gap-1 px-3 pb-1.5 select-none">
+            )}
             <span className="text-[11px] tabular-nums">
               {formatTimeMX(createdAt)}
             </span>

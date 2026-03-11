@@ -66,7 +66,7 @@ function ComparativaCard({
   const displayValue = formato === 'porcentaje' ? `${valorActual}%` : valorActual.toLocaleString('es-MX');
 
   return (
-    <div className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-primary/30 transition-all">
+    <div className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-primary/30 transition-all min-w-[160px] shrink-0 snap-start sm:min-w-0 sm:shrink">
       <div className="flex items-start justify-between mb-2 sm:mb-3">
         <div className="p-1.5 sm:p-2 bg-primary/15 rounded-lg">
           <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
@@ -103,7 +103,7 @@ function ImpactoUrobotCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`rounded-xl p-3 sm:p-4 border transition-all ${
+    <div className={`rounded-xl p-3 sm:p-4 border transition-all min-w-[140px] shrink-0 snap-start sm:min-w-0 sm:shrink ${
       highlight 
         ? 'bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border-cyan-500/20' 
         : 'bg-card border-border hover:border-primary/30'
@@ -231,7 +231,7 @@ export default function ImpactoPage() {
           <TrendingUp className="w-4 h-4" />
           Comparativa: {mesActual.periodo} vs {mesAnterior.periodo}
         </h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
           <ComparativaCard
             titulo="Consultas Programadas"
             valorActual={mesActual.consultasProgramadas}
@@ -273,7 +273,7 @@ export default function ImpactoPage() {
           <Bot className="w-4 h-4 text-cyan-500" />
           Impacto de Urobot este mes
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+        <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-3">
           <ImpactoUrobotCard
             titulo="Usuarios Atendidos"
             valor={impactoUrobot.usuariosUnicos}

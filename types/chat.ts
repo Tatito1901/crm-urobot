@@ -81,4 +81,11 @@ export interface ConversacionUI {
   estadoLead: string | null;
   citasValidas: number;
   totalMensajes: number;
+
+  // Lead enrichment (from search_conversaciones JOIN)
+  temperatura: string | null;
+  citaOfrecidaAt: Date | null;
+  citaAgendadaAt: Date | null;
+  scoreTotal: number | null;
+  fuente: string | null;
 }

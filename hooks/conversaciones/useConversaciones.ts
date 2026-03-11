@@ -69,6 +69,12 @@ const fetchConversaciones = async (search?: string): Promise<ConversacionUI[]> =
       estadoLead: (c.estado as string) || null,
       citasValidas: 0,
       totalMensajes: totalMsgs,
+      // Lead enrichment
+      temperatura: (c.lead_temperatura as string) || null,
+      citaOfrecidaAt: c.lead_cita_ofrecida_at ? new Date(c.lead_cita_ofrecida_at as string) : null,
+      citaAgendadaAt: c.lead_cita_agendada_at ? new Date(c.lead_cita_agendada_at as string) : null,
+      scoreTotal: (c.lead_score_total as number) ?? null,
+      fuente: (c.lead_fuente as string) || null,
     }
   })
 

@@ -37,10 +37,11 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
   return (
     <div className="space-y-2 sm:space-y-4">
       {/* Fila 1: Conversiones */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-4">
         <MetricCard
           variant="kpi"
           title="Citas Agendadas"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
           value={resumen.citasAgendadas}
           subtitle={`${resumen.citasAgendadasHoy} hoy`}
           iconComponent={Calendar}
@@ -52,6 +53,7 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={resumen.confirmaciones}
           iconComponent={CheckCircle}
           iconColor="text-violet-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -60,6 +62,7 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           subtitle="intención → cita"
           iconComponent={Target}
           iconColor={resumen.tasaConversion >= 50 ? 'text-emerald-400' : 'text-amber-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -67,14 +70,16 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={resumen.escalaciones}
           iconComponent={PhoneForwarded}
           iconColor={resumen.escalaciones > 5 ? 'text-amber-400' : 'text-blue-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </div>
 
       {/* Fila 2: Volumen y Performance */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-4">
         <MetricCard
           variant="kpi"
           title="Total Mensajes"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
           value={resumen.totalMensajes.toLocaleString()}
           subtitle={`${resumen.mensajesHoy} hoy`}
           iconComponent={MessageCircle}
@@ -86,6 +91,7 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={`${(resumen.avgTiempoMs / 1000).toFixed(1)}s`}
           iconComponent={Clock}
           iconColor={resumen.avgTiempoMs < 3000 ? 'text-emerald-400' : 'text-amber-400'}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -93,6 +99,7 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={resumen.citasCanceladas}
           iconComponent={XCircle}
           iconColor="text-red-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -100,6 +107,7 @@ export const MetricasCRMKPIs = React.memo(function MetricasCRMKPIs({ resumen }: 
           value={resumen.citasReagendadas}
           iconComponent={RefreshCw}
           iconColor="text-cyan-400"
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </div>
     </div>
@@ -345,8 +353,8 @@ export const ActividadHeatmap = React.memo(function ActividadHeatmap({ datos }: 
       </CardHeader>
       <CardContent className="space-y-3 overflow-hidden">
         {/* Heatmap */}
-        <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
-        <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${Math.min(horasVisibles.length, 16)}, minmax(24px, 1fr))` }}>
+        <div className="overflow-x-auto scrollbar-hide -mx-1 px-1 momentum-scroll">
+        <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${Math.min(horasVisibles.length, 16)}, minmax(20px, 1fr))`, minWidth: `${Math.min(horasVisibles.length, 16) * 22}px` }}>
           {horasVisibles.map((hora) => {
             const intensidad = maxMensajes > 0 ? hora.mensajes / maxMensajes : 0;
             return (

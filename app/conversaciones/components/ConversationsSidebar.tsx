@@ -1,15 +1,15 @@
 'use client'
 
 import { memo } from 'react'
-import { MessageCircle, RefreshCw, Users, UserCheck, Clock } from 'lucide-react'
+import { MessageCircle, RefreshCw, Users, UserCheck, Clock, MessagesSquare } from 'lucide-react'
 import { ConversationItem } from './ConversationItem'
 import { SearchInput } from '@/app/components/common/SearchInput'
 
 const FILTER_OPTIONS = [
-  { id: 'todos', label: 'Todos' },
-  { id: 'recientes', label: 'Recientes' },
-  { id: 'leads', label: 'Leads' },
-  { id: 'pacientes', label: 'Pacientes' },
+  { id: 'todos', label: 'Todos', icon: MessagesSquare },
+  { id: 'recientes', label: 'Recientes', icon: Clock },
+  { id: 'leads', label: 'Leads', icon: Users },
+  { id: 'pacientes', label: 'Pacientes', icon: UserCheck },
 ] as const
 
 export type FiltroTipo = 'todos' | 'leads' | 'pacientes' | 'recientes'
@@ -23,6 +23,13 @@ interface ConversationData {
   estadoLead: string | null
   citasValidas: number
   totalMensajes: number
+  mensajesNoLeidos?: number
+  // Lead enrichment
+  temperatura?: string | null
+  citaOfrecidaAt?: Date | null
+  citaAgendadaAt?: Date | null
+  scoreTotal?: number | null
+  fuente?: string | null
 }
 
 interface ConversationsSidebarProps {
@@ -100,20 +107,21 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
           compact
         />
         
-        {/* Filter tabs — minimal pill style with touch-friendly targets */}
+        {/* Filter tabs — pill style with icons */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 momentum-scroll">
-          {FILTER_OPTIONS.map(({ id, label }) => (
+          {FILTER_OPTIONS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => onFiltroChange(id)}
-              className={`px-3.5 py-2 min-h-[40px] sm:min-h-[36px] rounded-full text-xs font-semibold whitespace-nowrap transition-all no-select
+              className={`flex items-center gap-1.5 px-3 py-2 min-h-[40px] sm:min-h-[36px] rounded-full text-xs font-semibold whitespace-nowrap transition-all no-select
                 ${filtroActivo === id 
                   ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20' 
-                  : 'text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted active:bg-muted/70'}`}
+                  : 'text-muted-foreground hover:text-foreground bg-white/[0.04] hover:bg-white/[0.07] active:bg-white/[0.09] border border-border/40'}`}
             >
+              <Icon className="w-3 h-3" />
               {label}
               {mounted && conteosPorTipo[id] > 0 && (
-                <span className={`ml-1.5 ${filtroActivo === id ? 'text-primary-foreground/80' : 'text-muted-foreground/70'}`}>
+                <span className={`ml-0.5 tabular-nums ${filtroActivo === id ? 'text-primary-foreground/70' : 'text-muted-foreground/50'}`}>
                   {conteosPorTipo[id]}
                 </span>
               )}
@@ -191,6 +199,12 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
                 isActive={conv.telefono === telefonoActivo}
                 onSelect={onSelectConversation}
                 isBloqueado={estaBloqueado?.(conv.telefono) ?? false}
+                mensajesNoLeidos={conv.mensajesNoLeidos}
+                temperatura={conv.temperatura}
+                citaOfrecidaAt={conv.citaOfrecidaAt}
+                citaAgendadaAt={conv.citaAgendadaAt}
+                scoreTotal={conv.scoreTotal}
+                fuente={conv.fuente}
               />
             ))}
           </div>

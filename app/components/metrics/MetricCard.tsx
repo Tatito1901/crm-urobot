@@ -183,7 +183,7 @@ export const MetricCard = React.memo(({
     const kpiColor = iconColor || `${colors.label}`;
     return (
       <div
-        className={cn("bg-white/[0.05] border border-white/[0.10] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[110px] sm:min-h-[140px] shine-top", externalClassName)}
+        className={cn("bg-white/[0.05] border border-white/[0.10] rounded-xl p-2.5 sm:p-4 flex flex-col justify-between relative overflow-hidden shadow-sm hover:border-primary/50 transition-all min-h-[100px] sm:min-h-[140px] shine-top", externalClassName)}
         title={tooltip}
       >
         <div className="flex justify-between items-start mb-3">
@@ -197,7 +197,7 @@ export const MetricCard = React.memo(({
           {loading ? (
             <div className="h-8 w-20 bg-muted rounded-md animate-pulse mb-1" />
           ) : (
-            <div className="text-2xl sm:text-3xl font-extrabold text-foreground mb-1 tracking-tight truncate font-jakarta">
+            <div className="text-xl sm:text-3xl font-extrabold text-foreground mb-1 tracking-tight truncate font-jakarta">
               {percentage !== undefined ? `${percentage}%` : displayValue}
             </div>
           )}

@@ -132,7 +132,7 @@ export default function EstadisticasPage() {
       )}
 
       {/* ═══ KPIs Principales ═══ */}
-      <section className={layouts.kpiGrid}>
+      <section className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-3 md:gap-4">
         <MetricCard
           variant="kpi"
           title="Pacientes"
@@ -142,6 +142,7 @@ export default function EstadisticasPage() {
           trend={kpi.pacientesNuevosMes > 0 ? "Creciendo" : undefined}
           tooltip="Total de pacientes registrados en el sistema"
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -151,6 +152,7 @@ export default function EstadisticasPage() {
           iconComponent={Calendar}
           tooltip="Consultas este mes"
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -161,6 +163,7 @@ export default function EstadisticasPage() {
           trend={kpi.tasaConversion > 5 ? `${kpi.tasaConversion}%` : undefined}
           tooltip="Porcentaje de leads que se convierten en pacientes"
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -170,6 +173,7 @@ export default function EstadisticasPage() {
           iconComponent={MessageSquare}
           tooltip="Total de leads en el sistema"
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </section>
 
@@ -211,13 +215,13 @@ export default function EstadisticasPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
           <Card className={`${cards.base} lg:col-span-2 min-w-0`}>
             <CardHeader className={spacing.cardHeader}>
-              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Flame className="w-4 h-4 text-orange-500" />
-                Mapa de Ocupación
+              <CardTitle className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-500 shrink-0" />
+                <span className="truncate">Mapa de Ocupación</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Histórico de consultas</CardDescription>
             </CardHeader>
-            <CardContent className="overflow-x-auto scrollbar-hide">
+            <CardContent className="overflow-x-auto scrollbar-hide -mx-1 px-1">
               <DashboardHeatmap monthsToShow={6} />
             </CardContent>
           </Card>

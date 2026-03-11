@@ -33,7 +33,7 @@ export default function LeadsAnalysisPage() {
       description="Desglose detallado de la adquisición y calidad de leads."
     >
       {/* KPIs */}
-      <section className={layouts.kpiGrid}>
+      <section className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-4 sm:gap-3 md:gap-4">
         <MetricCard
           variant="kpi"
           title="Total Leads"
@@ -41,6 +41,7 @@ export default function LeadsAnalysisPage() {
           subtitle="Histórico acumulado"
           iconComponent={Users}
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -50,6 +51,7 @@ export default function LeadsAnalysisPage() {
           iconComponent={TrendingUp}
           iconColor="text-emerald-400"
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -59,6 +61,7 @@ export default function LeadsAnalysisPage() {
           iconComponent={Target}
           iconColor="text-teal-400"
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
         <MetricCard
           variant="kpi"
@@ -68,6 +71,7 @@ export default function LeadsAnalysisPage() {
           iconComponent={Thermometer}
           iconColor="text-amber-400"
           loading={loading}
+          className="min-w-[160px] max-w-[200px] shrink-0 snap-start sm:min-w-0 sm:max-w-none sm:shrink"
         />
       </section>
 
