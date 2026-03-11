@@ -45,7 +45,7 @@ interface UseConversacionesReturn {
 const fetchConversaciones = async (search?: string): Promise<ConversacionUI[]> => {
   // Server-side search via RPC (supports name + phone + lead name)
   const { data: convData, error: convError } = await supabase.rpc('search_conversaciones', {
-    p_search: search && search.trim().length > 1 ? search.trim() : null,
+    p_search: search && search.trim().length >= 1 ? search.trim() : null,
     p_limit: 200,
   })
 
@@ -133,7 +133,7 @@ export function useConversaciones(config: UseConversacionesConfig = {}): UseConv
   const [telefonoActivo, setTelefonoActivo] = useState<string | null>(null)
   
   // SWR key includes search to re-fetch when search changes
-  const swrKey = search && search.trim().length > 1
+  const swrKey = search && search.trim().length >= 1
     ? `${CACHE_KEYS.CONVERSACIONES}-q-${search.trim()}`
     : CACHE_KEYS.CONVERSACIONES
   
